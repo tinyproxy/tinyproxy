@@ -1,3 +1,18 @@
+Thursday, August 30, 2001
+-------------------------
+
+Maybe I just shouldn't be working on the code base this week. The
+memory fix I added in the last release contained a serious bug which
+would cause a segmentation fault. I actually fixed this by removing
+the code I added and just fixing the problem in ternary_insert()
+instead. I don't know why I didn't do this in the first place. I also
+removed the xstrstr() function since strstr() will do what tinyproxy
+needs. Removing code is _always_ a good idea. Less code, less chance
+of bugs.
+
+        -- Robert
+
+
 Wednesday, August 29, 2001
 --------------------------
 
@@ -22,4 +37,4 @@ needed.
 I would suggest that everyone upgrade to this version; especially
 anyone who is still running 1.4.0 or below.
 
-       -- Robert
+        -- Robert
