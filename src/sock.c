@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.5 2001-05-27 02:31:20 rjkaes Exp $
+/* $Id: sock.c,v 1.6 2001-08-29 04:00:22 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -29,16 +29,14 @@
 #include "utils.h"
 
 /*
- * The mutex is used for locking around the calls to the dnscache since I
- * don't want multiple threads accessing the linked list at the same time.
- * This should be more fine grained, but it will do for now.
+ * The mutex is used for locking around any calls which access global
+ * variables.
  *	- rjkaes
  */
-static pthread_mutex_t sock_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-#define SOCK_LOCK()   pthread_mutex_lock(&sock_mutex);
-#define SOCK_UNLOCK() pthread_mutex_unlock(&sock_mutex);
-
+#define LOCK()   pthread_mutex_lock(&mutex);
+#define UNLOCK() pthread_mutex_unlock(&mutex);
 
 /* This routine is so old I can't even remember writing it.  But I do
  * remember that it was an .h file because I didn't know putting code in a
@@ -64,13 +62,8 @@ int opensock(char *ip_addr, uint16_t port)
 
 	port_info.sin_family = AF_INET;
 
-	/* chris - Could block; neet to ensure that this is never called
-	 * before a non-blocking DNS query happens for this address. Not
-	 * relevant in the code as it stands.
-	 */
-	SOCK_LOCK();
+	/* Lookup and return the address if possible */
 	ret = dnscache(&port_info.sin_addr, ip_addr);
-	SOCK_UNLOCK();
 
 	if (ret < 0) {
 		log_message(LOG_ERR, "opensock: Could not lookup address: %s", ip_addr);
@@ -194,14 +187,13 @@ char *getpeer_string(int fd, char *string)
 	if (getpeername(fd, (struct sockaddr *)&name, &namelen) != 0) {
 		log_message(LOG_ERR, "Connect: 'could not get peer name'");
 	} else {
-		SOCK_LOCK();
+		LOCK();
 		peername = gethostbyaddr((char *)&name.sin_addr.s_addr,
 					 sizeof(name.sin_addr.s_addr),
 					 AF_INET);
-		if (peername) {
+		if (peername)
 			strlcpy(string, peername->h_name, PEER_STRING_LENGTH);
-		}
-		SOCK_UNLOCK();
+		UNLOCK();
 	}
 
 	return string;
