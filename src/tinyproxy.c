@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.42 2002-12-04 17:06:14 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.43 2003-01-27 18:44:43 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -136,7 +136,6 @@ Options:\n\
 #endif				/* XTINYPROXY */
 #ifdef FILTER_ENABLE
 	printf("    Filtering\n");
-	printf("        * with Regular Expression support\n");
 #endif				/* FILTER_ENABLE */
 #ifndef NDEBUG
 	printf("    Debugging code\n");
