@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.79 2002-05-28 20:40:01 rjkaes Exp $
+/* $Id: reqs.c,v 1.80 2002-05-29 18:11:57 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -530,11 +530,9 @@ add_xtinyproxy_header(struct conn_s *connptr)
  * can be retrieved and manipulated later.
  */
 static inline int
-add_header_to_connection(hashmap_t hashofheaders, char *header, size_t len,
-			 bool_t double_cgi)
+add_header_to_connection(hashmap_t hashofheaders, char *header, size_t len)
 {
 	char *sep;
-	ssize_t ret;
 
 	/* Get rid of the new line and return at the end */
 	len -= chomp(header, len);
@@ -549,12 +547,6 @@ add_header_to_connection(hashmap_t hashofheaders, char *header, size_t len,
 
 	/* Calculate the new length of just the data */
 	len -= sep - header - 1;
-
-	if (double_cgi == TRUE) {
-		/* Don't allow duplicate headers */
-		if ((ret = hashmap_search(hashofheaders, header)) <= 0)
-			return ret;
-	}
 
 	return hashmap_insert(hashofheaders, header, sep, len);
 }
@@ -604,8 +596,9 @@ get_all_headers(int fd, hashmap_t hashofheaders)
 			safefree(header);
 			continue;
 		}
-		
-		if (add_header_to_connection(hashofheaders, header, len, double_cgi) < 0) {
+
+		if (!double_cgi
+		    && add_header_to_connection(hashofheaders, header, len) < 0) {
 			safefree(header);
 			return -1;
 		}
