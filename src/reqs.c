@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.92 2003-01-28 21:21:55 rjkaes Exp $
+/* $Id: reqs.c,v 1.93 2003-03-13 21:29:45 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -30,6 +30,7 @@
 #include "filter.h"
 #include "hashmap.h"
 #include "heap.h"
+#include "htmlerror.h"
 #include "log.h"
 #include "network.h"
 #include "regexp.h"
@@ -39,10 +40,6 @@
 #include "text.h"
 #include "utils.h"
 #include "vector.h"
-
-#define HTTP400ERROR "Unrecognizable request. Only HTTP is allowed."
-#define HTTP500ERROR "Unable to connect to remote server."
-#define HTTP503ERROR "Internal server error."
 
 /*
  * Maximum length of a HTTP line
@@ -350,7 +347,9 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 		log_message(LOG_ERR,
 			    "process_request: Bad Request on file descriptor %d",
 			    connptr->client_fd);
-		indicate_http_error(connptr, 400, "Bad Request. No request found.");
+		indicate_http_error(connptr, 400, "Bad Request",
+				    "detail", "Request has an invalid format",
+				    "url", url);
 
 		safefree(url);
 		free_request_struct(request);
@@ -366,7 +365,9 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 		log_message(LOG_ERR,
 			    "process_request: Null URL on file descriptor %d",
 			    connptr->client_fd);
-		indicate_http_error(connptr, 400, "Bad Request. Null URL.");
+		indicate_http_error(connptr, 400, "Bad Request",
+				    "detail", "Request has an empty URL",
+				    "url", url);
 
 		safefree(url);
 		free_request_struct(request);
@@ -379,8 +380,9 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 		char *skipped_type = strstr(url, "//") + 2;
 
 		if (extract_http_url(skipped_type, request) < 0) {
-			indicate_http_error(connptr, 400,
-					    "Bad Request. Could not parse URL.");
+			indicate_http_error(connptr, 400, "Bad Request",
+					    "detail", "Could not parse URL",
+					    "url", url);
 
 			safefree(url);
 			free_request_struct(request);
@@ -389,8 +391,9 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 		}
 	} else if (strcmp(request->method, "CONNECT") == 0) {
 		if (extract_ssl_url(url, request) < 0) {
-			indicate_http_error(connptr, 400,
-				"Bad Request. Could not parse URL.");
+			indicate_http_error(connptr, 400, "Bad Request",
+					    "detail", "Could not parse URL",
+					    "url", url);
 
 			safefree(url);
 			free_request_struct(request);
@@ -400,8 +403,10 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 
 		/* Verify that the port in the CONNECT method is allowed */
 		if (check_allowed_connect_ports(request->port) <= 0) {
-			indicate_http_error(connptr, 403,
-				"CONNECT method not allowed with selected port.");
+			indicate_http_error(connptr, 403, "Access violation",
+					    "detail", "The CONNECT method not allowed " \
+					              "with the port you tried to use.",
+					    "url", url);
 			log_message(LOG_INFO, "Refused CONNECT method on port %d",
 				    request->port);
 
@@ -432,7 +437,9 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 				log_message(LOG_ERR,
 					    "process_request: cannot get destination IP for %d",
 					    connptr->client_fd);
-				indicate_http_error(connptr, 400, "Bad Request. Unknown destination.");
+				indicate_http_error(connptr, 400, "Bad Request",
+						    "detail", "Unknown destination",
+						    "url", url);
 				safefree(url);
 				free_request_struct(request);
 				return NULL;
@@ -462,7 +469,9 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 			log_message(LOG_ERR,
 				    "process_request: destination IP is localhost %d",
 				    connptr->client_fd);
-			indicate_http_error(connptr, 400, "Bad Request. Bad destination.");
+			indicate_http_error(connptr, 400, "Bad Request",
+					    "detail", "You tried to connect to the machine the proxy is running on",
+					    "url", url);
 			safefree(url);
 			free_request_struct(request);
 			return NULL;
@@ -471,7 +480,9 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 		log_message(LOG_ERR,
 			    "process_request: Unknown URL type on file descriptor %d",
 			    connptr->client_fd);
-		indicate_http_error(connptr, 400, "Bad Request. Unknown URL type.");
+		indicate_http_error(connptr, 400, "Bad Request",
+				    "detail", "Unknown URL type",
+				    "url", url);
 
 		safefree(url);
 		free_request_struct(request);
@@ -502,7 +513,9 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 					    "Proxying refused on filtered domain \"%s\"",
 					    request->host);
 
-			indicate_http_error(connptr, 403, "Filtered.");
+			indicate_http_error(connptr, 403, "Filtered",
+					    "detail", "The request you made has been filted",
+					    "url", url);
 
 			safefree(url);
 			free_request_struct(request);
@@ -559,7 +572,7 @@ pull_client_data(struct conn_s *connptr, unsigned long int length)
 		if (len <= 0)
 			goto ERROR_EXIT;
 
-		if (!connptr->error_string) {
+		if (!connptr->error_variables) {
 			if (safe_write(connptr->server_fd, buffer, len) < 0)
 				goto ERROR_EXIT;
 		}
@@ -859,7 +872,8 @@ process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 				       connptr->protocol.minor);
 		if (ret < 0) {
 			indicate_http_error(connptr, 503,
-					    "Could not send data to remote server.");
+					    "Could not send data to remote server",
+					    "detail", "A network error occurred while trying to write data to the remote web server.");
 			goto PULL_CLIENT_DATA;
 		}
 	}
@@ -880,9 +894,9 @@ process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 						    "%s: %s\r\n",
 						    data, header);
 				if (ret < 0) {
-					indicate_http_error(connptr,
-							    503,
-							    "Could not send data to remove server.");
+					indicate_http_error(connptr, 503,
+							    "Could not send data to remote server",
+							    "detail", "A network error occurred while trying to write data to the remote web server.");
 					goto PULL_CLIENT_DATA;
 				}
 			}
@@ -968,7 +982,8 @@ process_server_headers(struct conn_s *connptr)
 		hashmap_delete(hashofheaders);
 		safefree(response_line);
 
-		indicate_http_error(connptr, 503, "Could not retrieve all the headers from the remote server.");
+		indicate_http_error(connptr, 503, "Could not retrieve all the headers",
+				    "detail", PACKAGE " was unable to retrieve and process headers from the remote web server.");
 		return -1;
 	}
 
@@ -1171,7 +1186,8 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 	if (connptr->server_fd < 0) {
 		log_message(LOG_WARNING,
 			    "Could not connect to upstream proxy.");
-		indicate_http_error(connptr, 404, "Unable to connect to upstream proxy.");
+		indicate_http_error(connptr, 404, "Unable to connect to upstream proxy",
+				    "detail", "A network error occurred while trying to connect to the upstream web proxy.");
 		return -1;
 	}
 
@@ -1244,8 +1260,8 @@ handle_connection(int fd)
 
 	if (check_acl(fd, peer_ipaddr, peer_string) <= 0) {
 		update_stats(STAT_DENIED);
-		indicate_http_error(connptr, 403,
-			"You do not have authorization for using this service.");
+		indicate_http_error(connptr, 403, "Access denied",
+				    "detail", "The administrator of this proxy has not configured it to service requests from your host.");
 		send_http_error_message(connptr);
 		destroy_conn(connptr);
 		return;
@@ -1253,8 +1269,8 @@ handle_connection(int fd)
 
 	if (read_request_line(connptr) < 0) {
 		update_stats(STAT_BADCONN);
-		indicate_http_error(connptr, 408,
-			"Server timeout waiting for the HTTP request from the client.");
+		indicate_http_error(connptr, 408, "Timeout",
+				    "detail", "Server timeout waiting for the HTTP request from the client.");
 		send_http_error_message(connptr);
 		destroy_conn(connptr);
 		return;
@@ -1265,7 +1281,8 @@ handle_connection(int fd)
 	 */
 	if (!(hashofheaders = hashmap_create(HEADER_BUCKETS))) {
 		update_stats(STAT_BADCONN);
-		indicate_http_error(connptr, 503, HTTP503ERROR);
+		indicate_http_error(connptr, 503, "Internal error",
+				    "detail", "An internal server error occurred while processing your request.  Please contact the administrator.");
 		send_http_error_message(connptr);
 		destroy_conn(connptr);
 		return;
@@ -1284,7 +1301,7 @@ handle_connection(int fd)
 
 	request = process_request(connptr, hashofheaders);
 	if (!request) {
-		if (!connptr->error_string && !connptr->show_stats) {
+		if (!connptr->error_variables && !connptr->show_stats) {
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
 			hashmap_delete(hashofheaders);
@@ -1300,7 +1317,9 @@ handle_connection(int fd)
 	} else {
 		connptr->server_fd = opensock(request->host, request->port);
 		if (connptr->server_fd < 0) {
-			indicate_http_error(connptr, 500, HTTP500ERROR);
+			indicate_http_error(connptr, 500, "Unable to connect",
+					    "detail", PACKAGE " was unable to connect to the remote web server.",
+					    "error", strerror(errno));
 			goto send_error;
 		}
 
@@ -1317,7 +1336,7 @@ handle_connection(int fd)
 
 	if (process_client_headers(connptr, hashofheaders) < 0) {
 		update_stats(STAT_BADCONN);
-		if (!connptr->error_string) {
+		if (!connptr->error_variables) {
 			hashmap_delete(hashofheaders);
 			destroy_conn(connptr);
 			return;
@@ -1325,7 +1344,7 @@ handle_connection(int fd)
 	}
 	hashmap_delete(hashofheaders);
 
-	if (connptr->error_string) {
+	if (connptr->error_variables) {
 		send_http_error_message(connptr);
 		destroy_conn(connptr);
 		return;
@@ -1337,7 +1356,7 @@ handle_connection(int fd)
 
 	if (!connptr->connect_method || UPSTREAM_CONFIGURED()) {
 		if (process_server_headers(connptr) < 0) {
-			if (connptr->error_string)
+			if (connptr->error_variables)
 				send_http_error_message(connptr);
 
 			update_stats(STAT_BADCONN);
