@@ -1,5 +1,11 @@
 2002-04-22  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/thread.c: Renamed the LOCKing macros and added debugging
+	asserts to them.  Also, moved the mutex initialization into the
+	thread_pool_create() function since I would like to use an error
+	checking mutex, but my machine doesn't seem to work with it.  I
+	left the code there in case I can get it to work later.
+
 	* src/log.c (send_stored_logs): Added this function since the
 	log_message() function will now stored the messages if the config
 	file has not been processed yet.  This function is called from

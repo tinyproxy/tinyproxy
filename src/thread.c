@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.25 2002-04-18 16:57:06 rjkaes Exp $
+/* $Id: thread.c,v 1.26 2002-04-22 19:41:17 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -47,7 +47,16 @@ struct thread_s {
  * created when the program is started.
  */
 static struct thread_s *thread_ptr;
-static pthread_mutex_t mlock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mlock;
+
+#define ACCEPT_LOCK() do { \
+int accept_lock_ret = pthread_mutex_lock(&mlock); \
+assert(accept_lock_ret == 0); \
+} while (0)
+#define ACCEPT_UNLOCK() do { \
+int accept_lock_ret = pthread_mutex_unlock(&mlock); \
+assert(accept_lock_ret == 0); \
+} while (0)
 
 /* Used to override the default statck size. */
 static pthread_attr_t thread_attr;
@@ -58,23 +67,29 @@ static struct thread_config_s {
 } thread_config;
 
 static unsigned int servers_waiting;	/* servers waiting for a connection */
-static pthread_mutex_t servers_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t servers_mutex;
 
-#define SERVER_LOCK()   pthread_mutex_lock(&servers_mutex)
-#define SERVER_UNLOCK() pthread_mutex_unlock(&servers_mutex)
+#define SERVER_COUNT_LOCK()   do { \
+int servers_mutex_ret = pthread_mutex_lock(&servers_mutex); \
+assert(servers_mutex_ret == 0); \
+} while (0)
+#define SERVER_COUNT_UNLOCK() do { \
+int servers_mutex_ret = pthread_mutex_unlock(&servers_mutex); \
+assert(servers_mutex_ret == 0); \
+} while (0)
 
 #define SERVER_INC() do { \
-    SERVER_LOCK(); \
+    SERVER_COUNT_LOCK(); \
     DEBUG2("INC: servers_waiting: %u", servers_waiting); \
-    servers_waiting++; \
-    SERVER_UNLOCK(); \
+    ++servers_waiting; \
+    SERVER_COUNT_UNLOCK(); \
 } while (0)
 
 #define SERVER_DEC() do { \
-    SERVER_LOCK(); \
-    servers_waiting--; \
+    SERVER_COUNT_LOCK(); \
+    --servers_waiting; \
     DEBUG2("DEC: servers_waiting: %u", servers_waiting); \
-    SERVER_UNLOCK(); \
+    SERVER_COUNT_UNLOCK(); \
 } while (0)
 
 /*
@@ -132,18 +147,15 @@ thread_main(void *arg)
 	while (!config.quit) {
 		clilen = addrlen;
 
-		pthread_mutex_lock(&mlock);
-
 		/*
 		 * Check to see if the program is shutting down.
 		 */
-		if (config.quit) {
-			pthread_mutex_unlock(&mlock);
+		if (config.quit)
 			break;
-		}
 		
+		ACCEPT_LOCK();
 		connfd = accept(listenfd, cliaddr, &clilen);
-		pthread_mutex_unlock(&mlock);
+		ACCEPT_UNLOCK();
 
 		/*
 		 * Make sure no error occurred...
@@ -184,13 +196,13 @@ thread_main(void *arg)
 			}
 		}
 
-		SERVER_LOCK();
+		SERVER_COUNT_LOCK();
 		if (servers_waiting >= thread_config.maxspareservers) {
 			/*
 			 * There are too many spare threads, kill ourself
 			 * off.
 			 */
-			SERVER_UNLOCK();
+			SERVER_COUNT_UNLOCK();
 
 			log_message(LOG_NOTICE,
 				    "Waiting servers exceeds MaxSpareServers. Killing thread.");
@@ -199,7 +211,7 @@ thread_main(void *arg)
 
 			break;
 		}
-		SERVER_UNLOCK();
+		SERVER_COUNT_UNLOCK();
 
 		ptr->status = T_WAITING;
 
@@ -218,6 +230,7 @@ thread_pool_create(void)
 {
 	unsigned int i;
 	int pthread_ret;
+//	pthread_mutexattr_t mutexattr;
 
 	/*
 	 * Initialize thread_attr to contain a non-default stack size
@@ -228,6 +241,10 @@ thread_pool_create(void)
 	pthread_attr_init(&thread_attr);
 	pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
 	pthread_attr_setstacksize(&thread_attr, THREAD_STACK_SIZE);
+
+//	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_ERRORCHECK);
+	pthread_mutex_init(&mlock, NULL);
+	pthread_mutex_init(&servers_mutex, NULL);
 
 	if (thread_config.maxclients == 0) {
 		log_message(LOG_ERR,
@@ -289,9 +306,9 @@ thread_main_loop(void)
 			return;
 
 		/* If there are not enough spare servers, create more */
-		SERVER_LOCK();
+		SERVER_COUNT_LOCK();
 		if (servers_waiting < thread_config.minspareservers) {
-			SERVER_UNLOCK();
+			SERVER_COUNT_UNLOCK();
 
 			for (i = 0; i < thread_config.maxclients; i++) {
 				if (thread_ptr[i].status == T_EMPTY) {
@@ -318,7 +335,7 @@ thread_main_loop(void)
 				}
 			}
 		}
-		SERVER_UNLOCK();
+		SERVER_COUNT_UNLOCK();
 
 		sleep(5);
 
