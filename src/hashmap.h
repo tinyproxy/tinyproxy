@@ -1,4 +1,4 @@
-/* $Id: hashmap.h,v 1.1 2002-04-07 21:30:02 rjkaes Exp $
+/* $Id: hashmap.h,v 1.2 2002-04-25 18:55:56 rjkaes Exp $
  *
  * A hashmap implementation.  The keys are case-insensitive NULL terminated
  * strings, and the data is arbitrary lumps of data.  Copies of both the
@@ -28,8 +28,6 @@
 #ifndef _HASHMAP_H
 #define _HASHMAP_H
 
-#include "vector.h"
-
 /* Allow the use in C++ code. */
 #if defined(__cplusplus)
 extern "C" {
@@ -41,6 +39,7 @@ extern "C" {
  * So, just use the hashmap_t like it's a cookie. :)
  */
 typedef struct hashmap_s* hashmap_t;
+typedef int hashmap_iter;
 
 /*
  * hashmap_create() takes one argument, which is the number of buckets to
@@ -62,36 +61,68 @@ extern int hashmap_insert(hashmap_t map, const char *key,
 			  const void *data, size_t len);
 
 /*
- * If a valid key is found in the hash map you will get a pointer to the
- * data stored in the hash map.  In other words, you have the power to change
- * the data a key is associated with, but do it responsibly since the
- * library doesn't take any steps to prevent you from messing up the hash
- * map.  Don't try to realloc or free the data though; doing so will break
- * the hashmap.  If you are only interested in whether the key is present
- * or not, supply a NULL for the "data" argument.
+ * Get an iterator to the first entry.
  *
- * Returns: negative on error
- *          zero if the key was not found
- *          positive (length of data) if key is found
+ * Returns: an negative value upon error.
  */
-extern ssize_t hashmap_search(hashmap_t map, const char *key, void **data);
+extern hashmap_iter hashmap_first(hashmap_t map);
 
 /*
- * Produce a vector of all the keys in the hashmap.
+ * Checks to see if the iterator is pointing at the "end" of the entries.
  *
- * Returns: NULL upon error
- *          a valid vector_t if everything is fine
+ * Returns: 1 if it is the end
+ *          0 otherwise
  */
-extern vector_t hashmap_keys(hashmap_t map);
+extern int hashmap_is_end(hashmap_t map, hashmap_iter iter);
+
+/*
+ * Return a "pointer" to the first instance of the particular key.  It can
+ * be tested against hashmap_is_end() to see if the key was not found.
+ *
+ * Returns: negative upon an error
+ *          an "iterator" pointing at the first key
+ *          an "end-iterator" if the key wasn't found
+ */
+extern hashmap_iter hashmap_find(hashmap_t map, const char* key);
+
+/*
+ * Retrieve the key/data associated with a particular iterator.
+ * NOTE: These are pointers to the actual data, so don't mess around with them
+ *       too much.
+ *
+ * Returns: the length of the data block upon success
+ *          negative upon error
+ */
+extern ssize_t hashmap_return_entry(hashmap_t map, hashmap_iter iter,
+				    char** key, void** data);
+
+/*
+ * Get the first entry (assuming there is more than one) for a particular
+ * key.  The data MUST be non-NULL.
+ *
+ * Returns: negative upon error
+ *          zero if no entry is found
+ *          length of data for the entry
+ */
+extern ssize_t hashmap_entry_by_key(hashmap_t map, const char* key, void** data);
+
+/*
+ * Searches for _any_ occurrances of "key" within the hashmap and returns the
+ * number of matching entries.
+ * 
+ * Returns: negative upon an error
+ *          zero if no key is found
+ *          count found (positive value)
+ */
+extern ssize_t hashmap_search(hashmap_t map, const char *key);
 
 /*
  * Go through the hashmap and remove the particular key.
- * NOTE: This _will_ invalidate any vectors which might have been created
- *       by the hashmap_keys() function.
+ * NOTE: This will invalidate any iterators which have been created.
  *
  * Remove: negative upon error
  *         0 if the key was not found
- *         1 if the entry was deleted
+ *         positive count of entries deleted
  */
 extern ssize_t hashmap_remove(hashmap_t map, const char *key);
 

@@ -1,4 +1,4 @@
-/* $Id: hashmap.c,v 1.5 2002-04-18 18:40:38 rjkaes Exp $
+/* $Id: hashmap.c,v 1.6 2002-04-25 18:55:56 rjkaes Exp $
  *
  * A hashmap implementation.  The keys are case-insensitive NULL terminated
  * strings, and the data is arbitrary lumps of data.  Copies of both the
@@ -28,7 +28,6 @@
 #include "tinyproxy.h"
 
 #include "hashmap.h"
-#include "vector.h"
 #include "utils.h"
 
 /*
@@ -47,6 +46,8 @@ struct hashentry_s {
 };
 struct hashmap_s {
 	unsigned int size;
+	hashmap_iter end_iterator;
+
 	struct hashentry_s **maps;
 };
 
@@ -106,6 +107,9 @@ hashmap_create(unsigned int nbuckets)
 		safefree(ptr);
 		return NULL;
 	}
+
+	/* This points to "one" past the end of the hashmap. */
+	ptr->end_iterator = 0;
 
 	return ptr;
 }
@@ -184,6 +188,11 @@ hashmap_insert(hashmap_t map, const char *key,
 	char *key_copy;
 	void *data_copy;
 
+	assert(map != NULL);
+	assert(key != NULL);
+	assert(data != NULL);
+	assert(len > 0);
+
 	if (map == NULL || key == NULL)
 		return -EINVAL;
 	if (!data || len < 1)
@@ -238,23 +247,145 @@ hashmap_insert(hashmap_t map, const char *key,
 	ptr->data = data_copy;
 	ptr->len = len;
 
+	map->end_iterator++;
+
 	return 0;
 }
 
 /*
- * A pointer to data is returned based on a case-insensitive NULL terminated
- * "key".  If the "key" is not found, "data" is set to NULL.  A NULL "data"
- * argument indicates that the data associated with the key is to be ignored.
+ * Get an iterator to the first entry.
+ *
+ * Returns: an negative value upon error.
+ */
+hashmap_iter
+hashmap_first(hashmap_t map)
+{
+	if (!map)
+		return -EINVAL;
+
+	if (map->end_iterator == 0)
+		return -1;
+	else
+		return 0;
+}
+
+/*
+ * Checks to see if the iterator is pointing at the "end" of the entries.
+ *
+ * Returns: 1 if it is the end
+ *          0 otherwise
+ */
+int
+hashmap_is_end(hashmap_t map, hashmap_iter iter)
+{
+	assert(map != NULL);
+	assert(iter >= 0);
+
+	if (!map || iter < 0)
+		return -EINVAL;
+
+	if (iter == map->end_iterator)
+		return 1;
+	else
+		return 0;
+}
+
+/*
+ * Return a "pointer" to the first instance of the particular key.  It can
+ * be tested against hashmap_is_end() to see if the key was not found.
  *
  * Returns: negative upon an error
- *          zero if no key is found
- *          length of data if key is found.
+ *          an "iterator" pointing at the first key
+ *          an "end-iterator" if the key wasn't found
+ */
+hashmap_iter
+hashmap_find(hashmap_t map, const char* key)
+{
+	unsigned int i;
+	hashmap_iter iter = 0;
+	struct hashentry_s* ptr;
+
+	assert(map != NULL);
+	assert(key != NULL);
+
+	if (!map || !key)
+		return -EINVAL;
+
+	/*
+	 * Loop through all the keys and look for the first occurance
+	 * of a particular key.
+	 */
+	for (i = 0; i < map->size; i++) {
+		ptr = map->maps[i];
+
+		while (ptr) {
+			if (strcasecmp(ptr->key, key) == 0) {
+				/* Found it, so return the current count */
+				return iter;
+			}
+
+			iter++;
+			ptr = ptr->next;
+		}
+	}
+
+	return iter;
+}
+
+/*
+ * Retrieve the data associated with a particular iterator.
+ *
+ * Returns: the length of the data block upon success
+ *          negative upon error
  */
 ssize_t
-hashmap_search(hashmap_t map, const char *key, void **data)
+hashmap_return_entry(hashmap_t map, hashmap_iter iter,
+		     char** key, void** data)
+{
+	unsigned int i;
+	struct hashentry_s* ptr;
+	hashmap_iter count = 0;
+
+	assert(map != NULL);
+	assert(iter >= 0);
+	assert(iter != map->end_iterator);
+	assert(key != NULL);
+	assert(data != NULL);
+
+	if (!map || iter < 0 || !key || !data)
+		return -EINVAL;
+
+	for (i = 0; i < map->size; i++) {
+		ptr = map->maps[i];
+		while (ptr) {
+			if (count == iter) {
+				/* This is the data so return it */
+				*key = ptr->key;
+				*data = ptr->data;
+				return ptr->len;
+			}
+
+			ptr = ptr->next;
+			count++;
+		}
+	}
+
+	return -EFAULT;
+}
+
+/*
+ * Searches for _any_ occurrances of "key" within the hashmap.
+ * 
+ * Returns: negative upon an error
+ *          zero if no key is found
+ *          count found
+ */
+ssize_t
+hashmap_search(hashmap_t map, const char *key)
 {
 	int hash;
 	struct hashentry_s* ptr;
+	ssize_t count = 0;
 
 	if (map == NULL || key == NULL)
 		return -EINVAL;
@@ -267,78 +398,65 @@ hashmap_search(hashmap_t map, const char *key, void **data)
 
 	/* Okay, there is an entry here, now see if it's the one we want */
 	while (ptr) {
-		if (strcasecmp(ptr->key, key) == 0) {
-			/* Found it, return a pointer to the data */
-			if (data)
-				*data = ptr->data;
-			return ptr->len;
-		}
+		if (strcasecmp(ptr->key, key) == 0)
+			++count;
 
 		/* This entry didn't contain the key; move to the next one */
 		ptr = ptr->next;
 	}
 
-	/* The key was not found, so return NULL */
-	if (data)
-		*data = NULL;
+	return count;
+}
+
+/*
+ * Get the first entry (assuming there is more than one) for a particular
+ * key.  The data MUST be non-NULL.
+ *
+ * Returns: negative upon error
+ *          zero if no entry is found
+ *          length of data for the entry
+ */
+ssize_t
+hashmap_entry_by_key(hashmap_t map, const char* key, void** data)
+{
+	int hash;
+	struct hashentry_s* ptr;
+
+	if (!map || !key || !data)
+		return -EINVAL;
+       
+	hash = hashfunc(key, map->size);
+	if (hash < 0)
+		return hash;
+
+	ptr = map->maps[hash];
+
+	while (ptr) {
+		if (strcasecmp(ptr->key, key) == 0) {
+			*data = ptr->data;
+			return ptr->len;
+		}
+
+		ptr = ptr->next;
+	}
+
 	return 0;
 }
 
 /*
- * Produce a vector of all the keys in the hashmap.
- *
- * Returns: NULL upon error
- *          a valid vector_t if everything is fine
- */
-vector_t
-hashmap_keys(hashmap_t map)
-{
-	vector_t vector;
-	unsigned int i;
-	struct hashentry_s *ptr;
-
-	if (!map)
-		return NULL;
-
-	vector = vector_create();
-	if (!vector)
-		return NULL;
-
-	/*
-	 * Iterate through all the entries and add the keys to the
-	 * vector.
-	 */
-	for (i = 0; i < map->size; i++) {
-		ptr = map->maps[i];
-
-		while (ptr) {
-			if (vector_insert(vector, ptr->key, strlen(ptr->key) + 1) < 0) {
-				/* There's a problem, so delete the vector */
-				vector_delete(vector);
-				return NULL;
-			}
-
-			ptr = ptr->next;
-		}
-	}
-
-	return vector;
-}
-
-/*
  * Go through the hashmap and remove the particular key.
- * NOTE: This _will_ invalidate any vectors which might have been created
- *       by the hashmap_keys() function.
+ * NOTE: This will invalidate any iterators which have been created.
  *
  * Remove: negative upon error
  *         0 if the key was not found
- *         1 if the entry was deleted
+ *         positive count of entries deleted
  */
 ssize_t
 hashmap_remove(hashmap_t map, const char *key)
 {
 	int hash;
 	struct hashentry_s* ptr;
+	short int deleted = 0;
 
 	if (map == NULL || key == NULL)
 		return -EINVAL;
@@ -368,8 +486,16 @@ hashmap_remove(hashmap_t map, const char *key)
 			safefree(ptr->key);
 			safefree(ptr->data);
 			safefree(ptr);
+			
+			++deleted;
+			--map->end_iterator;
 
-			return 1;
+			if (prevptr)
+				ptr = prevptr;
+			else
+				ptr = map->maps[hash];
+
+			continue;
 		}
 
 		/* This entry didn't contain the key; move to the next one */
@@ -377,5 +503,5 @@ hashmap_remove(hashmap_t map, const char *key)
 	}
 
 	/* The key was not found, so return 0 */
-	return 0;
+	return deleted;
 }
