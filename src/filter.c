@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.3 2000-11-23 04:46:25 rjkaes Exp $
+/* $Id: filter.c,v 1.4 2001-05-27 02:24:40 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  *
@@ -50,7 +50,7 @@ void filter_init(void)
 		if (fd) {
 			p = NULL;
 
-			while (fgets(buf, 255, (FILE *) fd)) {
+			while (fgets(buf, 255, fd)) {
 				s = buf;
 				if (!p)	/* head of list */
 					fl = p = (struct filter_list *)
@@ -67,15 +67,12 @@ void filter_init(void)
 
 				/* replace first whitespace with \0 */
 				while (*s++)
-					if (isspace((int) *s))
+					if (isspace((unsigned char)*s))
 						*s = '\0';
 
 				p->pat = strdup(buf);
 				p->cpat = malloc(sizeof(regex_t));
-				if (
-				    (err =
-				     regcomp(p->cpat, p->pat,
-					     REG_NEWLINE | REG_NOSUB)) != 0) {
+				if ((err = regcomp(p->cpat, p->pat, REG_NEWLINE | REG_NOSUB)) != 0) {
 					fprintf(stderr,
 						"Bad regex in %s: %s\n",
 						config.filter, p->pat);
