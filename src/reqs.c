@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.53 2002-04-07 21:35:59 rjkaes Exp $
+/* $Id: reqs.c,v 1.54 2002-04-09 20:06:24 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -462,17 +462,6 @@ add_xtinyproxy_header(struct conn_s *connptr)
 #endif				/* XTINYPROXY */
 
 /*
- * Check to see if the header is allowed or not depending on the anonymous
- * headers which are to be allowed. If the header is found in the
- * anonymous list return 0, otherwise return -1.
- */
-static inline int
-compare_header(char *header)
-{
-	return anonymous_search(header);
-}
-
-/*
  * Take a complete header line and break it apart (into a key and the data.)
  * Now insert this information into the hashmap for the connection so it
  * can be retrieved and manipulated later.
@@ -603,10 +592,11 @@ process_client_headers(struct conn_s *connptr)
 	 * Get all the headers from the client in a big hash.
 	 */
 	if (get_all_headers(connptr->client_fd, hashofheaders) < 0) {
+		log_message(LOG_WARNING, "Could not retrieve all the headers from the client");
+
 		hashmap_delete(hashofheaders);
 		return -1;
 	}
-
 	
 	/*
 	 * Don't send headers if there's already an error, or if this was
@@ -614,6 +604,7 @@ process_client_headers(struct conn_s *connptr)
 	 */
 	if (connptr->server_fd == -1
 	    || (connptr->connect_method && !UPSTREAM_CONFIGURED())) {
+		log_message(LOG_INFO, "Not sending client headers to remote machine");
 		hashmap_delete(hashofheaders);
 		return 0;
 	}
@@ -685,7 +676,7 @@ process_client_headers(struct conn_s *connptr)
 
 		hashmap_search(hashofheaders, data, (void **)&header);
 
-		if (!is_anonymous_enabled() || compare_header(data) == 0) {
+		if (!is_anonymous_enabled() || anonymous_search(data) == 0) {
 			write_message(connptr->server_fd,
 				      "%s: %s\r\n",
 				      data, header);
@@ -697,7 +688,8 @@ process_client_headers(struct conn_s *connptr)
 	hashmap_delete(hashofheaders);
 
 #if defined(XTINYPROXY_ENABLE)
-	add_xtinyproxy_header(connptr);
+	if (config.my_domain)
+		add_xtinyproxy_header(connptr);
 #endif
 	
 	/* Write the final "blank" line to signify the end of the headers */
