@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.9 2001-12-15 20:02:26 rjkaes Exp $
+# $Id: Makefile.am,v 1.10 2002-04-07 21:33:38 rjkaes Exp $
 #
 # 
 #
@@ -21,18 +21,20 @@ LDFLAGS = @LDFLAGS@
 bin_PROGRAMS = tinyproxy
 
 tinyproxy_SOURCES = \
-	conns.c conns.h \
+	acl.c acl.h \
+	anonymous.c anonymous.h \
 	buffer.c buffer.h \
+	conns.c conns.h \
+	hashmap.c hashmap.h \
 	log.c log.h \
 	reqs.c reqs.h \
 	sock.c sock.h \
-	tinyproxy.c tinyproxy.h \
-	utils.c utils.h \
-	anonymous.c anonymous.h \
 	stats.c stats.h \
 	thread.c thread.h \
+	tinyproxy.c tinyproxy.h \
+	utils.c utils.h \
+	vector.c vector.h \
 	grammar.y scanner.l \
-	acl.c acl.h \
 	regexp.h
 
 tinyproxy_LDADD = @LIBOBJS@
