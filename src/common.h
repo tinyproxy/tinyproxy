@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.5 2003-03-13 19:31:09 rjkaes Exp $
+/* $Id: common.h,v 1.6 2003-06-25 18:20:22 rjkaes Exp $
  *
  * This file groups all the headers required throughout the tinyproxy
  * system.  All this information use to be in the "tinyproxy.h" header,
@@ -170,6 +170,13 @@
 #endif
 
 #define MAXLISTEN	1024	/* Max number of connections */
+
+/*
+ * SunOS doesn't have INADDR_NONE defined.
+ */
+#ifndef INADDR_NONE
+#  define INADDR_NONE -1
+#endif
 
 /* Define boolean values */
 #ifndef FALSE
