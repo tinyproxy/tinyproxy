@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.5 2001-05-27 02:33:35 rjkaes Exp $
+/* $Id: thread.c,v 1.6 2001-08-26 21:14:30 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -109,12 +109,11 @@ static void *thread_main(void *arg)
 		return NULL;
 	}
 	
-	for ( ; ; ) {
+	while (!config.quit) { 
 		clilen = addrlen;
 		pthread_mutex_lock(&mlock);
 		connfd = accept(listenfd, cliaddr, &clilen);
 		pthread_mutex_unlock(&mlock);
-
 		ptr->status = T_CONNECTED;
 
 		SERVER_DEC();
@@ -129,13 +128,15 @@ static void *thread_main(void *arg)
 				log_message(LOG_NOTICE, "Thread has reached MaxRequestsPerChild... closing.");
 				ptr->status = T_EMPTY;
 				return NULL;
-			} else {
-				ptr->status = T_WAITING;
-				
-				SERVER_INC();
 			}
 		}
+
+		ptr->status = T_WAITING;
+		
+		SERVER_INC();
 	}
+
+	return NULL;
 }
 
 /*
