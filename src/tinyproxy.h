@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.31 2002-05-23 18:27:19 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.32 2002-05-27 01:59:28 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -37,6 +37,8 @@ struct config_s {
 	char *ipAddr;
 #ifdef FILTER_ENABLE
 	char *filter;
+	bool_t filter_url;
+	bool_t filter_extended;
 #endif				/* FILTER_ENABLE */
 #ifdef XTINYPROXY_ENABLE
 	char *my_domain;
