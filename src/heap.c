@@ -1,4 +1,4 @@
-/* $Id: heap.c,v 1.2 2002-05-26 18:56:06 rjkaes Exp $
+/* $Id: heap.c,v 1.3 2002-05-29 20:51:35 rjkaes Exp $
  *
  * Debugging versions of various heap related functions are combined
  * here.  The debugging versions include assertions and also print
@@ -21,6 +21,7 @@
 
 #include "tinyproxy.h"
 #include "heap.h"
+#include "text.h"
 
 void *
 debugging_calloc(size_t nmemb, size_t size, const char *file,
@@ -92,24 +93,35 @@ debugging_strdup(const char* s, const char* file, unsigned long line)
 }
 
 /*
- * Allocate a block of memory in the "shared" memory region
+ * Allocate a block of memory in the "shared" memory region.
+ *
+ * FIXME: This uses the most basic (and slowest) means of creating a
+ * shared memory location.  It requires the use of a temporary file.  We might
+ * want to look into something like MM (Shared Memory Library) for a better
+ * solution.
  */
 void*
 malloc_shared_memory(size_t size)
 {
 	int fd;
 	void* ptr;
+	char buffer[128];
+
+	static char* shared_file = "/tmp/tinyproxy.shared";
 
 	assert(size > 0);
-       
-#ifdef MAP_ANON
-	ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_SHARED, -1, 0);
-#else
-	fd = open("/dev/zero", O_RDWR, 0);
+	assert(shared_file != NULL);
 
-	ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	close(fd);
-#endif
+	strlcpy(buffer, shared_file, sizeof(buffer) - 8);
+	strlcat(buffer, ".XXXXXX", sizeof(buffer));
+
+	if ((fd = mkstemp(buffer)) == -1)
+		return (void *)MAP_FAILED;
+	unlink(buffer);
+
+	if (ftruncate(fd, size) == -1)
+		return (void *)MAP_FAILED;
+	ptr = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 
 	return ptr;
 }
@@ -130,8 +142,8 @@ calloc_shared_memory(size_t nmemb, size_t size)
 	length = nmemb * size;
 
 	ptr = malloc_shared_memory(length);
-	if (!ptr)
-		return NULL;
+	if (ptr == MAP_FAILED)
+		return ptr;
 
 	memset(ptr, 0, length);
 
