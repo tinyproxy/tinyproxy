@@ -1,4 +1,4 @@
-/* $Id: anonymous.h,v 1.2 2000-09-11 23:38:36 rjkaes Exp $
+/* $Id: anonymous.h,v 1.3 2000-10-23 21:43:52 rjkaes Exp $
  *
  * See 'anonymous.c' for a detailed description.
  *
@@ -18,6 +18,7 @@
 #ifndef _TINYPROXY_ANONYMOUS_H_
 #define _TINYPROXY_ANONYMOUS_H_
 
+extern int new_anonymous(void);
 extern int anon_search(char *s);
 extern void anon_insert(char *s);
 
