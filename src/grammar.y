@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.5 2001-09-16 20:08:24 rjkaes Exp $
+/* $Id: grammar.y,v 1.6 2001-11-25 02:20:54 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -174,7 +174,8 @@ string
 
 extern unsigned int yylineno;
 
-void yyerror(char *s)
+void
+yyerror(char *s)
 {
 	fprintf(stderr, "Line %d: %s\n", yylineno, s);
 }

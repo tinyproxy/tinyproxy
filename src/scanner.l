@@ -1,4 +1,4 @@
-/* $Id: scanner.l,v 1.6 2001-10-25 17:27:39 rjkaes Exp $
+/* $Id: scanner.l,v 1.7 2001-11-25 02:20:54 rjkaes Exp $
  *
  * This builds the scanner for the tinyproxy configuration file. This
  * file needs to stay in sync with grammar.y. If someone knows lex and yacc
@@ -125,7 +125,8 @@ word		[^ \#'"\(\)\{\}\\;\n\t,|\.]
 
 %%
 
-int check_reserved_words(char *token)
+int
+check_reserved_words(char *token)
 {
 	int i;
 
@@ -138,7 +139,8 @@ int check_reserved_words(char *token)
 	return IDENTIFIER;
 }
 
-static void append_string(int length, char *s)
+static void
+append_string(int length, char *s)
 {
 	int to_copy = min(MAX_REGEXP_LEN - (tiny_str - tiny_buf) - 1, length);
 
@@ -147,7 +149,8 @@ static void append_string(int length, char *s)
 	*tiny_str = 0;
 }
 
-static void append_char(char c)
+static void
+append_char(char c)
 {
 	*tiny_str = c;
 	tiny_str++;
