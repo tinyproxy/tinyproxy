@@ -1,5 +1,3 @@
- This is tinyproxy-adns, tinyproxy with support for GNU adns asynchronous
- resolver library.
 
  DESCRIPTION
  -----------
@@ -16,8 +14,6 @@
  allowed, then tinyproxy is a great tool for the network
  administrator.
 
- This version of tinyproxy must be compiled with GNU adns, available from
- http://www.chiark.greenend.org.uk/~ian/adns/.
 
  INSTALLATION
  ------------
@@ -34,14 +30,11 @@
 	--enable-xtinyproxy	Compile in support for the XTinyproxy
 				header, which is sent to any web
 				server in your domain.
-
-    Options for GNU adns
-        --with-adns-include=DIR Set the directory in which adns.h has
-                                been installed. Required if this is in
-                                a non-standard location.
-        --with-adns-lib=DIR     Set the directory in which libadns.* have
-                                been installed. Required if this is in
-                                a non-standard location.
+	--enable-filter		Allows tinyproxy to filter out certain
+				domains and URLs.
+	--enable-tunnel		Provides the option of having
+				tinyproxy act as TCP tunnel, rather
+				than a HTTP proxy.
 
      Options for file locations etc.
         --with-port=PORT        Set the port on which tinyproxy listens,
@@ -57,6 +50,7 @@
  tinyproxy.  Alternatively, you could just send an email stating the
  version.  Which ever you prefer.
 
+
  SUPPORT
  -------
 
@@ -66,11 +60,6 @@
 	Steven Young		<sdyoung@well.com>
 	Robert James Kaes	<rjkaes@flarenet.com>
 
- If the problem seems to be to do with GNU adns support (or if I've done
- something obviously wrong), please email
-
-        Chris Lightfoot         <chris@ex-parrot.com>
-
  Please recompile tinyproxy with full debug support (--enable-debug)
  and include a copy of the log file, and any assert errors reported by 
  tinyproxy.  Also, if you feel up to it, try running tinyproxy under
@@ -79,7 +68,7 @@
 
 	 gdb tinyproxy
 
-	 (gdb) set args -p port_num -l log_file -d
+	 (gdb) set args -c location_of_tinyproxy_conf -d
 	 (gdb) run
 
  Now access the port tinyproxy is on until you receive a break in the
