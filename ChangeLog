@@ -1,3 +1,8 @@
+2002-01-13  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/thread.c (thread_kill_threads): Added a function to
+	explictly go through all the active threads and kill them.
+
 2002-01-07  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/thread.c (thread_main): Added code to check if tinyproxy is

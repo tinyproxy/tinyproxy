@@ -1,4 +1,4 @@
-/* $Id: thread.h,v 1.3 2001-09-07 04:20:04 rjkaes Exp $
+/* $Id: thread.h,v 1.4 2002-01-25 00:01:45 rjkaes Exp $
  *
  * See 'thread.c' for more information.
  *
@@ -30,6 +30,7 @@ extern short int thread_pool_create(void);
 extern int thread_listening_sock(uint16_t port);
 extern void thread_close_sock(void);
 extern void thread_main_loop(void);
+extern void thread_kill_threads(void);
 
 extern short int thread_configure(thread_config_t type, unsigned int val);
 

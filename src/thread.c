@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.20 2002-01-08 02:02:25 rjkaes Exp $
+/* $Id: thread.c,v 1.21 2002-01-25 00:01:45 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -144,6 +144,14 @@ thread_main(void *arg)
 		 * Make sure no error occurred...
 		 */
 		if (connfd < 0) {
+			/*
+			 * Accept could return an "error" if it was
+			 * interrupted by a signal (like when the program
+			 * should be killed. :)
+			 */
+			if (config.quit)
+				break;
+
 			log_message(LOG_ERR, "Accept returned an error (%s) ... retrying.", strerror(errno));
 			continue;
 		}
@@ -286,6 +294,20 @@ thread_main_loop(void)
 		}
 	}
 	SERVER_UNLOCK();
+}
+
+/*
+ * Go through all the non-empty threads and cancel them.
+ */
+void
+thread_kill_threads(void)
+{
+	int i;
+	
+	for (i = 0; i < thread_config.maxclients; i++) {
+		if (thread_ptr[i].status != T_EMPTY)
+			pthread_cancel(thread_ptr[i].tid);
+	}
 }
 
 int
