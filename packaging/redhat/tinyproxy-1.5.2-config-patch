@@ -1,0 +1,18 @@
+--- doc/tinyproxy.conf	2003-02-01 22:03:25.000000000 -0500
++++ doc/tinyproxy.conf	2003-02-01 22:05:01.000000000 -0500
+@@ -7,7 +7,7 @@
+ # has been bound.
+ #
+ User nobody
+-Group nogroup
++Group nobody 
+ 
+ #
+ # Port to listen on.
+## -108,7 +108,7 @@
+ # are tested against the controls based on order.
+ #
+ Allow 127.0.0.1
+- Allow 192.168.1.0/25
++# Allow 192.168.1.0/25
+

@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# initfile for tinyproxy
+#
+# description: A small, efficient HTTP/SSL proxy daemon.
+#
+# processname: tinyproxy
+#
+# chkconfig 2345
+# 
+
+. /etc/rc.d/init.d/functions
+
+case "$1" in
+    start)
+	echo -n "Starting tinyproxy: "
+	daemon /usr/sbin/tinyproxy
+	touch /var/lock/subsys/tinyproxy
+	echo
+	;;
+    stop)
+	echo -n "Shutting down tinyproxy: "
+	killproc tinyproxy
+	rm -f /var/lock/subsys/tinyproxy
+	echo
+	;;
+    restart)
+	$0 stop
+	$0 start
+	;;
+    status)
+	status tinyproxy
+	;;
+    *)
+	echo "Usage: tinyproxy {start|stop|restart|status}"
+	exit 1
+esac
+
+exit 0
+
+
