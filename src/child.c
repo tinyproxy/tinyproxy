@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.11 2003-05-31 23:02:21 rjkaes Exp $
+/* $Id: child.c,v 1.12 2003-07-31 23:44:52 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -33,10 +33,11 @@ static socklen_t addrlen;
 /*
  * Stores the internal data needed for each child (connection)
  */
+enum child_status_t { T_EMPTY, T_WAITING, T_CONNECTED };
 struct child_s {
 	pid_t tid;
 	unsigned int connects;
-	enum { T_EMPTY, T_WAITING, T_CONNECTED } status;
+	enum child_status_t status;
 };
 
 /*
@@ -50,7 +51,7 @@ static struct child_config_s {
 	unsigned int maxspareservers, minspareservers, startservers;
 } child_config;
 
-static int* servers_waiting;	/* servers waiting for a connection */
+static unsigned int* servers_waiting;	/* servers waiting for a connection */
 
 /*
  * Lock/Unlock the "servers_waiting" variable so that two children cannot
@@ -118,6 +119,7 @@ _child_lock_release(void)
 
 #define SERVER_DEC() do { \
     SERVER_COUNT_LOCK(); \
+    assert(*servers_waiting > 0); \
     --(*servers_waiting); \
     DEBUG2("DEC: servers_waiting: %d", *servers_waiting); \
     SERVER_COUNT_UNLOCK(); \
@@ -163,7 +165,7 @@ child_main(struct child_s* ptr)
 	struct sockaddr *cliaddr;
 	socklen_t clilen;
 
-	cliaddr = safemalloc(addrlen);
+	cliaddr = (struct sockaddr*)safemalloc(addrlen);
 	if (!cliaddr) {
 		log_message(LOG_CRIT,
 			    "Could not allocate memory for child address.");
@@ -292,14 +294,15 @@ child_pool_create(void)
 		return -1;
 	}
 
-	child_ptr = calloc_shared_memory(child_config.maxclients,
-					 sizeof(struct child_s));
+	child_ptr = (struct child_s*)calloc_shared_memory(
+		child_config.maxclients,
+		sizeof(struct child_s));
 	if (!child_ptr) {
 		log_message(LOG_ERR, "Could not allocate memory for children.");
 		return -1;
 	}
 
-	servers_waiting = malloc_shared_memory(sizeof(int));
+	servers_waiting = (unsigned int*)malloc_shared_memory(sizeof(unsigned int));
 	if (servers_waiting == MAP_FAILED) {
 		log_message(LOG_ERR, "Could not allocate memory for child counting.");
 		return -1;
@@ -355,7 +358,7 @@ child_pool_create(void)
 void
 child_main_loop(void)
 {
-	int i;
+	unsigned int i;
 
 	while (1) {
 		if (config.quit)
@@ -416,7 +419,7 @@ child_main_loop(void)
 void
 child_kill_children(void)
 {
-	int i;
+	unsigned int i;
 	
 	for (i = 0; i != child_config.maxclients; i++) {
 		if (child_ptr[i].status != T_EMPTY)
