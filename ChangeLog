@@ -1,3 +1,42 @@
+2000-03-31  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (clientreq): Removed the hack for POST methods with
+	regard to anonymous access.
+
+	* src/config.h (SOCK_TIMEOUT): Increased the time out to 10
+	seconds.
+
+	* src/buffer.c (new_buffer): Additional initialization code for
+	new elements of the buffer_s structure.
+	(delete_buffer): Code to delete the working_* fields.
+
+	* src/buffer.h: Added the working_string and working_length method
+	for use as a scratch pad in the readline function.
+
+	* src/sock.c (readline): A major rewrite of this routine. Lines of
+	text are now built incrementally with a new scratch pad built into
+	the buffer.
+
+2000-03-30  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/Makefile.am (tinyproxy_SOURCES): include the line for the
+	anonymous.* files.
+
+	* src/tinyproxy.h: removed all references to struct allowed_hdrs.
+
+	* src/tinyproxy.c (main): removed all the old anonymous code, and
+	added a test for the anonymous code so the Content-Type and
+	Content-Length headers are allowed to pass through if the
+	anonymous mode is turned on. This is needed for POSTs to work.
+
+	* src/reqs.c (anonheader): removed all the code which used the old
+	method of anonymous headers and replaced it using the new API.
+
+	* src/anonymous.h:
+	* src/anonymous.c: Moved the anonymous header code into it's own
+	sections with a well defined API. Internally it uses a Ternary
+	Search Tree.
+
 2000-03-29  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/dnscache.c: added the <sys/types.h> header.
@@ -13,10 +52,9 @@
 
 	* src/reqs.c (clientreq): Fixed a bug which would cause a SEGV if
 	the scheme was NULL. The cause was the error logging code to
-	report an invalid scheme.
-	(clientreq): Fixed another bug with the uri->authority. If a
-	request in the form of http:\\www.somewhere.com/ was entered,
-	tinyproxy would SEGV.
+	report an invalid scheme. Fixed another bug with the
+	uri->authority. If a request in the form of
+	http:\\www.somewhere.com/ was entered, tinyproxy would SEGV.
 
 2000-03-12  Robert James Kaes  <rjkaes@flarenet.com>
 
