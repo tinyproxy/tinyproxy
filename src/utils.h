@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.12 2001-11-23 01:19:15 rjkaes Exp $
+/* $Id: utils.h,v 1.13 2001-11-25 02:22:05 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -28,6 +28,7 @@
  */
 #define EERROR		1	/* Generic error */
 #define ENOMEMORY	2	/* Out of memory (or allocation error) */
+#define EOUTRANGE	3	/* The variable is out of range */
 
 extern int send_http_message(struct conn_s *connptr, int http_code,
 			     const char *error_title, const char *message);
