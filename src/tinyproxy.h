@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.15 2001-09-14 04:56:58 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.16 2001-09-16 20:12:29 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -104,6 +104,10 @@ struct config_s {
 	char *tunnel_name;
 	int tunnel_port;
 #endif				/* TUNNEL_SUPPORT */
+#ifdef UPSTREAM_SUPPORT
+	char *upstream_name;
+	int upstream_port;
+#endif				/* UPSTREAM_SUPPORT */
 	char *pidpath;
 	unsigned int idletimeout;
 
@@ -114,7 +118,7 @@ struct conn_s {
 	struct buffer_s *cbuffer, *sbuffer;
 	bool_t simple_req;
 	bool_t ssl;
-	char *output_message;
+	bool_t send_message;
 };
 
 /* Global Structures used in the program */
