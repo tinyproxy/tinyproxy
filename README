@@ -3,7 +3,7 @@
  -----------
 
  tinyproxy is a small, efficient HTTP/SSL proxy daemon released under
- the GNU General Public Licence (GPL).  tinyproxy is very useful in a
+ the GNU General Public License (GPL).  tinyproxy is very useful in a
  small network setting, where a larger proxy like Squid would either
  be too resource intensive, or a security risk.  One of the key
  features of tinyproxy is the buffering connection concept.  In

@@ -211,12 +211,12 @@
 	* src/reqs.c (connect_to_tunnel): Moved the tunnel connection code
 	into its own function.
 	(TUNNEL_CONFIGURED): Added a macro to help simplify the tests for
-	tunnelling support.
+	tunneling support.
 
 2001-12-17  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (handle_connection): Also log the request when
-	tinyproxy is in tunnelling mode. This was implemented by
+	tinyproxy is in tunneling mode. This was implemented by
 	Hans-Georg Bork.
 
 2001-12-16  Robert James Kaes  <rjkaes@flarenet.com>
@@ -602,7 +602,7 @@
 
 2001-06-06  Robert James Kaes  <rjkaes@flarenet.com>
 
-	* configure.in: Total reorganisation.
+	* configure.in: Total reorganization.
 
 2001-06-04  Robert James Kaes  <rjkaes@flarenet.com>
 
@@ -714,7 +714,7 @@
 
 2000-10-23 17:44  rjkaes
 
-	* src/tinyproxy.c: Added the initialisation section for the DNS and
+	* src/tinyproxy.c: Added the initialization section for the DNS and
 	Anonymous sub systems.
 
 2000-10-23 17:43  rjkaes
@@ -973,7 +973,7 @@
 
 2000-04-26 12:31  rjkaes
 
-	* ChangeLog, src/dnscache.c, src/uri.c: Reorganised (or added) the
+	* ChangeLog, src/dnscache.c, src/uri.c: Reorganized (or added) the
 	#include <sys/types.h> line so tinyproxy would compile cleanly on
 	FreeBSD systems.
 
