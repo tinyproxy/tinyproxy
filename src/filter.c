@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.18 2003-08-07 16:32:12 rjkaes Exp $
+/* $Id: filter.c,v 1.19 2003-10-17 16:11:00 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  * Copyright (c) 2002  James E. Flemer (jflemer@acm.jhu.edu)
@@ -48,7 +48,7 @@ filter_init(void)
 	FILE *fd;
 	struct filter_list *p;
 	char buf[FILTER_BUFFER_LEN];
-	char *s, *t;
+	char *s;
 	int cflags;
 
 	if (!fl && !already_init) {
@@ -63,29 +63,25 @@ filter_init(void)
 				cflags |= REG_ICASE;
 
 			while (fgets(buf, FILTER_BUFFER_LEN, fd)) {
+				/*
+				 * Remove any trailing white space and
+				 * comments.
+				 */
 				s = buf;
-				if (!p)	/* head of list */
-					fl = p =
-					    (struct filter_list*)
-						safecalloc(1,
-							   sizeof(struct
-								  filter_list));
-				else {	/* next entry */
-					p->next =
-					    (struct filter_list*)
-						safecalloc(1,
-							   sizeof(struct
-								  filter_list));
-					p = p->next;
+				while (*s) {
+					if (isspace((unsigned char)*s)) break;
+					if (*s == '#') {
+						/*
+						 * If the '#' char is preceeded by
+						 * an escape, it's not a comment
+						 * string.
+						 */
+						if (s == buf || *(s - 1) != '\\')
+							break;
+					}
+					++s;
 				}
-
-				/* strip trailing whitespace & comments */
-				t = s;
-				while (*s && *s != '#') {
-					if (!isspace((unsigned char)*(s++)))
-						t = s;
-				}
-				*t = '\0';
+				*s = '\0';
 
 				/* skip leading whitespace */
 				s = buf;
@@ -95,6 +91,19 @@ filter_init(void)
 				/* skip blank lines and comments */
 				if (*s == '\0')
 					continue;
+
+				if (!p)	/* head of list */
+					fl = p =
+					    safecalloc(1,
+						       sizeof(struct
+							      filter_list));
+				else {	/* next entry */
+					p->next =
+					    safecalloc(1,
+						       sizeof(struct
+							      filter_list));
+					p = p->next;
+				}
 
 				p->pat = safestrdup(s);
 				p->cpat = (regex_t*)safemalloc(sizeof(regex_t));
