@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.18 2001-08-30 16:51:10 rjkaes Exp $
+/* $Id: reqs.c,v 1.19 2001-09-04 18:22:00 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -424,9 +424,6 @@ static int process_client_headers(struct conn_s *connptr)
 		if (connptr->output_message)
 			continue;
 
-		if (is_anonymous_enabled() && compare_header(header) < 0)
-			continue;
-
 		/*
 		 * Don't send certain headers.
 		 */
@@ -436,6 +433,9 @@ static int process_client_headers(struct conn_s *connptr)
 			}
 		}
 		if (i != (sizeof(skipheaders) / sizeof(char *)))
+			continue;
+
+		if (is_anonymous_enabled() && compare_header(header) < 0)
 			continue;
 
 		if (content_length == -1
