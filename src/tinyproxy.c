@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.47 2004-01-26 19:11:51 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.48 2004-08-13 21:03:11 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -26,6 +26,7 @@
 
 #include "anonymous.h"
 #include "buffer.h"
+#include "conffile.h"
 #include "daemon.h"
 #include "heap.h"
 #include "filter.h"
@@ -37,9 +38,6 @@
 #include "utils.h"
 
 void takesig(int sig);
-
-extern int yyparse(void);
-extern FILE *yyin;
 
 /* 
  * Global Structures
@@ -155,6 +153,7 @@ main(int argc, char **argv)
 	unsigned int godaemon = TRUE; /* boolean */
 	struct passwd *thisuser = NULL;
 	struct group *thisgroup = NULL;
+        FILE* config_file;
 
 	/*
 	 * Disable the creation of CORE files right up front.
@@ -212,14 +211,20 @@ main(int argc, char **argv)
 	/*
 	 * Read in the settings from the config file.
 	 */
-	yyin = fopen(config.config_file, "r");
-	if (!yyin) {
+        config_file = fopen(config.config_file, "r");
+        if (!config_file) {
 		fprintf(stderr,
 			"%s: Could not open configuration file \"%s\".\n",
 			argv[0], config.config_file);
 		exit(EX_SOFTWARE);
 	}
-	yyparse();
+        config_compile();
+        if (config_parse(&config, config_file) != 0) {
+                fprintf(stderr,
+                        "Unable to parse configuration file.  Not starting.\n");
+                exit(EX_SOFTWARE);
+        }
+        fclose(config_file);
 
 	/* Open the log file if not using syslog */
 	if (config.syslog == FALSE) {
