@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.104 2003-06-20 17:02:13 rjkaes Exp $
+/* $Id: reqs.c,v 1.105 2003-06-26 18:19:57 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -317,62 +317,66 @@ build_url(char **url, const char *host, int port, const char *path)
 void
 upstream_add(const char *host, int port, const char *domain)
 {
+	char *ptr;
 	struct upstream *up = safemalloc(sizeof (struct upstream));
 
 	if (!up) {
-		log_message(LOG_WARNING, "Adding upstream for %s: %s",
-			    (host && host[0]) ? host : "[default]",
-			    strerror(errno));
-
+		log_message(LOG_ERR, "Unable to allocate memory in upstream_add()");
 		return;
 	}
 
 	up->host = up->domain = NULL;
-
-	if (port < 0) {
-		log_message(LOG_WARNING, "Nonsense upstream rule: port < 0");
-
-		goto upstream_cleanup;
-	}
-
 	up->ip = up->mask = 0;
-	up->port = port;
 
-	if (domain && domain[0] != '\0') {
-		char *slash = strchr(domain, '/');
+	if (domain == NULL) {
+		if (!host || host[0] == '\0' || port < 1) {
+			log_message(LOG_WARNING, "Nonsence upstream rule: invalid host or port");
+			goto upstream_cleanup;
+		}
 
-		if (slash) {
+		up->host = safestrdup(host);
+		up->port = port;
+
+		log_message(LOG_INFO, "Added upstream %s:%d for [default]", host, port);
+	} else if (host == NULL) {
+		if (!domain || domain[0] == '\0') {
+			log_message(LOG_WARNING, "Nonsense no-upstream rule: empty domain");
+			goto upstream_cleanup;
+		}
+
+		ptr = strchr(domain, '/');
+		if (ptr) {
 			struct in_addr addrstruct;
 
-			*slash = '\0';
+			*ptr = '\0';
 			if (inet_aton(domain, &addrstruct) != 0) {
 				up->ip = ntohl(addrstruct.s_addr);
-				*slash++ = '/';
+				*ptr++ = '/';
 
-				if (strchr(slash, '.')) {
-					if (inet_aton(slash, &addrstruct) != 0)
+				if (strchr(ptr, '.')) {
+					if (inet_aton(ptr, &addrstruct) != 0)
 						up->mask = ntohl(addrstruct.s_addr);
 				} else {
-					up->mask = ~((1 << (32 - atoi(slash))) - 1);
+					up->mask = ~((1 << (32 - atoi(ptr))) - 1);
 				}
 			}
-		} else
+		} else {
 			up->domain = safestrdup(domain);
-	}
+		}
 
-	if (host && host[0] != '\0' && port > 0)
-		up->host = safestrdup(host);
-
-	if (up->host) {
-		log_message(LOG_INFO, "Adding upstream %s:%d for %s",
-			    host, port, domain ? domain : "[default]");
-	} else if (up->domain) {
-		log_message(LOG_INFO, "Adding no-upstream for %s", domain);
+		log_message(LOG_INFO, "Added no-upstream for %s", domain);
 	} else {
-		log_message(LOG_WARNING,
-			    "Nonsense upstream rule: no proxy or domain");
+		if (!host || host[0] == '\0' || port < 1 || !domain || domain == '\0') {
+			log_message(LOG_WARNING, "Nonsense upstream rule: invalid parameters");
+			goto upstream_cleanup;
+		}
 
-		goto upstream_cleanup;
+		up->host = safestrdup(host);
+		up->port = port;
+		up->domain = safestrdup(domain);
+
+		log_message(LOG_INFO, "Added upstream %s:%d for %s",
+			    host, port, domain);
 	}
 
 	if (!up->domain && !up->ip) { /* always add default to end */
