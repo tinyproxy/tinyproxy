@@ -1,3 +1,26 @@
+2002-05-31  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/utils.c (create_file_safely):
+	Added the "truncate_file" boolean flag.  This is needed since I
+	use this function for both the log file and the pid file, and they
+	behave differently when tinyproxy is started.
+	(pidfile_create): Call create_file_safely() with a TRUE
+	"truncate_file" flag so that the file is emptied whenever the pid
+	file is needed.
+
+	* src/tinyproxy.c:
+	The log file is now opened in "append" mode so that you can
+	restart tinyproxy without losing the log file.
+
+	* src/reqs.c (process_server_headers):
+	Since we're stripping off the carriage return and newline, we need
+	to add them back on when sending the response header to the
+	client.
+
+	* src/sock.c (getpeer_information):
+	Fixed a problem retrieving the FQDN of a host because I was
+	passing in an incorrect parameter to gethostbyaddr().  D'oh.
+
 2002-05-29  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/heap.c (malloc_shared_memory):
