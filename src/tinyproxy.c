@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.19 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.20 2001-12-15 06:02:16 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -26,7 +26,6 @@
 
 #include "anonymous.h"
 #include "buffer.h"
-#include "dnscache.h"
 #include "filter.h"
 #include "log.h"
 #include "reqs.h"
