@@ -1,4 +1,4 @@
-/* $Id: dnscache.c,v 1.8 2001-05-23 18:01:23 rjkaes Exp $
+/* $Id: dnscache.c,v 1.9 2001-05-27 02:24:00 rjkaes Exp $
  *
  * This is a caching DNS system. When a host name is needed we look it up here
  * and see if there is already an answer for it. The domains are placed in a
@@ -43,7 +43,7 @@ struct dnscache_s {
 
 static TERNARY dns_tree;
 
-int new_dnscache(void)
+TERNARY new_dnscache(void)
 {
 	dns_tree = ternary_new();
 
@@ -60,7 +60,7 @@ static int dns_lookup(struct in_addr *addr, char *domain)
 	if (TE_ISERROR(ternary_search(dns_tree, domain, (void *)&ptr))) 
 		return -1;
 
-	if (difftime(time(NULL), ptr->expire) > DNSEXPIRE) {
+	if (difftime(time(NULL), ptr->expire) > (double)DNSEXPIRE) {
 		return -1;
 	}
 
@@ -106,7 +106,7 @@ int dnscache(struct in_addr *addr, char *domain)
 	if (!(resolv = gethostbyname(domain)))
 		return -1;
 
-	memcpy(addr, resolv->h_addr_list[0], resolv->h_length);
+	memcpy(addr, resolv->h_addr_list[0], (size_t)resolv->h_length);
 	dns_insert(addr, domain);
 
 	return 0;

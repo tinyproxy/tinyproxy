@@ -1,4 +1,4 @@
-/* $Id: dnscache.h,v 1.3 2000-10-23 21:42:31 rjkaes Exp $
+/* $Id: dnscache.h,v 1.4 2001-05-27 02:24:00 rjkaes Exp $
  *
  * See 'dnscache.c' for a detailed description.
  *
@@ -19,8 +19,9 @@
 #define _TINYPROXY_DNSCACHE_H_
 
 #include <arpa/inet.h>
+#include "ternary.h"
 
-extern int new_dnscache(void);
+extern TERNARY new_dnscache(void);
 extern int dnscache(struct in_addr *addr, char *domain);
 
 #endif
