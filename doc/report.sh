@@ -11,4 +11,4 @@ if [ -x /usr/local/bin/tinyproxy ]; then
    /usr/local/bin/tinyproxy -v
 else
    echo no ver available.
-fi;) 2>&1 | mail -s 'tinyproxy install report' sdyoung@well.com
+fi;) 2>&1 | mail -s 'tinyproxy install report' rjkaes@flarenet.com
