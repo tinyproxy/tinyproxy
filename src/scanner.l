@@ -1,4 +1,4 @@
-/* $Id: scanner.l,v 1.21 2003-06-26 18:16:09 rjkaes Exp $
+/* $Id: scanner.l,v 1.22 2003-06-26 18:26:10 rjkaes Exp $
  *
  * This builds the scanner for the tinyproxy configuration file. This
  * file needs to stay in sync with grammar.y. If someone knows lex and yacc
@@ -88,15 +88,9 @@ static int check_reserved_words(char *token);
 static void append_string(int length, char *str);
 static void append_char(char c);
 
-#ifdef NDEBUG
-/* Turn off debugging if this is a production build. */
-yy_flex_debug = 0;
-#endif 
-
-
 %}
 
-%option noyywrap batch yylineno debug
+%option noyywrap batch yylineno
 
 white		[ \t]
 digit		[0-9]
