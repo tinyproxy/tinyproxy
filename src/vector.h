@@ -1,4 +1,4 @@
-/* $Id: vector.h,v 1.2 2003-05-29 20:47:51 rjkaes Exp $
+/* $Id: vector.h,v 1.3 2003-05-29 21:07:22 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbritrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -44,15 +44,15 @@ extern vector_t vector_create(void);
 extern int vector_delete(vector_t vector);
 
 /*
- * Append an entry to the end of the vector.  When you insert a piece of
- * data into the vector, the data will be duplicated, so you must free your
- * copy if it was created on the heap.  The data must be non-NULL and the
- * length must be greater than zero.
+ * When you insert a piece of data into the vector, the data will be
+ * duplicated, so you must free your copy if it was created on the heap.
+ * The data must be non-NULL and the length must be greater than zero.
  *
  * Returns: negative on error
  *          0 upon successful insert.
  */
 extern int vector_append(vector_t vector, void *data, ssize_t len);
+extern int vector_prepend(vector_t vector, void *data, ssize_t len);
 
 /*
  * A pointer to the data at position "pos" (zero based) is returned in the

@@ -1,4 +1,4 @@
-/* $Id: vector.c,v 1.7 2003-05-29 20:47:52 rjkaes Exp $
+/* $Id: vector.c,v 1.8 2003-05-29 21:07:22 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbitrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -101,16 +101,21 @@ vector_delete(vector_t vector)
  * collection of bytes of _len_ octets.  The data is copied into the
  * vector, so the original data must be freed to avoid a memory leak.
  * The "data" must be non-NULL and the "len" must be greater than zero.
+ * "pos" is either 0 to prepend the data, or 1 to append the data.
  *
  * Returns: 0 on success
  *          negative number if there are errors
  */
-int
-vector_append(vector_t vector, void *data, ssize_t len)
+#define INSERT_PREPEND 0
+#define INSERT_APPEND 1
+
+static int
+vector_insert(vector_t vector, void *data, ssize_t len, int pos)
 {
 	struct vectorentry_s *entry;
 
-	if (!vector || !data || len <= 0)
+	if (!vector || !data || len <= 0 ||
+	    (pos != INSERT_PREPEND && pos != INSERT_APPEND))
 		return -EINVAL;
 
 	entry = safemalloc(sizeof(struct vectorentry_s));
@@ -127,18 +132,39 @@ vector_append(vector_t vector, void *data, ssize_t len)
 	entry->len = len;
 	entry->next = NULL;
 
-	if (vector->tail) {
-		/* If "tail" is not NULL, it points to the last entry */
+	/* If there is no head or tail, create them */
+	if (!vector->head && !vector->tail)
+		vector->head = vector->tail = entry;
+	else if (pos == 0) {
+		/* prepend the entry */
+		entry->next = vector->head;
+		vector->head = entry;
+	} else {
+		/* append the entry */
 		vector->tail->next = entry;
 		vector->tail = entry;
-	} else {
-		/* No "tail", meaning no entries.  Create both. */
-		vector->head = vector->tail = entry;
 	}
-
+       
 	vector->num_entries++;
 
 	return 0;
+}
+
+/*
+ * The following two function are used to make the API clearer.  As you
+ * can see they simply call the vector_insert() function with appropriate
+ * arguments.
+ */
+int
+vector_append(vector_t vector, void *data, ssize_t len)
+{
+	return vector_insert(vector, data, len, INSERT_APPEND);
+}
+
+int
+vector_prepend(vector_t vector, void *data, ssize_t len)
+{
+	return vector_insert(vector, data, len, INSERT_PREPEND);
 }
 
 /*
