@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.22 2004-04-27 18:53:14 rjkaes Exp $
+/* $Id: conns.c,v 1.23 2004-08-10 21:24:23 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connection related tasks put here, but for now the header
@@ -75,6 +75,8 @@ initialize_conn(int client_fd, const char* ipaddr, const char* string_addr,
 	connptr->server_ip_addr = sock_ipaddr ? safestrdup(sock_ipaddr) : 0;
 	connptr->client_ip_addr = safestrdup(ipaddr);
 	connptr->client_string_addr = safestrdup(string_addr);
+
+	connptr->upstream_proxy = NULL;
 
 	update_stats(STAT_OPEN);
 

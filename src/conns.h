@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.17 2004-04-27 18:53:14 rjkaes Exp $
+/* $Id: conns.h,v 1.18 2004-08-10 21:24:23 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -78,6 +78,11 @@ struct conn_s {
 	 */
 	char* reversepath;
 #endif
+
+        /*
+         * Pointer to upstream proxy.
+         */
+        struct upstream *upstream_proxy;
 };
 
 /*

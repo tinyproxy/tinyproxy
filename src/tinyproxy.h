@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.44 2004-04-27 18:53:14 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.45 2004-08-10 21:24:23 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -26,7 +26,10 @@
 #define MAXBUFFSIZE	((size_t)(1024 * 96))	/* Max size of buffer */
 #define MAX_IDLE_TIME 	(60 * 10)	/* 10 minutes of no activity */
 
-#ifdef UPSTREAM_SUPPORT
+/*
+ * Even if upstream support is not compiled into tinyproxy, this
+ * structure still needs to be defined.
+ */
 struct upstream {
 	struct upstream *next;
 	char *domain; /* optional */
@@ -34,7 +37,6 @@ struct upstream {
 	int port;
 	in_addr_t ip, mask;
 };
-#endif
 
 #ifdef REVERSE_SUPPORT
 struct reversepath {
