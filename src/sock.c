@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.36 2002-05-26 18:51:17 rjkaes Exp $
+/* $Id: sock.c,v 1.37 2002-05-27 01:57:48 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -93,7 +93,7 @@ opensock(char *ip_addr, uint16_t port)
 		return -1;
 	}
 
-	/* Bind to our listening address*/
+	/* Bind to the specified address */
 	if (config.bind_address) {
 		memset(&bind_addr, 0, sizeof(bind_addr));
 		bind_addr.sin_family = AF_INET;
