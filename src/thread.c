@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.22 2002-04-08 21:35:10 rjkaes Exp $
+/* $Id: thread.c,v 1.23 2002-04-09 00:37:43 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -117,6 +117,9 @@ thread_main(void *arg)
 	struct sockaddr *cliaddr;
 	socklen_t clilen;
 	struct thread_s *ptr;
+
+	/* Set the cancelation type to immediate. */
+	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
 	ptr = (struct thread_s *) arg;
 

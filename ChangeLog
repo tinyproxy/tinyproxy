@@ -2,6 +2,9 @@
 
 	* src/thread.c (thread_main_loop): Moved the looping code into
 	this function from the main() function.  Just a bit of clean up.
+	(thread_main): Changed the default cancelation point to
+	asynchronous, which means immediately.  This should fix up the
+	problem where the threads would not free correctly.
 
 2002-04-07  Robert James Kaes  <rjkaes@flarenet.com>
 
