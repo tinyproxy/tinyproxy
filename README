@@ -65,11 +65,10 @@
  SUPPORT
  -------
 
- If you are having problems with tinyproxy, please report the problem
- to either:
+ If you are having problems with tinyproxy, please submit a bug to the
+ tinyproxy Bug Tracking system hosted by SourceForge and located at:
 
-	Robert James Kaes	<rjkaes@users.sourceforge.net>
-	Steven Young		<sdyoung@users.sourceforge.net>
+	http://sourceforge.net/tracker/?group_id=2632
 
  You may also wish to subscribe to the tinyproxy-user mailing list. To
  do so please visit:
