@@ -19,9 +19,14 @@
  ------------
 
  To install this package under a Unix derivative, read the INSTALL
- file.  tinyproxy uses a standard GNU configure script.  There are
- additional command line arguments you can supply to configure.  They
- include:
+ file.  tinyproxy uses a standard GNU configure script (basically you
+ should be able to do:
+
+	 ./configure ; make ; make install
+
+ in the top level directory to compile and install tinyproxy).  There
+ are additional command line arguments you can supply to configure.
+ They include:
 
 	--enable-debug		If you would like to turn on full
 				debugging support
@@ -35,6 +40,10 @@
 	--enable-tunnel		Provides the option of having
 				tinyproxy act as TCP tunnel, rather
 				than a HTTP proxy.
+	--enable-upstream	Enable support for proxying connections
+				through another proxy server.
+	--enable-static		Compile a static version of tinyproxy
+
 
      Options for file locations etc.
         --with-stathost=HOST	Set the default name of the stats host
@@ -46,28 +55,38 @@
  directory.  This will send an email to the authors reporting your
  version, and a few bits of information concerning the memory usage of 
  tinyproxy.  Alternatively, you could just send an email stating the
- version.  Which ever you prefer.
+ version, whichever you prefer.
 
 
  SUPPORT
  -------
 
  If you are having problems with tinyproxy, please report the problem
- to:
+ to either:
 
 	Robert James Kaes	<rjkaes@users.sourceforge.net>
 	Steven Young		<sdyoung@users.sourceforge.net>
 
+ You may also wish to subscribe to the tinyproxy-user mailing list. To
+ do so please visit:
+
+        http://lists.sourceforge.net/lists/listinfo/tinyproxy-users
+
+ for more information on how to subscribe and post messages to the
+ list.
+
  Please recompile tinyproxy with full debug support (--enable-debug)
- and include a copy of the log file, and any assert errors reported by 
- tinyproxy.  Also, if you feel up to it, try running tinyproxy under
- your debugger and report the error your received and a context
- listing of the location.  Under gdb you would run tinyproxy like so:
+ and include a copy of the log file, and any assert errors reported by
+ tinyproxy.  Note that tinyproxy will output memory statistics to
+ standard error if compiled with debugging support so you might want
+ to redirect the output to a file for later examination.  Also, if you
+ feel up to it, try running tinyproxy under your debugger and report
+ the error your received and a context listing of the location.  Under
+ gdb you would run tinyproxy like so:
 
 	 gdb tinyproxy
 
-	 (gdb) set args -c location_of_tinyproxy_conf -d
-	 (gdb) run
+	 (gdb) run -c location_of_tinyproxy_conf -d 2>/dev/null
 
  Now access the port tinyproxy is on until you receive a break in the
  gdb. You can now type:
