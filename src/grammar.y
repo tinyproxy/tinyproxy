@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.23 2003-06-26 18:17:09 rjkaes Exp $
+/* $Id: grammar.y,v 1.24 2004-01-26 19:11:51 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -50,6 +50,7 @@ int yylex(void);
 %token KW_FILTER KW_FILTERURLS KW_FILTEREXTENDED KW_FILTER_DEFAULT_DENY
 %token KW_FILTER_CASESENSITIVE
 %token KW_UPSTREAM
+%token KW_REVERSEPATH KW_REVERSEONLY KW_REVERSEMAGIC KW_REVERSEBASEURL
 %token KW_CONNECTPORT KW_BIND
 %token KW_STATHOST
 %token KW_ALLOW KW_DENY
@@ -165,6 +166,46 @@ statement
 	   	  config.my_domain = $2;
 #else
 		  log_message(LOG_WARNING, "X-Tinyproxy header support was not compiled in.");
+#endif
+	   }
+	| KW_REVERSEPATH string
+	   {
+#ifdef REVERSE_SUPPORT
+		  reversepath_add(NULL, $2);
+#else
+		  log_message(LOG_WARNING, "Reverse proxy support was not compiled in.");
+#endif
+	   }
+	| KW_REVERSEPATH string string
+	   {
+#ifdef REVERSE_SUPPORT
+		  reversepath_add($2, $3);
+#else
+		  log_message(LOG_WARNING, "Reverse proxy support was not compiled in.");
+#endif
+	   }
+	| KW_REVERSEONLY yesno
+	   {
+#ifdef REVERSE_SUPPORT
+		  config.reverseonly = $2;
+#else
+		  log_message(LOG_WARNING, "Reverse proxy support was not compiled in.");
+#endif
+	   }
+	| KW_REVERSEMAGIC yesno
+	   {
+#ifdef REVERSE_SUPPORT
+		  config.reversemagic = $2;
+#else
+		  log_message(LOG_WARNING, "Reverse proxy support was not compiled in.");
+#endif
+	   }
+	| KW_REVERSEBASEURL string
+	   {
+#ifdef REVERSE_SUPPORT
+		  config.reversebaseurl = $2;
+#else
+		  log_message(LOG_WARNING, "Reverse proxy support was not compiled in.");
 #endif
 	   }
         | KW_UPSTREAM unique_address ':' NUMBER

@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.64 2003-10-17 16:10:59 rjkaes Exp $
+dnl $Id: configure.ac,v 2.65 2004-01-26 19:11:52 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -125,6 +125,17 @@ AC_ARG_ENABLE(upstream,
               upstream_enabled=$enableval, upstream_enabled=yes)
 if test x"$upstream_enabled" = x"yes"; then
     AC_DEFINE(UPSTREAM_SUPPORT)
+fi
+
+dnl Include support for reverse proxy?
+AH_TEMPLATE([REVERSE_SUPPORT],
+            [Include support for reverse proxy.])
+AC_ARG_ENABLE(reverse,
+              [AC_HELP_STRING([--enable-reverse],
+                              [Enable support for reverse proxy (default is NO)])],
+              reverse_enabled=$enableval, reverse_enabled=no)
+if test x"$reverse_enabled" = x"yes"; then
+    AC_DEFINE(REVERSE_SUPPORT)
 fi
 
 dnl Include the transparent proxy support

@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.15 2003-08-01 00:14:34 rjkaes Exp $
+/* $Id: conns.h,v 1.16 2004-01-26 19:11:51 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -66,6 +66,13 @@ struct conn_s {
 		unsigned int major;
 		unsigned int minor;
 	} protocol;
+
+#ifdef REVERSE_SUPPORT
+	/*
+	 * Place to store the current per-connection reverse proxy path
+	 */
+	char* reversepath;
+#endif
 };
 
 /*

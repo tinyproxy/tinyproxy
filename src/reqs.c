@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.108 2003-08-07 16:32:12 rjkaes Exp $
+/* $Id: reqs.c,v 1.109 2004-01-26 19:11:51 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -330,7 +330,7 @@ upstream_add(const char *host, int port, const char *domain)
 
 	if (domain == NULL) {
 		if (!host || host[0] == '\0' || port < 1) {
-			log_message(LOG_WARNING, "Nonsence upstream rule: invalid host or port");
+			log_message(LOG_WARNING, "Nonsense upstream rule: invalid host or port");
 			goto upstream_cleanup;
 		}
 
@@ -404,7 +404,7 @@ upstream_add(const char *host, int port, const char *domain)
 
 	return;
 
-      upstream_cleanup:
+upstream_cleanup:
 	safefree(up->host);
 	safefree(up->domain);
 	safefree(up);
@@ -465,6 +465,68 @@ upstream_get(char *host)
 }
 #endif
 
+#ifdef REVERSE_SUPPORT
+/*
+ * Add entry to the reversepath list
+ */
+void
+reversepath_add(const char *path, const char *url)
+{
+	struct reversepath *reverse;
+
+	if (url == NULL) {
+		log_message(LOG_WARNING, "Illegal reverse proxy rule: missing url");
+		return;
+	}
+
+	if (!strstr(url, "://")) {
+		log_message(LOG_WARNING,
+		            "Skipping reverse proxy rule: '%s' is not a valid url", url);
+		return;
+	}
+
+	if (path && *path != '/') {
+		log_message(LOG_WARNING,
+		            "Skipping reverse proxy rule: path '%s' doesn't start with a /", path);
+		return;
+	}
+
+	if (!(reverse = safemalloc(sizeof (struct reversepath)))) {
+		log_message(LOG_ERR, "Unable to allocate memory in reversepath_add()");
+		return;
+	}
+
+	if (!path) reverse->path = safestrdup("/");
+	else reverse->path = safestrdup(path);
+
+	reverse->url = safestrdup(url);
+
+	reverse->next = config.reversepath_list;
+	config.reversepath_list = reverse;
+
+	log_message(LOG_INFO,
+	            "Added reverse proxy rule: %s -> %s", reverse->path, reverse->url);
+}
+
+/*
+ * Check if a request url is in the reversepath list
+ */
+static struct reversepath *
+reversepath_get(char *url)
+{
+	struct reversepath *reverse = config.reversepath_list;
+
+	while (reverse) {
+		if (strstr(url, reverse->path) == url)
+			return reverse;
+
+		reverse = reverse->next;
+	}
+
+	return NULL;
+}
+#endif
+
 /*
  * Create a connection for HTTP connections.
  */
@@ -488,7 +550,7 @@ establish_http_connection(struct conn_s *connptr, struct request_s *request)
 }
 
 /*
- * These two defines are for the SSL tunneling.
+ * These two defines are for the SSL tunnelling.
  */
 #define SSL_CONNECTION_RESPONSE "HTTP/1.0 200 Connection established"
 #define PROXY_AGENT "Proxy-agent: " PACKAGE "/" VERSION
@@ -516,6 +578,13 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 {
 	char *url;
 	struct request_s *request;
+
+#ifdef REVERSE_SUPPORT
+	char *rewrite_url = NULL;
+	char *cookie = NULL;
+	char *cookieval;
+	struct reversepath *reverse;
+#endif
 
 	int ret;
 
@@ -576,6 +645,66 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 
 		return NULL;
 	}
+
+#ifdef REVERSE_SUPPORT
+	/*
+	 * Reverse proxy URL rewriting.
+	 */
+	if (config.reversepath_list != NULL) {
+		/* Reverse requests always start with a slash */
+		if (*url == '/') {
+			/* First try locating the reverse mapping by request url */
+			reverse = reversepath_get(url);
+			if (reverse) {
+				rewrite_url = safemalloc(strlen(url) +
+				              strlen(reverse->url) + 1);
+				strcpy(rewrite_url, reverse->url);
+				strcat(rewrite_url, url + strlen(reverse->path));
+			} else if (config.reversemagic &&
+			         hashmap_entry_by_key(hashofheaders, "cookie",
+			                              (void **)&cookie) > 0) {
+
+				/* No match - try the magical tracking cookie next */
+				if ((cookieval = strstr(cookie, REVERSE_COOKIE "=")) &&
+				    (reverse = reversepath_get(cookieval +
+				                               strlen(REVERSE_COOKIE) + 1))) {
+
+					rewrite_url = safemalloc(strlen(url) +
+					                         strlen(reverse->url) + 1);
+					strcpy(rewrite_url, reverse->url);
+					strcat(rewrite_url, url + 1);
+
+					log_message(LOG_INFO,
+					            "Magical tracking cookie says: %s",
+					            reverse->path);
+				}
+			}
+		}
+
+		/* Forward proxy support off and no reverse path match found */
+		if (config.reverseonly && !rewrite_url) {
+			log_message(LOG_ERR, "Bad request");
+			indicate_http_error(connptr, 400, "Bad Request",
+					    "detail", "Request has an invalid URL",
+					    "url", url,
+					    NULL);
+
+			safefree(url);
+			free_request_struct(request);
+
+			return NULL;
+		}
+
+		log_message(LOG_CONN, "Rewriting URL: %s -> %s",
+			    url, rewrite_url);
+
+		safefree(url);
+		url = rewrite_url;
+
+		/* Store reverse path so that the magical tracking cookie can be set */
+		if (config.reversemagic) connptr->reversepath = safestrdup(reverse->path);
+	}
+#endif
 
 	if (strncasecmp(url, "http://", 7) == 0
 	    || (UPSTREAM_CONFIGURED() && strncasecmp(url, "ftp://", 6) == 0)) {
@@ -726,7 +855,7 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 					    request->host);
 
 			indicate_http_error(connptr, 403, "Filtered",
-					    "detail", "The request you made has been filted",
+					    "detail", "The request you made has been filtered",
 					    "url", url,
 					    NULL);
 
@@ -1178,6 +1307,10 @@ process_server_headers(struct conn_s *connptr)
 	int i;
 	int ret;
 
+#ifdef REVERSE_SUPPORT
+	struct reversepath *reverse = config.reversepath_list;
+#endif
+
 	/* FIXME: Remember to handle a "simple_req" type */
 
 	/* Get the response line from the remote server. */
@@ -1250,6 +1383,41 @@ process_server_headers(struct conn_s *connptr)
 			       connptr->protocol.minor);
 	if (ret < 0)
 		goto ERROR_EXIT;
+
+#ifdef REVERSE_SUPPORT
+	/* Write tracking cookie for the magical reverse proxy path hack */
+	if (config.reversemagic && connptr->reversepath) {
+		ret = write_message(connptr->client_fd,
+				    "Set-Cookie: " REVERSE_COOKIE "=%s; path=/\r\n",
+				    connptr->reversepath);
+		if (ret < 0) goto ERROR_EXIT;
+	}
+
+	/* Rewrite the HTTP redirect if needed */
+	if (config.reversebaseurl &&
+	    hashmap_entry_by_key(hashofheaders, "location", (void **)&header) > 0) {
+
+		/* Look for a matching entry in the reversepath list */
+		while (reverse) {
+			if (strncasecmp(header,
+			                reverse->url,
+			                (len = strlen(reverse->url))) == 0) break;
+			reverse = reverse->next;
+		}
+
+		if (reverse) {
+			ret = write_message(connptr->client_fd, "Location: %s%s%s\r\n",
+			                    config.reversebaseurl, (reverse->path + 1),
+			                    (header + len));
+			if (ret < 0) goto ERROR_EXIT;
+
+			log_message(LOG_INFO,
+			            "Rewriting HTTP redirect: %s -> %s%s%s", header,
+			            config.reversebaseurl, (reverse->path + 1), (header + len));
+			hashmap_remove(hashofheaders, "location");
+		}
+	}
+#endif
 
 	/*
 	 * All right, output all the remaining headers to the client.

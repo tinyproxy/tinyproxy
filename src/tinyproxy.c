@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.46 2003-03-17 04:24:19 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.47 2004-01-26 19:11:51 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -130,9 +130,9 @@ Options:\n\
   -v            Display the version number.\n");
 
 	/* Display the modes compiled into tinyproxy */
-	printf("\nFeatures Compiled In:\n");
+	printf("\nFeatures compiled in:\n");
 #ifdef XTINYPROXY_ENABLE
-	printf("    XTinyproxy Header\n");
+	printf("    XTinyproxy header\n");
 #endif				/* XTINYPROXY */
 #ifdef FILTER_ENABLE
 	printf("    Filtering\n");
@@ -141,8 +141,11 @@ Options:\n\
 	printf("    Debugging code\n");
 #endif				/* NDEBUG */
 #ifdef TRANSPARENT_PROXY
-	printf("    Transparent Proxy Support\n");
+	printf("    Transparent proxy support\n");
 #endif                          /* TRANSPARENT_PROXY */
+#ifdef REVERSE_SUPPORT
+	printf("    Reverse proxy support\n");
+#endif				/* REVERSE_SUPPORT */
 }
 
 int

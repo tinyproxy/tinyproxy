@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.19 2003-08-01 00:14:34 rjkaes Exp $
+/* $Id: conns.c,v 1.20 2004-01-26 19:11:51 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connection related tasks put here, but for now the header
@@ -76,6 +76,10 @@ initialize_conn(int client_fd, const char* ipaddr, const char* string_addr)
 
 	update_stats(STAT_OPEN);
 
+#ifdef REVERSE_SUPPORT
+	connptr->reversepath = NULL;
+#endif
+
 	return connptr;
 
 error_exit:
@@ -122,6 +126,11 @@ destroy_conn(struct conn_s *connptr)
 		safefree(connptr->client_ip_addr);
 	if (connptr->client_string_addr)
 		safefree(connptr->client_string_addr);
+
+#ifdef REVERSE_SUPPORT
+	if (connptr->reversepath)
+		safefree(connptr->reversepath);
+#endif
 
 	safefree(connptr);
 

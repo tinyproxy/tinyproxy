@@ -1,4 +1,4 @@
-/* $Id: scanner.l,v 1.22 2003-06-26 18:26:10 rjkaes Exp $
+/* $Id: scanner.l,v 1.23 2004-01-26 19:11:51 rjkaes Exp $
  *
  * This builds the scanner for the tinyproxy configuration file. This
  * file needs to stay in sync with grammar.y. If someone knows lex and yacc
@@ -24,12 +24,12 @@
 
 struct keyword {
         char *kw_name;
-        int kw_token;
+	int kw_token;
 };
 
 static struct keyword keywords[] = {
-        /* statements */
-        { "port",		 KW_PORT },
+	/* statements */
+	{ "port",		 KW_PORT },
 	{ "logfile",		 KW_LOGFILE },
 	{ "syslog",		 KW_SYSLOG },
 	{ "maxclients",		 KW_MAXCLIENTS },
@@ -44,24 +44,28 @@ static struct keyword keywords[] = {
 	{ "group",		 KW_GROUP },
 	{ "anonymous",		 KW_ANONYMOUS },
 	{ "filter",		 KW_FILTER },
-        { "filterurls",          KW_FILTERURLS },
-        { "filterextended",      KW_FILTEREXTENDED },
-        { "filterdefaultdeny",   KW_FILTER_DEFAULT_DENY },
-        { "filtercasesensitive", KW_FILTER_CASESENSITIVE },
+	{ "filterurls",          KW_FILTERURLS },
+	{ "filterextended",      KW_FILTEREXTENDED },
+	{ "filterdefaultdeny",   KW_FILTER_DEFAULT_DENY },
+	{ "filtercasesensitive", KW_FILTER_CASESENSITIVE },
 	{ "xtinyproxy",		 KW_XTINYPROXY },
-        { "upstream",            KW_UPSTREAM },
+	{ "reversepath",         KW_REVERSEPATH },
+	{ "reverseonly",         KW_REVERSEONLY },
+	{ "reversemagic",        KW_REVERSEMAGIC },
+	{ "reversebaseurl",      KW_REVERSEBASEURL },
+	{ "upstream",            KW_UPSTREAM },
 	{ "allow",		 KW_ALLOW },
-        { "deny",                KW_DENY },
-        { "connectport",         KW_CONNECTPORT },
-        { "bind",                KW_BIND },
-        { "viaproxyname",        KW_VIA_PROXY_NAME },
-        { "stathost",            KW_STATHOST },
+	{ "deny",                KW_DENY },
+	{ "connectport",         KW_CONNECTPORT },
+	{ "bind",                KW_BIND },
+	{ "viaproxyname",        KW_VIA_PROXY_NAME },
+	{ "stathost",            KW_STATHOST },
 	{ "errorfile",	         KW_ERRORPAGE },
 	{ "defaulterrorfile",    KW_DEFAULT_ERRORPAGE },
 	{ "statfile",            KW_STATPAGE },
 
-        /* loglevel and the settings */
-        { "loglevel",            KW_LOGLEVEL },
+	/* loglevel and the settings */
+	{ "loglevel",            KW_LOGLEVEL },
 	{ "critical",		 KW_LOG_CRITICAL },
 	{ "error",		 KW_LOG_ERROR },
 	{ "warning",		 KW_LOG_WARNING },
