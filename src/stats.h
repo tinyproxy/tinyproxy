@@ -1,4 +1,4 @@
-/* $Id: stats.h,v 1.1 2000-09-12 00:06:09 rjkaes Exp $
+/* $Id: stats.h,v 1.2 2001-09-16 20:11:24 rjkaes Exp $
  *
  * See 'stats.h' for a detailed description.
  *
@@ -22,7 +22,7 @@
  * Various logable statistics
  */
 typedef enum {
-	STAT_BADCONN,	/* bad connection, for unknonw reason */
+	STAT_BADCONN,	/* bad connection, for unknown reason */
 	STAT_OPEN,	/* connection opened */
 	STAT_CLOSE,	/* connection closed */
 	STAT_REFUSE,	/* connection refused (to outside world) */
