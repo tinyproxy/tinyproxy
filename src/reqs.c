@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.81 2002-05-31 18:09:09 rjkaes Exp $
+/* $Id: reqs.c,v 1.82 2002-06-06 20:32:30 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -11,6 +11,7 @@
  * Copyright (C) 1998	    Steven Young
  * Copyright (C) 1999-2002  Robert James Kaes (rjkaes@flarenet.com)
  * Copyright (C) 2000       Chris Lightfoot (chris@ex-parrot.com)
+ * Copyright (C) 2002       Petr Lampa (lampa@fit.vutbr.cz)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -300,7 +301,7 @@ send_ssl_response(struct conn_s *connptr)
  * build a new request line. Finally connect to the remote server.
  */
 static struct request_s *
-process_request(struct conn_s *connptr)
+process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 {
 	char *url;
 	struct request_s *request;
@@ -397,6 +398,61 @@ process_request(struct conn_s *connptr)
 		
 		connptr->connect_method = TRUE;
 	} else {
+#ifdef TRANSPARENT_PROXY
+		/*
+		 * This section of code is used for the transparent proxy
+		 * option.  You will need to configure your firewall to
+		 * redirect all connections for HTTP traffic to tinyproxy
+		 * for this to work properly.
+		 *
+		 * This code was written by Petr Lampa <lampa@fit.vutbr.cz>
+		 */
+		int length;
+		char *data;
+		length = hashmap_entry_by_key(hashofheaders, "host", (void **)&data);
+		if (length <= 0) {
+			struct sockaddr_in dest_addr;
+
+			if (getsockname(connptr->client_fd, (struct sockaddr *)&dest_addr, &length) < 0) {
+				log_message(LOG_ERR,
+					    "process_request: cannot get destination IP for %d",
+					    connptr->client_fd);
+				indicate_http_error(connptr, 400, "Bad Request. Unknown destination.");
+				safefree(url);
+				free_request_struct(request);
+				return NULL;
+			} 
+			request->host = safemalloc(17);
+			strcpy(request->host, inet_ntoa(dest_addr.sin_addr));
+			request->port = ntohs(dest_addr.sin_port);
+			request->path = safemalloc(strlen(url) + 1);
+			strcpy(request->path, url);
+			log_message(LOG_INFO,
+				    "process_request: trans IP %s http://%s:%d%s for %d",
+				    request->method, request->host, request->port, request->path, connptr->client_fd);
+		} else {
+			request->host = safemalloc(length+1);
+			if (sscanf(data, "%[^:]:%hu", request->host, &request->port) != 2) {
+				strcpy(request->host, data);
+				request->port = 80;
+			}
+			request->path = safemalloc(strlen(url) + 1);
+			strcpy(request->path, url);
+			log_message(LOG_INFO,
+				    "process_request: trans Host %s http://%s:%d%s for %d",
+				    request->method, request->host, request->port, request->path, connptr->client_fd);
+		}
+		if (config.ipAddr &&
+		    strcmp(request->host, config.ipAddr) == 0) {
+			log_message(LOG_ERR,
+				    "process_request: destination IP is localhost %d",
+				    connptr->client_fd);
+			indicate_http_error(connptr, 400, "Bad Request. Bad destination.");
+			safefree(url);
+			free_request_struct(request);
+			return NULL;
+		}
+#else
 		log_message(LOG_ERR,
 			    "process_request: Unknown URL type on file descriptor %d",
 			    connptr->client_fd);
@@ -406,6 +462,7 @@ process_request(struct conn_s *connptr)
 		free_request_struct(request);
 
 		return NULL;
+#endif
 	}
 
 #ifdef FILTER_ENABLE
@@ -730,38 +787,26 @@ write_via_header(int fd, hashmap_t hashofheaders,
  *	- rjkaes
  */
 static int
-process_client_headers(struct conn_s *connptr)
+process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 {
 	static char *skipheaders[] = {
 		"host",
 		"keep-alive",
 		"proxy-authenticate",
 		"proxy-authorization",
+		"proxy-connection",
 		"te",
 		"trailers",
 		"transfer-encoding",
 		"upgrade"
 	};
 	int i;
-	hashmap_t hashofheaders;
 	hashmap_iter iter;
 	long content_length = -1;
 	int ret;
 
 	char *data, *header;
 
-	hashofheaders = hashmap_create(HEADER_BUCKETS);
-	if (!hashofheaders)
-		return -1;
-
-	/*
-	 * Get all the headers from the client in a big hash.
-	 */
-	if (get_all_headers(connptr->client_fd, hashofheaders) < 0) {
-		log_message(LOG_WARNING, "Could not retrieve all the headers from the client");
-		goto ERROR_EXIT;
-	}
-	
 	/*
 	 * Don't send headers if there's already an error, if the request was
 	 * a stats request, or if this was a CONNECT method (unless upstream
@@ -770,7 +815,6 @@ process_client_headers(struct conn_s *connptr)
 	if (connptr->server_fd == -1 || connptr->show_stats
 	    || (connptr->connect_method && !UPSTREAM_CONFIGURED())) {
 		log_message(LOG_INFO, "Not sending client headers to remote machine");
-		hashmap_delete(hashofheaders);
 		return 0;
 	}
 
@@ -841,17 +885,11 @@ process_client_headers(struct conn_s *connptr)
 	 * Spin here pulling the data from the client.
 	 */
   PULL_CLIENT_DATA:
-	hashmap_delete(hashofheaders);
-
 	if (content_length > 0)
 		return pull_client_data(connptr,
 					(unsigned long int) content_length);
 	else
 		return ret;
-
-  ERROR_EXIT:
-	hashmap_delete(hashofheaders);
-	return -1;
 }
 
 /*
@@ -865,6 +903,7 @@ process_server_headers(struct conn_s *connptr)
 		"keep-alive",
 		"proxy-authenticate",
 		"proxy-authorization",
+		"proxy-connection",
 		"transfer-encoding",
 	};
 
@@ -1219,6 +1258,7 @@ handle_connection(int fd)
 {
 	struct conn_s *connptr;
 	struct request_s *request = NULL;
+	hashmap_t hashofheaders = NULL;
 
 	char peer_ipaddr[PEER_IP_LENGTH];
 	char peer_string[PEER_STRING_LENGTH];
@@ -1238,7 +1278,9 @@ handle_connection(int fd)
 		update_stats(STAT_DENIED);
 		indicate_http_error(connptr, 403,
 			"You do not have authorization for using this service.");
-		goto send_error;
+		send_http_error_message(connptr);
+		destroy_conn(connptr);
+		return;
 	}
 
 	if (TUNNEL_CONFIGURED()) {
@@ -1251,23 +1293,50 @@ handle_connection(int fd)
       internal_proxy:
 	if (read_request_line(connptr) < 0) {
 		update_stats(STAT_BADCONN);
+		indicate_http_error(connptr, 408,
+			"Server timeout waiting for the HTTP request from the client.");
+		send_http_error_message(connptr);
 		destroy_conn(connptr);
 		return;
 	}
 
-	request = process_request(connptr);
+	/*
+	 * The "hashofheaders" store the client's headers.
+	 */
+	if (!(hashofheaders = hashmap_create(HEADER_BUCKETS))) {
+		update_stats(STAT_BADCONN);
+		indicate_http_error(connptr, 503, HTTP503ERROR);
+		send_http_error_message(connptr);
+		destroy_conn(connptr);
+		return;
+	}
+
+	/*
+	 * Get all the headers from the client in a big hash.
+	 */
+	if (get_all_headers(connptr->client_fd, hashofheaders) < 0) {
+		log_message(LOG_WARNING, "Could not retrieve all the headers from the client");
+		hashmap_delete(hashofheaders);
+		update_stats(STAT_BADCONN);
+		destroy_conn(connptr);
+		return;
+	}
+
+	request = process_request(connptr, hashofheaders);
 	if (!request) {
 		if (!connptr->error_string && !connptr->show_stats) {
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
+			hashmap_delete(hashofheaders);
 			return;
 		}
 		goto send_error;
 	}
 
 	if (UPSTREAM_CONFIGURED()) {
-		if (connect_to_upstream(connptr, request) < 0)
+		if (connect_to_upstream(connptr, request) < 0) {
 			goto send_error;
+		}
 	} else {
 		connptr->server_fd = opensock(request->host, request->port);
 		if (connptr->server_fd < 0) {
@@ -1286,13 +1355,15 @@ handle_connection(int fd)
       send_error:
 	free_request_struct(request);
 
-	if (process_client_headers(connptr) < 0) {
+	if (process_client_headers(connptr, hashofheaders) < 0) {
 		update_stats(STAT_BADCONN);
 		if (!connptr->error_string) {
+			hashmap_delete(hashofheaders);
 			destroy_conn(connptr);
 			return;
 		}
 	}
+	hashmap_delete(hashofheaders);
 
 	if (connptr->error_string) {
 		send_http_error_message(connptr);
