@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.13 2001-05-27 02:29:06 rjkaes Exp $
+/* $Id: reqs.c,v 1.14 2001-05-30 15:45:14 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -530,24 +530,24 @@ static void relay_connection(struct conn_s *connptr)
 			 */
 			last_access = time(NULL);
 		}
-
+		
 		if (FD_ISSET(connptr->server_fd, &rset)
 		    && readbuff(connptr->server_fd, connptr->sbuffer) < 0) {
-				shutdown(connptr->server_fd, SHUT_WR);
-				break;
+			shutdown(connptr->server_fd, SHUT_WR);
+			break;
 		}
 		if (FD_ISSET(connptr->client_fd, &rset)
 		    && readbuff(connptr->client_fd, connptr->cbuffer) < 0) {
-				return;
+			return;
 		}
 		if (FD_ISSET(connptr->server_fd, &wset)
 		    && writebuff(connptr->server_fd, connptr->cbuffer) < 0) {
-				shutdown(connptr->server_fd, SHUT_WR);
-				break;
+			shutdown(connptr->server_fd, SHUT_WR);
+			break;
 		}
 		if (FD_ISSET(connptr->client_fd, &wset)
 		    && writebuff(connptr->client_fd, connptr->sbuffer) < 0) {
-				return;
+			return;
 		}
 	}
 
@@ -578,7 +578,8 @@ static void initialize_conn(struct conn_s *connptr)
 
 static void destroy_conn(struct conn_s *connptr)
 {
-	connptr->client_fd = -1;
+	if (connptr->client_fd != -1)
+		close(connptr->client_fd);
 	if (connptr->server_fd != -1)
 		close(connptr->server_fd);
 
