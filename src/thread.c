@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.15 2001-09-11 19:27:09 rjkaes Exp $
+/* $Id: thread.c,v 1.16 2001-09-15 21:28:25 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -119,10 +119,8 @@ static void *thread_main(void *arg)
 	ptr = (struct thread_s *)arg;
 
 	cliaddr = safemalloc(addrlen);
-	if (!cliaddr) {
-		log_message(LOG_ERR, "Could not allocate memory in 'thread_main'.");
+	if (!cliaddr)
 		return NULL;
-	}
 	
 	while (!config.quit) {
 		clilen = addrlen;
