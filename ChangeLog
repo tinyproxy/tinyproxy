@@ -1,5 +1,7 @@
 2001-06-01  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* configure.in: Fixed a problem when using the --with-port= config
+
 	* src/tinyproxy.c (main): Change the logging level from LOG_EMERG
 	(which doesn't exist anymore) to LOG_CRIT.
 

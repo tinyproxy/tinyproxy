@@ -1,4 +1,4 @@
-dnl $Id: configure.in,v 1.8 2001-06-02 02:12:47 rjkaes Exp $
+dnl $Id: configure.in,v 1.9 2001-06-02 03:33:17 rjkaes Exp $
 
 AC_INIT()
 AM_INIT_AUTOMAKE(tinyproxy,1.4.0pre4)
@@ -62,7 +62,7 @@ AC_ARG_WITH(log-file, [  --with-log-file=FILE    Default logfile name],
             AC_DEFINE_UNQUOTED(DEFAULT_LOG, "$withval"))
 
 AC_ARG_WITH(port, [  --with-port=PORT        Default server port],
-            AC_DEFINE_UNQUOTED(DEFAULT_PORT, "$withval"))
+            AC_DEFINE_UNQUOTED(DEFAULT_PORT, $withval))
 
 AC_ARG_WITH(user, [  --with-user=USER        Default user],
             AC_DEFINE_UNQUOTED(DEFAULT_USER, "$withval"))
