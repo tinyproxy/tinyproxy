@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.1 2002-05-26 18:45:26 rjkaes Exp $
+/* $Id: child.c,v 1.2 2002-05-29 20:49:55 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -269,14 +269,14 @@ child_pool_create(void)
 	}
 
 	child_ptr = calloc_shared_memory(child_config.maxclients,
-					  sizeof(struct child_s));
+					 sizeof(struct child_s));
 	if (!child_ptr) {
 		log_message(LOG_ERR, "Could not allocate memory for children.");
 		return -1;
 	}
 
 	servers_waiting = malloc_shared_memory(sizeof(int));
-	if (!servers_waiting) {
+	if (servers_waiting == MAP_FAILED) {
 		log_message(LOG_ERR, "Could not allocate memory for child counting.");
 		return -1;
 	}
