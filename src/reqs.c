@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.1.1.1 2000-02-16 17:32:23 sdyoung Exp $
+/* $Id: reqs.c,v 1.2 2000-03-11 20:37:44 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections are added to the active list of connections and then the header
@@ -227,7 +227,8 @@ static int clientreq(struct conn_s *connptr)
 	/* chris - If domain is in dotted-quad format or is already in the
 	 * DNS cache, then go straight to WAITCONN.
 	 */
-	if (inet_aton(uri->authority, NULL) || lookup(NULL, uri->authority) == 0) {
+	if (inet_aton(uri->authority, NULL)
+	    || lookup(NULL, uri->authority)) {
 		if ((fd = opensock(uri->authority, port_no)) < 0) {
 			safefree(request);
 			httperr(connptr, 500,
@@ -500,20 +501,67 @@ static int write_to_client(struct conn_s *connptr, fd_set * writefds)
 
 inline static void newconn_req(struct conn_s *connptr, fd_set * readfds)
 {
+#ifdef UPSTREAM_PROXY
+	int fd;
+	char peer_ipaddr[PEER_IP_LENGTH];	
+#endif	/* UPSTREAM_PROXY */
+
 	assert(connptr);
 	assert(readfds);
 
 	if (FD_ISSET(connptr->client_fd, readfds)) {
-		if (clientreq(connptr) < 0) {
-			shutdown(connptr->client_fd, 2);
-			connptr->type = FINISHCONN;
-			return;
+#ifdef UPSTREAM_PROXY
+		if (config.upstream_name && config.upstream_port != 0) {
+			getpeer_ip(connptr->client_fd, peer_ipaddr);
+			/* Log the incoming connection */
+			if (!config.restricted) {
+				log("Connect (upstream): %s", peer_ipaddr);
+			}
+
+			if (inet_aton(config.upstream_name, NULL)
+			    || lookup(NULL, config.upstream_name)) {
+				if ((fd = opensock(config.upstream_name, config.upstream_port)) < 0) {
+					httperr(connptr, 500,
+						"Unable to connect to host (cannot create sock)");
+					stats.num_badcons++;
+					return;
+				}
+
+				connptr->server_fd = fd;
+				connptr->type = WAITCONN;
+			}
+			/* Otherwise submit a DNS request and hope for
+			   the best. */
+			else {
+				if (adns_submit(adns, config.upstream_name, adns_r_a, adns_qf_quoteok_cname | adns_qf_cname_loose, connptr, &(connptr->adns_qu))) {
+					httperr(connptr, 500, "Resolver error connecting to host");
+					stats.num_badcons++;
+					return;
+				} else {
+#ifdef __DEBUG__
+					log("DNS request submitted");
+#endif
+					/* copy domain for later caching */
+					connptr->domain = xstrdup(config.upstream_name);
+					connptr->port_no = config.upstream_port;
+					connptr->type = DNS_WAITCONN;
+				}
+			}
+		} else {
+#endif
+			if (clientreq(connptr) < 0) {
+				shutdown(connptr->client_fd, 2);
+				connptr->type = FINISHCONN;
+				return;
+			}
+
+			if (!connptr)
+				abort();
+
+			connptr->actiontime = time(NULL);
+#ifdef UPSTREAM_PROXY
 		}
-
-		if (!connptr)
-			abort();
-
-		connptr->actiontime = time(NULL);
+#endif	/* UPSTREAM_PROXY */
 	}
 }
 

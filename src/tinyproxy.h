@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.1.1.1 2000-02-16 17:32:23 sdyoung Exp $
+/* $Id: tinyproxy.h,v 1.2 2000-03-11 20:37:44 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -57,6 +57,10 @@ struct config_s {
 	flag restricted;
 #ifdef XTINYPROXY
 	char *my_domain;
+#endif
+#ifdef UPSTREAM_PROXY
+	char *upstream_name;
+	int upstream_port;
 #endif
 };
 

@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.1.1.1 2000-02-16 17:32:23 sdyoung Exp $
+/* $Id: tinyproxy.c,v 1.2 2000-03-11 20:37:44 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -79,7 +79,11 @@ struct config_s config = {
 #endif				/* FILTER_ENABLE */
 	FALSE,			/* Restrict the log to only errors */
 #ifdef XTINYPROXY
-	NULL			/* The name of this domain */
+	NULL,			/* The name of this domain */
+#endif
+#ifdef UPSTREAM_PROXY
+	NULL,			/* name of the upstream proxy */
+	0,			/* port of the upstream proxy */
 #endif
 };
 
@@ -198,30 +202,34 @@ static void usagedisp(void)
 
 	printf("Usage: tinyproxy [args]\n");
 	printf("Options:\n");
-	printf("\t-v\t\tdisplay version number\n");
-	printf("\t-h\t\tdisplay usage\n");
-	printf("\t-d\t\tdo not daemonize\n");
-	printf
-	    ("\t-n ip_address\tallow access from only this subnet. (i.e. 192.168.0.)\n");
-	printf("\t-i ip_address\tonly listen on this address\n");
-	printf("\t-p port\t\tlisten on 'port'\n");
-	printf("\t-l logfile\tlog to 'logfile'\n");
-#ifdef HAVE_SYSLOG_H
-	printf("\t-S\t\tlog using the syslog instead\n");
-#endif
-	printf("\t-r\t\trestrict the log to only errors\n");
-	printf
-	    ("\t-w load\t\tstop accepting new connections at 'load'.  0 disables\n");
-	printf("\t-s stathost\tset stathost to 'stathost'\n");
-	printf("\t-u user\t\tchange to user after startup.  \"\" disables\n");
 	printf("\t-a header\tallow 'header' through the anon block\n");
+	printf("\t-d\t\tdo not daemonize\n");
 #ifdef FILTER_ENABLE
 	printf("\t-f filterfile\tblock sites specified in filterfile\n");
 #endif				/* FILTER_ENABLE */
+	printf("\t-h\t\tdisplay usage\n");
+	printf("\t-i ip_address\tonly listen on this address\n");
+	printf("\t-l logfile\tlog to 'logfile'\n");
+	printf
+	    ("\t-n ip_address\tallow access from only this subnet. (i.e. 192.168.0.)\n");
+	printf("\t-p port\t\tlisten on 'port'\n");
+	printf("\t-r\t\trestrict the log to only errors\n");
+	printf("\t-s stathost\tset stathost to 'stathost'\n");
+#ifdef HAVE_SYSLOG_H
+	printf("\t-S\t\tlog using the syslog instead\n");
+#endif
+#ifdef UPSTREAM_PROXY
+	printf("\t-t domain:port\tredirect connections to an upstream proxy\n");
+#endif	
+	printf("\t-u user\t\tchange to user after startup.  \"\" disables\n");
+	printf("\t-v\t\tdisplay version number\n");
+	printf
+	    ("\t-w load\t\tstop accepting new connections at 'load'.  0 disables\n");
 #ifdef XTINYPROXY
 	printf
 	    ("\t-x domain\tAdd a XTinyproxy header with the peer's IP address\n");
 #endif
+			/* UPSTREAM_PROXY */
 
 	/* Display the modes compiled into tinyproxy */
 	printf("\nFeatures Compiled In:\n");
@@ -235,6 +243,9 @@ static void usagedisp(void)
 #ifndef NDEBUG
 	printf("    Debuggin code\n");
 #endif				/* NDEBUG */
+#ifdef UPSTREAM_PROXY
+	printf("    Upstream proxy\n");
+#endif				/* UPSTREAM_PROXY */
 }
 
 int main(int argc, char **argv)
@@ -243,10 +254,14 @@ int main(int argc, char **argv)
 	flag usage = FALSE, godaemon = TRUE, changeid = FALSE;
 	struct passwd *thisuser = NULL;
 
+#ifdef UPSTREAM_PROXY
+	char *upstream_ptr;
+#endif	/* UPSTREAM_PROXY */
+
 	struct allowedhdr_s **rpallowedptr = &allowedhdrs;
 	struct allowedhdr_s *allowedptr = allowedhdrs, *newallowed;
 
-	while ((optch = getopt(argc, argv, "vh?dp:l:Sa:w:s:u:n:i:rx:f:")) !=
+	while ((optch = getopt(argc, argv, "vh?dp:l:Sa:w:s:u:n:i:rx:f:t:")) !=
 	       EOF) {
 		switch (optch) {
 		case 'v':
@@ -347,6 +362,28 @@ int main(int argc, char **argv)
 			}
 			break;
 #endif
+
+#ifdef UPSTREAM_PROXY
+		case 't':
+			if (!(upstream_ptr = strchr(optarg, ':'))) {
+				log("tinyproxy: invalid UPSTREAM declaration");
+				break;
+			}
+
+			*upstream_ptr++ = '\0';
+			if (!(config.upstream_name = xstrdup(optarg))) {
+				log("tinyproxy: could not allocate memory");
+				exit(EX_SOFTWARE);
+			}
+			config.upstream_port = atoi(upstream_ptr);
+#ifndef NDEBUG
+			log("upstream name: %s", config.upstream_name);
+			log("upstream port: %d", config.upstream_port);
+#endif	/* NDEBUG */
+
+			break;
+#endif				/* UPSTREAM_PROXY */
+
 		case '?':
 		case 'h':
 		default:

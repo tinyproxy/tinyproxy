@@ -1,4 +1,4 @@
-/* $Id: dnscache.c,v 1.1.1.1 2000-02-16 17:32:22 sdyoung Exp $
+/* $Id: dnscache.c,v 1.2 2000-03-11 20:37:44 rjkaes Exp $
  *
  * This is a caching DNS system. When a host name is needed we look it up here
  * and see if there is already an answer for it. The domains are placed in a
@@ -69,7 +69,6 @@ int lookup(struct in_addr *addr, char *domain)
 	struct dnscache_s **rptr = &cache[box];
 	struct dnscache_s *ptr = cache[box];
 
-	assert(addr);
 	assert(domain);
 
 	while (ptr && strcasecmp(ptr->domain, domain)) {
@@ -90,7 +89,8 @@ int lookup(struct in_addr *addr, char *domain)
 		/* chris - added this so that the routine can be used to just
 		 * look stuff up.
 		*/
-		if (addr) *addr = ptr->ipaddr;
+		if (addr)
+			*addr = ptr->ipaddr;
 		return 0;
 	}
 
