@@ -1,4 +1,4 @@
-/* $Id: ternary.c,v 1.9 2001-09-07 00:38:03 rjkaes Exp $
+/* $Id: ternary.c,v 1.10 2001-09-08 18:58:02 rjkaes Exp $
  *
  * This module creates a Ternary Search Tree which can store both string
  * keys, and arbitrary data for each key. It works similar to a hash, and
@@ -37,6 +37,7 @@
 #include	"log.h"
 #include 	"ternary.h"
 #include	"tinyproxy.h"
+#include	"utils.h"
 
 /*
  * Macros for the tree structures (limits)
@@ -54,8 +55,8 @@ typedef struct tnode {
 /*
  * The structure for each root of a ternary tree.
  */
-#define BUFSIZE 1024
-#define BUFARRAY 1024
+#define BUFSIZE 512
+#define BUFARRAY 512
 typedef struct ttree {
 	TERNARY token;		/* contains unique ternary tree ID */
 	Tnode *tree_root;
@@ -217,7 +218,7 @@ TERNARY ternary_new(void)
 	/*
 	 * Allocate a new tree
 	 */
-	if ((trees[cur] = malloc(sizeof(Ttree))) == NULL) {
+	if ((trees[cur] = safemalloc(sizeof(Ttree))) == NULL) {
 		ERRBUF("ternary_new: malloc: no more memory");
 		return TE_NOROOM;
 	}
@@ -336,7 +337,7 @@ int ternary_insert_replace(TERNARY tno, const char *s, void *data,
 
 	for (;;) {
 		if (tree->bufn-- == 0) {
-			tree->buf = calloc(BUFSIZE, sizeof(Tnode));
+			tree->buf = safecalloc(BUFSIZE, sizeof(Tnode));
 			if (!tree->buf) {
 				ERRBUF("ternary_insert: malloc: no more memory");
 				return TE_NOROOM;
