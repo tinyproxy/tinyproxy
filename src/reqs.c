@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.42 2001-11-23 01:17:19 rjkaes Exp $
+/* $Id: reqs.c,v 1.43 2001-12-17 00:11:32 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -42,6 +42,16 @@
 #define HTTP503ERROR "Internal server error."
 
 /*
+ * Macro to help test if the Upstream proxy supported is compiled in and
+ * enabled.
+ */
+#ifdef UPSTREAM_SUPPORT
+#  define UPSTREAM_CONFIGURED() (config.upstream_name && config.upstream_port != -1)
+#else
+#  define UPSTREAM_CONFIGURED() (0)
+#endif
+
+/*
  * Read in the first line from the client (the request line for HTTP
  * connections. The request line is allocated from the heap, but it must
  * be freed in another function.
@@ -52,6 +62,7 @@ read_request_line(struct conn_s *connptr)
 	char *request_buffer;
 	size_t len;
 
+      retry:
 	len = readline(connptr->client_fd, &request_buffer);
 	if (len <= 0) {
 		log_message(LOG_ERR,
@@ -64,7 +75,15 @@ read_request_line(struct conn_s *connptr)
 	/*
 	 * Strip the new line and character return from the string.
 	 */
-	chomp(request_buffer, len);
+	if (chomp(request_buffer, len) == len) {
+		/*
+		 * If the number of characters removed is the same as the
+		 * length then it was a blank line. Free the buffer and
+		 * try again (since we're looking for a request line.)
+		 */
+		safefree(request_buffer);
+		goto retry;
+	}
 
 	log_message(LOG_CONN, "Request (file descriptor %d): %s",
 		    connptr->client_fd, request_buffer);
@@ -164,43 +183,42 @@ extract_ssl_url(const char *url, struct request_s *request)
 /*
  * Create a connection for HTTP connections.
  */
+#define HTTP_LINE_LENGTH (1024 * 16)
 static int
 establish_http_connection(struct conn_s *connptr, struct request_s *request)
 {
-	/*
-	 * Send the request line
-	 */
-	if (safe_write
-	    (connptr->server_fd, request->method, strlen(request->method)) < 0)
+	char *buffer;
+
+	buffer = safemalloc(HTTP_LINE_LENGTH);
+	if (!buffer)
 		return -1;
-	if (safe_write(connptr->server_fd, " ", 1) < 0)
-		return -1;
-	if (safe_write(connptr->server_fd, request->path, strlen(request->path)) < 0)
-		return -1;
-	if (safe_write(connptr->server_fd, " ", 1) < 0)
-		return -1;
-	if (safe_write(connptr->server_fd, "HTTP/1.0\r\n", 10) < 0)
-		return -1;
+
+	if (snprintf(buffer, HTTP_LINE_LENGTH, "%s %s HTTP/1.0\r\n", request->method, request->path) < 0)
+		goto error;
+	if (safe_write(connptr->server_fd, buffer, strlen(buffer)) < 0)
+		goto error;
 
 	/*
 	 * Send headers
 	 */
-	if (safe_write(connptr->server_fd, "Host: ", 6) < 0)
-		return -1;
-	if (safe_write(connptr->server_fd, request->host, strlen(request->host)) < 0)
-		return -1;
-
-	if (safe_write(connptr->server_fd, "\r\n", 2) < 0)
-		return -1;
+	if (snprintf(buffer, HTTP_LINE_LENGTH, "Host: %s\r\n", request->host) < 0)
+		goto error;
+	if (safe_write(connptr->server_fd, buffer, strlen(buffer)) < 0)
+		goto error;
 
 	/*
 	 * Send the Connection header since we don't support persistant
 	 * connections.
 	 */
 	if (safe_write(connptr->server_fd, "Connection: close\r\n", 19) < 0)
-		return -1;
+		goto error;
 
+	safefree(buffer);
 	return 0;
+
+      error:
+	safefree(buffer);
+	return -1;
 }
 
 /*
@@ -275,9 +293,11 @@ process_request(struct conn_s *connptr, char *request_line)
 		free_request_struct(request);
 
 		return NULL;
-	} else if (ret == 2) {
-		connptr->simple_req = TRUE;
 	}
+	/* 
+	 * NOTE: We need to add code for the simple HTTP/0.9 style GET
+	 * request.
+	 */
 
 	if (!url) {
 		log_message(LOG_ERR,
@@ -304,7 +324,6 @@ process_request(struct conn_s *connptr, char *request_line)
 
 			return NULL;
 		}
-		connptr->ssl = FALSE;
 	} else if (strcmp(request->method, "CONNECT") == 0) {
 		if (extract_ssl_url(url, request) < 0) {
 			httperr(connptr, 400,
@@ -315,7 +334,8 @@ process_request(struct conn_s *connptr, char *request_line)
 
 			return NULL;
 		}
-		connptr->ssl = TRUE;
+		
+		connptr->connect_method = TRUE;
 	} else {
 		log_message(LOG_ERR,
 			    "process_request: Unknown URL type on file descriptor %d",
@@ -368,7 +388,7 @@ process_request(struct conn_s *connptr, char *request_line)
 	 */
 	if (strncasecmp(request->protocol, "http", 4) == 0) {
 		memcpy(request->protocol, "HTTP", 4);
-		sscanf(request->protocol, "HTTP/%hu.%hu",
+		sscanf(request->protocol, "HTTP/%u.%u",
 		       &connptr->protocol.major, &connptr->protocol.minor);
 	}
 
@@ -428,7 +448,7 @@ pull_client_data(struct conn_s *connptr, unsigned long int length)
 			return -1;
 		}
 
-		if (!connptr->send_message) {
+		if (!connptr->send_response_message) {
 			if (safe_write(connptr->server_fd, buffer, len) < 0) {
 				safefree(buffer);
 				return -1;
@@ -483,6 +503,7 @@ process_client_headers(struct conn_s *connptr)
 	char *header;
 	long content_length = -1;
 	short int sent_via_header = 0;
+	ssize_t len;
 
 	static char *skipheaders[] = {
 		"proxy-connection",
@@ -495,27 +516,28 @@ process_client_headers(struct conn_s *connptr)
 	int i;
 
 	for (;;) {
-		if (readline(connptr->client_fd, &header) <= 0) {
+		if ((len = readline(connptr->client_fd, &header)) <= 0) {
 			DEBUG2("Client (file descriptor %d) closed connection.",
 			       connptr->client_fd);
 			return -1;
 		}
 
-		if (header[0] == '\n'
-		    || (header[0] == '\r' && header[1] == '\n')) {
+		/*
+		 * If we receive a CR LF (or just a LF) on a line by itself,
+		 * the headers are finished.
+		 */
+		if ((len == 1 && header[0] == '\n')
+		    || (len == 2 && header[0] == '\r' && header[1] == '\n')) {
 			break;
 		}
 
-		if (connptr->send_message) {
-			safefree(header);
-			continue;
-		}
-
 		/*
-		 * Don't send any of the headers if we're in SSL mode and
-		 * NOT using an upstream proxy.
+		 * Don't send headers if there's already an error, or if
+		 * this was a CONNECT method (unless upstream proxy is in
+		 * use.)
 		 */
-		if (connptr->ssl && !connptr->upstream) {
+		if (connptr->server_fd == -1
+		    || (connptr->connect_method && !UPSTREAM_CONFIGURED())) {
 			safefree(header);
 			continue;
 		}
@@ -575,9 +597,7 @@ process_client_headers(struct conn_s *connptr)
 			content_length = atol(content_ptr);
 		}
 
-		if ((connptr->server_fd != -1)
-		    && safe_write(connptr->server_fd, header,
-				  strlen(header)) < 0) {
+		if (safe_write(connptr->server_fd, header, strlen(header)) < 0) {
 			safefree(header);
 			return -1;
 		}
@@ -585,29 +605,30 @@ process_client_headers(struct conn_s *connptr)
 		safefree(header);
 	}
 
-	if (sent_via_header == 0) {
-		/*
-		 * We're the first proxy so send the first Via header.
-		 */
-		char via_header_buffer[256];
-		char hostname[128];
-
-		gethostname(hostname, sizeof(hostname));
-		snprintf(via_header_buffer, sizeof(via_header_buffer),
-			 "Via: %hu.%hu %s (%s/%s)\r\n", connptr->protocol.major,
-			 connptr->protocol.minor, hostname, PACKAGE, VERSION);
-
-		safe_write(connptr->server_fd, via_header_buffer,
-			   strlen(via_header_buffer));
-	}
-
-	if (!connptr->send_message && (connptr->upstream || !connptr->ssl)) {
+	if (!connptr->send_response_message
+	    && (!connptr->connect_method || UPSTREAM_CONFIGURED())) {
 #ifdef XTINYPROXY_ENABLE
 		if (config.my_domain && add_xtinyproxy_header(connptr) < 0) {
 			safefree(header);
 			return -1;
 		}
 #endif				/* XTINYPROXY */
+
+		if (sent_via_header == 0) {
+			/*
+			 * We're the first proxy so send the first Via header.
+			 */
+			char via_header_buffer[256];
+			char hostname[128];
+
+			gethostname(hostname, sizeof(hostname));
+			snprintf(via_header_buffer, sizeof(via_header_buffer),
+				 "Via: %hu.%hu %s (%s/%s)\r\n", connptr->protocol.major,
+				 connptr->protocol.minor, hostname, PACKAGE, VERSION);
+
+			safe_write(connptr->server_fd, via_header_buffer,
+				   strlen(via_header_buffer));
+		}
 
 		if ((connptr->server_fd != -1)
 		    && safe_write(connptr->server_fd, header,
@@ -650,16 +671,13 @@ process_server_headers(struct conn_s *connptr)
 			break;
 		}
 
-		if (!connptr->simple_req
-		    && safe_write(connptr->client_fd, header,
-				  strlen(header)) < 0) {
+		if (safe_write(connptr->client_fd, header, strlen(header)) < 0) {
 			safefree(header);
 			return -1;
 		}
 	}
 
-	if (!connptr->simple_req
-	    && safe_write(connptr->client_fd, header, strlen(header)) < 0) {
+	if (safe_write(connptr->client_fd, header, strlen(header)) < 0) {
 		safefree(header);
 		return -1;
 	}
@@ -734,19 +752,19 @@ relay_connection(struct conn_s *connptr)
 		}
 
 		if (FD_ISSET(connptr->server_fd, &rset)
-		    && readbuff(connptr->server_fd, connptr->sbuffer) < 0) {
+		    && read_buffer(connptr->server_fd, connptr->sbuffer) < 0) {
 			break;
 		}
 		if (FD_ISSET(connptr->client_fd, &rset)
-		    && readbuff(connptr->client_fd, connptr->cbuffer) < 0) {
+		    && read_buffer(connptr->client_fd, connptr->cbuffer) < 0) {
 			break;
 		}
 		if (FD_ISSET(connptr->server_fd, &wset)
-		    && writebuff(connptr->server_fd, connptr->cbuffer) < 0) {
+		    && write_buffer(connptr->server_fd, connptr->cbuffer) < 0) {
 			break;
 		}
 		if (FD_ISSET(connptr->client_fd, &wset)
-		    && writebuff(connptr->client_fd, connptr->sbuffer) < 0) {
+		    && write_buffer(connptr->client_fd, connptr->sbuffer) < 0) {
 			break;
 		}
 	}
@@ -757,7 +775,7 @@ relay_connection(struct conn_s *connptr)
 	 */
 	socket_blocking(connptr->client_fd);
 	while (BUFFER_SIZE(connptr->sbuffer) > 0) {
-		if (writebuff(connptr->client_fd, connptr->sbuffer) < 0)
+		if (write_buffer(connptr->client_fd, connptr->sbuffer) < 0)
 			break;
 	}
 
@@ -766,7 +784,7 @@ relay_connection(struct conn_s *connptr)
 	 */
 	socket_blocking(connptr->server_fd);
 	while (BUFFER_SIZE(connptr->cbuffer) > 0) {
-		if (writebuff(connptr->client_fd, connptr->cbuffer) < 0)
+		if (write_buffer(connptr->client_fd, connptr->cbuffer) < 0)
 			break;
 	}
 
@@ -802,7 +820,7 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 	 * can reuse the establish_http_connection() function. It expects a
 	 * method and path.
 	 */
-	if (connptr->ssl) {
+	if (connptr->connect_method) {
 		len = strlen(request->host) + 6;
 
 		combined_string = safemalloc(len + 1);
@@ -915,21 +933,18 @@ handle_connection(int fd)
 	safefree(request_line);
 
 	if (!request) {
-		if (!connptr->send_message) {
+		if (!connptr->send_response_message) {
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
 			return;
 		}
 		goto send_error;
 	}
-#ifdef UPSTREAM_SUPPORT
-	if (config.upstream_name && config.upstream_port != -1) {
-		connptr->upstream = TRUE;
 
+	if (UPSTREAM_CONFIGURED()) {
 		if (connect_to_upstream(connptr, request) < 0)
 			goto send_error;
 	} else {
-#endif
 		connptr->server_fd = opensock(request->host, request->port);
 		if (connptr->server_fd < 0) {
 			httperr(connptr, 500, HTTP500ERROR);
@@ -940,31 +955,27 @@ handle_connection(int fd)
 			    "Established connection to host \"%s\" using file descriptor %d.",
 			    request->host, connptr->server_fd);
 
-		if (!connptr->ssl)
+		if (!connptr->connect_method)
 			establish_http_connection(connptr, request);
-#ifdef UPSTREAM_SUPPORT
 	}
-#endif
 
       send_error:
 	free_request_struct(request);
 
-	if (!connptr->simple_req) {
-		if (process_client_headers(connptr) < 0) {
-			update_stats(STAT_BADCONN);
-			if (!connptr->send_message) {
-				destroy_conn(connptr);
-				return;
-			}
+	if (process_client_headers(connptr) < 0) {
+		update_stats(STAT_BADCONN);
+		if (!connptr->send_response_message) {
+			destroy_conn(connptr);
+			return;
 		}
 	}
 
-	if (connptr->send_message) {
+	if (connptr->send_response_message) {
 		destroy_conn(connptr);
 		return;
 	}
 
-	if (!connptr->ssl || connptr->upstream) {
+	if (!connptr->connect_method || UPSTREAM_CONFIGURED()) {
 		if (process_server_headers(connptr) < 0) {
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
