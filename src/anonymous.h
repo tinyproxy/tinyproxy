@@ -1,4 +1,4 @@
-/* $Id: anonymous.h,v 1.4 2001-05-27 02:21:37 rjkaes Exp $
+/* $Id: anonymous.h,v 1.5 2001-08-26 21:07:27 rjkaes Exp $
  *
  * See 'anonymous.c' for a detailed description.
  *
@@ -20,8 +20,8 @@
 
 #include "ternary.h"
 
-extern TERNARY new_anonymous(void);
-extern int anon_search(char *s);
-extern void anon_insert(char *s);
+extern short int is_anonymous_enabled(void);
+extern int anonymous_search(char *s);
+extern int anonymous_insert(char *s);
 
 #endif

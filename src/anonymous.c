@@ -1,4 +1,4 @@
-/* $Id: anonymous.c,v 1.5 2001-05-27 02:21:37 rjkaes Exp $
+/* $Id: anonymous.c,v 1.6 2001-08-26 21:07:27 rjkaes Exp $
  *
  * Handles insertion and searches for headers which should be let through when
  * the anonymous feature is turned on. The headers are stored in a Ternary
@@ -29,26 +29,48 @@
 #include <unistd.h>
 
 #include "anonymous.h"
+#include "log.h"
 #include "ternary.h"
+#include "tinyproxy.h"
 
-static TERNARY anonymous_tree;
+static TERNARY anonymous_tree = 0;
+/*
+ * Keep track of whether the Anonymous filtering is enabled. Off by
+ * default.
+ */
+static short int anonymous_is_enabled = 0;
 
-TERNARY new_anonymous(void)
+short int is_anonymous_enabled(void)
 {
-	anonymous_tree = ternary_new();
-	return anonymous_tree;
+	return anonymous_is_enabled;
 }
 
-int anon_search(char *s)
+int anonymous_search(char *s)
 {
 	assert(s != NULL);
+	assert(anonymous_is_enabled == 1);
+	assert(anonymous_tree > 0);
 
 	return ternary_search(anonymous_tree, s, NULL);
 }
 
-void anon_insert(char *s)
+int anonymous_insert(char *s)
 {
 	assert(s != NULL);
 
-	ternary_insert(anonymous_tree, s, NULL);
+	/*
+	 * If this is the first time we're inserting a word, create the
+	 * search tree.
+	 */
+	if (!anonymous_is_enabled) {
+		anonymous_tree = ternary_new();
+		if (anonymous_tree < 0)
+			return -1;
+
+		anonymous_is_enabled = 1;
+
+		DEBUG1("Starting the Anonymous header subsytem.");
+	}
+
+	return ternary_insert(anonymous_tree, s, NULL);
 }
