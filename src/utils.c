@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.21 2001-12-24 00:02:32 rjkaes Exp $
+/* $Id: utils.c,v 1.22 2002-04-07 21:37:07 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -100,7 +100,7 @@ send_http_message(struct conn_s *connptr, int http_code,
 
 	safe_write(connptr->client_fd, message, strlen(message));
 
-	connptr->send_response_message = TRUE;
+	connptr->response_message_sent = TRUE;
 
 	return 0;
 }
