@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.89 2002-12-04 17:36:48 rjkaes Exp $
+/* $Id: reqs.c,v 1.90 2003-01-27 17:39:02 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -875,7 +875,7 @@ process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 					     &data,
 					     (void**)&header);
 
-			if (!is_anonymous_enabled() || anonymous_search(data) <= 0) {
+			if (!is_anonymous_enabled() || anonymous_search(data) > 0) {
 				ret = write_message(connptr->server_fd,
 						    "%s: %s\r\n",
 						    data, header);
