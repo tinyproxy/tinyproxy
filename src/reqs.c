@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.38 2001-11-21 00:59:33 rjkaes Exp $
+/* $Id: reqs.c,v 1.39 2001-11-21 19:19:46 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -212,6 +212,13 @@ static int establish_http_connection(struct conn_s *connptr,
 		return -1;
 
 	if (safe_write(connptr->server_fd, "\r\n", 2) < 0)
+		return -1;
+
+	/*
+	 * Send the Connection header since we don't support persistant
+	 * connections.
+	 */
+	if (safe_write(connptr->server_fd, "Connection: close\r\n", 19) < 0)
 		return -1;
 
 	return 0;
@@ -447,6 +454,12 @@ static int add_xtinyproxy_header(struct conn_s *connptr)
 	char xtinyproxy[32];
 	int length;
 
+	/*
+	 * Don't try to send if we have an invalid server handle.
+	 */
+	if (connptr->server_fd == -1)
+		return 0;
+
 	length = snprintf(xtinyproxy, sizeof(xtinyproxy),
 			  "X-Tinyproxy: %s\r\n",
 			  getpeer_ip(connptr->client_fd, ipaddr));
@@ -467,10 +480,13 @@ static int process_client_headers(struct conn_s *connptr)
 {
 	char *header;
 	long content_length = -1;
+#if 0
 	short int sent_via_header = 0;
+#endif
 
 	static char *skipheaders[] = {
 		"proxy-connection",
+		"host",
 		"keep-alive",
 		"proxy-authenticate",
 		"proxy-authorization",
@@ -484,6 +500,7 @@ static int process_client_headers(struct conn_s *connptr)
 
 	for ( ; ; ) {
 		if (readline(connptr->client_fd, header, LINE_LENGTH) <= 0) {
+			DEBUG2("Client (file descriptor %d) closed connection.", connptr->client_fd);
 			safefree(header);
 			return -1;
 		}
@@ -503,6 +520,7 @@ static int process_client_headers(struct conn_s *connptr)
 		if (connptr->ssl && !connptr->upstream)
 			continue;
 
+#if 0
 		/*
 		 * If we find a Via header we need to append our information
 		 * to the end of it.
@@ -520,6 +538,7 @@ static int process_client_headers(struct conn_s *connptr)
 
 			strlcat(header, via_header_buffer, LINE_LENGTH);
 		}
+#endif 
 
 		/*
 		 * Don't send certain headers.
@@ -541,12 +560,13 @@ static int process_client_headers(struct conn_s *connptr)
 			content_length = atol(content_ptr);
 		}
 
-		if (safe_write(connptr->server_fd, header, strlen(header)) < 0) {
+		if ((connptr->server_fd != -1) && safe_write(connptr->server_fd, header, strlen(header)) < 0) {
 			safefree(header);
 			return -1;
 		}
 	}
 
+#if 0
 	if (sent_via_header == 0) {
 		/*
 		 * We're the first proxy so send the first Via header.
@@ -559,6 +579,7 @@ static int process_client_headers(struct conn_s *connptr)
 
 		safe_write(connptr->server_fd, via_header_buffer, strlen(via_header_buffer));
 	}
+#endif
 
 	if (!connptr->send_message && (connptr->upstream || !connptr->ssl)) {
 #ifdef XTINYPROXY_ENABLE
@@ -569,7 +590,7 @@ static int process_client_headers(struct conn_s *connptr)
 		}
 #endif	/* XTINYPROXY */
 
-		if (safe_write(connptr->server_fd, header, strlen(header)) < 0) {
+		if ((connptr->server_fd != -1) && safe_write(connptr->server_fd, header, strlen(header)) < 0) {
 			safefree(header);
 			return -1;
 		}
@@ -600,6 +621,7 @@ static int process_server_headers(struct conn_s *connptr)
 
 	for ( ; ; ) {
 		if (readline(connptr->server_fd, header, LINE_LENGTH) <= 0) {
+			DEBUG2("Server (file descriptor %d) closed connection.", connptr->server_fd);
 			safefree(header);
 			return -1;
 		}
