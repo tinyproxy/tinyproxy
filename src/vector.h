@@ -1,4 +1,4 @@
-/* $Id: vector.h,v 1.4 2003-05-30 16:21:47 rjkaes Exp $
+/* $Id: vector.h,v 1.5 2003-07-31 23:40:16 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbritrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -80,7 +80,7 @@ extern void* vector_getentry(vector_t vector, size_t pos, size_t* size);
  */
 extern ssize_t vector_length(vector_t vector);
 
-#if defined(_cplusplus)
+#if defined(__cplusplus)
 }
 #endif /* C++ */
 
