@@ -1,5 +1,12 @@
 2001-08-26  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/utils.c (httperr): Split the headers from the actual message
+	and include more headers like Date, Server, Content-Length,
+	etc. Also set the type for the error message to const char*.
+
+	* src/reqs.c (process_method): Fixed a SEGV problem if an invalid
+	request was submitted.
+
 	* Makefile.am (EXTRA_DIST): Don't include ./reconf in the
 	tarball.
 
