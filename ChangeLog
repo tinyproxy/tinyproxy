@@ -1,5 +1,15 @@
 2001-10-25  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/reqs.c (process_client_headers): Selectively send headers
+	based on whether we're using an upstream with a CONNECT
+	request. The short answer: all methods work correctly with
+	Upstream proxying and normal proxying.
+
+	* src/tinyproxy.h: Added a upstream flag to the conn_s structure
+	so we can figure out when to send headers and when not to send
+	headers. This is extremely important when trying to do upstream
+	proxying of the CONNECT method.
+
 	* src/reqs.c (relay_connection): Empty the contents of both
 	buffers when either socket is closed. This is more in line with
 	what a tunnel should do. Since either end could close with
