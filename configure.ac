@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.1 2001-11-26 01:38:28 rjkaes Exp $
+dnl $Id: configure.ac,v 2.2 2001-12-15 20:02:03 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -254,11 +254,10 @@ dnl AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
 AC_FUNC_STRERROR_R
 AC_FUNC_STRFTIME
-AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([btowc bzero ftruncate gethostbyaddr gethostbyname gethostname \
 		inet_ntoa memchr memset re_comp regcomp regexec select \
 		setrlimit socket strncasecmp strchr strdup strerror strstr \
-		strtol vsyslog])
+		strtol vsyslog vsnprintf])
 
 AC_CHECK_FUNCS(strlcpy strlcat)
 
