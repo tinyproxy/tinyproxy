@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.18 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: thread.c,v 1.19 2001-12-28 22:29:11 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -130,6 +130,15 @@ thread_main(void *arg)
 		pthread_mutex_lock(&mlock);
 		connfd = accept(listenfd, cliaddr, &clilen);
 		pthread_mutex_unlock(&mlock);
+
+		/*
+		 * Make sure no error occurred...
+		 */
+		if (connfd < 0) {
+			log_message(LOG_ERR, "Accept returned an error (%s) ... retrying.", strerror(errno));
+			continue;
+		}
+
 
 		ptr->status = T_CONNECTED;
 

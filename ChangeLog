@@ -1,3 +1,8 @@
+2001-12-28  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/thread.c (thread_main): Added code to detect errors in the
+	accept() function.
+
 2001-12-23  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/utils.c (send_http_message): Use the write_message()
