@@ -1,4 +1,4 @@
-/* $Id: heap.c,v 1.7 2003-07-31 23:42:51 rjkaes Exp $
+/* $Id: heap.c,v 1.8 2004-02-13 21:27:42 rjkaes Exp $
  *
  * Debugging versions of various heap related functions are combined
  * here.  The debugging versions include assertions and also print
@@ -82,7 +82,7 @@ debugging_strdup(const char* s, const char* file, unsigned long line)
 	assert(s != NULL);
 
 	len = strlen(s) + 1;
-	ptr = (char*)malloc(len);
+	ptr = malloc(len);
 	if (!ptr)
 		return NULL;
 	memcpy(ptr, s, len);
@@ -113,11 +113,11 @@ malloc_shared_memory(size_t size)
 	strlcpy(buffer, shared_file, sizeof(buffer));
 
 	if ((fd = mkstemp(buffer)) == -1)
-		return (void *)MAP_FAILED;
+		return MAP_FAILED;
 	unlink(buffer);
 
 	if (ftruncate(fd, size) == -1)
-		return (void *)MAP_FAILED;
+		return MAP_FAILED;
 	ptr = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 
 	return ptr;

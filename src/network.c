@@ -1,4 +1,4 @@
-/* $Id: network.c,v 1.2 2003-07-31 23:38:28 rjkaes Exp $
+/* $Id: network.c,v 1.3 2004-02-13 21:27:42 rjkaes Exp $
  *
  * The functions found here are used for communicating across a
  * network.  They include both safe reading and writing (which are
@@ -90,7 +90,7 @@ write_message(int fd, const char *fmt, ...)
 	char *buf, *tmpbuf;
 	va_list ap;
 
-	if ((buf = (char*)safemalloc(size)) == NULL)
+	if ((buf = safemalloc(size)) == NULL)
 		return -1;
 
 	while (1) {
@@ -110,7 +110,7 @@ write_message(int fd, const char *fmt, ...)
 			/* twice the old size (glibc2.0) */
 			size *= 2;
 
-		if ((tmpbuf = (char*)saferealloc(buf, size)) == NULL) {
+		if ((tmpbuf = saferealloc(buf, size)) == NULL) {
 			safefree(buf);
 			return -1;
 		} else
@@ -154,8 +154,7 @@ readline(int fd, char **whole_buffer)
 	};
 	struct read_lines_s *first_line, *line_ptr;
 
-	first_line =
-		(struct read_lines_s*)safecalloc(sizeof(struct read_lines_s), 1);
+	first_line = safecalloc(sizeof(struct read_lines_s), 1);
 	if (!first_line)
 		return -ENOMEM;
 
@@ -167,7 +166,7 @@ readline(int fd, char **whole_buffer)
 		if (ret <= 0)
 			goto CLEANUP;
 
-		ptr = (char*)memchr(buffer, '\n', ret);
+		ptr = memchr(buffer, '\n', ret);
 		if (ptr)
 			diff = ptr - buffer + 1;
 		else
@@ -184,7 +183,7 @@ readline(int fd, char **whole_buffer)
 			goto CLEANUP;
 		}
 
-		line_ptr->data = (char*)safemalloc(diff);
+		line_ptr->data = safemalloc(diff);
 		if (!line_ptr->data) {
 			ret = -ENOMEM;
 			goto CLEANUP;
@@ -198,8 +197,7 @@ readline(int fd, char **whole_buffer)
 			break;
 		}
 
-		line_ptr->next =
-			(struct read_lines_s*)safecalloc(sizeof(struct read_lines_s), 1);
+		line_ptr->next = safecalloc(sizeof(struct read_lines_s), 1);
 		if (!line_ptr->next) {
 			ret = -ENOMEM;
 			goto CLEANUP;
@@ -207,7 +205,7 @@ readline(int fd, char **whole_buffer)
 		line_ptr = line_ptr->next;
 	}
 
-	*whole_buffer = (char*)safemalloc(whole_buffer_len + 1);
+	*whole_buffer = safemalloc(whole_buffer_len + 1);
 	if (!*whole_buffer) {
 		ret = -ENOMEM;
 		goto CLEANUP;

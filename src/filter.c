@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.19 2003-10-17 16:11:00 rjkaes Exp $
+/* $Id: filter.c,v 1.20 2004-02-13 21:27:42 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  * Copyright (c) 2002  James E. Flemer (jflemer@acm.jhu.edu)
@@ -106,7 +106,7 @@ filter_init(void)
 				}
 
 				p->pat = safestrdup(s);
-				p->cpat = (regex_t*)safemalloc(sizeof(regex_t));
+				p->cpat = safemalloc(sizeof(regex_t));
 				if ((err = regcomp(p->cpat, p->pat, cflags)) != 0) {
 					fprintf(stderr, "Bad regex in %s: %s\n",
 						config.filter, p->pat);

@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.23 2003-07-31 23:38:28 rjkaes Exp $
+/* $Id: buffer.c,v 1.24 2004-02-13 21:27:42 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -60,10 +60,10 @@ makenewline(unsigned char *data, size_t length)
 	assert(data != NULL);
 	assert(length > 0);
 
-	if (!(newline = (struct bufline_s*)safemalloc(sizeof(struct bufline_s))))
+	if (!(newline = safemalloc(sizeof(struct bufline_s))))
 		return NULL;
 
-	if (!(newline->string = (unsigned char*)safemalloc(length))) {
+	if (!(newline->string = safemalloc(length))) {
 		safefree(newline);
 		return NULL;
 	}
@@ -104,7 +104,7 @@ new_buffer(void)
 {
 	struct buffer_s *buffptr;
 
-	if (!(buffptr = (struct buffer_s*)safemalloc(sizeof(struct buffer_s))))
+	if (!(buffptr = safemalloc(sizeof(struct buffer_s))))
 		return NULL;
 
 	/*

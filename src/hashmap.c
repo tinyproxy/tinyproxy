@@ -1,4 +1,4 @@
-/* $Id: hashmap.c,v 1.13 2003-07-31 23:38:28 rjkaes Exp $
+/* $Id: hashmap.c,v 1.14 2004-02-13 21:27:42 rjkaes Exp $
  *
  * A hashmap implementation.  The keys are case-insensitive NULL terminated
  * strings, and the data is arbitrary lumps of data.  Copies of both the
@@ -97,14 +97,12 @@ hashmap_create(unsigned int nbuckets)
 	if (nbuckets == 0)
 		return NULL;
 
-	ptr = (struct hashmap_s*)safecalloc(1, sizeof(struct hashmap_s));
+	ptr = safecalloc(1, sizeof(struct hashmap_s));
 	if (!ptr)
 		return NULL;
 
 	ptr->size = nbuckets;
-	ptr->buckets =
-		(struct hashentry_s**)safecalloc(nbuckets,
-						 sizeof(struct hashentry_s *));
+	ptr->buckets = safecalloc(nbuckets, sizeof(struct hashentry_s *));
 	if (!ptr->buckets) {
 		safefree(ptr);
 		return NULL;
@@ -225,7 +223,7 @@ hashmap_insert(hashmap_t map, const char *key,
 		data_copy = NULL;
 	}
 
-	ptr = (struct hashentry_s*)safemalloc(sizeof(struct hashentry_s));
+	ptr = safemalloc(sizeof(struct hashentry_s));
 	if (!ptr) {
 		safefree(key_copy);
 		safefree(data_copy);

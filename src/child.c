@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.13 2003-08-07 15:31:20 rjkaes Exp $
+/* $Id: child.c,v 1.14 2004-02-13 21:27:42 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -165,7 +165,7 @@ child_main(struct child_s* ptr)
 	struct sockaddr *cliaddr;
 	socklen_t clilen;
 
-	cliaddr = (struct sockaddr*)safemalloc(addrlen);
+	cliaddr = safemalloc(addrlen);
 	if (!cliaddr) {
 		log_message(LOG_CRIT,
 			    "Could not allocate memory for child address.");
@@ -293,15 +293,14 @@ child_pool_create(void)
 		return -1;
 	}
 
-	child_ptr = (struct child_s*)calloc_shared_memory(
-		child_config.maxclients,
-		sizeof(struct child_s));
+	child_ptr = calloc_shared_memory(child_config.maxclients,
+					 sizeof(struct child_s));
 	if (!child_ptr) {
 		log_message(LOG_ERR, "Could not allocate memory for children.");
 		return -1;
 	}
 
-	servers_waiting = (unsigned int*)malloc_shared_memory(sizeof(unsigned int));
+	servers_waiting = malloc_shared_memory(sizeof(unsigned int));
 	if (servers_waiting == MAP_FAILED) {
 		log_message(LOG_ERR, "Could not allocate memory for child counting.");
 		return -1;

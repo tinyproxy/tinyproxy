@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.17 2003-07-31 23:38:28 rjkaes Exp $
+/* $Id: acl.c,v 1.18 2004-02-13 21:27:42 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -87,7 +87,7 @@ insert_acl(char *location, acl_access_t access_type)
 		rev_acl_ptr = &acl_ptr->next;
 		acl_ptr = acl_ptr->next;
 	}
-	new_acl_ptr = (struct acl_s*)safemalloc(sizeof(struct acl_s));
+	new_acl_ptr = safemalloc(sizeof(struct acl_s));
 	if (!new_acl_ptr) {
 		return -1;
 	}

@@ -1,4 +1,4 @@
-/* $Id: stats.c,v 1.14 2003-07-31 23:38:28 rjkaes Exp $
+/* $Id: stats.c,v 1.15 2004-02-13 21:27:42 rjkaes Exp $
  *
  * This module handles the statistics for tinyproxy. There are only two
  * public API functions. The reason for the functions, rather than just a
@@ -45,7 +45,7 @@ static struct stat_s *stats;
 void
 init_stats(void)
 {
-	stats = (struct stat_s*)malloc_shared_memory(sizeof(struct stat_s));
+	stats = malloc_shared_memory(sizeof(struct stat_s));
 	if (stats == MAP_FAILED)
 		return;
 
@@ -81,7 +81,7 @@ showstats(struct conn_s *connptr)
 	snprintf(refused, sizeof(refused), "%lu", stats->num_refused);
 
 	if (!config.statpage || (!(statfile = fopen(config.statpage, "r")))) {
-		message_buffer = (char*)safemalloc(MAXBUFFSIZE);
+		message_buffer = safemalloc(MAXBUFFSIZE);
 		if (!message_buffer)
 			return -1;
 

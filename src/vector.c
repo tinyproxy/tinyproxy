@@ -1,4 +1,4 @@
-/* $Id: vector.c,v 1.10 2003-07-31 23:38:28 rjkaes Exp $
+/* $Id: vector.c,v 1.11 2004-02-13 21:27:41 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbitrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -58,7 +58,7 @@ vector_create(void)
 {
 	vector_t vector;
 
-	vector = (vector_t)safemalloc(sizeof(struct vector_s));
+	vector = safemalloc(sizeof(struct vector_s));
 	if (!vector)
 		return NULL;
 
@@ -118,7 +118,7 @@ vector_insert(vector_t vector, void *data, ssize_t len, int pos)
 	    (pos != INSERT_PREPEND && pos != INSERT_APPEND))
 		return -EINVAL;
 
-	entry = (struct vectorentry_s*)safemalloc(sizeof(struct vectorentry_s));
+	entry = safemalloc(sizeof(struct vectorentry_s));
 	if (!entry)
 		return -ENOMEM;
 

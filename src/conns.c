@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.20 2004-01-26 19:11:51 rjkaes Exp $
+/* $Id: conns.c,v 1.21 2004-02-13 21:27:42 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connection related tasks put here, but for now the header
@@ -46,7 +46,7 @@ initialize_conn(int client_fd, const char* ipaddr, const char* string_addr)
 	/*
 	 * Allocate the space for the conn_s structure itself.
 	 */
-	connptr = (struct conn_s*)safemalloc(sizeof(struct conn_s));
+	connptr = safemalloc(sizeof(struct conn_s));
 	if (!connptr)
 		goto error_exit;
 

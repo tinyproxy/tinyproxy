@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.110 2004-02-04 19:57:40 rjkaes Exp $
+/* $Id: reqs.c,v 1.111 2004-02-13 21:27:42 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -127,7 +127,7 @@ check_allowed_connect_ports(int port)
 		return 1;
 
 	for (i = 0; i != vector_length(ports_allowed_by_connect); ++i) {
-		data = (int*)vector_getentry(ports_allowed_by_connect, i, NULL);
+		data = vector_getentry(ports_allowed_by_connect, i, NULL);
 		if (!data)
 			return -1;
 
@@ -288,7 +288,7 @@ extract_http_url(const char *url, struct request_s *request)
 static int
 extract_ssl_url(const char *url, struct request_s *request)
 {
-	request->host = (char*)safemalloc(strlen(url) + 1);
+	request->host = safemalloc(strlen(url) + 1);
 	if (!request->host)
 		return -1;
 
@@ -339,8 +339,7 @@ void
 upstream_add(const char *host, int port, const char *domain)
 {
 	char *ptr;
-	struct upstream *up = 
-		(struct upstream*)safemalloc(sizeof (struct upstream));
+	struct upstream *up = safemalloc(sizeof (struct upstream));
 
 	if (!up) {
 		log_message(LOG_ERR, "Unable to allocate memory in upstream_add()");
@@ -613,15 +612,15 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 	size_t request_len;
 
 	/* NULL out all the fields so frees don't cause segfaults. */
-	request = (struct request_s*)safecalloc(1, sizeof(struct request_s));
+	request = safecalloc(1, sizeof(struct request_s));
 	if (!request)
 		return NULL;
 
 	request_len = strlen(connptr->request_line) + 1;
 
-	request->method = (char*)safemalloc(request_len);
-	url = (char*)safemalloc(request_len);
-	request->protocol = (char*)safemalloc(request_len);
+	request->method = safemalloc(request_len);
+	url = safemalloc(request_len);
+	request->protocol = safemalloc(request_len);
 
 	if (!request->method || !url || !request->protocol) {
 		safefree(url);
@@ -926,7 +925,7 @@ pull_client_data(struct conn_s *connptr, long int length)
 	char *buffer;
 	ssize_t len;
 
-	buffer = (char*)safemalloc(min(MAXBUFFSIZE, length));
+	buffer = safemalloc(min(MAXBUFFSIZE, length));
 	if (!buffer)
 		return -1;
 
@@ -1633,7 +1632,7 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 	if (connptr->connect_method) {
 		len = strlen(request->host) + 7;
 
-		combined_string = (char*)safemalloc(len);
+		combined_string = safemalloc(len);
 		if (!combined_string) {
 			return -1;
 		}
@@ -1642,7 +1641,7 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 			 request->port);
 	} else {
 		len = strlen(request->host) + strlen(request->path) + 14;
-		combined_string = (char*)safemalloc(len);
+		combined_string = safemalloc(len);
 		if (!combined_string) {
 			return -1;
 		}
