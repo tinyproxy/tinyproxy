@@ -1,3 +1,12 @@
+2001-09-14  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/uri.c: Removed this file since it's no longer needed.
+
+	* src/reqs.c: Split the process_method() function into separate
+	smaller functions. Added support tunnel SSL connections.
+
+	* src/tinyproxy.h: Added a field to handle SSL connections.
+
 2001-09-11  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (process_method): Fixed a memory leak due to the
