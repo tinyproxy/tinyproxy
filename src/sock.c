@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.17 2001-11-23 01:18:43 rjkaes Exp $
+/* $Id: sock.c,v 1.18 2001-11-25 02:21:46 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -268,6 +268,7 @@ safe_read(int fd, void *buffer, size_t count)
  * termination), 0 if the socket was closed, and -1 on all other errors.
  */
 #define SEGMENT_LEN (512)
+#define MAXIMUM_BUFFER_LENGTH (128 * 1024)
 ssize_t
 readline(int fd, char **whole_buffer)
 {
@@ -304,6 +305,15 @@ readline(int fd, char **whole_buffer)
 			diff = ret;
 
 		whole_buffer_len += diff;
+
+		/*
+		 * Don't allow the buffer to grow without bound. If we
+		 * get to more than MAXIMUM_BUFFER_LENGTH close.
+		 */
+		if (whole_buffer_len > MAXIMUM_BUFFER_LENGTH) {
+			ret = -EOUTRANGE;
+			goto CLEANUP;
+		}
 
 		line_ptr->data = safemalloc(diff);
 		if (!line_ptr->data) {
