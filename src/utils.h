@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.4 2001-05-27 02:38:46 rjkaes Exp $
+/* $Id: utils.h,v 1.5 2001-08-27 03:45:34 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -24,7 +24,7 @@
 extern char *xstrstr(char *haystack, char *needle, size_t length,
 		     bool_t case_sensitive);
 
-extern int httperr(struct conn_s *connptr, int err, char *msg);
+extern int httperr(struct conn_s *connptr, int err, const char *msg);
 
 extern void makedaemon(void);
 extern void pidfile_create(const char *path);
