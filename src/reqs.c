@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.77 2002-05-27 02:00:22 rjkaes Exp $
+/* $Id: reqs.c,v 1.78 2002-05-28 04:53:33 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -560,6 +560,9 @@ get_all_headers(int fd, hashmap_t hashofheaders)
 	char *header;
 	ssize_t len;
 
+	assert(fd >= 0);
+	assert(hashofheaders != NULL);
+
 	for (;;) {
 		if ((len = readline(fd, &header)) <= 0) {
 			safefree(header);
@@ -573,6 +576,17 @@ get_all_headers(int fd, hashmap_t hashofheaders)
 		if (CHECK_CRLF(header, len)) {
 			safefree(header);
 			return 0;
+		}
+
+		/*
+		 * BUG FIX: Need this code to skip a second "HTTP/1.x ... OK"
+		 * response.  This was needed because of cgi.ebay.com.
+		 *
+		 * FIXME: Might need to change this to a more robust check.
+		 */
+		if (strncasecmp(header, "HTTP/", 5) == 0) {
+			safefree(header);
+			continue;
 		}
 
 		if (add_header_to_connection(hashofheaders, header, len) < 0) {
@@ -857,8 +871,23 @@ process_server_headers(struct conn_s *connptr)
 	/* FIXME: Remember to handle a "simple_req" type */
 
 	/* Get the response line from the remote server. */
-	if ((len = readline(connptr->server_fd, &response_line)) <= 0)
+      retry:
+	len = readline(connptr->server_fd, &response_line);
+	if (len <= 0)
 		return -1;
+
+	/*
+	 * Strip the new line and character return from the string.
+	 */
+	if (chomp(response_line, len) == len) {
+		/*
+		 * If the number of characters removed is the same as the
+		 * length then it was a blank line. Free the buffer and
+		 * try again (since we're looking for a request line.)
+		 */
+		safefree(response_line);
+		goto retry;
+	}
 
 	hashofheaders = hashmap_create(HEADER_BUCKETS);
 	if (!hashofheaders) {
