@@ -1,5 +1,11 @@
 2001-09-04  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/reqs.c (process_client_headers): Moved the skip header test
+	in front of the compare_header() function.
+
+	* src/ternary.c (ternary_search): Switched to doing case
+	insensitive searching.
+
 	* src/log.c (log_message): Thanks to NeilK for finding and fixing
 	a problem with the syslog code which can lead to a format string
 	attack.
