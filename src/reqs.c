@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.66 2002-04-25 18:58:08 rjkaes Exp $
+/* $Id: reqs.c,v 1.67 2002-04-25 19:20:56 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -192,7 +192,13 @@ free_request_struct(struct request_s *request)
 	safefree(request->protocol);
 
 	safefree(request->host);
-	safefree(request->path);
+
+	/*
+	 * The path is not used for SSL connection, so don't try to delete
+	 * it.
+	 */
+	if (request->path)
+		safefree(request->path);
 
 	safefree(request);
 }

@@ -2,6 +2,8 @@
 
 	* src/reqs.c (remove_connection_headers): Handle both the
 	Connection header _and_ the Proxy-Connection header.
+	(free_request_struct): Check to see if request->path is actually
+	allocated before trying to delete it.
 
 	* src/hashmap.c: The hashmap will now handle multiple keys with
 	the same value.  This change was need because some sites like
