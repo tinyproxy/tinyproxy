@@ -1,5 +1,10 @@
 2002-04-10  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/Makefile.am: Removed the dependency on LIBOBJS and instead
+	replaced it with an ADDITIONAL_OBJECTS variable defined within the
+	configure script.  This allows greater control over what is
+	compiled.
+
 	* configure.ac: Removed the AC_FUNC_LSTAT macro since it wants to
 	add lstat.o onto some machines.  I don't think the test was really
 	needed anyway, so it's better to have it gone.
