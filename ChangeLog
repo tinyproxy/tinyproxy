@@ -1,3 +1,28 @@
+2002-07-09  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/utils.c: (create_file_safely):
+	(pidfile_create): Changed all the error logging to write to
+	standard error and then exit the program.  This will prevent
+	segmentation fault problems from occurring because the log file
+	could not be created properly.
+
+	* src/heap.c (malloc_shared_memory):
+	Changed the static character array to include the ".XXXXXX" string
+	already.  This saves one system call when creating a temporary
+	file name.
+
+2002-07-08  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* README:
+	Updated the "Support" section to include a link to the tinyproxy
+	Bug Tracker system hosted by SourceForge.
+
+2002-07-05  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.ac:
+	Removed the -D_REENTRANT C flag since tinyproxy is no longer a
+	multi-threaded program.
+
 2002-06-27  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/child.c (child_make):
