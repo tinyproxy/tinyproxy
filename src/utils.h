@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.1.1.1 2000-02-16 17:32:24 sdyoung Exp $
+/* $Id: utils.h,v 1.2 2000-09-12 00:01:29 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -16,23 +16,22 @@
  * General Public License for more details.
  */
 
-#ifndef __UTILS_H_
-#define __UTILS_H_	1
+#ifndef _TINYPROXY_UTILS_H_
+#define _TINYPROXY_UTILS_H_
 
-#include "conns.h"
+#include "tinyproxy.h"
 
 #define safefree(x) free(x); x = NULL
 
-extern char *xstrdup(char *st);
-extern void *xmalloc(unsigned long int sz);
-extern char *xstrstr(char *haystack, char *needle, unsigned int length,
-		     int case_sensitive);
+extern char *xstrstr(char *haystack, char *needle, size_t length,
+		     bool_t case_sensitive);
 
-extern int showstats(struct conn_s *connptr);
 extern int httperr(struct conn_s *connptr, int err, char *msg);
 
-extern int calcload(void);
-
 extern void makedaemon(void);
+extern void pidfile_create(const char *path);
+
+extern size_t strlcat(char *dst, const char *src, size_t size);
+extern size_t strlcpy(char *dst, const char *src, size_t size);
 
 #endif

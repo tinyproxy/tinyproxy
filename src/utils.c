@@ -1,9 +1,9 @@
-/* $Id: utils.c,v 1.1.1.1 2000-02-16 17:32:24 sdyoung Exp $
+/* $Id: utils.c,v 1.2 2000-09-12 00:01:29 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
- * the load cutoff routine is in here, along with the HTML show stats
- * function. Could not think of a better place for it, so it's in here.
+ * the load cutoff routine is in here. Could not think of a better place for
+ * it, so it's in here.
  *
  * Copyright (C) 1998  Steven Young
  * Copyright (C) 1999  Robert James Kaes (rjkaes@flarenet.com)
@@ -19,60 +19,27 @@
  * General Public License for more details.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <defines.h>
-#endif
-
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <time.h>
-#include <ctype.h>
-#include <sysexits.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <errno.h>
-#include <signal.h>
-#include <sys/stat.h>
-#include <assert.h>
-
-#include "config.h"
 #include "tinyproxy.h"
-#include "utils.h"
-#include "log.h"
-#include "conns.h"
+
+#include <ctype.h>
+#include <signal.h>
+#include <sysexits.h>
+
 #include "buffer.h"
-
-char *xstrdup(char *st)
-{
-	char *p;
-
-	assert(st);
-
-	if (!(p = strdup(st))) {
-		log("ERROR xstrdup: out of memory (%s)", strerror(errno));
-		return NULL;
-	} else {
-		return p;
-	}
-}
+#include "log.h"
+#include "sock.h"
+#include "utils.h"
 
 /*
  * Find the start of the needle in the haystack. Limits the search to less
  * than "length" characters. Returns NULL if the needle is not found.
  */
-char *xstrstr(char *haystack, char *needle, unsigned int length,
-	      int case_sensitive)
+char *xstrstr(char *haystack, char *needle, size_t length,
+	      bool_t case_sensitive)
 {
 	unsigned int i;
 	/* Used to specify which function to use... need the decl. */
-	int (*fn) (const char *s1, const char *s2, unsigned int n);
-
-	assert(haystack);
-	assert(needle);
-	assert(length > 0);
-	assert(case_sensitive == FALSE || case_sensitive == TRUE);
+	int (*fn) (const char *s1, const char *s2, size_t n);
 
 	if (case_sensitive)
 		fn = strncmp;
@@ -84,7 +51,7 @@ char *xstrstr(char *haystack, char *needle, unsigned int length,
 
 	for (i = 0; i <= length - strlen(needle); i++) {
 		if ((*fn) (haystack + i, needle, strlen(needle)) == 0)
-			return haystack + i;
+			return (haystack + i);
 
 	}
 
@@ -92,136 +59,10 @@ char *xstrstr(char *haystack, char *needle, unsigned int length,
 }
 
 /*
- * for-sure malloc
- */
-void *xmalloc(unsigned long int sz)
-{
-	void *p;
-
-	assert(sz > 0);
-
-	if (!(p = malloc((size_t) sz))) {
-		log("ERROR xmalloc: out of memory (%s)", strerror(errno));
-		return NULL;
-	}
-	return p;
-}
-
-#ifdef USE_PROC
-int calcload(void)
-{
-	char buf[BUFFER], *p;
-	FILE *f;
-
-	if (!config.cutoffload) {
-		return -1;
-	}
-
-	if (!(f = fopen("/proc/loadavg", "rt"))) {
-		log("unable to read /proc/loadavg");
-		config.cutoffload = 0.0;
-		return -1;
-	}
-	fgets(buf, BUFFER, f);
-	p = strchr(buf, ' ');
-	*p = '\0';
-	load = atof(buf);
-	fclose(f);
-	return 0;
-}
-
-#else
-int calcload(void)
-{
-	FILE *f;
-	char buf[BUFFER];
-	char *p, *y;
-
-	if (!config.cutoffload) {
-		return -1;
-	}
-
-	if (!(f = popen(UPTIME_PATH, "r"))) {
-		log("calcload: unable to exec uptime");
-		config.cutoffload = 0.0;
-		return -1;
-	}
-	fgets(buf, BUFFER, f);
-	p = strrchr(buf, ':');
-	p += 2;
-	y = strchr(p, ',');
-	*y = '\0';
-	load = atof(p);
-	pclose(f);
-	return 0;
-}
-
-#endif
-
-/*
- * Delete the server's buffer and replace it with a premade message which will
- * be sent to the client.
- */
-static void update_output_buffer(struct conn_s *connptr, char *outbuf)
-{
-	assert(connptr);
-	assert(outbuf);
-
-	delete_buffer(connptr->sbuffer);
-	connptr->sbuffer = new_buffer();
-
-	push_buffer(connptr->sbuffer, outbuf, strlen(outbuf));
-	shutdown(connptr->server_fd, 2);
-	connptr->type = CLOSINGCONN;
-}
-
-/*
- * Display the statics of the tinyproxy server.
- */
-int showstats(struct conn_s *connptr)
-{
-	char *outbuf;
-	static char *msg = "HTTP/1.0 200 OK\r\n" \
-	    "Content-type: text/html\r\n\r\n" \
-	    "<html><head><title>%s stats</title></head>\r\n" \
-	    "<body>\r\n" \
-	    "<center><h2>%s run-time statistics</h2></center><hr>\r\n" \
-	    "<blockquote>\r\n" \
-	    "Number of requests: %lu<br>\r\n" \
-	    "Number of connections: %lu<br>\r\n" \
-	    "Number of bad connections: %lu<br>\r\n" \
-	    "Number of opens: %lu<br>\r\n" \
-	    "Number of listens: %lu<br>\r\n" \
-	    "Number of bytes (tx): %lu<br>\r\n" \
-	    "Number of bytes (rx): %lu<br>\r\n" \
-	    "Number of garbage collects:%lu<br>\r\n" \
-	    "Number of idle connection kills:%lu<br>\r\n" \
-	    "Number of refused connections due to high load:%lu<br>\r\n" \
-	    "Current system load average:%.2f" \
-	    "(recalculated every % lu seconds)<br>\r\n" \
-	    "</blockquote>\r\n</body></html>\r\n";
-
-	assert(connptr);
-
-	outbuf = xmalloc(BUFFER);
-
-	sprintf(outbuf, msg, VERSION, VERSION, stats.num_reqs,
-		stats.num_cons, stats.num_badcons, stats.num_opens,
-		stats.num_listens, stats.num_tx, stats.num_rx,
-		stats.num_garbage, stats.num_idles, stats.num_refused, load,
-		LOAD_RECALCTIMER);
-
-	update_output_buffer(connptr, outbuf);
-
-	return 0;
-}
-
-/*
  * Display an error to the client.
  */
 int httperr(struct conn_s *connptr, int err, char *msg)
 {
-	char *outbuf;
 	static char *premsg = "HTTP/1.0 %d %s\r\n" \
 	    "Content-type: text/html\r\n\r\n" \
 	    "<html><head><title>%s</title></head>\r\n" \
@@ -232,14 +73,13 @@ int httperr(struct conn_s *connptr, int err, char *msg)
 	    "<font size=\"-1\"><em>Generated by %s</em></font>\r\n" \
 	    "</body></html>\r\n";
 
-	assert(connptr);
-	assert(err > 0);
-	assert(msg);
+	connptr->output_message = malloc(MAXBUFFSIZE);
+	if (!connptr->output_message) {
+		log(LOG_CRIT, "Out of memory!");
+		return -1;
+	}
 
-	outbuf = xmalloc(BUFFER);
-	sprintf(outbuf, premsg, err, msg, msg, err, msg, VERSION);
-
-	update_output_buffer(connptr, outbuf);
+	sprintf(connptr->output_message, premsg, err, msg, msg, err, msg, VERSION);
 
 	return 0;
 }
@@ -256,9 +96,180 @@ void makedaemon(void)
 		exit(0);
 
 	chdir("/");
-	umask(0);
+	umask(077);
 
 	close(0);
 	close(1);
 	close(2);
 }
+
+/*
+ * Safely creates filename and returns the low-level file descriptor.
+ */
+static int create_file_safely(const char *filename)
+{
+	struct stat lstatinfo;
+	int fildes;
+
+	/*
+	 * lstat() the file. If it doesn't exist, create it with O_EXCL.
+	 * If it does exist, open it for writing and perform the fstat()
+	 * check.
+	 */
+	if (lstat(filename, &lstatinfo) < 0) {
+		/*
+		 * If lstat() failed for any reason other than "file not
+		 * existing", exit.
+		 */
+		if (errno != ENOENT) {
+			log(LOG_ERR, "Error checking PID file %s: %s",
+			    filename, strerror(errno));
+			return -1;
+		}
+
+		/*
+		 * The file doesn't exist, so create it with O_EXCL to make
+		 * sure an attacker can't slip in a file between the lstat()
+		 * and open()
+		 */
+		if ((fildes = open(filename, O_RDWR | O_CREAT | O_EXCL, 0600)) < 0) {
+			log(LOG_ERR, "Could not create PID file %s: %s",
+			    filename, strerror(errno));
+			return -1;
+		}
+	} else {
+		struct stat fstatinfo;
+		
+		/*
+		 * Open an existing file.
+		 */
+		if ((fildes = open(filename, O_RDWR)) < 0) {
+			log(LOG_ERR, "Could not open PID file %s: %s",
+			    filename, strerror(errno));
+			return -1;
+		}
+
+		/*
+		 * fstat() the opened file and check that the file mode bits,
+		 * inode, and device match.
+		 */
+		if (fstat(fildes, &fstatinfo) < 0
+		    || lstatinfo.st_mode != fstatinfo.st_mode
+		    || lstatinfo.st_ino != fstatinfo.st_ino
+		    || lstatinfo.st_dev != fstatinfo.st_dev) {
+			log(LOG_ERR, "The PID file %s has been changed before it could be opened!",
+			    filename);
+			close(fildes);
+			return -1;
+		}
+
+		/*
+		 * If the above check was passed, we know that the lstat()
+		 * and fstat() were done on the same file. Now we check that
+		 * there's only one link, and that it's a normal file (this
+		 * isn't strictly necessary because the fstat() vs lstat()
+		 * st_mode check would also find this)
+		 */
+		if (fstatinfo.st_nlink > 1 || !S_ISREG(lstatinfo.st_mode)) {
+			log(LOG_ERR, "The PID file %s has too many links, or is not a regular file: %s",
+			    filename, strerror(errno));
+			close(fildes);
+			return -1;
+		}
+
+		/*
+		 * On systems whcih don't support ftruncate() the best we can
+		 * do is to close the file and reopen it in create mode, which
+		 * unfortunately leads to a race condition, however "systems
+		 * which don't support ftruncate()" is pretty much SCO only,
+		 * and if you're using that you deserver what you get.
+		 * ("Little sympathy has been extended")
+		 */
+#if defined NO_FTRUNCATE
+		close(fildes);
+		if ((fildes = open(filename, O_RDWR | O_CREAT | O_TRUNC, 0600)) < 0) {
+			log(LOG_ERR, "Could not open PID file %s: %s",
+			    filename, strerror(errno));
+			return -1;
+		}
+#else
+		ftruncate(fildes, 0);
+#endif	/* NO_FTRUNCATE */
+	}
+
+	return fildes;
+}
+
+/*
+ * Write the PID of the program to the specified file.
+ */
+void pidfile_create(const char *filename)
+{
+	int fildes;
+	FILE *fd;
+
+	/*
+	 * Create a new file
+	 */
+	if ((fildes = create_file_safely(filename)) < 0)
+		exit(1);
+
+	/*
+	 * Open a stdio file over the low-level one.
+	 */
+	if ((fd = fdopen(fildes, "w")) == NULL) {
+		log(LOG_ERR, "fdopen() error on PID file %s: %s",
+		    filename, strerror(errno));
+		close(fildes);
+		unlink(filename);
+		exit(1);
+	}
+
+	fprintf(fd, "%ld\n", (long)getpid());
+	fclose(fd);
+}
+
+#ifndef HAVE_STRLCPY
+/*
+ * Function API taken from OpenBSD. Like strncpy(), but does not 0 fill the
+ * buffer, and always NULL terminates the buffer. size is the size of the
+ * destination buffer.
+ */
+size_t strlcpy(char *dst, const char *src, size_t size)
+{
+	size_t len = strlen(src);
+	size_t ret = len;
+
+	if (len >= size)
+		len = size - 1;
+
+	memcpy(dst, src, len);
+	dst[len] = '\0';
+
+	return ret;
+}
+#endif
+
+#ifndef HAVE_STRLCAT
+/*
+ * Function API taken from OpenBSD. Like strncat(), but does not 0 fill the
+ * buffer, and always NULL terminates the buffer. size is the length of the
+ * buffer, which should be one more than the maximum resulting string
+ * length.
+ */
+size_t strlcat(char *dst, const char *src, size_t size)
+{
+	size_t len1 = strlen(dst);
+	size_t len2 = strlen(src);
+	size_t ret = len1 + len2;
+
+	if (len1 + len2 >= size)
+		len2 = size - len1 - 1;
+	if (len2 > 0) {
+		memcpy(dst + len1, src, len2);
+		dst[len1 + len2] = '\0';
+	}
+
+	return ret;
+}
+#endif
