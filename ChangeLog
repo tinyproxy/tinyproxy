@@ -1,3 +1,67 @@
+2003-04-01  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.ac:
+	Reorganized some of the code, and remove some function tests for
+	which results were never used, and removed duplicate header tests.
+
+	* src/htmlerror.c (add_error_variable):
+	Test whether connptr->error_variable is NULL, and if so call
+	safemalloc().  This is needed since saferealloc() will assert() if
+	the first argument is a NULL pointer.
+
+2003-03-26  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (establish_http_connection):
+	Always include the port number for the requested server.  This
+	fixes a problem when the server is not listening on the default
+	port, 80.  [Fix suggested by duncan@sapio.co.uk]
+
+2003-03-17  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* doc/Makefile.am:
+	Create the doc/report.sh script from the new template file.
+
+	* doc/report.sh, doc/report.sh.tmpl:
+	Moved the doc/report.sh script to doc/report.sh.tmpl file.  The
+	script is then updated by the make procedure to reflect the
+	correct location of the tinyproxy executable.
+
+2003-03-14  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/htmlerror.c:
+	Made get_html_file() and lookup_variable() static functions since
+	they are only used with this file.
+
+	* src/utils.c (send_http_message):
+	Changed the function to use the new http_message API.
+
+2003-03-13  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/grammar.y, src/scanner.l:
+	Allow the URL for the statistic page to be controlled from the
+	configuration file, rather than being hard-coded in the program.
+	[John M Wright]
+
+	* doc/tinyproxy.conf:
+	Include example information for the new "file" directives
+	(ErrorFile, DefaultErrorFile, StatFile.)  [Steven Young]
+
+	* src/utils.c, src/utils.h:
+	Moved the send_http_error_message() and indicate_http_error()
+	functions into the htmlerror.c file, and recoded them to use the
+	new variable substitution system. [Steven Young]
+
+	* src/common.h:
+	Fixed up the include order for the <sys/time.h> and <time.h>
+	headers.
+
+	* src/http_message.c, src/http_message.h:
+	An API to handle HTTP messages as concrete entities.
+
+	* src/text.c, src/text.h (chomp):
+	Fixed up the code to prevent negative array access.  Added
+	code to make sure the supplied arguments are valid.
+
 2003-03-09  Steven Young  <sdyoung@well.com>
 
 	* src/htmlerror.[ch]: Code to allow the use of substituted
