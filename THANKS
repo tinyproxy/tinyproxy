@@ -37,8 +37,7 @@ only the first person to report it is listed.
   George Talusan		- Bug testing
   Chris Lightfoot		- Provided patches to give tinyproxy adns 
                                   support.
-  Michael Pearson,
-  numerous others               - Reported connptr bug with patch.
+  Michael Pearson		- Reported connptr bug with patch.
   Raja Subramanian		- Reported fd leak bug, with patch.
   J.D. Bronson			- Helped make version 1.4.0 release ready
   numerous others               - Reported null requests bug.
