@@ -1,4 +1,4 @@
-/* $Id: ternary.c,v 1.6 2001-08-30 16:52:09 rjkaes Exp $
+/* $Id: ternary.c,v 1.7 2001-09-04 17:53:41 rjkaes Exp $
  *
  * This module creates a Ternary Search Tree which can store both string
  * keys, and arbitrary data for each key. It works similar to a hash, and
@@ -29,6 +29,7 @@
 #  include 	<sys/types.h>
 #endif
 
+#include        <ctype.h>
 #include 	<stdio.h>
 #include 	<stdlib.h>
 #include	<string.h>
@@ -386,9 +387,9 @@ int ternary_search(TERNARY tno, const char *s, void **data)
 	p = trees[cur]->tree_root;
 
 	while (p) {
-		if (*s < p->splitchar)
+		if (toupper(*s) < toupper(p->splitchar))
 			p = p->lokid;
-		else if (*s == p->splitchar) {
+		else if (toupper(*s) == toupper(p->splitchar)) {
 			if (*s++ == 0) {
 				if (data)
 					*data = (void *)p->eqkid;
