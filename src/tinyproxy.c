@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.4 2000-09-12 00:03:53 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.5 2000-09-21 16:57:10 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -244,7 +244,7 @@ int main(int argc, char **argv)
 	}
 
 	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
-		log(LOG_EMERG, "Could not set SIGPIPE\n");
+		log(LOG_CRIT, "Could not set SIGPIPE\n");
 		exit(EX_OSERR);
 	}
 
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
 	 * Start listening on the selected port.
 	 */
 	if (thread_listening_sock(config.port) < 0) {
-		log(LOG_EMERG, "Problem creating listening socket");
+		log(LOG_CRIT, "Problem creating listening socket");
 		exit(EX_OSERR);
 	}
 
@@ -303,11 +303,11 @@ int main(int argc, char **argv)
 	 */
 	log(LOG_INFO, "Setting the various signals.");
 	if (signal(SIGTERM, takesig) == SIG_ERR) {
-		log(LOG_EMERG, "Could not set SIGTERM\n");
+		log(LOG_CRIT, "Could not set SIGTERM\n");
 		exit(EX_OSERR);
 	}
 	if (signal(SIGHUP, takesig) == SIG_ERR) {
-		log(LOG_EMERG, "Could not set SIGHUP\n");
+		log(LOG_CRIT, "Could not set SIGHUP\n");
 		exit(EX_OSERR);
 	}
 
