@@ -8,7 +8,15 @@ REDHAT = \
 # Packaging files
 PACKAGING = $(REDHAT)
 
-EXTRA_DIST = TODO $(PACKAGING)
+#
+# The following files are required for the build process
+#
+CONFIG_FILES = \
+  config/config.guess config/config.sub \
+  config/ltmain.sh config/install-sh config/missing config/mkinstalldirs \
+  config/typecheck.m4
+
+EXTRA_DIST = $(CONFIG_FILES) TODO $(PACKAGING) bootstrap
 SUBDIRS = src doc
 
 install-data-local: tinyproxy-configure-file tinyproxy-html-files
