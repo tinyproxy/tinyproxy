@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.14 2002-05-26 18:56:43 rjkaes Exp $
+# $Id: Makefile.am,v 1.15 2003-03-13 05:28:46 rjkaes Exp $
 #
 # 
 #
@@ -30,6 +30,7 @@ tinyproxy_SOURCES = \
 	daemon.c daemon.h \
 	hashmap.c hashmap.h \
 	heap.c heap.h \
+	http_message.c http_message.h \
 	log.c log.h \
 	network.c network.h \
 	reqs.c reqs.h \
