@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.5 2000-09-21 16:57:10 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.6 2000-10-23 21:44:43 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -32,6 +32,7 @@
 
 #include "anonymous.h"
 #include "buffer.h"
+#include "dnscache.h"
 #include "filter.h"
 #include "log.h"
 #include "reqs.h"
@@ -311,6 +312,19 @@ int main(int argc, char **argv)
 		exit(EX_OSERR);
 	}
 
+	/*
+	 * Initialize the various subsystems...
+	 */
+	log(LOG_INFO, "Starting the DNS caching subsystem.");
+	if (!new_dnscache())
+		exit(EX_SOFTWARE);
+	log(LOG_INFO, "Starting the Anonymous header subsystem.");
+	if (!new_anonymous())
+		exit(EX_SOFTWARE);
+
+	/*
+	 * Start the main loop.
+	 */
 	log(LOG_INFO, "Starting main loop. Accepting connections.");
 	thread_main_loop();
 
