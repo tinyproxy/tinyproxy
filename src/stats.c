@@ -1,4 +1,4 @@
-/* $Id: stats.c,v 1.7 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: stats.c,v 1.8 2002-05-23 18:20:27 rjkaes Exp $
  *
  * This module handles the statistics for tinyproxy. There are only two
  * public API functions. The reason for the functions, rather than just a
@@ -24,6 +24,7 @@
 #include "tinyproxy.h"
 
 #include "log.h"
+#include "heap.h"
 #include "stats.h"
 #include "utils.h"
 

@@ -1,4 +1,4 @@
-/* $Id: vector.c,v 1.4 2002-05-13 23:32:16 rjkaes Exp $
+/* $Id: vector.c,v 1.5 2002-05-23 18:20:27 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbritrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -23,8 +23,8 @@
 
 #include "tinyproxy.h"
 
+#include "heap.h"
 #include "vector.h"
-#include "utils.h"
 
 /*
  * These structures are the storage for the "vector".  Entries are

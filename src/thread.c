@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.29 2002-04-28 18:32:16 rjkaes Exp $
+/* $Id: thread.c,v 1.30 2002-05-23 18:20:27 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -18,6 +18,7 @@
 
 #include "tinyproxy.h"
 
+#include "heap.h"
 #include "log.h"
 #include "reqs.h"
 #include "sock.h"

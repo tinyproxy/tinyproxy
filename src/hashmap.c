@@ -1,4 +1,4 @@
-/* $Id: hashmap.c,v 1.9 2002-05-13 20:02:23 rjkaes Exp $
+/* $Id: hashmap.c,v 1.10 2002-05-23 18:20:27 rjkaes Exp $
  *
  * A hashmap implementation.  The keys are case-insensitive NULL terminated
  * strings, and the data is arbitrary lumps of data.  Copies of both the
@@ -28,7 +28,7 @@
 #include "tinyproxy.h"
 
 #include "hashmap.h"
-#include "utils.h"
+#include "heap.h"
 
 /*
  * These structures are the storage for the hashmap.  Entries are stored in

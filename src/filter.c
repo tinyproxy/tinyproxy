@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.9 2002-04-18 17:59:21 rjkaes Exp $
+/* $Id: filter.c,v 1.10 2002-05-23 18:20:27 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  *
@@ -19,8 +19,8 @@
 #include "tinyproxy.h"
 
 #include "filter.h"
+#include "heap.h"
 #include "regexp.h"
-#include "utils.h"
 
 static int err;
 

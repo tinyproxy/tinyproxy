@@ -1,4 +1,4 @@
-/* $Id: anonymous.c,v 1.13 2002-04-25 18:52:09 rjkaes Exp $
+/* $Id: anonymous.c,v 1.14 2002-05-23 18:20:27 rjkaes Exp $
  *
  * Handles insertion and searches for headers which should be let through when
  * the anonymous feature is turned on.
@@ -20,8 +20,8 @@
 
 #include "anonymous.h"
 #include "hashmap.h"
+#include "heap.h"
 #include "log.h"
-#include "utils.h"
 
 static hashmap_t anonymous_map = NULL;
 
