@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.43 2003-01-27 18:44:43 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.44 2003-02-26 22:37:38 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -380,11 +380,6 @@ main(int argc, char **argv)
 
 	child_main_loop();
 
-#ifdef FILTER_ENABLE
-	if (config.filter)
-		filter_destroy();
-#endif
-
 	log_message(LOG_INFO, "Shutting down.");
 
 	child_kill_children();
@@ -398,6 +393,7 @@ main(int argc, char **argv)
 			    "Could not remove PID file \"%s\": %s.",
 			    config.pidpath, strerror(errno));
 	}
+
 #ifdef FILTER_ENABLE
 	if (config.filter)
 		filter_destroy();
