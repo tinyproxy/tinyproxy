@@ -1,4 +1,4 @@
-/* $Id: hashmap.c,v 1.1 2002-04-07 21:30:02 rjkaes Exp $
+/* $Id: hashmap.c,v 1.2 2002-04-09 16:28:13 rjkaes Exp $
  *
  * A hashmap implementation.  The keys are case-insensitive NULL terminated
  * strings, and the data is arbitrary lumps of data.  Copies of both the
@@ -30,9 +30,11 @@
 #endif
 
 #include <sys/types.h>
-#include <inttypes.h>
+#include <stdint.h>
 
-#include <ctype.h>
+#if defined(HAVE_CTYPE_H)
+#  include <ctype.h>
+#endif
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>

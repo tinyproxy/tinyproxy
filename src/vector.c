@@ -1,4 +1,4 @@
-/* $Id: vector.c,v 1.1 2002-04-07 21:29:23 rjkaes Exp $
+/* $Id: vector.c,v 1.2 2002-04-09 16:28:13 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbritrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -26,7 +26,6 @@
 #endif
 
 #include <sys/types.h>
-#include <inttypes.h>
 
 #include <errno.h>
 #include <stdlib.h>
