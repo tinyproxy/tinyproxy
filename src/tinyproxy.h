@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.26 2001-12-28 22:31:12 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.27 2002-04-09 22:02:05 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -101,9 +101,6 @@
 #ifdef HAVE_GRP_H
 #  include    	<grp.h>
 #endif
-#ifdef HAVE_MALLOC_H
-#  include	<malloc.h>
-#endif
 #ifdef HAVE_MEMORY_H
 #  include	<memory.h>
 #endif
@@ -131,6 +128,10 @@
 #endif
 #ifdef HAVE_STDLIB_H
 #  include	<stdlib.h>
+#else
+#  ifdef HAVE_MALLOC_H
+#    include	<malloc.h>
+#  endif
 #endif
 #ifdef HAVE_STRING_H
 #  include	<string.h>
