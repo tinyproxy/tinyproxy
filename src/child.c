@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.4 2002-06-15 17:31:31 rjkaes Exp $
+/* $Id: child.c,v 1.5 2002-06-27 16:29:21 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -19,6 +19,7 @@
 #include "tinyproxy.h"
 
 #include "child.h"
+#include "daemon.h"
 #include "filter.h"
 #include "heap.h"
 #include "log.h"
@@ -242,6 +243,13 @@ child_make(struct child_s* ptr)
        
 	if ((pid = fork()) > 0)
 		return pid;	/* parent */
+
+	/*
+	 * Reset the SIGNALS so that the child can be reaped.
+	 */
+	set_signal_handler(SIGCHLD, SIG_DFL);
+	set_signal_handler(SIGTERM, SIG_DFL);
+	set_signal_handler(SIGHUP, SIG_DFL);
 
 	child_main(ptr); /* never returns */
 	return -1;
