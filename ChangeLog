@@ -1,3 +1,16 @@
+2002-04-09  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.ac: The configure script now doesn't include a check
+	for the malloc.h header if tinyproxy is being compiled on an
+	OpenBSD machine.  I might actually just remove the malloc.h header
+	since the malloc/calloc/realloc/free functions are supposed to be
+	in the stdlib.h header.  I also changed the LIBOBJS="" lines to
+	AC_LIBOBJ() macro so conform to the new Autoconf rules.
+
+	* src/hashmap.c:
+	* src/vector.c: Cleaned up the include headers to _hopefully_ be
+	more portable.  Who knows though.
+
 2002-04-08  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/thread.c (thread_main_loop): Moved the looping code into
