@@ -1,4 +1,36 @@
+2002-05-29  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (add_header_to_connection):
+	Removed the "double_cgi" boolean, since tinyproxy now ignores all
+	the headers after a "double CGI" situation has occurred.
+	(get_all_headers): Instead of dropping duplicate headers when the
+	"double CGI" situation occurs, tinyproxy will now drop _all_ the
+	headers from the "inner" HTTP response.
+
+	* src/stats.c (init_stats):
+	Fixed a spelling mistake where the number of bytes being allocated
+	was incorrect.
+
+2002-05-28  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (add_header_to_connection):
+	Added a boolean to indicate that a "Double CGI" situation is in
+	affect.  This is needed to solve a problem with some sites (like
+	cgi.ebay.com) where they are sending two HTTP response lines (and
+	associated headers) with a response.
+	(get_all_headers): Detect if a "Double CGI" situation has occurred.
+
+	* src/reqs.c (get_all_headers):
+	Added code to ignore a "response" line in a header.  This was
+	pointed out as being a problem with eBay (cgi.ebay.com)
+	(process_server_headers): Added code to make skip blank lines
+	before a response line.
+
 2002-05-27  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* doc/Makefile.am:
+	Fixed up a problem where the tinyproxy manual page was not getting
+	included with the distribution.
 
 	* src/reqs.c (process_request):
 	Changed the filtering code around to handle both domains and URLs.
