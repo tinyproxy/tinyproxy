@@ -34,12 +34,7 @@ against the current tree and I'll integrate it if possible.
 
  * Enable an option for chroot() jailing tinyproxy.
 
- * Add an option which allows the blocking of connections to certain
-   ports (like 25, 110, etc.) that might be used for "bad" things. :)
-
  * Come up with a more consistent (and elegant) way of logging errors
    for the administrators.  Right now it's more a hodge-podge
    collections of error messages without a _real_ standard.  I would
    prefer a more uniform look.
-
- * All selective binding, rather than the default wildcard system.
