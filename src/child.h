@@ -1,4 +1,4 @@
-/* $Id: child.h,v 1.1 2002-05-26 18:45:26 rjkaes Exp $
+/* $Id: child.h,v 1.1.2.1 2004-06-14 20:49:57 rjkaes Exp $
  *
  * See 'child.c' for more information.
  *
@@ -32,6 +32,6 @@ extern void child_close_sock(void);
 extern void child_main_loop(void);
 extern void child_kill_children(void);
 
-extern short int child_configure(child_config_t type, unsigned int val);
+extern short int child_configure(child_config_t type, int val);
 
 #endif
