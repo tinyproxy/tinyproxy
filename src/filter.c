@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.5 2001-09-08 18:58:37 rjkaes Exp $
+/* $Id: filter.c,v 1.6 2001-09-12 03:32:54 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  *
@@ -53,17 +53,11 @@ void filter_init(void)
 			while (fgets(buf, 255, fd)) {
 				s = buf;
 				if (!p)	/* head of list */
-					fl = p = (struct filter_list *)
-					    safemalloc(sizeof
-						    (struct filter_list));
+					fl = p = safecalloc(1, sizeof(struct filter_list));
 				else {	/* next entry */
-					p->next = (struct filter_list *)
-					    safemalloc(sizeof
-						    (struct filter_list));
+					p->next = safecalloc(1, sizeof(struct filter_list));
 					p = p->next;
 				}
-				/* initialize space to zero */
-				memset(p, 0, sizeof(struct filter_list));
 
 				/* replace first whitespace with \0 */
 				while (*s++)
