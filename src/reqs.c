@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.88 2002-12-04 17:06:13 rjkaes Exp $
+/* $Id: reqs.c,v 1.89 2002-12-04 17:36:48 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -190,6 +190,26 @@ free_request_struct(struct request_s *request)
 }
 
 /*
+ * Take a host string and if there is a username/password part, strip
+ * it off.
+ */
+static void
+strip_username_password(char* host)
+{
+	char *ptr1, *ptr2;
+
+	if ((ptr1 = strchr(host, '@')) != NULL) {
+		ptr1++; /* move to one past the @ symbol */
+		ptr2 = host;
+
+		/* copy the bytes up to the NUL */
+		while (*ptr1) 
+			*ptr2++ = *ptr1++;
+		*ptr2 = '\0';
+	}
+}
+
+/*
  * Pull the information out of the URL line.  This will handle both HTTP
  * and FTP (proxied) URLs.
  */
@@ -217,6 +237,9 @@ extract_http_url(const char *url, struct request_s *request)
 		log_message(LOG_ERR, "extract_http_url: Can't parse URL.");
 		goto ERROR_EXIT;
 	}
+
+	/* Remove the username/password if they're present */
+	strip_username_password(request->host);
 
 	return 0;
 
@@ -248,6 +271,9 @@ extract_ssl_url(const char *url, struct request_s *request)
 		safefree(request->host);
 		return -1;
 	}
+
+	/* Remove the username/password if they're present */
+	strip_username_password(request->host);
 
 	return 0;
 }
