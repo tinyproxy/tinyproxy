@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.28 2002-04-22 19:34:20 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.29 2002-04-24 16:45:45 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -45,7 +45,6 @@ extern FILE *yyin;
 struct config_s config;
 float load = 0.00;
 bool_t log_rotation_request = FALSE;
-char* bind_address = NULL;
 bool_t processed_config_file = FALSE;
 
 /*

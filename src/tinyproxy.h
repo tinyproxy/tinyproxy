@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.29 2002-04-22 19:34:20 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.30 2002-04-24 16:45:45 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -213,13 +213,12 @@ struct config_s {
 #endif				/* UPSTREAM_SUPPORT */
 	char *pidpath;
 	unsigned int idletimeout;
-
+	char* bind_address;
 };
 
 /* Global Structures used in the program */
 extern struct config_s config;
 extern bool_t log_rotation_request;
-extern char* bind_address;
 extern bool_t processed_config_file;
 
 #endif
