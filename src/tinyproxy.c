@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.31 2002-05-24 04:45:32 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.32 2002-05-26 18:52:23 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -27,14 +27,13 @@
 #include "anonymous.h"
 #include "buffer.h"
 #include "daemon.h"
-#include "dnsclient.h"
 #include "heap.h"
 #include "filter.h"
+#include "child.h"
 #include "log.h"
 #include "reqs.h"
 #include "sock.h"
 #include "stats.h"
-#include "thread.h"
 #include "utils.h"
 
 void takesig(int sig);
@@ -320,7 +319,7 @@ main(int argc, char **argv)
 	/*
 	 * Start listening on the selected port.
 	 */
-	if (thread_listening_sock(config.port) < 0) {
+	if (child_listening_sock(config.port) < 0) {
 		fprintf(stderr, "%s: Could not create listening socket.\n",
 			argv[0]);
 		exit(EX_OSERR);
@@ -369,37 +368,14 @@ main(int argc, char **argv)
 			    "Not running as root, so not changing UID/GID.");
 	}
 
-	/*
-	 * Start the "dnsserver" child process.
-	 */
-	if (config.dnsserver_location && config.dnsserver_socket) {
-		struct stat stat_buf;
-		if (lstat(config.dnsserver_socket, &stat_buf) == 0 || errno != ENOENT) {
-			fprintf(stderr, "%s:\nThere was a problem creating the dnsserver socket.\nPlease remove '%s'.\n",
-				argv[0], config.dnsserver_socket);
-			exit(EX_OSERR);
-		}
-
-		start_dnsserver(config.dnsserver_location,
-				config.dnsserver_socket);
-	} else {
-		if (!config.dnsserver_location) {
-			fprintf(stderr, "%s: You must provide a location for the 'dnsserver' program.\n", argv[0]);
-		}
-		if (!config.dnsserver_socket) {
-			fprintf(stderr, "%s: You must provide a path for the 'dnsserver' socket.\n", argv[0]);
-		}
-		exit(EX_SOFTWARE);
-	}
-
-	if (thread_pool_create() < 0) {
-		fprintf(stderr, "%s: Could not create the pool of threads.",
+	if (child_pool_create() < 0) {
+		fprintf(stderr, "%s: Could not create the pool of children.",
 			argv[0]);
 		exit(EX_SOFTWARE);
 	}
 
 	/*
-	 * These signals are only for the main thread.
+	 * These signals are only for the main child.
 	 */
 	log_message(LOG_INFO, "Setting the various signals.");
 	if (set_signal_handler(SIGTERM, takesig) == SIG_ERR) {
@@ -418,7 +394,7 @@ main(int argc, char **argv)
 	 */
 	log_message(LOG_INFO, "Starting main loop. Accepting connections.");
 
-	thread_main_loop();
+	child_main_loop();
 
 #ifdef FILTER_ENABLE
 	if (config.filter)
@@ -427,13 +403,8 @@ main(int argc, char **argv)
 
 	log_message(LOG_INFO, "Shutting down.");
 
-	thread_kill_threads();
-	thread_close_sock();
-
-	/*
-	 * Stop the "dnsserver" child process.
-	 */
-	stop_dnsserver();
+	child_kill_children();
+	child_close_sock();
 
 	/*
 	 * Remove the PID file.
