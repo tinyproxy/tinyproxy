@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.13 2002-05-23 04:43:06 rjkaes Exp $
+# $Id: Makefile.am,v 1.14 2002-05-26 18:56:43 rjkaes Exp $
 #
 # 
 #
@@ -18,24 +18,16 @@
 YFLAGS = @YFLAGS@
 LDFLAGS = @LDFLAGS@
 
-sbin_PROGRAMS = tinyproxy dnsserver
-
-dnsserver_SOURCES = \
-	common.h \
-	daemon.c daemon.h \
-	dnsserver.c \
-	heap.c heap.h \
-	network.c network.h \
-	text.c text.h
+sbin_PROGRAMS = tinyproxy
 
 tinyproxy_SOURCES = \
 	acl.c acl.h \
 	anonymous.c anonymous.h \
 	buffer.c buffer.h \
+	child.c child.h \
 	common.h \
 	conns.c conns.h \
 	daemon.c daemon.h \
-	dnsclient.c dnsclient.h \
 	hashmap.c hashmap.h \
 	heap.c heap.h \
 	log.c log.h \
@@ -44,7 +36,6 @@ tinyproxy_SOURCES = \
 	sock.c sock.h \
 	stats.c stats.h \
 	text.c text.h \
-	thread.c thread.h \
 	tinyproxy.c tinyproxy.h \
 	utils.c utils.h \
 	vector.c vector.h \
