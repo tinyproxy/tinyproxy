@@ -1,3 +1,26 @@
+2003-04-16  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (build_url):
+	Rebuild the URL from the component pieces.  This function
+	is used by the transparent proxy code.  [Anatole Shaw]
+	(process_request): Fixed up the transparent proxy code so that
+	filtering can be done on the whole URL.  [Anatole Shaw]
+
+	(pull_client_data): Added a bug fix for Internet Explorer (IE).
+	IE will leave an extra CR and LF after the data in an HTTP POST.
+	The new code will eat the extra bytes if they're present.  Thanks
+	to Yannick Koehler for finding the bug and offering an explanation
+	as to why it was happening.
+
+	Changed all calls of connptr->remote_content_length to
+	connptr->content_length.server
+
+	* src/conns.c, src/conns.h:
+	Removed the remote_content_length field in the "conn" structure
+	and replaced it with a smaller structure containing both the
+	remote/server and the local/client content-length fields if
+	they're present in the HTTP response headers.
+
 2003-04-01  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* configure.ac:
