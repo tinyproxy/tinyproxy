@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.19 2003-03-13 21:28:37 rjkaes Exp $
+/* $Id: grammar.y,v 1.20 2003-03-13 21:42:46 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -52,6 +52,7 @@ int yylex(void);
 %token KW_FILTER_CASESENSITIVE
 %token KW_UPSTREAM
 %token KW_CONNECTPORT KW_BIND KW_HTTP_VIA
+%token KW_STATHOST
 %token KW_ALLOW KW_DENY
 %token KW_ERRORPAGE KW_DEFAULT_ERRORPAGE
 %token KW_STATPAGE
@@ -203,6 +204,11 @@ statement
 			  config.via_http_header = FALSE;
 		  }
           }
+        | KW_STATHOST string
+          {
+		  log_message(LOG_INFO, "Stathost is set to \"%s\"", $2);
+		  config.stathost = $2;
+	  }
 	;
 
 loglevels
