@@ -1,4 +1,4 @@
-/* $Id: heap.c,v 1.5 2002-07-09 18:52:32 rjkaes Exp $
+/* $Id: heap.c,v 1.6 2003-06-26 18:14:13 rjkaes Exp $
  *
  * Debugging versions of various heap related functions are combined
  * here.  The debugging versions include assertions and also print
@@ -67,10 +67,10 @@ debugging_realloc(void *ptr, size_t size, const char *file, unsigned long line)
 void
 debugging_free(void *ptr, const char *file, unsigned long line)
 {
-	assert(ptr != NULL);
-
 	fprintf(stderr, "{free: %p} %s:%lu\n", ptr, file, line);
-	free(ptr);
+
+	if (ptr != NULL)
+		free(ptr);
 	return;
 }
 
