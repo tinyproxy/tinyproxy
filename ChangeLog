@@ -1,5 +1,8 @@
 2002-05-13  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/vector.c: Added the "tail" pointer to make insertions more
+	efficient.
+
 	* src/hashmap.c (hashmap_insert): Fixed a potential SEGFAULT if
 	the memory for the new hashmap entry could not be allocated.
 	(hashmap_remove): Fixed a problem where an entry could have it's

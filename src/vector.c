@@ -1,4 +1,4 @@
-/* $Id: vector.c,v 1.3 2002-04-18 17:57:19 rjkaes Exp $
+/* $Id: vector.c,v 1.4 2002-05-13 23:32:16 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbritrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -42,7 +42,8 @@ struct vectorentry_s {
 
 struct vector_s {
 	size_t num_entries;
-	struct vectorentry_s *vector;
+	struct vectorentry_s *head;
+	struct vectorentry_s *tail;
 };
 
 /*
@@ -62,7 +63,7 @@ vector_create(void)
 		return NULL;
 
 	vector->num_entries = 0;
-	vector->vector = NULL;
+	vector->head = vector->tail = NULL;
 	
 	return vector;
 }
@@ -81,13 +82,13 @@ vector_delete(vector_t vector)
 	if (!vector)
 		return -EINVAL;
        
-	ptr = vector->vector;
+	ptr = vector->head;
 	while (ptr) {
 		next = ptr->next;
 		safefree(ptr->data);
 		safefree(ptr);
 
-		ptr = next;	
+		ptr = next;
 	}
 
 	safefree(vector);
@@ -107,7 +108,7 @@ vector_delete(vector_t vector)
 int
 vector_insert(vector_t vector, void *data, ssize_t len)
 {
-	struct vectorentry_s *entry, **ptr;
+	struct vectorentry_s *entry;
 
 	if (!vector || !data || len <= 0)
 		return -EINVAL;
@@ -126,11 +127,15 @@ vector_insert(vector_t vector, void *data, ssize_t len)
 	entry->len = len;
 	entry->next = NULL;
 
-	ptr = &vector->vector;
-	while (*ptr)
-		ptr = &((*ptr)->next);
+	if (vector->tail) {
+		/* If "tail" is not NULL, it points to the last entry */
+		vector->tail->next = entry;
+		vector->tail = entry;
+	} else {
+		/* No "tail", meaning no entries.  Create both. */
+		vector->head = vector->tail = entry;
+	}
 
-	*ptr = entry;
 	vector->num_entries++;
 
 	return 0;
@@ -156,7 +161,7 @@ vector_getentry(vector_t vector, size_t pos, void **data)
 		return -ERANGE;
 
 	loc = 0;
-	ptr = vector->vector;
+	ptr = vector->head;
 
 	while (loc != pos) {
 		ptr = ptr->next;
