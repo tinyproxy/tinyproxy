@@ -1,3 +1,17 @@
+2001-10-25  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (relay_connection): Empty the contents of both
+	buffers when either socket is closed. This is more in line with
+	what a tunnel should do. Since either end could close with
+	information still in the buffers.
+	(connect_to_upstream): Cleaned up the code to re-use the
+	establish_http_connection() function.
+
+	* src/buffer.c (readbuff): Changed the memory allocation to 2K
+	from 48K since an Ethernet connection is usually around 1400
+	bytes. There's little point in allocating a huge amount of memory,
+	only to shrink the memory map in the next breath.
+
 2001-10-22  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/sock.c (getpeer_string): Added logging in case the
