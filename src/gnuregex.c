@@ -28,7 +28,7 @@
 #define _GNU_SOURCE
 
 #ifdef HAVE_CONFIG_H
-# include <defines.h>	/* Tinyproxy uses defines.h for autoconf defs */
+# include <config.h> 
 #endif
 
 #ifndef PARAMS
