@@ -38,9 +38,6 @@
 				server in your domain.
 	--enable-filter		Allows tinyproxy to filter out certain
 				domains and URLs.
-	--enable-tunnel		Provides the option of having
-				tinyproxy act as TCP tunnel, rather
-				than a HTTP proxy.
 	--enable-upstream	Enable support for proxying connections
 				through another proxy server.
 	--enable-transparent-proxy
