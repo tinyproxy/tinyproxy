@@ -1,3 +1,8 @@
+2002-05-07  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (connect_to_tunnel): Removed request logging code in
+	the tunnel method since it breaks the "tunnel" concept.
+
 2002-05-02  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* configure.ac: Added code to figure out exactly where to install

@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.70 2002-04-28 20:03:18 rjkaes Exp $
+/* $Id: reqs.c,v 1.71 2002-05-08 03:29:23 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -1107,6 +1107,19 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 static int
 connect_to_tunnel(struct conn_s *connptr)
 {
+
+#if 0
+	/*
+	 * NOTE: This must be fixed
+	 *
+	 * Needed to remove this for right now since it breaks the semantics
+	 * of the "tunnel" concept since the information from the remote host
+	 * wasn't being sent until _after_ data was sent by the client.  This
+	 * is not correct since we should be sending the data regardless of
+	 * who sent it first.
+	 *
+	 * I'll have to look into this for the next release.
+	 */
 	char *request_buf;
 	ssize_t len;
 	int pos;
@@ -1122,6 +1135,8 @@ connect_to_tunnel(struct conn_s *connptr)
 
 		safefree(request_buf);
 	}
+#endif
+
 	log_message(LOG_INFO, "Redirecting to %s:%d",
 		    config.tunnel_name, config.tunnel_port);
 
