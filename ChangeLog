@@ -1,3 +1,15 @@
+2001-12-19  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (write_message): Encapsulate code to handle sending
+	snprintf() built lines to a file descriptor.
+
+2001-12-18  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (connect_to_tunnel): Moved the tunnel connection code
+	into its own function.
+	(TUNNEL_CONFIGURED): Added a macro to help simplify the tests for
+	tunnelling support.
+
 2001-12-17  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (handle_connection): Also log the request when
@@ -16,7 +28,7 @@
 	upstream proxy support.
 	(establish_http_connection): Lines are now composed in a buffer
 	and then sent to the safe_write() function. This was done because
-	some sites (like www.heise.de) do not like having the the request
+	some sites (like www.heise.de) do not like having the request
 	line sent in pieces.
 
 2001-12-15  Robert James Kaes  <rjkaes@flarenet.com>
