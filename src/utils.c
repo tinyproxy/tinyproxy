@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.2 2000-09-12 00:01:29 rjkaes Exp $
+/* $Id: utils.c,v 1.3 2001-01-15 17:06:19 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -79,7 +79,7 @@ int httperr(struct conn_s *connptr, int err, char *msg)
 		return -1;
 	}
 
-	sprintf(connptr->output_message, premsg, err, msg, msg, err, msg, VERSION);
+	snprintf(connptr->output_message, MAXBUFFSIZE, premsg, err, msg, msg, err, msg, VERSION);
 
 	return 0;
 }

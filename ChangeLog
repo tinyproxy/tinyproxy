@@ -1,3 +1,7 @@
+2001-01-15  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/utils.c (httperr): A heap overflow bug fixed.
+
 2000-12-07  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/thread.c (thread_main_loop): Removed all the weird timing
