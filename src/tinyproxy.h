@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.22 2001-11-26 01:39:53 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.23 2001-11-26 05:23:49 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -113,6 +113,10 @@
 #endif
 #ifdef HAVE_PTHREAD_H
 #  include	<pthread.h>
+#else
+#  ifdef HAVE_PTHREADS_H
+#    include 	<pthreads.h>
+#  endif
 #endif
 #ifdef HAVE_PWD_H
 #  include     	<pwd.h>
