@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.5 2001-08-27 03:45:34 rjkaes Exp $
+/* $Id: utils.c,v 1.6 2001-08-27 17:46:50 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -68,7 +68,7 @@ int httperr(struct conn_s *connptr, int err, const char *msg)
 		"HTTP/1.0 %d %s\r\n" \
 		"Server: %s/%s\r\n" \
 		"Date: %s\r\n" \
-		"Content-Type: text/mime\r\n" \
+		"Content-Type: text/html\r\n" \
 		"Content-Length: %d\r\n" \
 		"Connection: close\r\n" \
 		"\r\n";
