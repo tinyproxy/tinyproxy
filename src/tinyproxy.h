@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.10 2001-06-06 19:33:26 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.11 2001-08-26 21:18:04 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -95,7 +95,6 @@ struct config_s {
 	bool_t quit;
 	char *username;
 	char *group;
-	bool_t anonymous;
 	char *ipAddr;
 #ifdef FILTER_ENABLE
 	char *filter;
@@ -109,6 +108,7 @@ struct config_s {
 #endif				/* TUNNEL_SUPPORT */
 	char *pidpath;
 	unsigned int idletimeout;
+
 };
 
 struct conn_s {
