@@ -1,4 +1,4 @@
-/* $Id: ternary.c,v 1.7 2001-09-04 17:53:41 rjkaes Exp $
+/* $Id: ternary.c,v 1.8 2001-09-06 21:52:31 rjkaes Exp $
  *
  * This module creates a Ternary Search Tree which can store both string
  * keys, and arbitrary data for each key. It works similar to a hash, and
@@ -269,7 +269,8 @@ int ternary_destroy(TERNARY tno, void (*freeptr)(void *))
 		for (j = 0; j < BUFSIZE; j++) {
 			Tnode *ptr = (trees[cur]->freearr[i] + j);
 			if (ptr->splitchar == 0)
-				(*freeptr)(ptr->eqkid);
+				if (freeptr)
+					(*freeptr)(ptr->eqkid);
 			safefree(ptr);
 		}
 	}
