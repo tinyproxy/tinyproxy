@@ -1,4 +1,4 @@
-/* $Id: hashmap.c,v 1.4 2002-04-18 17:57:20 rjkaes Exp $
+/* $Id: hashmap.c,v 1.5 2002-04-18 18:40:38 rjkaes Exp $
  *
  * A hashmap implementation.  The keys are case-insensitive NULL terminated
  * strings, and the data is arbitrary lumps of data.  Copies of both the
@@ -159,6 +159,7 @@ hashmap_delete(hashmap_t map)
 			delete_hashentries(map->maps[i]);
 	}
 
+	safefree(map->maps);
 	safefree(map);
 
 	return 0;
