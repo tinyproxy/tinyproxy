@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.44 2001-12-17 19:10:56 rjkaes Exp $
+/* $Id: reqs.c,v 1.45 2001-12-18 05:01:03 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -510,12 +510,15 @@ process_client_headers(struct conn_s *connptr)
 	ssize_t len;
 
 	static char *skipheaders[] = {
-		"proxy-connection",
 		"host",
+		"connection",
 		"keep-alive",
 		"proxy-authenticate",
 		"proxy-authorization",
-		"connection"
+		"te",
+		"trailers",
+		"transfer-encoding",
+		"upgrade"
 	};
 	int i;
 
