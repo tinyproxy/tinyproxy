@@ -1,4 +1,4 @@
-/* $Id: buffer.h,v 1.1.1.1 2000-02-16 17:32:22 sdyoung Exp $
+/* $Id: buffer.h,v 1.2 2000-03-31 20:09:19 rjkaes Exp $
  *
  * See 'buffer.c' for a detailed description.
  *
@@ -31,6 +31,9 @@ struct buffer_s {
 	struct bufline_s *head;	/* top of the buffer */
 	struct bufline_s *tail;	/* bottom of the buffer */
 	unsigned long int size;	/* total size of the buffer */
+
+	unsigned char *working_string;	/* needed for building a new line incr. */
+	unsigned int working_length;	/* length of working line */
 };
 
 #define buffer_head(x) (((struct buffer_s *)(x))->head)

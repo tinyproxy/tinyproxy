@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.1.1.1 2000-02-16 17:32:22 sdyoung Exp $
+/* $Id: buffer.c,v 1.2 2000-03-31 20:09:19 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -72,6 +72,9 @@ struct buffer_s *new_buffer(void)
 	buffptr->head = buffptr->tail = NULL;
 	buffptr->size = 0;
 
+	buffptr->working_string = NULL;
+	buffptr->working_length = 0;
+
 	return buffptr;
 }
 
@@ -91,6 +94,9 @@ void delete_buffer(struct buffer_s *buffptr)
 	}
 	buffer_head(buffptr) = NULL;
 	buffer_tail(buffptr) = NULL;
+
+	buffptr->working_length = 0;
+	safefree(buffptr->working_string);
 
 	safefree(buffptr);
 }
