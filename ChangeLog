@@ -1,3 +1,9 @@
+2001-10-18  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/buffer.c (readbuff): Fixed a problem where a full buffer
+	would cause the connection to be closed. Thanks to Jeffrey
+	Wheelhouse for helping me find this problem.
+
 2001-09-29  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* configure.in: Uses any CFLAGS variable passed to the configure

@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.11 2001-09-15 21:24:18 rjkaes Exp $
+/* $Id: buffer.c,v 1.12 2001-10-18 21:45:54 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -198,7 +198,7 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 	if (!buffer)
 		return 0;
 
-	bytesin = read(fd, buffer, MAXBUFFSIZE - buffer_size(buffptr) - 1);
+	bytesin = read(fd, buffer, MAXBUFFSIZE - buffer_size(buffptr));
 
 	if (bytesin > 0) {
 		newbuffer = saferealloc(buffer, bytesin);
