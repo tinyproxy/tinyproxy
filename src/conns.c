@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.12 2002-05-24 04:45:32 rjkaes Exp $
+/* $Id: conns.c,v 1.13 2002-11-13 17:47:40 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connection related tasks put here, but for now the header
@@ -23,6 +23,7 @@
 #include "buffer.h"
 #include "conns.h"
 #include "heap.h"
+#include "log.h"
 #include "stats.h"
 
 struct conn_s *
@@ -93,9 +94,13 @@ destroy_conn(struct conn_s *connptr)
 	assert(connptr != NULL);
 
 	if (connptr->client_fd != -1)
-		close(connptr->client_fd);
+		if (close(connptr->client_fd) < 0)
+			log_message(LOG_INFO, "Client (%d) close message: %s",
+			            connptr->client_fd, strerror(errno));
 	if (connptr->server_fd != -1)
-		close(connptr->server_fd);
+		if (close(connptr->server_fd) < 0)
+			log_message(LOG_INFO, "Server (%d) close message: %s",
+				    connptr->server_fd, strerror(errno));
 
 	if (connptr->cbuffer)
 		delete_buffer(connptr->cbuffer);
