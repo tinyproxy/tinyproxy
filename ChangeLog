@@ -1,3 +1,9 @@
+2001-12-17  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (handle_connection): Also log the request when
+	tinyproxy is in tunnelling mode. This was implemented by
+	Hans-Georg Bork.
+
 2001-12-16  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/sock.c (safe_write): Add assert() calls to make sure the
