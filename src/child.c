@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.15 2004-08-10 21:24:23 rjkaes Exp $
+/* $Id: child.c,v 1.16 2004-08-24 16:33:00 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -189,9 +189,9 @@ child_main(struct child_s* ptr)
 		if (getenv("TINYPROXY_DEBUG")) {
 			/* Pause for 10 seconds to allow us to connect debugger */
 			fprintf(stderr,
-				"Process has accepted connection: %u\n", ptr->tid);
+				"Process has accepted connection: %ld\n", (long int)ptr->tid);
 			sleep(10);
-			fprintf(stderr, "Continuing process: %u\n", ptr->tid);
+			fprintf(stderr, "Continuing process: %ld\n", (long int)ptr->tid);
 		}
 #endif
 
@@ -250,7 +250,7 @@ child_main(struct child_s* ptr)
  * Fork a child "child" (or in our case a process) and then start up the
  * child_main() function.
  */
-static int
+static pid_t
 child_make(struct child_s* ptr)
 {
 	pid_t pid;
