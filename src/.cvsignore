@@ -1,0 +1,8 @@
+.deps
+.libs
+Makefile
+Makefile.in
+grammar.c
+grammar.h
+scanner.c
+tinyproxy
