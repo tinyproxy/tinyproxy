@@ -1,3 +1,11 @@
+2000-09-25  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/dnscache.c (dns_insert): If the insert fails, delete the
+	allocated memory. No more memory leak.
+
+	* src/ternary.c (ternary_insert): Return an error if the key is
+	already in the tree.
+
 2000-09-21  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/log.c: Added the LOG_NOTICE level for more important than
