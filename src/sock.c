@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.39 2002-10-03 20:50:59 rjkaes Exp $
+/* $Id: sock.c,v 1.40 2004-02-18 20:18:53 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -7,7 +7,7 @@
  * actually is.
  *
  * Copyright (C) 1998  Steven Young
- * Copyright (C) 1999  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 1999,2004  Robert James Kaes (rjkaes@users.sourceforge.net)
  * Copyright (C) 2000  Chris Lightfoot (chris@ex-parrot.com)
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -25,96 +25,103 @@
 
 #include "log.h"
 #include "heap.h"
+#include "network.h"
 #include "sock.h"
 #include "text.h"
 
 /*
- * Take a string host address and return a struct in_addr so we can connect
- * to the remote host.
- *
- * Return a negative if there is a problem.
+ * Bind the given socket to the supplied address.  The socket is
+ * returned if the bind succeeded.  Otherwise, -1 is returned
+ * to indicate an error.
  */
 static int
-lookup_domain(struct in_addr *addr, const char *domain)
-{	
-	struct hostent* result;
+bind_socket(int sockfd, const char* addr)
+{
+	struct addrinfo hints, *res, *ressave;
 
-	assert(domain != NULL);
+	assert(sockfd >= 0);
+	assert(addr != NULL && strlen(addr) != 0);
 
-	result = gethostbyname(domain);
-	if (result) {
-		memcpy(addr, result->h_addr_list[0], result->h_length);
-		return 0;
-	} else
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+
+	/* The local port it not important */
+	if (getaddrinfo(addr, NULL, &hints, &res) != 0)
 		return -1;
+
+	ressave = res;
+
+	/* Loop through the addresses and try to bind to each */
+	do {
+		if (bind(sockfd, res->ai_addr, res->ai_addrlen) == 0)
+			break; /* success */
+	} while ((res = res->ai_next) != NULL);
+
+	freeaddrinfo(ressave);
+	if (res == NULL) /* was not able to bind to any address */
+		return -1;
+
+	return sockfd;
 }
 
-/* This routine is so old I can't even remember writing it.  But I do
- * remember that it was an .h file because I didn't know putting code in a
- * header was bad magic yet.  anyway, this routine opens a connection to a
- * system and returns the fd.
- *	- steve
- *
- * Cleaned up some of the code to use memory routines which are now the
- * default. Also, the routine first checks to see if the address is in
- * dotted-decimal form before it does a name lookup.
- *      - rjkaes
+/*
+ * Open a connection to a remote host.  It's been re-written to use
+ * the getaddrinfo() library function, which allows for a protocol
+ * independent implementation (mostly for IPv4 and IPv6 addresses.)
  */
 int
-opensock(char *ip_addr, uint16_t port)
+opensock(const char* host, int port)
 {
-	int sock_fd;
-	struct sockaddr_in port_info;
-	struct sockaddr_in bind_addr;
-	int ret;
+	int sockfd, n;
+	struct addrinfo hints, *res, *ressave;
+	char portstr[6];
 
-	assert(ip_addr != NULL);
+	assert(host != NULL);
 	assert(port > 0);
 
-	memset((struct sockaddr *) &port_info, 0, sizeof(port_info));
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
 
-	port_info.sin_family = AF_INET;
+	snprintf(portstr, sizeof(portstr), "%d", port);
 
-	/* Lookup and return the address if possible */
-	ret = lookup_domain(&port_info.sin_addr, ip_addr);
-
-	if (ret < 0) {
-		log_message(LOG_ERR,
-			    "opensock: Could not lookup address \"%s\".",
-			    ip_addr);
+	n = getaddrinfo(host, portstr, &hints, &res);
+	if (n != 0) {
+		log_message(LOG_ERR, "opensock: Could not retrieve info for %s",
+			    host);
 		return -1;
 	}
 
-	port_info.sin_port = htons(port);
+	ressave = res;
+	do {
+		sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (sockfd < 0)
+			continue; /* ignore this one */
 
-	if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		log_message(LOG_ERR, "opensock: socket() error \"%s\".",
-			    strerror(errno));
-		return -1;
-	}
-
-	/* Bind to the specified address */
-	if (config.bind_address) {
-		memset(&bind_addr, 0, sizeof(bind_addr));
-		bind_addr.sin_family = AF_INET;
-		bind_addr.sin_addr.s_addr = inet_addr(config.bind_address);
-
-		ret = bind(sock_fd, (struct sockaddr *)&bind_addr, sizeof(bind_addr));
-		if (ret < 0) {
-			log_message(LOG_ERR, "Could not bind local address \"%\" because of %s",
-				    config.bind_address,
-				    strerror(errno));
-			return -1;
+		/* Bind to the specified address */
+		if (config.bind_address) {
+			if (bind_socket(sockfd, config.bind_address) < 0) {
+				close(sockfd);
+				continue; /* can't bind, so try again */
+			}
 		}
-	}
 
-	if (connect(sock_fd, (struct sockaddr *) &port_info, sizeof(port_info)) < 0) {
-		log_message(LOG_ERR, "opensock: connect() error \"%s\".",
-			    strerror(errno));
+		if (connect(sockfd, res->ai_addr, res->ai_addrlen) == 0)
+			break; /* success */
+
+		close(sockfd);
+	} while ((res = res->ai_next) != NULL);
+
+	freeaddrinfo(ressave);
+	if (res == NULL) {
+		log_message(LOG_ERR,
+			    "opensock: Could not establish a connection to %s",
+			    host);
 		return -1;
 	}
 
-	return sock_fd;
+	return sockfd;
 }
 
 /*
@@ -197,35 +204,26 @@ listen_sock(uint16_t port, socklen_t* addrlen)
 int
 getpeer_information(int fd, char* ipaddr, char* string_addr)
 {
-	struct sockaddr_in name;
-	size_t namelen = sizeof(name);
-	struct hostent* result;
+	struct sockaddr sa;
+	size_t salen = sizeof(struct sockaddr);
 
 	assert(fd >= 0);
 	assert(ipaddr != NULL);
 	assert(string_addr != NULL);
 
-	/*
-	 * Clear the memory.
-	 */
-	memset(ipaddr, '\0', PEER_IP_LENGTH);
-	memset(string_addr, '\0', PEER_STRING_LENGTH);
+	/* Set the strings to default values */
+	ipaddr[0] = '\0';
+	strlcpy(string_addr, "[unknown]", PEER_STRING_LENGTH);
 
-	if (getpeername(fd, (struct sockaddr *)&name, &namelen) != 0) {
-		log_message(LOG_ERR, "getpeer_information: getpeername() error: %s",
-			    strerror(errno));
+	/* Look up the IP address */
+	if (getpeername(fd, &sa, &salen) != 0)
 		return -1;
-	} else {
-		strlcpy(ipaddr,
-			inet_ntoa(*(struct in_addr *)&name.sin_addr.s_addr),
-			PEER_IP_LENGTH);
-	}
 
-	result = gethostbyaddr((char *)&name.sin_addr.s_addr, 4, AF_INET);
-	if (result) {
-		strlcpy(string_addr, result->h_name, PEER_STRING_LENGTH);
-		return 0;
-	} else {
+	if (get_ip_string(&sa, ipaddr, PEER_IP_LENGTH) == NULL)
 		return -1;
-	}
+
+	/* Get the full host name */
+	return getnameinfo(&sa, salen,
+			   string_addr, PEER_STRING_LENGTH,
+			   NULL, 0, 0);
 }
