@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.65 2004-01-26 19:11:52 rjkaes Exp $
+dnl $Id: configure.ac,v 2.66 2004-08-14 00:37:51 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -165,8 +165,6 @@ AC_PROG_CC
 AC_ISC_POSIX
 AC_PROG_INSTALL
 AC_PROG_LN_S
-AM_PROG_LEX
-AC_PROG_YACC
 AC_PROG_LIBTOOL
 
 dnl If a CFLAGS variable was passed during configure, set the initial
@@ -175,11 +173,6 @@ if test x"$ac_env_CFLAGS_set" = x"set" ; then
     CFLAGS=$ac_env_CFLAGS_value
 else
     CFLAGS=""
-fi
-
-dnl Make sure YACC is actually bison
-if test x"$YACC" != x"bison -y"; then
-    AC_MSG_WARN([You will need bison if you want to regenerate the parser.])
 fi
 
 dnl
@@ -274,16 +267,10 @@ if test x"$debug_enabled" = x"yes" ; then
         CFLAGS="-Wmissing-prototypes -Wmissing-declarations $CFLAGS"
         CFLAGS="-Wpointer-arith -Waggregate-return -Wnested-externs $CFLAGS"
     fi
-    CFLAGS="-Wall -g -DYYDEBUG $CFLAGS"
-    YFLAGS="-v -d"
-
-    if test x"$ac_cv_prog_LEX" = x"flex" ; then
-        LEX_FLAGS="--warn --debug"
-    fi
+    CFLAGS="-Wall -g $CFLAGS"
 else
     dnl No debugging information, include the optimizations
     CFLAGS="-O2 -DNDEBUG $CFLAGS"
-    YFLAGS="-d"
 fi
 
 dnl
@@ -345,9 +332,7 @@ dnl Substitute the variables into the various Makefiles
 dnl
 AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
-AC_SUBST(YFLAGS)
 AC_SUBST(CPPFLAGS)
-AC_SUBST(LEX_FLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(ADDITIONAL_OBJECTS)
 AC_SUBST(TINYPROXY_CONFIG_DIR)

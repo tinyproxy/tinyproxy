@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.20 2004-08-13 21:04:24 rjkaes Exp $
+# $Id: Makefile.am,v 1.21 2004-08-14 00:37:50 rjkaes Exp $
 #
 # Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
 #
@@ -13,7 +13,6 @@
 # General Public License for more details.
 #
 
-YFLAGS = @YFLAGS@
 LDFLAGS = @LDFLAGS@
 
 sbin_PROGRAMS = tinyproxy
@@ -40,14 +39,10 @@ tinyproxy_SOURCES = \
 	tinyproxy.c tinyproxy.h \
 	utils.c utils.h \
 	vector.c vector.h
-#	grammar.y scanner.l
 
 EXTRA_tinyproxy_SOURCES = filter.c filter.h grammar.h
 tinyproxy_DEPENDENCIES = @ADDITIONAL_OBJECTS@
 tinyproxy_LDADD = @ADDITIONAL_OBJECTS@
-
-scanner.c: scanner.l grammar.h
-	$(LEX) $(LEX_FLAGS) $(LFLAGS) -i $< && mv $(LEX_OUTPUT_ROOT).c $@
 
 clean:
 	rm -f *.da
