@@ -1,3 +1,11 @@
+2000-12-07  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/thread.c (thread_main_loop): Removed all the weird timing
+	code which was used to monitor the number of threads in use.
+
+	* src/tinyproxy.c (main): The thread count is now checked once a
+	second, and can be killed properly.
+
 2000-10-23  Robert James Kaes  <rjkaes@flarenet.com>
 	
 	* src/dnscache.c (new_dnscache): Creates a new DNS tree. Called
