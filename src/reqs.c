@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.45 2001-12-18 05:01:03 rjkaes Exp $
+/* $Id: reqs.c,v 1.46 2001-12-19 05:13:40 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -44,7 +44,7 @@
 /*
  * Maximum length of a HTTP line
  */
-#define HTTP_LINE_LENGTH (1024 * 16)
+#define HTTP_LINE_LENGTH (MAXBUFFSIZE / 6)
 
 /*
  * Macro to help test if the Upstream proxy supported is compiled in and
@@ -54,6 +54,15 @@
 #  define UPSTREAM_CONFIGURED() (config.upstream_name && config.upstream_port != -1)
 #else
 #  define UPSTREAM_CONFIGURED() (0)
+#endif
+
+/*
+ * Macro to help test if tunnel support is compiled in, and is enabled.
+ */
+#ifdef TUNNEL_SUPPORT
+#  define TUNNEL_CONFIGURED() (config.tunnel_name && config.tunnel_port != -1)
+#else
+#  define TUNNEL_CONFIGURED() (0)
 #endif
 
 /*
@@ -186,43 +195,77 @@ extract_ssl_url(const char *url, struct request_s *request)
 }
 
 /*
+ * Send a "message" to the file descriptor provided. This handles the
+ * differences between the various implementations of vsnprintf. This code
+ * was basically stolen from the snprintf() man page of Debian Linux
+ * (although I did fix a memory leak. :)
+ */
+static int
+write_message(int fd, const char *fmt, ...)
+{
+	size_t n;
+	size_t size = (1024 * 8);	/* start with 8 KB and go from there */
+	char *buf, *tmpbuf;
+	va_list ap;
+
+	if ((buf = safemalloc(size)) == NULL)
+		return -1;
+
+	while (1) {
+		va_start(ap, fmt);
+		n = vsnprintf(buf, size, fmt, ap);
+		va_end(ap);
+
+		/* If that worked, break out so we can send the buffer */
+		if (n > -1 && n < size)
+			break;
+
+		/* Else, try again with more space */
+		if (n > -1)
+			/* precisely what is needed (glibc2.1) */
+			size = n + 1;
+		else
+			/* twice the old size (glibc2.0) */
+			size *= 2;
+
+		if ((tmpbuf = saferealloc(buf, size)) == NULL) {
+			safefree(buf);
+			return -1;
+		} else
+			buf = tmpbuf;
+	}
+
+	if (safe_write(fd, buf, n) < 0) {
+		safefree(buf);
+		return -1;
+	}
+
+	safefree(buf);
+	return 0;
+}
+
+/*
  * Create a connection for HTTP connections.
  */
 static int
 establish_http_connection(struct conn_s *connptr, struct request_s *request)
 {
-	char *buffer;
-
-	buffer = safemalloc(HTTP_LINE_LENGTH);
-	if (!buffer)
+	if (write_message(connptr->server_fd,
+			  "%s %s HTTP/1.0\r\n",
+			  request->method, request->path) < 0)
 		return -1;
-
-	if (snprintf(buffer, HTTP_LINE_LENGTH, "%s %s HTTP/1.0\r\n", request->method, request->path) < 0)
-		goto error;
-	if (safe_write(connptr->server_fd, buffer, strlen(buffer)) < 0)
-		goto error;
-
-	/*
-	 * Send headers
-	 */
-	if (snprintf(buffer, HTTP_LINE_LENGTH, "Host: %s\r\n", request->host) < 0)
-		goto error;
-	if (safe_write(connptr->server_fd, buffer, strlen(buffer)) < 0)
-		goto error;
+	
+	if (write_message(connptr->server_fd, "Host: %s\r\n", request->host) < 0)
+		return -1;
 
 	/*
 	 * Send the Connection header since we don't support persistant
 	 * connections.
 	 */
 	if (safe_write(connptr->server_fd, "Connection: close\r\n", 19) < 0)
-		goto error;
+		return -1;
 
-	safefree(buffer);
 	return 0;
-
-      error:
-	safefree(buffer);
-	return -1;
 }
 
 /*
@@ -476,8 +519,6 @@ static int
 add_xtinyproxy_header(struct conn_s *connptr)
 {
 	char ipaddr[PEER_IP_LENGTH];
-	char xtinyproxy[32];
-	int length;
 
 	/*
 	 * Don't try to send if we have an invalid server handle.
@@ -485,13 +526,9 @@ add_xtinyproxy_header(struct conn_s *connptr)
 	if (connptr->server_fd == -1)
 		return 0;
 
-	length = snprintf(xtinyproxy, sizeof(xtinyproxy),
-			  "X-Tinyproxy: %s\r\n",
-			  getpeer_ip(connptr->client_fd, ipaddr));
-	if (safe_write(connptr->server_fd, xtinyproxy, length) < 0)
-		return -1;
-
-	return 0;
+	return write_message(connptr->server_fd,
+			     "X-Tinyproxy: %s\r\n",
+			     getpeer_ip(connptr->client_fd, ipaddr));
 }
 #endif				/* XTINYPROXY */
 
@@ -855,6 +892,50 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 }
 #endif
 
+#ifdef TUNNEL_SUPPORT
+/*
+ * If tunnel has been configured then redirect any connections to it.
+ */
+static int
+connect_to_tunnel(struct conn_s *connptr)
+{
+	char *request_buf;
+	size_t len;
+	int pos;
+
+	request_buf = safemalloc(HTTP_LINE_LENGTH);
+	if (request_buf) {
+		len = recv(connptr->client_fd, request_buf, HTTP_LINE_LENGTH - 1, MSG_PEEK);
+		for (pos = 0; pos < len && request_buf[pos] != '\n'; pos++)
+			;
+		request_buf[pos] = '\0';
+	     
+		log_message(LOG_CONN, "Request: %s", request_buf);
+
+		safefree(request_buf);
+	}
+	log_message(LOG_INFO, "Redirecting to %s:%d",
+		    config.tunnel_name, config.tunnel_port);
+
+	connptr->server_fd =
+		opensock(config.tunnel_name, config.tunnel_port);
+
+	if (connptr->server_fd < 0) {
+		log_message(LOG_WARNING,
+			    "Could not connect to tunnel.");
+		httperr(connptr, 404, "Unable to connect to tunnel.");
+
+		return -1;
+	}
+
+	log_message(LOG_INFO,
+		    "Established a connection to the tunnel \"%s\" using file descriptor %d.",
+		    config.tunnel_name, connptr->server_fd);
+
+	return 0;
+}
+#endif
+
 /*
  * This is the main drive for each connection. As you can tell, for the
  * first few steps we are using a blocking socket. If you remember the
@@ -894,55 +975,12 @@ handle_connection(int fd)
 		goto send_error;
 	}
 
-#ifdef TUNNEL_SUPPORT
-	/*
-	 * If tunnel has been configured then redirect any connections to
-	 * it. I know I used GOTOs, but it seems to me to be the best way
-	 * of handling this situations. So sue me. :)
-	 *      - rjkaes
-	 */
-	if (config.tunnel_name && config.tunnel_port != -1) {
-		char *request_buf;
-		size_t len;
-		int pos;
-
-		request_buf = safemalloc(HTTP_LINE_LENGTH);
-		if (request_buf) {
-			len = recv(connptr->client_fd, request_buf, HTTP_LINE_LENGTH - 1, MSG_PEEK);
-			for (pos = 0; pos < len && request_buf[pos] != '\n'; pos++)
-				;
-			request_buf[pos] = '\0';
-	     
-			log_message(LOG_CONN, "Request: %s", request_buf);
-
-			safefree(request_buf);
-		}
-		log_message(LOG_INFO, "Redirecting to %s:%d",
-			    config.tunnel_name, config.tunnel_port);
-
-		connptr->server_fd =
-		    opensock(config.tunnel_name, config.tunnel_port);
-
-		if (connptr->server_fd < 0) {
-			log_message(LOG_WARNING,
-				    "Could not connect to tunnel.");
-			httperr(connptr, 404, "Unable to connect to tunnel.");
-
+	if (TUNNEL_CONFIGURED()) {
+		if (connect_to_tunnel(connptr) < 0)
 			goto internal_proxy;
-		}
-
-		log_message(LOG_INFO,
-			    "Established a connection to the tunnel \"%s\" using file descriptor %d.",
-			    config.tunnel_name, connptr->server_fd);
-
-		/*
-		 * I know GOTOs are evil, but duplicating the code is even
-		 * more evil.
-		 *      - rjkaes
-		 */
-		goto relay_proxy;
+		else
+			goto relay_proxy;
 	}
-#endif				/* TUNNEL_SUPPORT */
 
       internal_proxy:
 	request_line = read_request_line(connptr);
