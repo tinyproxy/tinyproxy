@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.14 2001-09-08 18:58:37 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.15 2001-09-14 04:56:58 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -113,6 +113,7 @@ struct conn_s {
 	int client_fd, server_fd;
 	struct buffer_s *cbuffer, *sbuffer;
 	bool_t simple_req;
+	bool_t ssl;
 	char *output_message;
 };
 
