@@ -1,3 +1,13 @@
+2001-11-03  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/buffer.c (remove_from_buffer): This function is never
+	called with an empty buffer, so removed some inaccurate code which
+	would have removed an invalid line from the buffer if it was
+	empty. What was I thinking when I wrote that? Good thing is was
+	never called.
+	(add_to_buffer): Add a bit of a sanity check to make sure the
+	buffer structure hasn't been messed up some how.
+
 2001-11-02  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/acl.c (insert_acl): Tightened the check regarding whether an
@@ -6,7 +16,7 @@
 2001-10-25  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* Moved all the system header included into the tinyproxy.h header
-	and changed all the other files to include it. The should
+	and changed all the other files to include it. This should
 	centralise the header dependency issue into one file.
 
 	* src/conns.c: Brought back the conns.{c,h} files which contain

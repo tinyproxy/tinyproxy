@@ -1,4 +1,4 @@
-/* $Id: buffer.h,v 1.4 2001-05-27 02:23:08 rjkaes Exp $
+/* $Id: buffer.h,v 1.5 2001-11-05 15:23:05 rjkaes Exp $
  *
  * See 'buffer.c' for a detailed description.
  *
@@ -18,9 +18,23 @@
 #ifndef _TINYPROXY_BUFFER_H_
 #define _TINYPROXY_BUFFER_H_
 
+/*
+ * This structure contains the total size of a buffer, plus pointers to the
+ * head and tail of the buffer.
+ */
+struct buffer_s {
+	struct bufline_s *head;	/* top of the buffer */
+	struct bufline_s *tail;	/* bottom of the buffer */
+	size_t size;	/* total size of the buffer */
+};
+
+/*
+ * Return the size of a buffer (pass a pointer to a buffer_s structure.)
+ */
+#define BUFFER_SIZE(x) (x)->size
+
 extern struct buffer_s *new_buffer(void);
 extern void delete_buffer(struct buffer_s *buffptr);
-extern size_t buffer_size(struct buffer_s *buffptr);
 
 extern ssize_t readbuff(int fd, struct buffer_s *buffptr);
 extern ssize_t writebuff(int fd, struct buffer_s *buffptr);
