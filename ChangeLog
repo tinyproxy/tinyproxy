@@ -1,5 +1,16 @@
 2002-05-29  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/heap.c (malloc_shared_memory):
+	Removed the MMAP_ANON and open("/dev/zero") since they are not
+	portable across a while enough spectrum of machines.  Right now
+	tinyproxy is using a "classic" temporary file method of sharing
+	memory.  This will likely be improved in the future.
+
+	* src/child.c, src/stats.c:
+	Changed the tests on the return value from malloc_shared_memory()
+	to make tinyproxy more portable, since we can't be certain that
+	"if (!ret_value)" would actually detect a mmap() error.
+
 	* src/reqs.c (add_header_to_connection):
 	Removed the "double_cgi" boolean, since tinyproxy now ignores all
 	the headers after a "double CGI" situation has occurred.
