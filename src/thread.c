@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.12 2001-09-07 18:19:39 rjkaes Exp $
+/* $Id: thread.c,v 1.13 2001-09-08 06:29:04 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -64,6 +64,7 @@ static pthread_mutex_t servers_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 #define SERVER_INC() do { \
     SERVER_LOCK(); \
+    DEBUG2("INC: servers_waiting: %u", servers_waiting); \
     servers_waiting++; \
     SERVER_UNLOCK(); \
 } while (0)
@@ -71,6 +72,7 @@ static pthread_mutex_t servers_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SERVER_DEC() do { \
     SERVER_LOCK(); \
     servers_waiting--; \
+    DEBUG2("DEC: servers_waiting: %u", servers_waiting); \
     SERVER_UNLOCK(); \
 } while (0)
 
@@ -123,9 +125,11 @@ static void *thread_main(void *arg)
 	
 	while (!config.quit) {
 		clilen = addrlen;
+
 		pthread_mutex_lock(&mlock);
 		connfd = accept(listenfd, cliaddr, &clilen);
 		pthread_mutex_unlock(&mlock);
+
 		ptr->status = T_CONNECTED;
 
 		SERVER_DEC();
@@ -136,17 +140,23 @@ static void *thread_main(void *arg)
 		if (thread_config.maxrequestsperchild != 0) {
 			ptr->connects++;
 
+			DEBUG2("%u connections so far...", ptr->connects);
+
 			if (ptr->connects >= thread_config.maxrequestsperchild) {
 				log_message(LOG_NOTICE, "Thread has reached MaxRequestsPerChild (%u > %u). Killing thread.", ptr->connects, thread_config.maxrequestsperchild);
+
 				ptr->status = T_EMPTY;
+				
+				safefree(cliaddr);
+
 				return NULL;
 			}
 		}
 
 		SERVER_LOCK();
-		if (servers_waiting > thread_config.maxspareservers) {
+		if (servers_waiting >= thread_config.maxspareservers) {
 			/*
-			 * There are too many spare threads, kill ourselves
+			 * There are too many spare threads, kill ourself
 			 * off.
 			 */
 			SERVER_UNLOCK();
@@ -154,6 +164,8 @@ static void *thread_main(void *arg)
 			log_message(LOG_NOTICE, "Waiting servers exceeds MaxSpareServers. Killing thread.");
 
 			ptr->status = T_EMPTY;
+
+			safefree(cliaddr);
 			return NULL;
 		}
 		SERVER_UNLOCK();
@@ -163,6 +175,7 @@ static void *thread_main(void *arg)
 		SERVER_INC();
 	}
 
+	safefree(cliaddr);
 	return NULL;
 }
 
@@ -237,6 +250,7 @@ void thread_main_loop(void)
 				SERVER_INC();
 
 				log_message(LOG_NOTICE, "Waiting servers is less than MinSpareServers. Creating new thread.");
+
 				break;
 			}
 		}
