@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.12 2002-06-06 20:30:04 rjkaes Exp $
+/* $Id: filter.c,v 1.13 2002-06-07 18:36:22 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  * Copyright (c) 2002  James E. Flemer (jflemer@acm.jhu.edu)
@@ -37,6 +37,7 @@ struct filter_list {
 
 static struct filter_list *fl = NULL;
 static int already_init = 0;
+static filter_policy_t default_policy = FILTER_DEFAULT_ALLOW;
 
 /*
  * Initializes a linked list of strings containing hosts/urls to be filtered
@@ -129,7 +130,7 @@ filter_destroy(void)
 	}
 }
 
-/* returns 0 if host is not an element of filter list, non-zero otherwise */
+/* Return 0 to allow, non-zero to block */
 int
 filter_domain(const char *host)
 {
@@ -137,31 +138,59 @@ filter_domain(const char *host)
 	int result;
 
 	if (!fl || !already_init)
-		return (0);
+		goto COMMON_EXIT;
 
-	result = 0;
 	for (p = fl; p; p = p->next) {
-		result = !regexec(p->cpat, host, (size_t) 0, (regmatch_t *) 0, 0);
+		result = regexec(p->cpat, host, (size_t) 0, (regmatch_t *) 0, 0);
 
-		if (result)
-			break;
+		if (result == 0) {
+			if (default_policy == FILTER_DEFAULT_ALLOW)
+				return 1;
+			else
+				return 0;
+		}
 	}
-	return (result);
+
+  COMMON_EXIT:
+	if (default_policy == FILTER_DEFAULT_ALLOW)
+		return 0;
+	else
+		return 1;
 }
 
-/* returns 0 if url is not an element of filter list, non-zero otherwise */
+/* returns 0 to allow, non-zero to block */
 int
 filter_url(const char *url)
 {
 	struct filter_list *p;
+	int result;
 
 	if (!fl || !already_init)
-		return (0);
+		goto COMMON_EXIT;
 
 	for (p = fl; p; p = p->next) {
-		if (!regexec(p->cpat, url, (size_t) 0, (regmatch_t *) 0, 0)) {
-			return 1;
+		result = regexec(p->cpat, url, (size_t) 0, (regmatch_t *) 0, 0);
+
+		if (result == 0) {
+			if (default_policy == FILTER_DEFAULT_ALLOW)
+				return 1;
+			else
+				return 0;
 		}
 	}
-	return 0;
+
+  COMMON_EXIT:
+	if (default_policy == FILTER_DEFAULT_ALLOW)
+		return 0;
+	else
+		return 1;
+}
+
+/*
+ * Set the default filtering policy
+ */
+void
+filter_set_default_policy(filter_policy_t policy)
+{
+	default_policy = policy;
 }
