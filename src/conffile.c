@@ -1,8 +1,8 @@
-/* $Id: conffile.c,v 1.2 2004-08-13 21:03:58 rjkaes Exp $
+/* $Id: conffile.c,v 1.3 2004-08-14 03:18:41 rjkaes Exp $
  *
  * Parses the configuration file and sets up the config_s structure for
  * use by the application.  This file replaces the old grammar.y and
- * scannar.l files.  It takes up less space and _I_ think is easier to
+ * scanner.l files.  It takes up less space and _I_ think is easier to
  * add new directives to.  Who knows if I'm right though.
  *
  * Copyright (C) 2004  Robert James Kaes (rjkaes@users.sourceforge.net)
@@ -79,21 +79,10 @@ typedef int (*CONFFILE_HANDLER)(struct config_s*, const char*, regmatch_t[]);
 
 
 /*
- * This is a do nothing function used for the comment and blank lines
- * in the configuration file.  We don't do anything for those, but
- * the function pointer needs to be defined to something so we simply
- * return true for those lines.
- */
-static HANDLE_FUNC(handle_nop)
-{
-        return 0;
-}
-
-/*
  * List all the handling functions.  These are defined later, but they need
  * to be in-scope before the big structure below.
  */
-
+static HANDLE_FUNC(handle_nop) { return 0; } /* do nothing function */
 static HANDLE_FUNC(handle_allow);
 static HANDLE_FUNC(handle_anonymous);
 static HANDLE_FUNC(handle_bind);
@@ -102,7 +91,6 @@ static HANDLE_FUNC(handle_connectport);
 static HANDLE_FUNC(handle_defaulterrorfile);
 static HANDLE_FUNC(handle_deny);
 static HANDLE_FUNC(handle_errorfile);
-static HANDLE_FUNC(handle_errorfile);
 static HANDLE_FUNC(handle_filter);
 static HANDLE_FUNC(handle_filtercasesensitive);
 static HANDLE_FUNC(handle_filterdefaultdeny);
@@ -110,7 +98,6 @@ static HANDLE_FUNC(handle_filterextended);
 static HANDLE_FUNC(handle_filterurls);
 static HANDLE_FUNC(handle_group);
 static HANDLE_FUNC(handle_listen);
-static HANDLE_FUNC(handle_logfile);
 static HANDLE_FUNC(handle_logfile);
 static HANDLE_FUNC(handle_loglevel);
 static HANDLE_FUNC(handle_maxclients);
@@ -150,7 +137,7 @@ static HANDLE_FUNC(handle_xtinyproxy);
 
 /*
  * Holds the regular expression used to match the configuration directive,
- * the function pointer to the rountine to handle the directive, and
+ * the function pointer to the routine to handle the directive, and
  * for internal use, a pointer to the compiled regex so it only needs
  * to be compiled one.
  */
@@ -213,10 +200,11 @@ struct {
         STDCONF("reversebaseurl", STR, handle_reversebaseurl),
         STDCONF("reverseonly", BOOL, handle_reverseonly),
         STDCONF("reversemagic", BOOL, handle_reversemagic),
-        STDCONF("reversepath", STR WS STR, handle_reversepath),
+        STDCONF("reversepath", STR WS "(" STR ")?", handle_reversepath),
 
         /* upstream is rather complicated */
-//        { BEGIN "(no[[:space:]]+)?upstream" WS, handle_upstream },
+//        { BEGIN "no" WS "upstream" WS STR END, handle_no_upstream },
+//        { BEGIN "upstream" WS IP ":" INT "(" WS STR ")" END, handle_upstream },
 
         /* loglevel */
         STDCONF("loglevel", "(critical|error|warning|notice|connect|info)", handle_loglevel)
@@ -235,6 +223,7 @@ config_compile(void)
         int i, r;
 
         for (i = 0; i != ndirectives; ++i) {
+                assert(directives[i].handler);
                 assert(!directives[i].cre);
                 
                 directives[i].cre = safemalloc(sizeof(regex_t));
@@ -244,7 +233,6 @@ config_compile(void)
                 r = regcomp(directives[i].cre,
                             directives[i].re,
                             REG_EXTENDED | REG_ICASE | REG_NEWLINE);
-                
                 if (r) return r;
         }
         return 0;
@@ -269,10 +257,8 @@ check_match(struct config_s* conf, const char* line)
 
         for (i = 0; i != ndirectives; ++i) {
                 assert(directives[i].cre);
-                if (!regexec(directives[i].cre, line, RE_MAX_MATCHES, match, 0)) {
-                        assert(directives[i].handler);
+                if (!regexec(directives[i].cre, line, RE_MAX_MATCHES, match, 0))
                         return (*directives[i].handler)(conf, line, match);
-                }
         }
 
         return -1;
@@ -289,7 +275,7 @@ config_parse(struct config_s* conf, FILE* f)
 
         while (fgets(buffer, sizeof(buffer), f)) {
                 if (check_match(conf, buffer)) {
-                        printf("Syntax error near line %ld\n", lineno);
+                        printf("Syntax error on line %ld\n", lineno);
                         return 1;
                 }
                 ++lineno;
@@ -298,13 +284,12 @@ config_parse(struct config_s* conf, FILE* f)
 }
 
 
-/*
- * Functions to handle the various configuration file directives.
- */
-
-/*
- * String arguments.
- */
+/***********************************************************************
+ *
+ * The following are basic data extraction building blocks that can
+ * be used to simplify the parsing of a directive.
+ *
+ ***********************************************************************/
 
 static char*
 get_string_arg(const char* line, regmatch_t* match)
@@ -335,56 +320,6 @@ set_string_arg(char** var, const char* line, regmatch_t* match)
         return *var ? 0 : -1;
 }
 
-static HANDLE_FUNC(handle_logfile)
-{
-        return set_string_arg(&conf->logf_name, line, &match[2]);
-}
-static HANDLE_FUNC(handle_pidfile)
-{
-        return set_string_arg(&conf->pidpath, line, &match[2]);
-}
-static HANDLE_FUNC(handle_anonymous)
-{
-        char *arg = get_string_arg(line, &match[2]);
-        if (!arg)
-                return -1;
-
-        anonymous_insert(arg);
-        safefree(arg);
-        return 0;
-}
-static HANDLE_FUNC(handle_viaproxyname)
-{
-        return set_string_arg(&conf->via_proxy_name, line, &match[2]);
-}
-static HANDLE_FUNC(handle_defaulterrorfile)
-{
-        return set_string_arg(&conf->errorpage_undef, line, &match[2]);
-}
-static HANDLE_FUNC(handle_statfile)
-{
-        return set_string_arg(&conf->statpage, line, &match[2]);
-}
-static HANDLE_FUNC(handle_stathost)
-{
-        return set_string_arg(&conf->stathost, line, &match[2]);
-}
-static HANDLE_FUNC(handle_xtinyproxy)
-{
-#ifdef XTINYPROXY_ENABLE        
-        return set_string_arg(&conf->my_domain, line, &match[2]);
-#else
-        fprintf(stderr,
-                "XTinyproxy NOT Enabled! Recompile with --enable-xtinyproxy\n");
-        return 1;
-#endif
-}
-
-
-/*
- * Boolean arguments.
- */
-
 static int
 get_bool_arg(const char* line, regmatch_t* match)
 {
@@ -411,26 +346,6 @@ set_bool_arg(unsigned int* var, const char* line, regmatch_t* match)
         return 0;
 }
 
-static HANDLE_FUNC(handle_syslog)
-{
-#ifdef HAVE_SYSLOG_H        
-        return set_bool_arg(&conf->syslog, line, &match[2]);
-#else
-        fprintf(stderr,
-                "Syslog support not compiled in executable.\n");
-        return 1;
-#endif
-}
-static HANDLE_FUNC(handle_bindsame)
-{
-        return set_bool_arg(&conf->bindsame, line, &match[2]);
-}
-
-
-/*
- * Integer arguments.
- */
-
 static inline long int
 get_int_arg(const char* line, regmatch_t* match)
 {
@@ -447,6 +362,97 @@ set_int_arg(int long* var, const char* line, regmatch_t* match)
         assert(match);
         
         *var = get_int_arg(line, match);
+        return 0;
+}
+
+
+/***********************************************************************
+ *
+ * Below are all the directive handling functions.  You will notice
+ * that most of the directives delegate to one of the basic data
+ * extraction routines.  This is deliberate.  To add a new directive
+ * to tinyproxy only requires you to define the regular expression
+ * above and then figure out what data extract routine to use.
+ *
+ * However, you will also notice that more complicated directives are
+ * possible.  You can make your directive as complicated as you require
+ * to express a solution to the problem you're tackling.
+ *
+ * See the definition/comment about the HANDLE_FUNC() macro to learn
+ * what arguments are supplied to the handler, and to determine what
+ * values to return.
+ *
+ ***********************************************************************/
+
+static HANDLE_FUNC(handle_logfile)
+{
+        return set_string_arg(&conf->logf_name, line, &match[2]);
+}
+static HANDLE_FUNC(handle_pidfile)
+{
+        return set_string_arg(&conf->pidpath, line, &match[2]);
+}
+static HANDLE_FUNC(handle_anonymous)
+{
+        char *arg = get_string_arg(line, &match[2]);
+        if (!arg)
+                return -1;
+
+        anonymous_insert(arg);
+        safefree(arg);
+        return 0;
+}
+static HANDLE_FUNC(handle_viaproxyname)
+{
+        int r = set_string_arg(&conf->via_proxy_name, line, &match[2]);
+        if (r) return r;
+        log_message(LOG_INFO,
+                    "Setting \"Via\" header proxy to %s",
+                    conf->via_proxy_name);
+        return 0;
+}
+static HANDLE_FUNC(handle_defaulterrorfile)
+{
+        return set_string_arg(&conf->errorpage_undef, line, &match[2]);
+}
+static HANDLE_FUNC(handle_statfile)
+{
+        return set_string_arg(&conf->statpage, line, &match[2]);
+}
+static HANDLE_FUNC(handle_stathost)
+{
+        int r = set_string_arg(&conf->stathost, line, &match[2]);
+        if (r) return r;
+        log_message(LOG_INFO,
+                    "Stathost set to \"%s\"",
+                    conf->stathost);
+        return 0;
+}
+static HANDLE_FUNC(handle_xtinyproxy)
+{
+#ifdef XTINYPROXY_ENABLE        
+        return set_string_arg(&conf->my_domain, line, &match[2]);
+#else
+        fprintf(stderr,
+                "XTinyproxy NOT Enabled! Recompile with --enable-xtinyproxy\n");
+        return 1;
+#endif
+}
+static HANDLE_FUNC(handle_syslog)
+{
+#ifdef HAVE_SYSLOG_H        
+        return set_bool_arg(&conf->syslog, line, &match[2]);
+#else
+        fprintf(stderr,
+                "Syslog support not compiled in executable.\n");
+        return 1;
+#endif
+}
+static HANDLE_FUNC(handle_bindsame)
+{
+        int r = set_bool_arg(&conf->bindsame, line, &match[2]);
+        if (r) return r;
+        log_message(LOG_INFO, "Binding outgoing connection to incoming IP");
         return 0;
 }
 static HANDLE_FUNC(handle_port)
@@ -487,11 +493,6 @@ static HANDLE_FUNC(handle_connectport)
         add_connect_port_allowed(get_int_arg(line, &match[2]));
         return 0;
 }
-
-
-/*
- * Alpha numeric argument
- */
 static HANDLE_FUNC(handle_user)
 {
         return set_string_arg(&conf->username, line, &match[2]);
@@ -500,11 +501,6 @@ static HANDLE_FUNC(handle_group)
 {
         return set_string_arg(&conf->group, line, &match[2]);
 }
-
-
-/*
- * IP addresses
- */
 static HANDLE_FUNC(handle_allow)
 {
         char* arg = get_string_arg(line, &match[2]);
@@ -522,7 +518,12 @@ static HANDLE_FUNC(handle_deny)
 static HANDLE_FUNC(handle_bind)
 {
 #ifndef TRANSPARENT_PROXY
-        return set_string_arg(&conf->bind_address, line, &match[2]);
+        int r = set_string_arg(&conf->bind_address, line, &match[2]);
+        if (r) return r;
+        log_message(LOG_INFO,
+                    "Outgoing connections bound to IP %s",
+                    conf->bind_address);
+        return 0;
 #else
         fprintf(stderr,
                 "\"Bind\" cannot be used with transparent support enabled.\n");
@@ -531,25 +532,29 @@ static HANDLE_FUNC(handle_bind)
 }
 static HANDLE_FUNC(handle_listen)
 {
-        return set_string_arg(&conf->ipAddr, line, &match[2]);
+        int r = set_string_arg(&conf->ipAddr, line, &match[2]);
+        if (r) return r;
+        log_message(LOG_INFO, "Listing on IP %s", conf->ipAddr);
+        return 0;
 }
-
-
-/*
- * Error file has a integer and string argument
- */
 static HANDLE_FUNC(handle_errorfile)
 {
+        /*
+         * Because an integer is defined as ((0x)?[[:digit:]]+) _two_
+         * match places are used.  match[2] matches the full digit
+         * string, while match[3] matches only the "0x" part if
+         * present.  This is why the "string" is located at
+         * match[4] (rather than the more intuitive match[3].
+         */
         long int err = get_int_arg(line, &match[2]);
-        char *page = get_string_arg(line, &match[3]);
+        char *page = get_string_arg(line, &match[4]);
         add_new_errorpage(page, err);
         safefree(page);
         return 0;
 }
 
-
 /*
- * Log level's are strings.
+ * Log level's strings.
  */
 struct log_levels_s {
         const char* string;
@@ -630,6 +635,35 @@ static HANDLE_FUNC(handle_reverseonly)
 static HANDLE_FUNC(handle_reversemagic)
 {
         return set_bool_arg(&conf->reversemagic, line, &match[2]);
+}
+static HANDLE_FUNC(handle_reversebaseurl)
+{
+        return set_string_arg(&conf->reversebaseurl, line, &match[2]);
+}
+static HANDLE_FUNC(handle_reversepath)
+{
+        /*
+         * The second string argument is optional.
+         */
+        char *arg1, *arg2;
+
+        arg1 = get_string_arg(line, &match[2]);
+        if (!arg1) return -1;
+
+        if (match[3].rm_so != -1) {
+                arg2 = get_string_arg(line, &match[3]);
+                if (!arg2) {
+                        safefree(arg1);
+                        return -1;
+                }
+                reversepath_add(arg1, arg2);
+                safefree(arg1);
+                safefree(arg2);
+        } else {
+                reversepath_add(NULL, arg1);
+                safefree(arg1);
+        }
+        return 0;
 }
 #else
 static int
