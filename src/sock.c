@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.26 2002-04-15 04:16:01 rjkaes Exp $
+/* $Id: sock.c,v 1.27 2002-04-16 03:21:46 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -33,7 +33,6 @@
  *	- rjkaes
  */
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
 #define LOCK()   pthread_mutex_lock(&mutex);
 #define UNLOCK() pthread_mutex_unlock(&mutex);
 
@@ -52,7 +51,7 @@ static pthread_mutex_t gethostbyname_mutex = PTHREAD_MUTEX_INITIALIZER;
  * Return a negative if there is a problem.
  */
 static int
-lookup_domain(struct in_addr *addr, char *domain)
+lookup_domain(struct in_addr *addr, const char *domain)
 {
 	struct hostent *resolv;
 
