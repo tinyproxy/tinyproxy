@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.29 2002-04-24 16:45:45 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.30 2002-05-23 18:27:01 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -26,6 +26,9 @@
 
 #include "anonymous.h"
 #include "buffer.h"
+#include "daemon.h"
+#include "dnsclient.h"
+#include "heap.h"
 #include "filter.h"
 #include "log.h"
 #include "reqs.h"
@@ -53,6 +56,9 @@ bool_t processed_config_file = FALSE;
 void
 takesig(int sig)
 {
+	pid_t pid;
+	int status;
+
 	switch (sig) {
 	case SIGHUP:
 		log_rotation_request = TRUE;
@@ -61,11 +67,14 @@ takesig(int sig)
 	case SIGTERM:
 		config.quit = TRUE;
 		break;
+
+	case SIGCHLD:
+		while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
+			;
+		break;
 	}
 
-	if (sig != SIGTERM)
-		signal(sig, takesig);
-	signal(SIGPIPE, SIG_IGN);
+	return;
 }
 
 /*
@@ -292,11 +301,17 @@ main(int argc, char **argv)
 		pidfile_create(config.pidpath);
 	}
 
-	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
+	if (set_signal_handler(SIGPIPE, SIG_IGN) == SIG_ERR) {
 		fprintf(stderr, "%s: Could not set the \"SIGPIPE\" signal.\n",
 			argv[0]);
 		exit(EX_OSERR);
 	}
+	if (set_signal_handler(SIGCHLD, takesig) == SIG_ERR) {
+		fprintf(stderr, "%s: Could not set the \"SIGCHLD\" signal.\n",
+			argv[0]);
+		exit(EX_OSERR);
+	}
+
 #ifdef FILTER_ENABLE
 	if (config.filter)
 		filter_init();
@@ -354,6 +369,29 @@ main(int argc, char **argv)
 			    "Not running as root, so not changing UID/GID.");
 	}
 
+	/*
+	 * Start the "dnsserver" child process.
+	 */
+	if (config.dnsserver_location && config.dnsserver_socket) {
+		struct stat stat_buf;
+		if (lstat(config.dnsserver_socket, &stat_buf) == 0 || errno != ENOENT) {
+			fprintf(stderr, "%s:\nThere was a problem creating the dnsserver socket.\nPlease remove '%s'.\n",
+				argv[0], config.dnsserver_socket);
+			exit(EX_OSERR);
+		}
+
+		start_dnsserver(config.dnsserver_location,
+				config.dnsserver_socket);
+	} else {
+		if (!config.dnsserver_location) {
+			fprintf(stderr, "%s: You must provide a location for the 'dnsserver' program.\n", argv[0]);
+		}
+		if (!config.dnsserver_socket) {
+			fprintf(stderr, "%s: You must provide a path for the 'dnsserver' socket.\n", argv[0]);
+		}
+		exit(EX_SOFTWARE);
+	}
+
 	if (thread_pool_create() < 0) {
 		fprintf(stderr, "%s: Could not create the pool of threads.",
 			argv[0]);
@@ -364,12 +402,12 @@ main(int argc, char **argv)
 	 * These signals are only for the main thread.
 	 */
 	log_message(LOG_INFO, "Setting the various signals.");
-	if (signal(SIGTERM, takesig) == SIG_ERR) {
+	if (set_signal_handler(SIGTERM, takesig) == SIG_ERR) {
 		fprintf(stderr, "%s: Could not set the \"SIGTERM\" signal.\n",
 			argv[0]);
 		exit(EX_OSERR);
 	}
-	if (signal(SIGHUP, takesig) == SIG_ERR) {
+	if (set_signal_handler(SIGHUP, takesig) == SIG_ERR) {
 		fprintf(stderr, "%s: Could not set the \"SIGHUP\" signal.\n",
 			argv[0]);
 		exit(EX_OSERR);
@@ -391,6 +429,11 @@ main(int argc, char **argv)
 
 	thread_kill_threads();
 	thread_close_sock();
+
+	/*
+	 * Stop the "dnsserver" child process.
+	 */
+	stop_dnsserver();
 
 	/*
 	 * Remove the PID file.
