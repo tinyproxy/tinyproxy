@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.11 2001-01-15 17:11:57 rjkaes Exp $
+/* $Id: reqs.c,v 1.12 2001-05-23 17:58:19 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -519,8 +519,9 @@ static void relay_connection(struct conn_s *connptr)
 			log(LOG_INFO, "Idle Timeout (before select) %g > %u", tdiff, config.idletimeout);
 			return;
 		}
-		
+
 		ret = select(maxfd + 1, &rset, &wset, NULL, &tv);
+
 		if (ret == 0) {
 			tdiff = difftime(time(NULL), last_access);
 			if (tdiff > config.idletimeout) {
