@@ -1,7 +1,7 @@
-dnl $Id: configure.in,v 1.10 2001-06-02 17:23:16 rjkaes Exp $
+dnl $Id: configure.in,v 1.11 2001-06-04 23:33:11 rjkaes Exp $
 
 AC_INIT()
-AM_INIT_AUTOMAKE(tinyproxy,1.4.0pre5)
+AM_INIT_AUTOMAKE(tinyproxy,1.4.0pre6)
 AM_CONFIG_HEADER(config.h)
 
 AC_CANONICAL_HOST
@@ -137,18 +137,13 @@ vsyslog \
 )
 AC_CHECK_FUNCS(strlcpy strlcat)
 
-dnl chris - allow user to choose log file location, port and username
-AC_ARG_WITH(log-file, [  --with-log-file=FILE    Default logfile name],
-            AC_DEFINE_UNQUOTED(DEFAULT_LOG, "$withval"))
-
-AC_ARG_WITH(port, [  --with-port=PORT        Default server port],
-            AC_DEFINE_UNQUOTED(DEFAULT_PORT, $withval))
-
-AC_ARG_WITH(user, [  --with-user=USER        Default user],
-            AC_DEFINE_UNQUOTED(DEFAULT_USER, "$withval"))
-
 AC_ARG_WITH(stathost, [  --with-stathost=HOST    Default status host],
             AC_DEFINE_UNQUOTED(DEFAULT_STATHOST, "$withval"))
+
+dnl Set the default configuration file location
+AC_ARG_WITH(config,
+[  --with-config=FILE      Set the default location of the config file],
+	    AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$withval"))
 
 dnl Check for the regex library
 AC_ARG_WITH(regex, [  --with-regex            Use the GNU regex libary],
@@ -212,7 +207,7 @@ fi
 dnl Check for SOCKS support
 AC_ARG_ENABLE(socks,
 [  --enable-socks          Enable SOCKS support [default=no]],
-              socks_enabled=yes)
+              socks_enabled=yes, socks_enabled=no)
 
 if test "$socks_enabled" = "yes"; then
     AC_CHECK_HEADER(socks.h, socks_header=yes, socks_header=no)
@@ -228,18 +223,18 @@ fi
 dnl Check to see if the XTinyproxy header is to be included
 AC_ARG_ENABLE(xtinyproxy,
 [  --enable-xtinyproxy     Include X-Tinyproxy header [default=yes]],
-              xtinyproxy_enabled=yes)
+              xtinyproxy_enabled=yes, xtinyproxy_enabled=yes)
 
-if test "$xtinyproxy_enabled" = "yes" ; then
+if test "$xtinyproxy_enabled" = "yes"; then
     AC_DEFINE(XTINYPROXY_ENABLE)
 fi
 
 dnl Include filtering for domain/URLs
 AC_ARG_ENABLE(filter,
 [  --enable-filter         Enable filtering of domains/URLs [default=yes]],
-              filter_enabled=yes)
+              filter_enabled=yes, filter_enabled=yes)
 
-if test "$filter_enabled" = "yes" ; then
+if test "$filter_enabled" = "yes"; then
     LIBOBJS="$LIBOBJS filter.o"
     AC_DEFINE(FILTER_ENABLE)
 fi
@@ -247,7 +242,7 @@ fi
 dnl Include support for upstream proxies? (TCP tunneling)
 AC_ARG_ENABLE(tunnel,
 [  --enable-tunnel         Enable support for TCP tunneling [default=yes]],
-              tunnel_enabled=yes)
+              tunnel_enabled=yes, tunnel_enabled=yes)
 
 if test "$tunnel_enabled" = "yes" ; then
     AC_DEFINE(TUNNEL_SUPPORT)
@@ -260,8 +255,4 @@ AC_SUBST(CPPFLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(LIBOBJS)
 
-AC_OUTPUT([
-Makefile
-src/Makefile
-doc/Makefile
-])
+AC_OUTPUT(Makefile src/Makefile doc/Makefile)
