@@ -5,7 +5,7 @@ date
 echo "uname: "
 uname -a
 echo "ps: "
-ps -auxw | grep [t]inyproxy -
+ps -auxw | grep '[t]inyproxy' -
 echo "ver: "
 if [ -x /usr/local/bin/tinyproxy ]; then
    /usr/local/bin/tinyproxy -v
