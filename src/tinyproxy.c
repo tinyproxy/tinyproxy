@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.9 2001-05-27 02:36:22 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.10 2001-06-02 03:10:34 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -158,7 +158,7 @@ int main(int argc, char **argv)
 #ifdef HAVE_SETRLIMIT
 	struct rlimit core_limit = {0, 0};
 	if (setrlimit(RLIMIT_CORE, &core_limit) < 0) {
-		log_message(LOG_EMERG, "tinyproxy: could not set the core limit to zero.");
+		log_message(LOG_CRIT, "tinyproxy: could not set the core limit to zero.");
 		exit(EX_SOFTWARE);
 	}
 #endif /* HAVE_SETRLIMIT */
