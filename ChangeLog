@@ -1,3 +1,10 @@
+2001-09-07  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* Various error message clean up.
+
+	* src/thread.c (thread_main): Add locking around the
+	servers_waiting thread.
+
 2001-09-06  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/thread.c (thread_main): The code which closes a thread
