@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.39 2003-05-29 19:43:57 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.40 2003-06-02 21:55:14 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -31,6 +31,7 @@ struct upstream {
 	char *domain; /* optional */
 	char *host;
 	int port;
+	in_addr_t ip, mask;
 };
 #endif
 

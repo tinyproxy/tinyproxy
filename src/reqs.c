@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.101 2003-05-31 23:02:20 rjkaes Exp $
+/* $Id: reqs.c,v 1.102 2003-06-02 21:55:14 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -320,32 +320,54 @@ upstream_add(const char *host, int port, const char *domain)
 	struct upstream *up = safemalloc(sizeof (struct upstream));
 
 	if (!up) {
-		log_message(LOG_WARNING,
-			    "Could not allocate memory for upstream host configuration");
+		log_message(LOG_WARNING, "Adding upstream for %s: %s",
+			    (host && host[0]) ? host : "[default]",
+			    strerror(errno));
+
 		return;
 	}
-	
-	if (domain && domain[0] != '\0')
-		up->domain = safestrdup(domain);
-	else
-		up->domain = NULL;
+
+	up->host = up->domain = NULL;
+
+	if (port < 0) {
+		log_message(LOG_WARNING, "Nonsense upstream rule: port < 0");
+
+		goto upstream_cleanup;
+	}
+
+	up->ip = up->mask = 0;
+	up->port = port;
+
+	if (domain && domain[0] != '\0') {
+		char *slash = strchr(domain, '/');
+
+		if (slash) {
+			struct in_addr addrstruct;
+
+			*slash = '\0';
+			if (inet_aton(domain, &addrstruct) != 0) {
+				up->ip = ntohl(addrstruct.s_addr);
+				*slash++ = '/';
+
+				if (strchr(slash, '.')) {
+					if (inet_aton(slash, &addrstruct) != 0)
+						up->mask = ntohl(addrstruct.s_addr);
+				} else {
+					up->mask = ~((1 << (32 - atoi(slash))) - 1);
+				}
+			}
+		} else
+			up->domain = safestrdup(domain);
+	}
 
 	if (host && host[0] != '\0' && port > 0)
 		up->host = safestrdup(host);
-	else
-		up->host = NULL;
 
-	if (port > 0)
-		up->port = port;
-	else
-		up->port = 0;
- 
-	if (host) {
+	if (up->host) {
 		log_message(LOG_INFO, "Adding upstream %s:%d for %s",
 			    host, port, domain ? domain : "[default]");
-	} else if (domain) {
-		log_message(LOG_INFO, "Adding no-upstream for %s",
-			    domain ? domain : "[default]");
+	} else if (up->domain) {
+		log_message(LOG_INFO, "Adding no-upstream for %s", domain);
 	} else {
 		log_message(LOG_WARNING,
 			    "Nonsense upstream rule: no proxy or domain");
@@ -353,15 +375,13 @@ upstream_add(const char *host, int port, const char *domain)
 		goto upstream_cleanup;
 	}
 
-	if (!up->domain) {
-                /* always add default to end */
+	if (!up->domain && !up->ip) { /* always add default to end */
 		struct upstream *tmp = config.upstream_list;
 
 		while (tmp) {
-			if (!tmp->domain) {
+			if (!tmp->domain && !tmp->ip) {
 				log_message(LOG_WARNING,
 					    "Duplicate default upstream");
-				
 				goto upstream_cleanup;
 			}
 
@@ -370,6 +390,7 @@ upstream_add(const char *host, int port, const char *domain)
 				tmp->next = up;
 				return;
 			}
+
 			tmp = tmp->next;
 		}
 	}
@@ -395,26 +416,33 @@ upstream_get(char *host)
 {
 	struct upstream *up = config.upstream_list;
 
+	in_addr_t my_ip = INADDR_NONE;
+
 	while (up) {
-		if (!up->domain)
-			break; /* no domain, default, match */
+		if (up->domain) {
+			if (strcasecmp(host, up->domain) == 0)
+				break; /* exact match */
 
-		if (strcasecmp(host, up->domain) == 0)
-			break; /* exact match */
+			if (up->domain[0] == '.') {
+				char *dot = strchr(host, '.');
 
-		if (up->domain[0] == '.') { /* domain starts with dot... */
-			char *dot = strchr(host, '.');
-			if (!dot && !up->domain[1])
-				break; /* domain exactly ".", host is local */
+				if (!dot && !up->domain[1])
+					break; /* local host matches "." */
 
-			while (dot) {
-				if (strcasecmp(dot, up->domain) == 0)
+				while (dot && strcasecmp(dot, up->domain))
+					dot = strchr(dot+1, '.');
+
+				if (dot)
 					break; /* subdomain match */
-				dot = strchr(dot+1, '.');
 			}
+		} else if (up->ip) {
+			if (my_ip == INADDR_NONE)
+				my_ip = ntohl(inet_addr(host));
 
-			if (dot)
-				break; /* trailing part of domain matches */
+			if ((my_ip & up->mask) == up->ip)
+				break;
+		} else {
+			break; /* No domain or IP, default upstream */
 		}
 
 		up = up->next;
@@ -425,7 +453,7 @@ upstream_get(char *host)
 
 	if (up)
 		log_message(LOG_INFO, "Found proxy %s:%d for %s",
-			    up->host, up->port, host);
+				up->host, up->port, host);
 	else
 		log_message(LOG_INFO, "No proxy for %s", host);
 
