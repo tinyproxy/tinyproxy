@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.43 2004-01-26 19:11:51 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.44 2004-04-27 18:53:14 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -80,6 +80,7 @@ struct config_s {
 	char *pidpath;
 	unsigned int idletimeout;
 	char* bind_address;
+	unsigned int bindsame;
 
 	/*
 	 * The configured name to use in the HTTP "Via" header field.

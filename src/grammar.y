@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.24 2004-01-26 19:11:51 rjkaes Exp $
+/* $Id: grammar.y,v 1.25 2004-04-27 18:53:14 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -51,7 +51,7 @@ int yylex(void);
 %token KW_FILTER_CASESENSITIVE
 %token KW_UPSTREAM
 %token KW_REVERSEPATH KW_REVERSEONLY KW_REVERSEMAGIC KW_REVERSEBASEURL
-%token KW_CONNECTPORT KW_BIND
+%token KW_CONNECTPORT KW_BIND KW_BINDSAME
 %token KW_STATHOST
 %token KW_ALLOW KW_DENY
 %token KW_ERRORPAGE KW_DEFAULT_ERRORPAGE
@@ -250,6 +250,11 @@ statement
 		  log_message(LOG_WARNING, "The 'Bind' directive can not be used with transparent proxy support.  Ignoring the directive.");
 #endif
           }
+	| KW_BINDSAME yesno
+	  {
+		  log_message(LOG_INFO, "Binding outgoing connections to incoming IP");
+		  config.bindsame = $2;
+	  }
         | KW_VIA_PROXY_NAME string
           {
 		  log_message(LOG_INFO, "Setting \"Via\" proxy name to: %s", $2);

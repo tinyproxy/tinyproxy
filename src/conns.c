@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.21 2004-02-13 21:27:42 rjkaes Exp $
+/* $Id: conns.c,v 1.22 2004-04-27 18:53:14 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connection related tasks put here, but for now the header
@@ -27,7 +27,8 @@
 #include "stats.h"
 
 struct conn_s *
-initialize_conn(int client_fd, const char* ipaddr, const char* string_addr)
+initialize_conn(int client_fd, const char* ipaddr, const char* string_addr,
+		const char* sock_ipaddr)
 {
 	struct conn_s *connptr;
 	struct buffer_s *cbuffer, *sbuffer;
@@ -71,6 +72,7 @@ initialize_conn(int client_fd, const char* ipaddr, const char* string_addr)
 	/* There is _no_ content length initially */
 	connptr->content_length.server = connptr->content_length.client = -1;
 
+	connptr->server_ip_addr = sock_ipaddr ? safestrdup(sock_ipaddr) : 0;
 	connptr->client_ip_addr = safestrdup(ipaddr);
 	connptr->client_string_addr = safestrdup(string_addr);
 
@@ -122,6 +124,8 @@ destroy_conn(struct conn_s *connptr)
 	if (connptr->error_string)
 		safefree(connptr->error_string);
 
+	if (connptr->server_ip_addr)
+		safefree(connptr->server_ip_addr);
 	if (connptr->client_ip_addr)
 		safefree(connptr->client_ip_addr);
 	if (connptr->client_string_addr)

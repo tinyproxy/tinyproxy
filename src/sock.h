@@ -1,4 +1,4 @@
-/* $Id: sock.h,v 1.12 2004-02-18 20:18:53 rjkaes Exp $
+/* $Id: sock.h,v 1.13 2004-04-27 18:53:14 rjkaes Exp $
  *
  * See 'sock.c' for a detailed description.
  *
@@ -20,17 +20,18 @@
 #define TINYPROXY_SOCK_H
 
 /* The IP length is set to 48, since IPv6 can be that long */
-#define PEER_IP_LENGTH          48
-#define PEER_STRING_LENGTH	1024
+#define IP_LENGTH		48
+#define HOSTNAME_LENGTH		1024
 
 #define MAXLINE (1024 * 4)
 
-extern int opensock(const char* host, int port);
+extern int opensock(const char* host, int port, const char* bind_to);
 extern int listen_sock(uint16_t port, socklen_t* addrlen);
 
 extern int socket_nonblocking(int sock);
 extern int socket_blocking(int sock);
 
+extern int getsock_ip(int fd, char* ipaddr);
 extern int getpeer_information(int fd, char* ipaddr, char* string_addr);
 
 #endif

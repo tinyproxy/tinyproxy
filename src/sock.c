@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.40 2004-02-18 20:18:53 rjkaes Exp $
+/* $Id: sock.c,v 1.41 2004-04-27 18:53:14 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -71,7 +71,7 @@ bind_socket(int sockfd, const char* addr)
  * independent implementation (mostly for IPv4 and IPv6 addresses.)
  */
 int
-opensock(const char* host, int port)
+opensock(const char* host, int port, const char* bind_to)
 {
 	int sockfd, n;
 	struct addrinfo hints, *res, *ressave;
@@ -100,7 +100,12 @@ opensock(const char* host, int port)
 			continue; /* ignore this one */
 
 		/* Bind to the specified address */
-		if (config.bind_address) {
+		if (bind_to) {
+			if (bind_socket(sockfd, bind_to) < 0) {
+				close(sockfd);
+				continue; /* can't bind, so try again */
+			}
+		} else if (config.bind_address) {
 			if (bind_socket(sockfd, config.bind_address) < 0) {
 				close(sockfd);
 				continue; /* can't bind, so try again */
@@ -199,13 +204,36 @@ listen_sock(uint16_t port, socklen_t* addrlen)
 }
 
 /*
+ * Takes a socket descriptor and returns the socket's IP address.
+ */
+int
+getsock_ip(int fd, char* ipaddr)
+{
+	struct sockaddr_storage name;
+	int namelen = sizeof(name);
+
+	assert(fd >= 0);
+
+	if (getsockname(fd, (struct sockaddr *) &name, &namelen) != 0) {
+		log_message(LOG_ERR, "getsock_ip: getsockname() error: %s",
+			    strerror(errno));
+		return -1;
+	}
+
+	if (get_ip_string((struct sockaddr *)&name, ipaddr, IP_LENGTH) == NULL)
+		return -1;
+
+	return 0;
+}
+
+/*
  * Return the peer's socket information.
  */
 int
 getpeer_information(int fd, char* ipaddr, char* string_addr)
 {
-	struct sockaddr sa;
-	size_t salen = sizeof(struct sockaddr);
+	struct sockaddr_storage sa;
+	size_t salen = sizeof(sa);
 
 	assert(fd >= 0);
 	assert(ipaddr != NULL);
@@ -213,17 +241,17 @@ getpeer_information(int fd, char* ipaddr, char* string_addr)
 
 	/* Set the strings to default values */
 	ipaddr[0] = '\0';
-	strlcpy(string_addr, "[unknown]", PEER_STRING_LENGTH);
+	strlcpy(string_addr, "[unknown]", HOSTNAME_LENGTH);
 
 	/* Look up the IP address */
-	if (getpeername(fd, &sa, &salen) != 0)
+	if (getpeername(fd, (struct sockaddr *)&sa, &salen) != 0)
 		return -1;
 
-	if (get_ip_string(&sa, ipaddr, PEER_IP_LENGTH) == NULL)
+	if (get_ip_string((struct sockaddr *)&sa, ipaddr, IP_LENGTH) == NULL)
 		return -1;
 
 	/* Get the full host name */
-	return getnameinfo(&sa, salen,
-			   string_addr, PEER_STRING_LENGTH,
+	return getnameinfo((struct sockaddr *)&sa, salen,
+			   string_addr, HOSTNAME_LENGTH,
 			   NULL, 0, 0);
 }

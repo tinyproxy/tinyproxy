@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.16 2004-01-26 19:11:51 rjkaes Exp $
+/* $Id: conns.h,v 1.17 2004-04-27 18:53:14 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -54,6 +54,11 @@ struct conn_s {
 	} content_length;
 
 	/*
+	 * Store the server's IP (for BindSame)
+	 */
+	char* server_ip_addr;
+
+	/*
 	 * Store the client's IP and hostname information
 	 */
 	char* client_ip_addr;
@@ -79,7 +84,8 @@ struct conn_s {
  * Functions for the creation and destruction of a connection structure.
  */
 extern struct conn_s* initialize_conn(int client_fd, const char* ipaddr,
-				      const char* string_addr);
+				      const char* string_addr,
+				      const char* sock_ipaddr);
 extern void destroy_conn(struct conn_s *connptr);
 
 #endif

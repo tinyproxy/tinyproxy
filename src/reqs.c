@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.111 2004-02-13 21:27:42 rjkaes Exp $
+/* $Id: reqs.c,v 1.112 2004-04-27 18:53:14 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -645,7 +645,8 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 		free_request_struct(request);
 
 		return NULL;
-	}
+	} else if (ret == 2)
+		request->protocol[0] = 0;
 
 	/* 
 	 * FIXME: We need to add code for the simple HTTP/0.9 style GET
@@ -1111,7 +1112,7 @@ remove_connection_headers(hashmap_t hashofheaders)
 
 			/* Advance ptr to the next token */
 			ptr += strlen(ptr) + 1;
-			while (*ptr == '\0')
+			while (ptr < data + len && *ptr == '\0')
 				ptr++;
 		}
 
@@ -1609,7 +1610,7 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 	}
 
 	connptr->server_fd =
-	    opensock(cur_upstream->host, cur_upstream->port);
+	    opensock(cur_upstream->host, cur_upstream->port, connptr->server_ip_addr);
 
 	if (connptr->server_fd < 0) {
 		log_message(LOG_WARNING,
@@ -1674,15 +1675,22 @@ handle_connection(int fd)
 	struct request_s *request = NULL;
 	hashmap_t hashofheaders = NULL;
 
-	char peer_ipaddr[PEER_IP_LENGTH];
-	char peer_string[PEER_STRING_LENGTH];
+	char sock_ipaddr[IP_LENGTH];
+	char peer_ipaddr[IP_LENGTH];
+	char peer_string[HOSTNAME_LENGTH];
 
 	getpeer_information(fd, peer_ipaddr, peer_string);
 
-	log_message(LOG_CONN, "Connect (file descriptor %d): %s [%s]",
-		    fd, peer_string, peer_ipaddr);
+	if (config.bindsame)
+		getsock_ip(fd, sock_ipaddr);
 
-	connptr = initialize_conn(fd, peer_ipaddr, peer_string);
+	log_message(LOG_CONN, config.bindsame ?
+		    "Connect (file descriptor %d): %s [%s] at [%s]" :
+		    "Connect (file descriptor %d): %s [%s]",
+		    fd, peer_string, peer_ipaddr, sock_ipaddr);
+
+	connptr = initialize_conn(fd, peer_ipaddr, peer_string,
+				  config.bindsame ? sock_ipaddr : 0);
 	if (!connptr) {
 		close(fd);
 		return;
@@ -1748,7 +1756,8 @@ handle_connection(int fd)
 			goto send_error;
 		}
 	} else {
-		connptr->server_fd = opensock(request->host, request->port);
+		connptr->server_fd = opensock(request->host, request->port,
+					      connptr->server_ip_addr);
 		if (connptr->server_fd < 0) {
 			indicate_http_error(connptr, 500, "Unable to connect",
 					    "detail", PACKAGE " was unable to connect to the remote web server.",
