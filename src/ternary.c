@@ -1,4 +1,4 @@
-/* $Id: ternary.c,v 1.5 2001-05-23 17:59:53 rjkaes Exp $
+/* $Id: ternary.c,v 1.6 2001-08-30 16:52:09 rjkaes Exp $
  *
  * This module creates a Ternary Search Tree which can store both string
  * keys, and arbitrary data for each key. It works similar to a hash, and
@@ -294,7 +294,8 @@ int ternary_destroy(TERNARY tno, void (*freeptr)(void *))
  *		TE_TOOFULL	tree is full, so no new elements can be added.
  * Exceptions:	none
  */
-int ternary_insert(TERNARY tno, const char *s, void *data)
+int ternary_insert_replace(TERNARY tno, const char *s, void *data,
+			   short int replace)
 {
 	int cur;		/* index of current tree */
 	Ttree *tree;		/* pointer to tree structure */
@@ -314,7 +315,13 @@ int ternary_insert(TERNARY tno, const char *s, void *data)
 	while ((pp = *p)) {
 		if ((d = *s - pp->splitchar) == 0) {
 			if (*s++ == 0) {
-				return TE_EXISTS;
+				if (!replace)
+					return TE_EXISTS;
+				else {
+					free(pp->eqkid);
+					pp->eqkid = (Tnode *)data;
+					return TE_NONE;
+				}
 			}
 			p = &(pp->eqkid);
 		} else if (d < 0)

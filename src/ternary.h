@@ -1,4 +1,4 @@
-/* $Id: ternary.h,v 1.2 2000-09-26 04:59:20 rjkaes Exp $
+/* $Id: ternary.h,v 1.3 2001-08-30 16:52:09 rjkaes Exp $
  *
  * See 'ternary.c' for a detailed description.
  *
@@ -58,7 +58,11 @@ extern char te_errbuf[256];
 extern TERNARY ternary_new(void);
 extern int ternary_destroy(TERNARY tno, void (*freeptr)(void *));
 
-extern int ternary_insert(TERNARY tno, const char *s, void *data);
+#define ternary_insert(x, y, z)  ternary_insert_replace(x, y, z, 0)
+#define ternary_replace(x, y, z) ternary_insert_replace(x, y, z, 1)
+
+extern int ternary_insert_replace(TERNARY tno, const char *s, void *data,
+				  short int replace);
 extern int ternary_search(TERNARY tno, const char *s, void **data);
 
 #endif
