@@ -1,3 +1,16 @@
+Tuesday, September 4, 2001
+--------------------------
+
+I finally fixed a problem with the anonymous header code. The searches
+are now all case insensitive. This fixes a problem where the spelling
+of the HTTP headers could be different. It also helps with various
+spellings of domain names. There is also a security fix for a format
+string problem with the syslog feature. This problem doesn't affect
+you if you use the log file instead.
+
+        -- Robert
+
+
 Thursday, August 30, 2001
 -------------------------
 
@@ -9,32 +22,5 @@ instead. I don't know why I didn't do this in the first place. I also
 removed the xstrstr() function since strstr() will do what tinyproxy
 needs. Removing code is _always_ a good idea. Less code, less chance
 of bugs.
-
-        -- Robert
-
-
-Wednesday, August 29, 2001
---------------------------
-
-There has been a tonne of work done on tinyproxy since the beginning
-of last week. I have been releasing minor-minor-minor point releases,
-but the changes in this release constitute a minor-minor point
-release. Please see the ChangeLog for detail descriptions of all the
-changes, but here is a brief list.
-
-The most serious fix is to the DNS caching system. There was a memory
-leak in the system whenever a domain was already in the database, but
-had expired. The new domain information was placed in the database,
-but the old information wasn't freed.
-
-The second change is in regard to the regular expression library. For
-a while now tinyproxy has included it's own library (the GNU version)
-in case the system did not have a working copy. Due to a bug in the
-configure.in script the included REGEX library was being used even if
-a working copy was detected. This was making tinyproxy larger than it
-needed.
-
-I would suggest that everyone upgrade to this version; especially
-anyone who is still running 1.4.0 or below.
 
         -- Robert
