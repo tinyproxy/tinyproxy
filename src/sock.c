@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.22 2001-12-19 20:41:28 rjkaes Exp $
+/* $Id: sock.c,v 1.23 2001-12-24 00:01:32 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -319,6 +319,58 @@ safe_read(int fd, char *buffer, size_t count)
 	} while (len < 0 && errno == EINTR);
 
 	return len;
+}
+
+/*
+ * Send a "message" to the file descriptor provided. This handles the
+ * differences between the various implementations of vsnprintf. This code
+ * was basically stolen from the snprintf() man page of Debian Linux
+ * (although I did fix a memory leak. :)
+ */
+int
+write_message(int fd, const char *fmt, ...)
+{
+	ssize_t n;
+	size_t size = (1024 * 8);	/* start with 8 KB and go from there */
+	char *buf, *tmpbuf;
+	va_list ap;
+
+	if ((buf = safemalloc(size)) == NULL)
+		return -1;
+
+	while (1) {
+		va_start(ap, fmt);
+		n = vsnprintf(buf, size, fmt, ap);
+		va_end(ap);
+
+		/* If that worked, break out so we can send the buffer */
+		if (n > -1 && n < size)
+			break;
+
+		/* Else, try again with more space */
+		if (n > -1)
+			/* precisely what is needed (glibc2.1) */
+			size = n + 1;
+		else
+			/* twice the old size (glibc2.0) */
+			size *= 2;
+
+		if ((tmpbuf = saferealloc(buf, size)) == NULL) {
+			safefree(buf);
+			return -1;
+		} else
+			buf = tmpbuf;
+	}
+
+	if (safe_write(fd, buf, n) < 0) {
+		DEBUG2("Error in write_message(): %d", fd);
+
+		safefree(buf);
+		return -1;
+	}
+
+	safefree(buf);
+	return 0;
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $Id: sock.h,v 1.8 2001-12-15 20:04:04 rjkaes Exp $
+/* $Id: sock.h,v 1.9 2001-12-24 00:01:32 rjkaes Exp $
  *
  * See 'sock.c' for a detailed description.
  *
@@ -38,6 +38,7 @@ extern char *getpeer_string(int fd, char *string);
 extern ssize_t safe_write(int fd, const char *buffer, size_t count);
 extern ssize_t safe_read(int fd, char *buffer, size_t count);
 
+extern int write_message(int fd, const char *fmt, ...);
 extern ssize_t readline(int fd, char **whole_buffer);
 
 #endif
