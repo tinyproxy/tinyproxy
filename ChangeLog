@@ -1,3 +1,25 @@
+2002-04-11  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (remove_connection_headers): Moved all the code for
+	detecting and removing headers based on the Connection header into
+	this function.
+	(get_content_length): Moved the check for a Content-Length value
+	into it's own function.
+	(process_client_headers): Changed the code to use the newer
+	remove_connection_headers() and get_content_length() functions.
+	(process_server_headers): Rewrote this function to handle the
+	headers in a more consistent manner.  The connection header is
+	handled correctly, and the content-length header is stored for
+	later use.
+	(relay_connection): Added a test to use the
+	connptr->remote_content_length value if it's present.
+
+	* src/conns.c: Added the remote_content_length variable to hold
+	the number of bytes the remove server is _supposed_ to send to
+	us.  This fixes a problem where the remote server doesn't close
+	the connection after sending the body.  Problem was reported by
+	James Flemer.
+
 2002-04-10  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/Makefile.am: Removed the dependency on LIBOBJS and instead
