@@ -1,4 +1,4 @@
-/* $Id: config.h,v 1.2 2000-03-13 00:56:21 rjkaes Exp $
+/* $Id: config.h,v 1.3 2000-03-31 20:14:26 rjkaes Exp $
  *
  * Contains all the tune-able variables which are used by tinyproxy.
  * Modifications made to these variables WILL change the default behaviour
@@ -59,7 +59,7 @@
 /*
  * NOTE: change these if you know what you're doing
  */
-#define SOCK_TIMEOUT 5
+#define SOCK_TIMEOUT 10
 /* Recalculate load avery 30 seconds */
 #define LOAD_RECALCTIMER 30
 /* Default HTTP port */
