@@ -1,3 +1,9 @@
+2001-08-28  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/log.c (log_message): Finally got the log levels worked out
+	properly. I've tested all the levels and they now produce the
+	correct output.
+
 2001-08-27  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (trim): Moved the trim functionality out of
