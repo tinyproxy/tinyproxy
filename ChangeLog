@@ -1,3 +1,40 @@
+2001-08-26  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/anonymous.c (anonymous_insert): Moved the creation of the
+	search tree into the anonymous_insert() function. Therefore, the
+	search tree is _not_ created until the first insertion. This
+	should also fix a bug in main() where I was inserting headers
+	before creating the search tree. Doh.
+	(is_anonymous_enabled): Removed the tests for config.anon and
+	replaced it with a function call which returns a BOOL.
+
+	* Spell checked the ChangeLog file! :)
+
+2001-08-25  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/thread.c (thread_main): Thanks to Hans-Georg Brok for
+	fixing a problem where the status of the threads was not
+	going back to T_WAITING if MaxRequestsPerChild was 0. Also, fixed
+	a problem with the looping system where the Debian
+	start-stop-daemon script would not stop all the threads if new
+	threads had been created.
+
+	* src/log.h (LOG_CONN): Added the LOG_CONN log level. This is less
+	verbose than LOG_INFO.
+
+	* doc/tinyproxy.8: Added the -l option to the list of command line
+	options.
+
+	* src/anonymous.c (anon_insert): Fixed a bug where anonymous
+	filtering wasn't working even if it was specified in the
+	configuration file.
+
+2001-07-02  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/tinyproxy.c (versiondisp): Added George Talusan to the
+	copyright message. Also now include the target system name to the
+	version message.
+
 2001-06-06  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* configure.in: Total reorganization.
@@ -34,7 +71,7 @@
 	LogLevel switch in the configuration file.
 
 	* configure.in: Added a test for the resolv library for the
-	gethostby* functions. Also bumped up the preversion.
+	gethostby* functions. Also bumped up the pre-version.
 
 2001-05-26  Robert James Kaes  <rjkaes@flarenet.com>
 
@@ -43,7 +80,7 @@
 
 	* src/reqs.c (process_method): Fixed a memory leak.
 	(relay_connection): Cleaned up the code to remove some unneeded
-	variabled and removed redundant code.
+	variables and removed redundant code.
 
 	* src/log.c (log_message): Renamed "log()" function to
 	log_message().
@@ -76,7 +113,7 @@
 
 2000-12-08 21:35  rjkaes
 
-	* src/thread.c: Implimented the MaxRequestsPerChild directive.
+	* src/thread.c: Implemented the MaxRequestsPerChild directive.
 
 2000-12-07 22:35  rjkaes
 
@@ -247,7 +284,7 @@
 
 2000-09-11 20:08  rjkaes
 
-	* src/: acl.c, acl.h: Improvied access control semantics. Allows
+	* src/: acl.c, acl.h: Improved access control semantics. Allows
 	for a finger control for allowing and denying hosts.
 
 2000-09-11 20:07  rjkaes
@@ -259,12 +296,12 @@
 2000-09-11 20:06  rjkaes
 
 	* src/: stats.c, stats.h: This module handles the various stats
-	relating to tinyproxy's funcationality.
+	relating to tinyproxy's functionality.
 
 2000-09-11 20:04  rjkaes
 
 	* src/: reqs.c, reqs.h: MAJOR RE-WRITE! Read the ChangeLog and look
-	at the source. It's shorter than redocumenting the changes here. :)
+	at the source. It's shorter than re-documenting the changes here. :)
 
 2000-09-11 20:03  rjkaes
 
@@ -290,7 +327,7 @@
 	* src/: sock.c, sock.h: Needed locking in getpeer_string().  Added
 	mutex locking around the dnscache() call.  Removed the global
 	sockaddr and setup_fd variables.  Added the socket_blocking() and
-	socket_nonblocking() functions.  Gutted the readling() function and
+	socket_nonblocking() functions.  Gutted the readline() function and
 	replaced it with something similar to the 1.0 version. :)
 
 2000-09-11 19:50  rjkaes
@@ -459,7 +496,7 @@
 
 2000-03-12 19:55  rjkaes
 
-	* ChangeLog: List all the changes which has occured on the program.
+	* ChangeLog: List all the changes which has occurred on the program.
 
 2000-03-11 15:43  rjkaes
 
