@@ -1,3 +1,14 @@
+2000-03-29  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/dnscache.c: added the <sys/types.h> header.
+
+	* src/reqs.c (clientreq): fixed a problem with the anonymous
+	headers. There was a test for the POST line since we have to send
+	all headers at the moment to handle that (actually, that might not 
+	be true anymore...), but the test was incorrect and would send all 
+	the headers through on all requests. Fixed the test and now only
+	the selected headers are sent.
+
 2000-03-28  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (clientreq): Fixed a bug which would cause a SEGV if
