@@ -1,4 +1,4 @@
-dnl $Id: configure.in,v 1.33 2001-10-25 05:13:46 rjkaes Exp $
+dnl $Id: configure.in,v 1.34 2001-11-05 15:25:39 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -253,6 +253,7 @@ CFLAGS="-O2 $CFLAGS"
 if test "$enable_debug" = "yes" ; then
     dnl Add the warnings if we have the GCC compiler
     if test "$ac_cv_prog_gcc" = "yes" ; then
+	CFLAGS="-pg -fprofile-arcs $CFLAGS"
         CFLAGS="-Wshadow -Wcast-qual -Wcast-align -Wstrict-prototypes $CFLAGS"
         CFLAGS="-Wmissing-prototypes -Wmissing-declarations $CFLAGS"
         CFLAGS="-Wpointer-arith -Waggregate-return -Wnested-externs $CFLAGS"
