@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.69 2002-04-26 19:33:09 rjkaes Exp $
+/* $Id: reqs.c,v 1.70 2002-04-28 20:03:18 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -108,7 +108,6 @@ static int
 check_allowed_connect_ports(int port)
 {
 	ssize_t i;
-	ssize_t ret;
 	int *data;
 
 	/*
@@ -119,8 +118,7 @@ check_allowed_connect_ports(int port)
 		return 1;
 
 	for (i = 0; i < vector_length(ports_allowed_by_connect); ++i) {
-		ret = vector_getentry(ports_allowed_by_connect, i, (void **)&data);
-		if (ret < 0)
+		if (vector_getentry(ports_allowed_by_connect, i, (void **)&data) < 0)
 			return -1;
 
 		if (*data == port)
@@ -655,13 +653,14 @@ get_content_length(hashmap_t hashofheaders)
  * FIXME: Need to add code to "hide" our internal information for security
  * purposes.
  */
-static void
+static int
 write_via_header(int fd, hashmap_t hashofheaders,
 		 unsigned int major, unsigned int minor)
 {
 	ssize_t len;
 	char hostname[128];
 	char *data;
+	int ret;
 
 	gethostname(hostname, sizeof(hostname));
 
@@ -671,19 +670,21 @@ write_via_header(int fd, hashmap_t hashofheaders,
 	 */
 	len = hashmap_entry_by_key(hashofheaders, "via", (void **)&data);
 	if (len > 0) {
-		write_message(fd,
-			      "Via: %s, %hu.%hu %s (%s/%s)\r\n",
-			      data,
-			      major, minor,
-			      hostname, PACKAGE, VERSION);
+		ret = write_message(fd,
+				    "Via: %s, %hu.%hu %s (%s/%s)\r\n",
+				    data,
+				    major, minor,
+				    hostname, PACKAGE, VERSION);
 
 		hashmap_remove(hashofheaders, "via");
 	} else {
-		write_message(fd,
-			      "Via: %hu.%hu %s (%s/%s)\r\n",
-			      major, minor,
-			      hostname, PACKAGE, VERSION);
+		ret = write_message(fd,
+				    "Via: %hu.%hu %s (%s/%s)\r\n",
+				    major, minor,
+				    hostname, PACKAGE, VERSION);
 	}
+
+	return ret;
 }
 
 /*
@@ -714,6 +715,7 @@ process_client_headers(struct conn_s *connptr)
 	hashmap_t hashofheaders;
 	hashmap_iter iter;
 	long content_length = -1;
+	int ret;
 
 	char *data, *header;
 
@@ -726,9 +728,7 @@ process_client_headers(struct conn_s *connptr)
 	 */
 	if (get_all_headers(connptr->client_fd, hashofheaders) < 0) {
 		log_message(LOG_WARNING, "Could not retrieve all the headers from the client");
-
-		hashmap_delete(hashofheaders);
-		return -1;
+		goto ERROR_EXIT;
 	}
 	
 	/*
@@ -763,8 +763,14 @@ process_client_headers(struct conn_s *connptr)
 	}
 
 	/* Send, or add the Via header */
-	write_via_header(connptr->server_fd, hashofheaders,
-			 connptr->protocol.major, connptr->protocol.minor);
+	ret = write_via_header(connptr->server_fd, hashofheaders,
+			       connptr->protocol.major,
+			       connptr->protocol.minor);
+	if (ret < 0) {
+		indicate_http_error(connptr, 503,
+				    "Could not send data to remote server.");
+		goto PULL_CLIENT_DATA;
+	}
 
 	/*
 	 * Output all the remaining headers to the remote machine.
@@ -778,15 +784,18 @@ process_client_headers(struct conn_s *connptr)
 					     (void**)&header);
 
 			if (!is_anonymous_enabled() || anonymous_search(data) <= 0) {
-				write_message(connptr->server_fd,
-					      "%s: %s\r\n",
-					      data, header);
+				ret = write_message(connptr->server_fd,
+						    "%s: %s\r\n",
+						    data, header);
+				if (ret < 0) {
+					indicate_http_error(connptr,
+							    503,
+							    "Could not send data to remove server.");
+					goto PULL_CLIENT_DATA;
+				}
 			}
 		}
 	}
-
-	/* Free the hashofheaders since it's no longer needed */
-	hashmap_delete(hashofheaders);
 
 #if defined(XTINYPROXY_ENABLE)
 	if (config.my_domain)
@@ -794,16 +803,24 @@ process_client_headers(struct conn_s *connptr)
 #endif
 	
 	/* Write the final "blank" line to signify the end of the headers */
-	safe_write(connptr->server_fd, "\r\n", 2);
+	if (safe_write(connptr->server_fd, "\r\n", 2) < 0)
+		return -1;
 
 	/*
 	 * Spin here pulling the data from the client.
 	 */
+  PULL_CLIENT_DATA:
+	hashmap_delete(hashofheaders);
+
 	if (content_length > 0)
 		return pull_client_data(connptr,
 					(unsigned long int) content_length);
 	else
-		return 0;
+		return ret;
+
+  ERROR_EXIT:
+	hashmap_delete(hashofheaders);
+	return -1;
 }
 
 /*
@@ -827,6 +844,7 @@ process_server_headers(struct conn_s *connptr)
 	char *data, *header;
 	ssize_t len;
 	int i;
+	int ret;
 
 	/* FIXME: Remember to handle a "simple_req" type */
 
@@ -847,12 +865,16 @@ process_server_headers(struct conn_s *connptr)
 		log_message(LOG_WARNING, "Could not retrieve all the headers from the remote server.");
 		hashmap_delete(hashofheaders);
 		safefree(response_line);
+
+		indicate_http_error(connptr, 503, "Could not retrieve all the headers from the remote server.");
 		return -1;
 	}
 
 	/* Send the saved response line first */
-	safe_write(connptr->client_fd, response_line, strlen(response_line));
+	ret = safe_write(connptr->client_fd, response_line, strlen(response_line));
 	safefree(response_line);
+	if (ret < 0)
+		goto ERROR_EXIT;
 
 	/*
 	 * If there is a "Content-Length" header, retrieve the information
@@ -874,8 +896,10 @@ process_server_headers(struct conn_s *connptr)
 	}
 
 	/* Send, or add the Via header */
-	write_via_header(connptr->client_fd, hashofheaders,
-			 connptr->protocol.major, connptr->protocol.minor);
+        ret = write_via_header(connptr->client_fd, hashofheaders,
+			       connptr->protocol.major, connptr->protocol.minor);
+	if (ret < 0)
+		goto ERROR_EXIT;
 
 	/*
 	 * Okay, output all the remaining headers to the client.
@@ -888,17 +912,24 @@ process_server_headers(struct conn_s *connptr)
 					     &data,
 					     (void **)&header);
 
-			write_message(connptr->client_fd,
-				      "%s: %s\r\n",
-				      data, header);
+			ret = write_message(connptr->client_fd,
+						  "%s: %s\r\n",
+						  data, header);
+			if (ret < 0)
+				goto ERROR_EXIT;
 		}
 	}
 	hashmap_delete(hashofheaders);
 
 	/* Write the final blank line to signify the end of the headers */
-	safe_write(connptr->client_fd, "\r\n", 2);
+	if (safe_write(connptr->client_fd, "\r\n", 2) < 0)
+		return -1;
 
 	return 0;
+
+  ERROR_EXIT:
+	hashmap_delete(hashofheaders);
+	return -1;
 }
 
 /*
@@ -1214,6 +1245,9 @@ handle_connection(int fd)
 
 	if (!connptr->connect_method || UPSTREAM_CONFIGURED()) {
 		if (process_server_headers(connptr) < 0) {
+			if (connptr->error_string)
+				send_http_error_message(connptr);
+
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
 			return;

@@ -1,3 +1,12 @@
+2002-04-28  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (process_client_headers):
+	(process_server_headers): Added more error checking code and
+	send HTTP errors back to the client to let them know what is
+	happening.
+	(handle_connection): If there was a server error when processing
+	the headers, send an error back to the client.
+
 2002-04-27  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/thread.c (thread_pool_create): Set the thread's status
