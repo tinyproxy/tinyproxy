@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.2 2000-09-11 23:43:59 rjkaes Exp $
+/* $Id: filter.c,v 1.3 2000-11-23 04:46:25 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  *
@@ -107,7 +107,7 @@ void filter_destroy(void)
 }
 
 /* returns 0 if host is not an element of filter list, non-zero otherwise */
-int filter_host(char *host)
+int filter_url(char *host)
 {
 	struct filter_list *p;
 	char *s, *port;

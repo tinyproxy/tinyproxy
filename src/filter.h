@@ -1,4 +1,4 @@
-/* $Id: filter.h,v 1.2 2000-09-11 23:43:59 rjkaes Exp $
+/* $Id: filter.h,v 1.3 2000-11-23 04:46:25 rjkaes Exp $
  *
  * See 'filter.c' for a detailed description.
  *
@@ -20,6 +20,6 @@
 
 extern void filter_init(void);
 extern void filter_destroy(void);
-extern int filter_host(char *host);
+extern int filter_url(char *host);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.9 2000-09-26 04:57:46 rjkaes Exp $
+/* $Id: reqs.c,v 1.10 2000-11-23 04:46:25 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -214,7 +214,7 @@ static int process_method(struct conn_s *connptr)
 #ifdef FILTER_ENABLE
 	/* Filter domains out */
 	if (config.filter) {
-		if (filter_host(uri->authority)) {
+		if (filter_url(uri->authority)) {
 			log(LOG_ERR, "clientreq: Filtered connection (%s)",
 			    peer_ipaddr);
 			httperr(connptr, 404,
