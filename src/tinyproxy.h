@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.23 2001-11-26 05:23:49 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.24 2001-12-23 03:28:03 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -40,9 +40,6 @@
 #ifdef HAVE_SYS_IOCTL_H
 #  include	<sys/ioctl.h>
 #endif
-#ifdef HAVE_SYS_RESOURCE_H
-#  include      <sys/resource.h>
-#endif
 #ifdef HAVE_SYS_SELECT_H
 #  include	<sys/select.h>
 #endif
@@ -71,6 +68,9 @@
 #  endif
 #endif
 
+#ifdef HAVE_SYS_RESOURCE_H
+#  include      <sys/resource.h>
+#endif
 #ifdef HAVE_SYS_UIO_H
 #  include	<sys/uio.h>
 #endif
@@ -156,6 +156,14 @@
 #endif
 #ifdef HAVE_WCTYPE_H
 #  include	<wctype.h>
+#endif
+
+/*
+ * If MSG_NOSIGNAL is not defined, define it to be zero so that it doesn't
+ * cause any problems.
+ */
+#ifndef MSG_NOSIGNAL
+#  define MSG_NOSIGNAL (0)
 #endif
 
 #ifndef SHUT_RD			/* these three Posix.1g names are quite new */

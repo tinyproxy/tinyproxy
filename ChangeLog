@@ -1,3 +1,10 @@
+2001-12-22  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/tinyproxy.h: Add a test for the MSG_NOSIGNAL define, so it's
+	apparently a non-standard extension to send(). Also, moved the
+	<sys/resource.h> include after the includes for the various time
+	include files.
+
 2001-12-19  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (write_message): Encapsulate code to handle sending
