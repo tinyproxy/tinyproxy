@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.16 2001-11-22 00:19:18 rjkaes Exp $
+/* $Id: sock.c,v 1.17 2001-11-23 01:18:43 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -81,8 +81,7 @@ opensock(char *ip_addr, uint16_t port)
 		return -1;
 	}
 
-	if (connect(sock_fd, (struct sockaddr *) &port_info, sizeof(port_info))
-	    < 0) {
+	if (connect(sock_fd, (struct sockaddr *) &port_info, sizeof(port_info)) < 0) {
 		log_message(LOG_ERR, "opensock: connect() error \"%s\".",
 			    strerror(errno));
 		return -1;
@@ -259,9 +258,6 @@ safe_read(int fd, void *buffer, size_t count)
 	return len;
 }
 
-#define EERROR		1	/* Generic error */
-#define ENOMEMORY	2	/* Out of memory (or allocation error) */
-
 /*
  * Read in a "line" from the socket. It might take a few loops through
  * the read sequence. The full string is allocate off the heap and stored
@@ -289,7 +285,7 @@ readline(int fd, char **whole_buffer)
 	};
 	struct read_lines_s *first_line, *line_ptr;
 
-	first_line = calloc(sizeof(struct read_lines_s), 1);
+	first_line = safecalloc(sizeof(struct read_lines_s), 1);
 	if (!first_line)
 		return -ENOMEMORY;
 
@@ -309,7 +305,7 @@ readline(int fd, char **whole_buffer)
 
 		whole_buffer_len += diff;
 
-		line_ptr->data = malloc(diff);
+		line_ptr->data = safemalloc(diff);
 		if (!line_ptr->data) {
 			ret = -ENOMEMORY;
 			goto CLEANUP;
@@ -323,7 +319,7 @@ readline(int fd, char **whole_buffer)
 			break;
 		}
 
-		line_ptr->next = calloc(sizeof(struct read_lines_s), 1);
+		line_ptr->next = safecalloc(sizeof(struct read_lines_s), 1);
 		if (!line_ptr->next) {
 			ret = -ENOMEMORY;
 			goto CLEANUP;
@@ -331,7 +327,7 @@ readline(int fd, char **whole_buffer)
 		line_ptr = line_ptr->next;
 	}
 
-	*whole_buffer = malloc(whole_buffer_len + 1);
+	*whole_buffer = safemalloc(whole_buffer_len + 1);
 	if (!*whole_buffer)
 		return -ENOMEMORY;
 
@@ -352,8 +348,8 @@ readline(int fd, char **whole_buffer)
       CLEANUP:
 	do {
 		line_ptr = first_line->next;
-		free(first_line->data);
-		free(first_line);
+		safefree(first_line->data);
+		safefree(first_line);
 		first_line = line_ptr;
 	} while (first_line);
 
