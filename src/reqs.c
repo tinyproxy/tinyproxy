@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.78 2002-05-28 04:53:33 rjkaes Exp $
+/* $Id: reqs.c,v 1.79 2002-05-28 20:40:01 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -530,9 +530,11 @@ add_xtinyproxy_header(struct conn_s *connptr)
  * can be retrieved and manipulated later.
  */
 static inline int
-add_header_to_connection(hashmap_t hashofheaders, char *header, size_t len)
+add_header_to_connection(hashmap_t hashofheaders, char *header, size_t len,
+			 bool_t double_cgi)
 {
 	char *sep;
+	ssize_t ret;
 
 	/* Get rid of the new line and return at the end */
 	len -= chomp(header, len);
@@ -548,6 +550,12 @@ add_header_to_connection(hashmap_t hashofheaders, char *header, size_t len)
 	/* Calculate the new length of just the data */
 	len -= sep - header - 1;
 
+	if (double_cgi == TRUE) {
+		/* Don't allow duplicate headers */
+		if ((ret = hashmap_search(hashofheaders, header)) <= 0)
+			return ret;
+	}
+
 	return hashmap_insert(hashofheaders, header, sep, len);
 }
 
@@ -559,6 +567,7 @@ get_all_headers(int fd, hashmap_t hashofheaders)
 {
 	char *header;
 	ssize_t len;
+	bool_t double_cgi = FALSE;
 
 	assert(fd >= 0);
 	assert(hashofheaders != NULL);
@@ -579,17 +588,24 @@ get_all_headers(int fd, hashmap_t hashofheaders)
 		}
 
 		/*
-		 * BUG FIX: Need this code to skip a second "HTTP/1.x ... OK"
-		 * response.  This was needed because of cgi.ebay.com.
+		 * BUG FIX: The following code detects a "Double CGI"
+		 * situation so that we can handle the nonconforming system.
+		 * This problem was found when accessing cgi.ebay.com, and it
+		 * turns out to be a wider spread problem as well.
+		 *
+		 * If "Double CGI" is in effect, duplicate headers are
+		 * ignored.
 		 *
 		 * FIXME: Might need to change this to a more robust check.
 		 */
 		if (strncasecmp(header, "HTTP/", 5) == 0) {
+			double_cgi = TRUE;
+
 			safefree(header);
 			continue;
 		}
-
-		if (add_header_to_connection(hashofheaders, header, len) < 0) {
+		
+		if (add_header_to_connection(hashofheaders, header, len, double_cgi) < 0) {
 			safefree(header);
 			return -1;
 		}
