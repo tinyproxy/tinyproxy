@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.14 2002-06-07 19:10:05 rjkaes Exp $
+/* $Id: filter.c,v 1.15 2002-10-03 20:40:39 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  * Copyright (c) 2002  James E. Flemer (jflemer@acm.jhu.edu)
@@ -57,7 +57,7 @@ filter_init(void)
 		if (fd) {
 			p = NULL;
 
-			cflags = REG_NEWLINE | REG_NOSUB;
+			cflags = REG_NEWLINE | REG_NOSUB | REG_ICASE;
 			if (config.filter_extended)
 				cflags |= REG_EXTENDED;
 
