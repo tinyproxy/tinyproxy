@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.6 2001-08-30 16:52:56 rjkaes Exp $
+/* $Id: utils.h,v 1.7 2001-09-08 18:55:58 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -33,5 +33,23 @@ extern size_t strlcat(char *dst, const char *src, size_t size);
 #ifndef HAVE_STRLCPY
 extern size_t strlcpy(char *dst, const char *src, size_t size);
 #endif /* HAVE_STRLCPY */
+
+/*
+ * The following is to allow for better memory checking.
+ */
+#ifndef NDEBUG
+
+extern void *debugging_calloc(size_t nmemb, size_t size, const char *file, unsigned long line);
+extern void *debugging_malloc(size_t size, const char *file, unsigned long line);
+extern void debugging_free(void *ptr, const char *file, unsigned long line);
+
+#  define safecalloc(x, y) debugging_calloc(x, y, __FILE__, __LINE__)
+#  define safemalloc(x) debugging_malloc(x, __FILE__, __LINE__)
+#  define safefree(x) debugging_free(x, __FILE__, __LINE__)
+#else
+#  define safecalloc(x, y) calloc(x, y)
+#  define safemalloc(x) malloc(x)
+#  define safefree(x) free(x)
+#endif
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.9 2001-09-07 04:21:07 rjkaes Exp $
+/* $Id: utils.c,v 1.10 2001-09-08 18:55:58 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -31,6 +31,34 @@
 #include "utils.h"
 
 /*
+ * These are the debugging calloc, malloc, and free versions
+ */
+#ifndef NDEBUG
+
+void *debugging_calloc(size_t nmemb, size_t size, const char *file, unsigned long line)
+{
+	void *ptr = calloc(nmemb, size);
+	fprintf(stderr, "{calloc: %p:%u x %u} %s:%lu\n", ptr, nmemb, size, file, line);
+	return ptr;
+}
+
+void *debugging_malloc(size_t size, const char *file, unsigned long line)
+{
+	void *ptr = malloc(size);
+	fprintf(stderr, "{malloc: %p:%u} %s:%lu\n", ptr, size, file, line);
+	return ptr;
+}
+
+void debugging_free(void *ptr, const char *file, unsigned long line)
+{
+	fprintf(stderr, "{free: %p} %s:%lu\n", ptr, file, line);
+	free(ptr);
+	return;
+}
+
+#endif
+
+/*
  * Display an error to the client.
  */
 #define HEADER_SIZE (1024 * 8)
@@ -60,13 +88,13 @@ int httperr(struct conn_s *connptr, int err, const char *msg)
 	char timebuf[30];
 	time_t global_time;
 
-	header_buffer = malloc(HEADER_SIZE);
+	header_buffer = safemalloc(HEADER_SIZE);
 	if (!header_buffer) {
 		log_message(LOG_ERR, "Could not allocate memory.");
 		return -1;
 	}
 
-	message_buffer = malloc(MAXBUFFSIZE);
+	message_buffer = safemalloc(MAXBUFFSIZE);
 	if (!message_buffer) {
 		log_message(LOG_ERR, "Could not allocate memory.");
 		safefree(header_buffer);
@@ -80,7 +108,7 @@ int httperr(struct conn_s *connptr, int err, const char *msg)
 	snprintf(header_buffer, HEADER_SIZE - 1, headers, err, msg, PACKAGE, VERSION, timebuf, strlen(message_buffer));
 
 	output_size = strlen(message_buffer) + strlen(header_buffer);
-	connptr->output_message = malloc(output_size + 1);
+	connptr->output_message = safemalloc(output_size + 1);
 	if (!connptr->output_message) {
 		log_message(LOG_ERR, "Could not allocate memory.");
 		safefree(header_buffer);
