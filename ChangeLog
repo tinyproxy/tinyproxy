@@ -1,5 +1,14 @@
 2001-12-15  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/sock.c (safe_write): In addition to handling "interruption"
+	errors, continue sending the buffer until it has been fully sent
+	or a fatal error occured.
+
+	* src/anonymous.c: Removed the calls to the ternary tree and just
+	use a basic linked list. The ternary tree might have been slightly
+	faster, but since tinyproxy is only dealing with a "few" anonymous
+	headers the ternary tree code was _way_ overkill.
+
 	* src/sock.c (lookup_domain): Removed the DNS cache since
 	according to RFC2616 a HTTP client should not cache an address if
 	the client doesn't also respect the TTL value. tinyproxy does not
@@ -15,7 +24,8 @@
 	free()ing it.
 	(add_to_buffer): Add a new "line" to the buffer. I'm trying to
 	have more of the data go through the buffering code. Basically the
-	safe_read() function should only be called for special reasons.
+	safe_write() function should only be called when the data needs to
+	be sent _now_.
 	(read_buffer): Fixed the code so that buffering _actually_
 	happens. :) The code will now buffer up to MAXBUFFSIZE bytes
 	(which is currently 48 KB.)
