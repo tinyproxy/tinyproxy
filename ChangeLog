@@ -1,3 +1,9 @@
+2004-08-10  Robert James Kaes  <rjkaes@users.sourceforge.net>
+
+	* src/daemon.c (makedaemon): Close the standard file descriptors
+	when compiling a production executable.  I only need these left
+	open when doing debugging.
+
 2004-08-06  Robert James Kaes  <rjkaes@users.sourceforge.net>
 
 	* src/conns.c, src/conns.h, src/reqs.c, src/tinyproxy.h:
