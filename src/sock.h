@@ -1,4 +1,4 @@
-/* $Id: sock.h,v 1.5 2001-09-16 20:11:07 rjkaes Exp $
+/* $Id: sock.h,v 1.6 2001-10-25 17:02:50 rjkaes Exp $
  *
  * See 'sock.c' for a detailed description.
  *
@@ -19,9 +19,7 @@
 #ifndef TINYPROXY_SOCK_H
 #define TINYPROXY_SOCK_H
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#include "tinyproxy.h"
 
 #define PEER_IP_LENGTH		16
 #define PEER_STRING_LENGTH	256
