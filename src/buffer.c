@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.20 2002-05-14 00:43:38 rjkaes Exp $
+/* $Id: buffer.c,v 1.21 2002-05-23 18:22:48 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -24,8 +24,8 @@
 #include "tinyproxy.h"
 
 #include "buffer.h"
+#include "heap.h"
 #include "log.h"
-#include "utils.h"
 
 #define BUFFER_HEAD(x) (x)->head
 #define BUFFER_TAIL(x) (x)->tail
@@ -174,8 +174,10 @@ add_to_buffer(struct buffer_s *buffptr, unsigned char *data, size_t length)
 
 	if (buffptr->size == 0)
 		BUFFER_HEAD(buffptr) = BUFFER_TAIL(buffptr) = newline;
-	else
-		BUFFER_TAIL(buffptr) = (BUFFER_TAIL(buffptr)->next = newline);
+	else {
+		BUFFER_TAIL(buffptr)->next = newline;
+		BUFFER_TAIL(buffptr) = newline;
+	}
 
 	buffptr->size += length;
 
@@ -274,8 +276,8 @@ write_buffer(int fd, struct buffer_s * buffptr)
 
 	/* Sanity check. It would be bad to be using a NULL pointer! */
 	assert(BUFFER_HEAD(buffptr) != NULL);
-
 	line = BUFFER_HEAD(buffptr);
+
 	bytessent =
 	    send(fd, line->string + line->pos, line->length - line->pos, MSG_NOSIGNAL);
 
