@@ -1,4 +1,4 @@
-/* $Id: network.c,v 1.3 2004-02-13 21:27:42 rjkaes Exp $
+/* $Id: network.c,v 1.4 2004-02-18 20:17:18 rjkaes Exp $
  *
  * The functions found here are used for communicating across a
  * network.  They include both safe reading and writing (which are
@@ -6,7 +6,7 @@
  * easily reading a line of text from the network, and a function
  * to write an arbitrary amount of data to the network.
  *
- * Copyright (C) 2002  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2002,2004  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -235,4 +235,82 @@ readline(int fd, char **whole_buffer)
 	} while (first_line);
 
 	return ret;
+}
+
+/*
+ * Convert the network address into either a dotted-decimal or an IPv6
+ * hex string.
+ */
+char*
+get_ip_string(struct sockaddr* sa, char* buf, size_t buflen)
+{
+	assert(sa != NULL);
+	assert(buf != NULL);
+	assert(buflen != 0);
+	buf[0] = '\0'; /* start with an empty string */
+
+	switch (sa->sa_family) {
+	case AF_INET: {
+		struct sockaddr_in *sa_in = (struct sockaddr_in *)sa;
+		inet_ntop(AF_INET, &sa_in->sin_addr, buf, buflen);
+		break;
+	}
+	case AF_INET6: {
+		struct sockaddr_in6 *sa_in6 = (struct sockaddr_in6 *)sa;
+		inet_ntop(AF_INET6, &sa_in6->sin6_addr, buf, buflen);
+		break;
+	}
+	default:
+		/* no valid family */
+		return NULL;
+	}
+
+	return buf;
+}
+
+/*
+ * Convert a numeric character string into an IPv6 network address
+ * (in binary form.)  The function works just like inet_pton(), but it
+ * will accept both IPv4 and IPv6 numeric addresses.
+ *
+ * Returns the same as inet_pton().
+ */
+int
+full_inet_pton(const char* ip, void* dst)
+{
+	char buf[24], tmp[24]; /* IPv4->IPv6 = ::FFFF:xxx.xxx.xxx.xxx\0 */
+	int n;
+
+	assert(ip != NULL && strlen(ip) != 0);
+	assert(dst != NULL);
+
+	/*
+	 * Check if the string is an IPv4 numeric address.  We use the
+	 * older inet_aton() call since it handles more IPv4 numeric
+	 * address formats.
+	 */
+	n = inet_aton(ip, (struct in_addr*)dst);
+	if (n == 0) {
+		/*
+		 * Simple case: "ip" wasn't an IPv4 numeric address, so
+		 * try doing the conversion as an IPv6 address.  This
+		 * will either succeed or fail, but we can't do any
+		 * more processing anyway.
+		 */
+		return inet_pton(AF_INET6, ip, dst);
+	}
+
+	/*
+	 * "ip" was an IPv4 address, so we need to convert it to
+	 * an IPv4-mapped IPv6 address and do the conversion
+	 * again to get the IPv6 network structure.
+	 *
+	 * We convert the IPv4 binary address back into the
+	 * standard dotted-decimal format using inet_ntop()
+	 * so we can be sure that inet_pton will accept the
+	 * full string.
+	 */
+	snprintf(buf, sizeof(buf), "::ffff:%s",
+		 inet_ntop(AF_INET, dst, tmp, sizeof(tmp)));
+	return inet_pton(AF_INET6, buf, dst);
 }
