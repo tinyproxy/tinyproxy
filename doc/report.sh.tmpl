@@ -7,7 +7,7 @@ date
 echo "uname: "
 uname -a
 echo "ps: "
-ps -auxw | grep '[t]inyproxy' -
+ps -ef | grep '[t]inyproxy'
 echo "ver: "
 if [ -x $TINYPROXY_BIN ]; then
    $TINYPROXY_BIN -v
