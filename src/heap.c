@@ -1,4 +1,4 @@
-/* $Id: heap.c,v 1.1 2002-05-23 04:41:10 rjkaes Exp $
+/* $Id: heap.c,v 1.2 2002-05-26 18:56:06 rjkaes Exp $
  *
  * Debugging versions of various heap related functions are combined
  * here.  The debugging versions include assertions and also print
@@ -90,3 +90,51 @@ debugging_strdup(const char* s, const char* file, unsigned long line)
 	fprintf(stderr, "{strdup: %p:%u} %s:%lu\n", ptr, len, file, line);
 	return ptr;
 }
+
+/*
+ * Allocate a block of memory in the "shared" memory region
+ */
+void*
+malloc_shared_memory(size_t size)
+{
+	int fd;
+	void* ptr;
+
+	assert(size > 0);
+       
+#ifdef MAP_ANON
+	ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_SHARED, -1, 0);
+#else
+	fd = open("/dev/zero", O_RDWR, 0);
+
+	ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	close(fd);
+#endif
+
+	return ptr;
+}
+
+/*
+ * Allocate a block of memory from the "shared" region an initialize it to
+ * zero.
+ */
+void*
+calloc_shared_memory(size_t nmemb, size_t size)
+{
+	void* ptr;
+	long length;
+
+	assert(nmemb > 0);
+	assert(size > 0);
+
+	length = nmemb * size;
+
+	ptr = malloc_shared_memory(length);
+	if (!ptr)
+		return NULL;
+
+	memset(ptr, 0, length);
+
+	return ptr;
+}
+

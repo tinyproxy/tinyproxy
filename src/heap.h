@@ -1,4 +1,4 @@
-/* $Id: heap.h,v 1.1 2002-05-23 04:41:10 rjkaes Exp $
+/* $Id: heap.h,v 1.2 2002-05-26 18:56:06 rjkaes Exp $
  *
  * See 'heap.c' for a detailed description.
  *
@@ -45,5 +45,11 @@ extern char *debugging_strdup(const char* s, const char* file,
 #  define safefree(x) free(x); (x) = NULL
 #  define safestrdup(x) strdup(x)
 #endif
+
+/*
+ * Allocate memory from the "shared" region of memory.
+ */
+extern void* malloc_shared_memory(size_t size);
+extern void* calloc_shared_memory(size_t nmemb, size_t size);
 
 #endif
