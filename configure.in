@@ -1,7 +1,7 @@
-dnl $Id: configure.in,v 1.5 2000-12-09 20:03:40 rjkaes Exp $
+dnl $Id: configure.in,v 1.6 2001-01-15 17:13:37 rjkaes Exp $
 
 AC_INIT()
-AM_INIT_AUTOMAKE(tinyproxy,1.4.0-pre1)
+AM_INIT_AUTOMAKE(tinyproxy,1.4.0pre2)
 AM_CONFIG_HEADER(config.h)
 
 AC_CANONICAL_HOST
