@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.33 2001-10-25 04:40:48 rjkaes Exp $
+/* $Id: reqs.c,v 1.34 2001-10-25 05:12:46 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -491,13 +491,12 @@ static int process_client_headers(struct conn_s *connptr)
 		if (connptr->send_message)
 			continue;
 
-#if 0
 		/*
-		 * Don't send any of the headers if we're in SSL mode.
+		 * Don't send any of the headers if we're in SSL mode and
+		 * NOT using an upstream proxy.
 		 */
-		if (connptr->ssl)
+		if (connptr->ssl && !connptr->upstream)
 			continue;
-#endif
 
 		/*
 		 * Don't send certain headers.
@@ -525,7 +524,7 @@ static int process_client_headers(struct conn_s *connptr)
 		}
 	}
 
-	if (!connptr->send_message && !connptr->ssl) {
+	if (!connptr->send_message && (connptr->upstream || !connptr->ssl)) {
 #ifdef XTINYPROXY_ENABLE
 		if (config.my_domain
 		    && add_xtinyproxy_header(connptr) < 0) {
@@ -651,9 +650,6 @@ static void relay_connection(struct conn_s *connptr)
 		
 		if (FD_ISSET(connptr->server_fd, &rset)
 		    && readbuff(connptr->server_fd, connptr->sbuffer) < 0) {
-#if 0
-			shutdown(connptr->server_fd, SHUT_WR);
-#endif
 			break;
 		}
 		if (FD_ISSET(connptr->client_fd, &rset)
@@ -662,9 +658,6 @@ static void relay_connection(struct conn_s *connptr)
 		}
 		if (FD_ISSET(connptr->server_fd, &wset)
 		    && writebuff(connptr->server_fd, connptr->cbuffer) < 0) {
-#if 0
-			shutdown(connptr->server_fd, SHUT_WR);
-#endif
 			break;
 		}
 		if (FD_ISSET(connptr->client_fd, &wset)
@@ -705,6 +698,7 @@ static void initialize_conn(struct conn_s *connptr)
 	connptr->simple_req = FALSE;
 
 	connptr->ssl = FALSE;
+	connptr->upstream = FALSE;
 
 	update_stats(STAT_OPEN);
 }
@@ -867,7 +861,8 @@ internal_proxy:
 
 #ifdef UPSTREAM_SUPPORT
 	if (config.upstream_name && config.upstream_port != -1) {
-		DEBUG1("Going to connect to the upstream.");
+		connptr->upstream = TRUE;
+
 		if (connect_to_upstream(connptr, request) < 0)
 			goto send_error;
 	} else {
@@ -904,8 +899,7 @@ send_error:
 		return;
 	}
 
-	if (!connptr->ssl || config.upstream_name) {
-		DEBUG1("Processing the server's headers now.");
+	if (!connptr->ssl || connptr->upstream) {
 		if (process_server_headers(connptr) < 0) {
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
