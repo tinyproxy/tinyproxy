@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.38 2002-07-12 17:02:02 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.39 2002-10-03 20:53:11 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -230,6 +230,13 @@ main(int argc, char **argv)
 				"%s: You MUST set a LogFile in the configuration file.\n",
 				argv[0]);
 			exit(EX_SOFTWARE);
+		} else {
+			if (open_log_file(config.logf_name) < 0) {
+				fprintf(stderr,
+					"%s: Could not create log file.\n",
+					argv[0]);
+				exit(EX_SOFTWARE);
+			}
 		}
 	} else {
 		if (godaemon == TRUE)
@@ -237,6 +244,9 @@ main(int argc, char **argv)
 		else
 			openlog("tinyproxy", LOG_PID, LOG_USER);
 	}
+
+	processed_config_file = TRUE;
+	send_stored_logs();
 
 	/*
 	 * Set the default values if they were not set in the config file.
@@ -352,9 +362,6 @@ main(int argc, char **argv)
 		exit(EX_SOFTWARE);
 	}
 
-	processed_config_file = TRUE;
-	send_stored_logs();
-
 	/*
 	 * These signals are only for the parent process.
 	 */
@@ -407,6 +414,8 @@ main(int argc, char **argv)
 
 	if (config.syslog)
 		closelog();
+	else
+		close_log_file();
 
 	exit(EX_OK);
 }
