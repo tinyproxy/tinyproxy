@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.19 2004-08-13 20:19:50 rjkaes Exp $
+# $Id: Makefile.am,v 1.20 2004-08-13 21:04:24 rjkaes Exp $
 #
 # Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
 #
@@ -39,8 +39,8 @@ tinyproxy_SOURCES = \
 	text.c text.h \
 	tinyproxy.c tinyproxy.h \
 	utils.c utils.h \
-	vector.c vector.h \
-	grammar.y scanner.l
+	vector.c vector.h
+#	grammar.y scanner.l
 
 EXTRA_tinyproxy_SOURCES = filter.c filter.h grammar.h
 tinyproxy_DEPENDENCIES = @ADDITIONAL_OBJECTS@
