@@ -18,43 +18,6 @@ is an HTTP proxy server designed to consume a minimum of system resources.
 It listens on a given TCP port and handles HTTP proxy requests.
 .SH OPTIONS
 .TP 5
-.B \-v
-Display version information and exit.
-.TP 5
-.B \-h
-Display a short help screen of command line arguments and exit.
-.TP 5
-.B \-d 
-Don't daemonize; stay in the foreground.
-.TP 5
-.B "\-n ip_address"
-Allow access from only those hosts in the subnet.
-.I ip_address
-should be of a form xxx.xxx.xxx. like 192.168.0.
-.TP 5
-.BI "\-i ip_address"
-Only listen to the specific address. Useful for systems with more than one
-network connection.
-.I ip_address
-needs to be in the dotted-decimal form (e.g. 192.168.0.1)
-.TP 5
-.BI "\-p port"
-Listen to
-.I port
-instead of the default as defined in config.h.
-.TP 5
-.BI "\-l logfile"
-Log to the file
-.I logfile
-instead of the default as defined in config.h.
-.TP 5
-.BI \-r
-Restrict the log file to only logging error conditions. The hosts connecting
-and the locations being accessed are not logged.
-.TP 5
-.B \-S
-Log to the syslog daemon
-.TP 5
 .BI "\-a headername"
 Allow the header
 .I headername
@@ -65,6 +28,75 @@ program, but you do not provide a
 .I headername
 tinyproxy will run as if anon mode was not compiled in.
 .TP 5
+.BI "\-d" 
+Don't daemonize; stay in the foreground.
+.TP 5
+.BI "\-f filterfile"
+Block any sites/URL which are specified in the
+.I filterfile
+The domains/URLs are specified in a flat text file with one filter per line.
+.TP 5
+.BI "\-h"
+Display a short help screen of command line arguments and exit.
+.TP 5
+.BI "\-i ip_address"
+Only listen to the specific address. Useful for systems with more than one
+network connection.
+.I ip_address
+needs to be in the dotted-decimal form (e.g. 192.168.0.1)
+.TP 5
+.BI "\-l logfile"
+Log to the file
+.I logfile
+instead of the default
+.B /var/log/tinyproxy.
+The default can be changed at compile time using the
+.B "\-\-with\-log\-file"
+directive.
+.TP 5
+.BI "\-n ip_address"
+Allow access from only those hosts in the subnet.
+.I ip_address
+should be of a form xxx.xxx.xxx. like 192.168.0.
+.TP 5
+.BI "\-p port"
+Listen to
+.I port
+instead of the default
+.B 8888.
+The default can be changed at compile time by using the
+.B "\-with\-port"
+directive.
+.TP 5
+.BI "\-r"
+Restrict the log file to only logging error conditions. The hosts connecting
+and the locations being accessed are not logged.
+.TP 5
+.BI "\-s stathost"
+Set the status host to
+.I stathost
+.TP 5
+.BI "\-S"
+Log to the syslog daemon
+.TP 5
+.BI "\-t domain:port"
+If you would like to use an upstream proxy along with tinyproxy then set
+this option. The
+.I domain
+is the address of the proxy, and the
+.I port
+is the
+decimal port number. The address can be either alphanumeric, or dotted-decimal.
+.TP 5
+.BI "\-u username"
+Begin running as
+.I username
+after the port has been bound and the logfile has been opened.  Only
+works if tinyproxy is being run as root.  "" to disable.
+.TP 5
+.BI "\-v"
+Display version information and exit.
+.TP 5
 .BI "\-w loadaverage"
 Stop handling requests when the load is
 .I loadaverage
@@ -73,11 +105,15 @@ or higher.  Specifying a
 of 0.00 will disable this feature.
 (disabled by default)
 .TP 5
-.BI "\-u username"
-Begin running as
-.I username
-after the port has been bound and the logfile has been opened.  Only
-works if tinyproxy is being run as root.  "" to disable.
+.BI "\-x domain"
+Add a
+.B XTinyproxy
+header with the peer's IP address.
+.I domain
+tells tinyproxy which domains to include the
+.B XTinyproxy
+header on. Basically, set this if you want to include the header only on
+your sites. Else, set to "" to have it sent on all connections.
 .SH SIGNALS
 In addition to these command line options, there are also several signals
 that can be sent to tinyproxy while it is running to generate debugging
