@@ -1,4 +1,4 @@
-/* $Id: log.h,v 1.6 2001-06-02 03:09:27 rjkaes Exp $
+/* $Id: log.h,v 1.7 2001-08-26 21:10:04 rjkaes Exp $
  *
  * See 'log.c' for a detailed description.
  *
@@ -29,6 +29,9 @@
  * can see them below and I'll describe what each level should be for.
  * Hopefully tinyproxy will remain consistent with these levels.
  *	-- rjkaes
+ * Sorry but I had to destroy the hope ;-) There was a need to log 
+ * connections without the INFO stuff and not to have them as NOTICE.
+ *	-- hgb
  *
  * Level	Description
  * -----	-----------
@@ -56,6 +59,11 @@
  *		now it is used for actions like creating/destroying threads,
  *		unauthorized access, signal handling, etc.
  *
+ * LOG_CONN	This additional level is for logging connections only, so 
+ *		it is easy to control only the requests in the logfile.
+ *		If we log through syslog, this is set to LOG_INFO.
+ *			-- hgb
+ *
  * LOG_INFO	Everything else ends up here. Logging for incoming
  *		connections, denying due to filtering rules, unable to
  *		connect to remote server, etc.
@@ -75,6 +83,8 @@
 #  define LOG_INFO    6
 #  define LOG_DEBUG   7
 #endif
+
+#define LOG_CONN      8 /* extra to log connections without the INFO stuff */
 
 /*
  * Use this for debugging. The format is specific:

@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.3 2001-06-02 03:10:09 rjkaes Exp $
+/* $Id: grammar.y,v 1.4 2001-08-26 21:08:36 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -52,7 +52,7 @@ int yylex(void);
 
 /* settings for loglevel */
 %token KW_LOGLEVEL
-%token KW_LOG_CRITICAL KW_LOG_ERROR KW_LOG_WARNING KW_LOG_NOTICE KW_LOG_INFO
+%token KW_LOG_CRITICAL KW_LOG_ERROR KW_LOG_WARNING KW_LOG_NOTICE KW_LOG_CONNECT KW_LOG_INFO
 
 %token <cptr> IDENTIFIER
 %token <num>  NUMBER
@@ -105,7 +105,7 @@ statement
 	| KW_PIDFILE string		{ config.pidpath = $2; }
 	| KW_USER string		{ config.username = $2; }
 	| KW_GROUP string		{ config.group = $2; }
-	| KW_ANONYMOUS string		{ anon_insert($2); }
+	| KW_ANONYMOUS string		{ anonymous_insert($2); }
 	| KW_FILTER string
 	  {
 #ifdef FILTER_ENABLE
@@ -135,6 +135,7 @@ loglevels
         | KW_LOG_ERROR                  { $$ = LOG_ERR; }
         | KW_LOG_WARNING                { $$ = LOG_WARNING; }
         | KW_LOG_NOTICE                 { $$ = LOG_NOTICE; }
+        | KW_LOG_CONNECT                { $$ = LOG_CONN; }
         | KW_LOG_INFO                   { $$ = LOG_INFO; }
         ;
 

@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.8 2001-06-06 19:32:51 rjkaes Exp $
+/* $Id: log.c,v 1.9 2001-08-26 21:10:04 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -31,7 +31,8 @@ static char *syslog_level[] = {
 	"WARNING",
 	"NOTICE",
 	"INFO",
-	"DEBUG"
+	"DEBUG",
+	"CONNECT"
 };
 
 #define TIME_LENGTH 16
@@ -47,7 +48,15 @@ static short int log_level = LOG_ERR;
  */
 void set_log_level(short int level)
 {
+#ifndef NDEBUG
+	/*
+	 * If we're running with debugging enabled, then set the log level
+	 * to DEBUG regardless of what's in the configuration file.
+	 */
+	log_level = LOG_DEBUG;
+#else
 	log_level = level;
+#endif
 }
 
 /*
@@ -67,8 +76,18 @@ void log_message(short int level, char *fmt, ...)
 	/*
 	 * Figure out if we should write the message or not.
 	 */
-	if (level > log_level)
-		return;
+	if (log_level != LOG_CONN) {
+		if (level > log_level && level != LOG_CONN)
+			return;
+	} else {
+		if (level == LOG_INFO)
+			return;
+	}
+
+#ifdef HAVE_SYSLOG_H
+	if (config.syslog && level == LOG_CONN) 
+		level = LOG_INFO;
+#endif
 
 	va_start(args, fmt);
 
