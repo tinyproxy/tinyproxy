@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.17 2001-08-28 04:32:14 rjkaes Exp $
+/* $Id: reqs.c,v 1.18 2001-08-30 16:51:10 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -326,7 +326,7 @@ static int compare_header(char *line)
 	char *ptr;
 	int ret;
 
-	if ((ptr = xstrstr(line, ":", strlen(line), FALSE)) == NULL)
+	if ((ptr = strstr(line, ":")) == NULL)
 		return -1;
 
 	if ((buffer = malloc(ptr - line + 1)) == NULL)
