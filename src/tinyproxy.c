@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.16 2001-09-16 05:38:27 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.17 2001-09-16 20:11:54 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -249,6 +249,13 @@ int main(int argc, char **argv)
 		exit(EX_SOFTWARE);
 	}
 	yyparse();
+
+#if defined(TUNNEL_SUPPORT) && defined(UPSTREAM_SUPPORT)
+	if (config.tunnel_name && config.upstream_name) {
+		fprintf(stderr, "%s: \"Tunnel\" and \"Upstream\" directives can not be both set.\n", argv[0]);
+		exit(EX_SOFTWARE);
+	}
+#endif
 
 	/* Open the log file if not using syslog */
 	if (config.syslog == FALSE) {
