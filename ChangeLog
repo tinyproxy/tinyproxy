@@ -1,5 +1,11 @@
 2001-08-26  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/log.c (log_message): Fixed a problem with the new LOG_CONN
+	log level.
+
+	* configure.in: The debugging code was being included even on
+	non-debugging builds.
+
 	* src/anonymous.c (anonymous_insert): Moved the creation of the
 	search tree into the anonymous_insert() function. Therefore, the
 	search tree is _not_ created until the first insertion. This
