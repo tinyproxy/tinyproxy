@@ -1,3 +1,18 @@
+2001-05-26  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/tinyproxy.c (main): Added code to stop the creation of core
+	files.
+
+	* src/reqs.c (process_method): Fixed a memory leak.
+	(relay_connection): Cleaned up the code to remove some unneeded
+	variabled and removed redundant code.
+
+	* src/log.c (log_message): Renamed "log()" function to
+	log_message().
+
+	* src/dnscache.c (new_dnscache):
+	* src/anonymous.c (new_anonymous): Fixed the return type.
+
 2001-01-15 12:13  rjkaes
 
 	* configure.in: Bumped up the pre version number
