@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.22 2002-01-25 00:01:45 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.23 2002-04-07 21:36:39 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -137,7 +137,7 @@ display_license(void)
 
 	printf("\
   Copyright 1998       Steven Young (sdyoung@well.com)\n\
-  Copyright 1998-2001  Robert James Kaes (rjkaes@users.sourceforge.net)\n\
+  Copyright 1998-2002  Robert James Kaes (rjkaes@users.sourceforge.net)\n\
   Copyright 1999       George Talusan (gstalusan@uwaterloo.ca)\n\
   Copyright 2000       Chris Lightfoot (chris@ex-parrot.com)\n\
 \n\
