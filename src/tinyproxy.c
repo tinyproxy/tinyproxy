@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.20 2001-12-15 06:02:16 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.21 2001-12-23 22:00:36 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -313,7 +313,7 @@ main(int argc, char **argv)
 			    "You SHOULD set a UserName in the configuration file. Using current user instead.");
 	}
 	if (config.idletimeout == 0) {
-		log_message(LOG_INFO, "Setting idle timeout to %u seconds.",
+		log_message(LOG_WARNING, "Invalid idle time setting. Only values greater than zero allowed; therefore setting idle timeout to %u seconds.",
 			    MAX_IDLE_TIME);
 		config.idletimeout = MAX_IDLE_TIME;
 	}

@@ -1,5 +1,9 @@
 2001-12-23  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/tinyproxy.c (main): Made the error log for the idle time
+	setting more verbose so that it's explains the reasoning
+	better. Also, changed the level to WARNING.
+
 	* src/reqs.c (process_client_headers): Cleaned up the code to send
 	the Via header by using the write_message() function.
 
