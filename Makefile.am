@@ -40,7 +40,7 @@ tinyproxy-configure-file:
 tinyproxy-html-files:
 	$(mkinstalldirs) $(DESTDIR)$(datadir)/tinyproxy
 
-	test -d $(datadir)/tinyproxy || mkdir $(datadir)/tinyproxy
+	test -d $(DESTDIR)$(datadir)/tinyproxy || mkdir $(datadir)/tinyproxy
 	for file in debug default stats; do \
 	  $(INSTALL) -m 644 $(srcdir)/doc/$$file.html $(DESTDIR)$(datadir)/tinyproxy/$$file.html.dist ; \
 	  test -f $(DESTDIR)$(datadir)/tinyproxy/$$file.html || \
