@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.3 2002-12-04 17:06:13 rjkaes Exp $
+/* $Id: common.h,v 1.4 2003-03-13 16:56:28 rjkaes Exp $
  *
  * This file groups all the headers required throughout the tinyproxy
  * system.  All this information use to be in the "tinyproxy.h" header,
@@ -54,18 +54,14 @@
 #  include	<sys/stat.h>
 #endif
 
-#ifdef HAVE_SYS_TIME_H
-#  include	<sys/time.h>
-#  ifdef HAVE_TIME_H
-#    include	<time.h>
-#  endif
+#ifdef TIME_WITH_SYS_TIME
+#  include <sys/time.h>
+#  include <time.h>
 #else
 #  ifdef HAVE_SYS_TIME_H
-#    include 	<sys/time.h>
+#    include <sys/time.h>
 #  else
-#    ifdef HAVE_TIME_H
-#      include	<time.h>
-#    endif
+#    include <time.h>
 #  endif
 #endif
 
