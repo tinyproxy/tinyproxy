@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.8 2001-09-11 04:38:23 rjkaes Exp $
+/* $Id: buffer.c,v 1.9 2001-09-11 19:26:49 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -185,8 +185,8 @@ static struct bufline_s *remove_from_buffer(struct buffer_s *buffptr)
 ssize_t readbuff(int fd, struct buffer_s *buffptr)
 {
 	ssize_t bytesin;
-	unsigned char inbuf[MAXBUFFSIZE];
 	unsigned char *buffer;
+	unsigned char *newbuffer;
 
 	assert(fd >= 0);
 	assert(buffptr != NULL);
@@ -194,22 +194,30 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 	if (buffer_size(buffptr) >= MAXBUFFSIZE)
 		return 0;
 
-	bytesin = read(fd, inbuf, MAXBUFFSIZE - buffer_size(buffptr));
+	buffer = safemalloc(MAXBUFFSIZE);
+	if (!buffer) {
+		log_message(LOG_ERR, "Could not allocate memory in 'readbuff'");
+		return 0;
+	}
+
+	bytesin = read(fd, buffer, MAXBUFFSIZE - buffer_size(buffptr) - 1);
 
 	if (bytesin > 0) {
-		if (!(buffer = safemalloc(bytesin))) {
-			log_message(LOG_ERR, "Could not allocate memory in 'readbuff'");
+		newbuffer = saferealloc(buffer, bytesin);
+		if (!newbuffer) {
+			log_message(LOG_ERR, "Could not reallocate memory in 'readbuff'");
+			safefree(buffer);
 			return 0;
 		}
 
-		memcpy(buffer, inbuf, bytesin);
-		if (add_to_buffer(buffptr, buffer, bytesin) < 0) {
+		if (add_to_buffer(buffptr, newbuffer, bytesin) < 0) {
 			return -1;
 		}
 
 		return bytesin;
 	} else if (bytesin == 0) {
 		/* connection was closed by client */
+		safefree(buffer);
 		return -1;
 	} else {
 		switch (errno) {
@@ -221,10 +229,12 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 #  endif
 #endif
 		case EINTR:
+			safefree(buffer);
 			return 0;
 		default:
 			log_message(LOG_ERR, "recv error (%s) in 'readbuff'.",
 				    strerror(errno));
+			safefree(buffer);
 			return -1;
 		}
 	}

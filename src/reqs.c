@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.21 2001-09-08 18:58:37 rjkaes Exp $
+/* $Id: reqs.c,v 1.22 2001-09-11 19:26:49 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -110,7 +110,7 @@ static inline void trim(char *string, unsigned int len)
 static int process_method(struct conn_s *connptr)
 {
 	URI *uri = NULL;
-	char inbuf[LINE_LENGTH];
+	char *inbuf;
 	char *buffer = NULL, *request = NULL, *port = NULL;
 
 	regex_t preg;
@@ -124,10 +124,17 @@ static int process_method(struct conn_s *connptr)
 
 	getpeer_ip(connptr->client_fd, peer_ipaddr);
 
+	inbuf = safemalloc(LINE_LENGTH);
+	if (!inbuf) {
+		log_message(LOG_ERR, "Could not allocate memory in 'process_method'.");
+		return -2;
+	}
+
 	len = readline(connptr->client_fd, inbuf, LINE_LENGTH);
 	if (len <= 0) {
 		log_message(LOG_ERR, "Client [%s] closed socket before read.", peer_ipaddr);
 		update_stats(STAT_BADCONN);
+		safefree(inbuf);
 		return -2;
 	}
 
@@ -308,11 +315,13 @@ static int process_method(struct conn_s *connptr)
 	if (safe_write(connptr->server_fd, "Connection: close\r\n", 19) < 0)
 		goto COMMON_EXIT;
 
+	safefree(inbuf);
 	safefree(request);
 	free_uri(uri);
 	return 0;
 
 COMMON_EXIT:
+	safefree(inbuf);
 	free_uri(uri);
 	
 EARLY_EXIT:
@@ -354,18 +363,24 @@ static int compare_header(char *line)
  */
 static int pull_client_data(struct conn_s *connptr, unsigned long int length)
 {
-	char buffer[MAXBUFFSIZE];
+	char *buffer;
 	ssize_t len;
+
+	buffer = safemalloc(MAXBUFFSIZE);
+	if (!buffer)
+		return -1;
 
 	do {
 		len = safe_read(connptr->client_fd, buffer, min(MAXBUFFSIZE, length));
 
 		if (len <= 0) {
+			safefree(buffer);
 			return -1;
 		}
 
 		if (!connptr->output_message) {
 			if (safe_write(connptr->server_fd, buffer, len) < 0) {
+				safefree(buffer);
 				return -1;
 			}
 		}
@@ -373,6 +388,7 @@ static int pull_client_data(struct conn_s *connptr, unsigned long int length)
 		length -= len;
 	} while (length > 0);
 
+	safefree(buffer);
 	return 0;
 }
 
@@ -406,7 +422,7 @@ static int add_xtinyproxy_header(struct conn_s *connptr)
  */
 static int process_client_headers(struct conn_s *connptr)
 {
-	char header[LINE_LENGTH];
+	char *header;
 	long content_length = -1;
 
 	char *skipheaders[] = {
@@ -416,8 +432,13 @@ static int process_client_headers(struct conn_s *connptr)
 	};
 	int i;
 
+	header = safemalloc(LINE_LENGTH);
+	if (!header)
+		return -1;
+
 	for ( ; ; ) {
 		if (readline(connptr->client_fd, header, LINE_LENGTH) < 0) {
+			safefree(header);
 			return -1;
 		}
 
@@ -449,22 +470,28 @@ static int process_client_headers(struct conn_s *connptr)
 			content_length = atol(content_ptr);
 		}
 
-		if (safe_write(connptr->server_fd, header, strlen(header)) < 0)
+		if (safe_write(connptr->server_fd, header, strlen(header)) < 0) {
+			safefree(header);
 			return -1;
+		}
 	}
 
 	if (!connptr->output_message) {
 #ifdef XTINYPROXY_ENABLE
 		if (config.my_domain
 		    && add_xtinyproxy_header(connptr) < 0) {
+			safefree(header);
 			return -1;
 		}
 #endif	/* XTINYPROXY */
 
 		if (safe_write(connptr->server_fd, header, strlen(header)) < 0) {
+			safefree(header);
 			return -1;
 		}
 	}
+
+	safefree(header);
 
 	/*
 	 * Spin here pulling the data from the client.
@@ -481,10 +508,15 @@ static int process_client_headers(struct conn_s *connptr)
  */
 static int process_server_headers(struct conn_s *connptr)
 {
-	char header[LINE_LENGTH];
+	char *header;
+
+	header = safemalloc(LINE_LENGTH);
+	if (!header)
+		return -1;
 
 	for ( ; ; ) {
 		if (readline(connptr->server_fd, header, LINE_LENGTH) < 0) {
+			safefree(header);
 			return -1;
 		}
 
@@ -495,14 +527,18 @@ static int process_server_headers(struct conn_s *connptr)
 
 		if (!connptr->simple_req
 		    && safe_write(connptr->client_fd, header, strlen(header)) < 0) {
+			safefree(header);
 			return -1;
 		}
 	}
 	
 	if (!connptr->simple_req
 	    && safe_write(connptr->client_fd, header, strlen(header)) < 0) {
+		safefree(header);
 		return -1;
 	}
+
+	safefree(header);
 	return 0;
 }
 
