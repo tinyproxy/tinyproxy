@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.28 2002-04-28 03:09:52 rjkaes Exp $
+/* $Id: thread.c,v 1.29 2002-04-28 18:32:16 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -80,8 +80,8 @@ assert(servers_mutex_ret == 0); \
 
 #define SERVER_INC() do { \
     SERVER_COUNT_LOCK(); \
-    DEBUG2("INC: servers_waiting: %d", servers_waiting); \
     ++servers_waiting; \
+    DEBUG2("INC: servers_waiting: %d", servers_waiting); \
     SERVER_COUNT_UNLOCK(); \
 } while (0)
 
@@ -199,19 +199,20 @@ thread_main(void *arg)
 		}
 
 		SERVER_COUNT_LOCK();
-		if (servers_waiting >= thread_config.maxspareservers) {
+		if (servers_waiting > thread_config.maxspareservers) {
 			/*
 			 * There are too many spare threads, kill ourself
 			 * off.
 			 */
+			log_message(LOG_NOTICE,
+				    "Waiting servers (%d) exceeds MaxSpareServers (%d). Killing thread.",
+				    servers_waiting, thread_config.maxspareservers);
 			SERVER_COUNT_UNLOCK();
 
-			log_message(LOG_NOTICE,
-				    "Waiting servers exceeds MaxSpareServers. Killing thread.");
-
 			break;
+		} else {
+			SERVER_COUNT_UNLOCK();
 		}
-		SERVER_COUNT_UNLOCK();
 
 		SERVER_INC();
 	}
@@ -230,7 +231,9 @@ thread_pool_create(void)
 {
 	unsigned int i;
 	int pthread_ret;
-//	pthread_mutexattr_t mutexattr;
+#if 0
+	pthread_mutexattr_t mutexattr;
+#endif
 
 	/*
 	 * Initialize thread_attr to contain a non-default stack size
@@ -242,7 +245,9 @@ thread_pool_create(void)
 	pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
 	pthread_attr_setstacksize(&thread_attr, THREAD_STACK_SIZE);
 
-//	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_ERRORCHECK);
+#if 0
+	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_ERRORCHECK);
+#endif
 	pthread_mutex_init(&mlock, NULL);
 	pthread_mutex_init(&servers_mutex, NULL);
 
@@ -257,11 +262,12 @@ thread_pool_create(void)
 		return -1;
 	}
 
-	thread_ptr =
-	    safecalloc((size_t) thread_config.maxclients,
-		       sizeof(struct thread_s));
-	if (!thread_ptr)
+	thread_ptr = safecalloc((size_t) thread_config.maxclients,
+				sizeof(struct thread_s));
+	if (!thread_ptr) {
+		log_message(LOG_ERR, "Could not allocate memory for threads.");
 		return -1;
+	}
 
 	if (thread_config.startservers > thread_config.maxclients) {
 		log_message(LOG_WARNING,
@@ -287,8 +293,11 @@ thread_pool_create(void)
 				    strerror(pthread_ret));
 			return -1;
 		} else {
-			log_message(LOG_INFO, "Creating thread number %d of %d ...", i + 1, thread_config.startservers);
-			servers_waiting++;
+			log_message(LOG_INFO,
+				    "Creating thread number %d of %d ...",
+				    i + 1, thread_config.startservers);
+
+			SERVER_INC();
 		}
 	}
 
@@ -314,10 +323,15 @@ thread_main_loop(void)
 		/* If there are not enough spare servers, create more */
 		SERVER_COUNT_LOCK();
 		if (servers_waiting < thread_config.minspareservers) {
+			log_message(LOG_NOTICE,
+				    "Waiting servers (%d) is less than MinSpareServers (%d). Creating new thread.",
+				    servers_waiting, thread_config.minspareservers);
+
 			SERVER_COUNT_UNLOCK();
 
 			for (i = 0; i < thread_config.maxclients; i++) {
 				if (thread_ptr[i].status == T_EMPTY) {
+					thread_ptr[i].status = T_WAITING;
 					pthread_ret = pthread_create(&thread_ptr[i].tid,
 								     &thread_attr,
 								     &thread_main,
@@ -326,22 +340,19 @@ thread_main_loop(void)
 						log_message(LOG_NOTICE,
 							    "Could not create thread: %s",
 							    strerror(pthread_ret));
+
+						thread_ptr[i].status = T_EMPTY;
 						break;
 					}
 
-					thread_ptr[i].status = T_WAITING;
-					thread_ptr[i].connects = 0;
-
 					SERVER_INC();
-
-					log_message(LOG_NOTICE,
-						    "Waiting servers is less than MinSpareServers. Creating new thread.");
 
 					break;
 				}
 			}
+		} else {
+			SERVER_COUNT_UNLOCK();
 		}
-		SERVER_COUNT_UNLOCK();
 
 		sleep(5);
 
