@@ -1,28 +1,35 @@
-Thursday, October 25, 2001
---------------------------
 
-This version (1.4.3pre7) should be the last release before I make a
-full 1.4.3 release of tinyproxy. So, assuming no one reports any
-problems with 1.4.3pre7 it will become 1.4.3 with no changes.
+ NEWS
+ ====
 
-For more information as what has been worked on, look at the
-ChangeLog. As you can tell, I don't keep this "NEWS" file very up to
-date. All the real logging of information happens in the ChangeLog
-file since I update it as I work on the code. Here on the other hand,
-I have to remember what I've done. Not near as seamless. (Maybe I
-should get somebody else to write the NEWS file...)
+ There are a few problems with this version of tinyproxy, but I'm hoping
+ the benefits outweigh the negative. For some reason tinyproxy is not
+ able to handle requests to *.x10.com sites. (As someone mentioned: "maybe
+ this is a feature?" :) There also seem to be a few other random sites
+ where tinyproxy is not communicating with the server correctly. If you
+ find any such sites, let me know so I can add it to the list of domains
+ where tinyproxy is failing. I'll need this information for the regression
+ tests I plan on performing on the next release.
 
-	 -- Robert
+ As for the next release (1.5.0), I will not be adding new features.
+ tinyproxy doesn't currently conform correctly to either the HTTP/1.0
+ or the HTTP/1.1 standards. The goal of the 1.5 release therefore is
+ to achieve standards compliance with at least HTTP/1.0. If you have
+ looked at the tinyproxy code you will have noticed that all the real
+ work of the proxy is performed in the reqs.c file. Therefore, other
+ than bug fixes in the other files, only reqs.c should be changed in
+ the 1.5.0 release. Basically, I'm hoping to just gut and replace the
+ reqs.c file with a standards compliant version and release a new version.
 
+ Depending on my schedule I should have the new version ready for
+ pre-testing sometime next week. If you have any suggestions for improving
+ tinyproxy please let me know, but I will not be incorporating them until
+ 1.6 (which _hopefully_ should come out fairly quickly after 1.5 has
+ stabilised.)
 
-Tuesday, September 4, 2001
---------------------------
+ "Thank you" go out to all who have helped find bugs in the 1.4.3
+ candidates. You know who you are, and if you don't look in the ChangeLog
+ for your name. :)
 
-I finally fixed a problem with the anonymous header code. The searches
-are now all case insensitive. This fixes a problem where the spelling
-of the HTTP headers could be different. It also helps with various
-spellings of domain names. There is also a security fix for a format
-string problem with the syslog feature. This problem doesn't affect
-you if you use the log file instead.
-
-        -- Robert
+ 	Robert James Kaes
+ 	November 21, 2001
