@@ -1,3 +1,59 @@
+2002-05-23  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/dnsserver.c: The DNS resolver for use by the various
+	tinyproxy threads.  The DNS resovler was moved into a separate
+	funtion to prevent the blocking problem the 1.4.x and 1.5.0
+	versions experienced when a DNS query would take a long time to
+	return.  While the query was blocking, other threads could not
+	establish their own queries, so they all blocked.  Not so good.
+
+	* src/dnsclient.c: Introduce the new "dnsserver" API.  These
+	functions are the client side access points.
+
+	* src/utils.c: Moved most of the code into separate files.  The
+	debugging heap related code is now in heap.c; the text string code
+	is in text.c; and, the daemon related code is in daemon.c.
+
+	* src/tinyproxy.h: Moved all the system header include code into
+	the "common.h" file.
+
+	* src/tinyproxy.c (takesig): Added a signal handler for the
+	SIGCHLD signals since a child process is spawned to handle the
+	"dnsserver" process.
+	(main): Added code to start and stop the "dnsserver" process.
+	Switched the signal setup function to the new portable
+	set_signal_handler() function.  Include a test to make sure the
+	two "dnsserver" directives are set.
+
+	* src/sock.c (lookup_domain): Rewrote the function to use the new
+	"dnsserver" API.  This removes the need for the pthread mutex.
+	(getpeer_information): Replaced the two calls to getpeer_ip() and
+	getpeer_string() with one call to this function.  Streamlines the
+	peer information retrieval.
+	
+	Moved the safe_write(), safe_read(), readline(), write_message()
+	functions into a separate file: network.c
+
+	* src/reqs.c (process_request): Fixed a spelling mistake.
+	(add_xtinyproxy_header): The peer information is stored in the
+	connection, so removed the call to query it again.
+	(handle_connection): Pass the peer socket's information into the
+	connection structure for later use.
+
+	* src/grammar.y:
+	* src/scanner.l: Added the "DNSserverLocation" and
+	"DNSserverSocket" directives as they are required to properly run
+	the "dnsserver" DNS resolver.
+
+	* src/conns.c (initialize_conn): Added the peer's IP
+	dotted-decimal address and hostname to the connection structure.
+	It's faster to get the information _once_ and just store it for
+	later use.
+
+	* src/buffer.c (add_to_buffer): Changed the code to make the order
+	of insertion into the linked list explicit.  I'm not sure if this
+	fixes a bug or not, but clarity is alway nice.
+
 2002-05-13  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/buffer.h: Moved the definition of the buffer_s structure.
@@ -1360,7 +1416,7 @@
 
 1999-12-24 20:33  sdyoung
 
-	Released tinyproxy 1.3.1 (1999-12-24 unconfirmed)
+	Released tinyproxy 1.3.1
 
 1999-12-03 23:21  sdyoung
 
