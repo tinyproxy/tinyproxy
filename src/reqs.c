@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.73 2002-05-17 16:34:42 rjkaes Exp $
+/* $Id: reqs.c,v 1.74 2002-05-23 18:24:46 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -31,11 +31,14 @@
 #include "conns.h"
 #include "filter.h"
 #include "hashmap.h"
+#include "heap.h"
 #include "log.h"
+#include "network.h"
 #include "regexp.h"
 #include "reqs.h"
 #include "sock.h"
 #include "stats.h"
+#include "text.h"
 #include "utils.h"
 #include "vector.h"
 
@@ -419,7 +422,7 @@ process_request(struct conn_s *connptr)
 				    "Proxying refused on filtered domain \"%s\"",
 				    request->host);
 			indicate_http_error(connptr, 404,
-				"Connection to filtered domain is now allowed.");
+				"Connection to filtered domain is not allowed.");
 
 			free_request_struct(request);
 
@@ -498,8 +501,6 @@ pull_client_data(struct conn_s *connptr, unsigned long int length)
 static int
 add_xtinyproxy_header(struct conn_s *connptr)
 {
-	char ipaddr[PEER_IP_LENGTH];
-
 	/*
 	 * Don't try to send if we have an invalid server handle.
 	 */
@@ -508,7 +509,7 @@ add_xtinyproxy_header(struct conn_s *connptr)
 
 	return write_message(connptr->server_fd,
 			     "X-Tinyproxy: %s\r\n",
-			     getpeer_ip(connptr->client_fd, ipaddr));
+			     connptr->client_ip_addr);
 }
 #endif				/* XTINYPROXY */
 
@@ -1173,12 +1174,12 @@ handle_connection(int fd)
 	char peer_ipaddr[PEER_IP_LENGTH];
 	char peer_string[PEER_STRING_LENGTH];
 
-	log_message(LOG_CONN, "Connect (file descriptor %d): %s [%s]",
-		    fd,
-		    getpeer_string(fd, peer_string),
-		    getpeer_ip(fd, peer_ipaddr));
+	getpeer_information(fd, peer_ipaddr, peer_string);
 
-	connptr = initialize_conn(fd);
+	log_message(LOG_CONN, "Connect (file descriptor %d): %s [%s]",
+		    fd, peer_string, peer_ipaddr);
+
+	connptr = initialize_conn(fd, peer_ipaddr, peer_string);
 	if (!connptr) {
 		close(fd);
 		return;
