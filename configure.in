@@ -1,23 +1,79 @@
-dnl $Id: configure.in,v 1.9 2001-06-02 03:33:17 rjkaes Exp $
+dnl $Id: configure.in,v 1.10 2001-06-02 17:23:16 rjkaes Exp $
 
 AC_INIT()
-AM_INIT_AUTOMAKE(tinyproxy,1.4.0pre4)
+AM_INIT_AUTOMAKE(tinyproxy,1.4.0pre5)
 AM_CONFIG_HEADER(config.h)
 
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl Checks for programs.
+AC_PROG_AWK
 AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PROG_INSTALL
-AM_PROG_LEX
+AC_PROG_LN_S
 AC_PROG_YACC
+if test "$YACC" != "bison -y"; then
+    AC_MSG_WARN(You will need bison if you want to regenerate the parser.)
+else
+    AC_MSG_CHECKING(bison version)
+    oldIFS=$IFS; IFS=.
+    set `bison -V | sed -e 's/^GNU Bison version //'`
+    IFS=$oldIFS
+    if test "$1" = "1" -a "$2" -lt "25"; then
+        AC_MSG_WARN(Bison 1.25 or newer needed to regenerate parsers (found $1.$2).)
+    fi
+    AC_MSG_RESULT($1.$2 (ok))
+fi
+
+AM_PROG_LEX
 AM_C_PROTOTYPES
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(sys/types.h sys/socket.h sys/time.h time.h netinet/in.h arpa/inet.h error.h fcntl.h netdb.h signal.h stdio.h stdint.h stdlib.h string.h sys/stat.h sys/uio.h unistd.h sys/wait.h sys/un.h sys/select.h strings.h sys/ioctl.h pthread.h sys/sysctl.h syslog.h stdint.h sys/resource.h)
+AC_CHECK_HEADERS(\
+sys/types.h \
+sys/ioctl.h \
+sys/resource.h \
+sys/select.h \
+sys/socket.h \
+sys/stat.h \
+sys/sysctl.h \
+sys/time.h \
+sys/uio.h \
+sys/un.h \
+sys/wait.h \
+arpa/inet.h \
+netinet/in.h \
+alloca.h \
+assert.h \
+ctype.h \
+errno.h \
+fcntl.h \
+grp.h \
+io.h \
+libintl.h \
+malloc.h \
+netdb.h \
+pthread.h \
+pwd.h \
+regex.h \
+signal.h \
+stdarg.h \
+stddef.h \
+stdint.h \
+stdio.h \
+stdlib.h \
+string.h \
+strings.h \
+sysexists.h \
+syslog.h \
+time.h \
+unistd.h \
+wchar.h \
+wctype.h \
+)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -35,26 +91,50 @@ AC_UNP_CHECK_TYPE(in_addr_t, uint32_t)
 
 dnl Checks for libraries
 AC_CHECK_LIB(pthread, pthread_create)
-if test $ac_cv_lib_pthread_pthread_create = yes ; then
+if test "$ac_cv_lib_pthread_pthread_create" = "yes"; then
     CFLAGS="$CFLAGS -D_REENTRANT"
 else
     AC_CHECK_LIB(pthreads, pthread_create)
-    if test $ac_cv_lib_pthreads_pthread_create = yes ; then
+    if test "$ac_cv_lib_pthreads_pthread_create" = "yes"; then
         CFLAGS="$CFLAGS -D_REENTRANT"
     else
 	AC_MSG_ERROR(You must have a POSIX compliant threading library installed)
     fi
 fi
 
-AC_CHECK_LIB(nsl, t_open)
-AC_CHECK_LIB(socket, socket)
-AC_CHECK_LIB(resolv, gethostbyname)
+AC_CHECK_LIB(socket, socket, [ ], [ AC_CHECK_LIB(socket, htonl) ])
+
+dnl Some systems (OpenServer 5) dislike -lsocket -lnsl, so we try to
+dnl avoid -lnsl checks, if we already have the functions which are
+dnl usually in libnsl
+
+unset ac_cv_func_yp_get_default_domain
+AC_CHECK_FUNC(yp_get_default_domain, [ tinyproxy_no_nsl_checks=yes ], [ ])
+unset ac_cv_func_yp_get_default_domain
+
+if test "$tinyproxy_no_nsl_checks" != "yes"; then
+    AC_CHECK_LIB(nsl, gethostname, [ ], [ AC_CHECK_LIB(nsl, gethostbyaddr) ])
+fi
+
+AC_CHECK_LIB(resolv, inet_aton)
 
 dnl Checks for library functions.
+AC_FUNC_ALLOCA
+dnl AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
 AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(ftruncate select setrlimit socket strdup strerror vsnprintf vsyslog)
+AC_CHECK_FUNCS(\
+ftruncate \
+select \
+setrlimit \
+socket \
+strdup \
+strerror \
+strtol \
+vsnprintf \
+vsyslog \
+)
 AC_CHECK_FUNCS(strlcpy strlcat)
 
 dnl chris - allow user to choose log file location, port and username
@@ -75,7 +155,7 @@ AC_ARG_WITH(regex, [  --with-regex            Use the GNU regex libary],
             tinyproxy_cv_regex=yes,
             AC_CHECK_FUNCS(regcomp, tinyproxy_cv_regex=no, tinyproxy_cv_regex=yes))
 
-if test $tinyproxy_cv_regex = no ; then
+if test "$tinyproxy_cv_regex" != "yes" ; then
     AC_MSG_CHECKING(whether your system's regexp library is completely broken)
     AC_CACHE_VAL(tinyproxy_cv_regex_broken,
                  AC_TRY_RUN([
@@ -92,13 +172,13 @@ int main(void)
                             tinyproxy_cv_regex_broken=yes))
 
     AC_MSG_RESULT($tinyproxy_cv_regex_broken)
-    if test $tinyproxy_cv_regex_broken = yes ; then
+    if test "$tinyproxy_cv_regex_broken" = "yes" ; then
         echo "Using the included GNU regex instead." >&AC_FD_MSG
         tinyproxy_cv_regex=yes
     fi
 fi
 
-if test $tinyproxy_cv_regex = yes ; then
+if test "$tinyproxy_cv_regex" = "yes" ; then
     AC_DEFINE(USE_GNU_REGEX)
     LIBOBJS="$LIBOBJS gnuregex.o"
 fi
@@ -109,7 +189,7 @@ AC_ARG_ENABLE(debug,
               debug_enabled=yes)
 
 CFLAGS="$CFLAGS -Wall"
-if test x$enable_debug = xyes ; then
+if test "$enable_debug" = "yes" ; then
     dnl Add the warnings if we have the GCC compiler
     if test x$ac_cv_prog_gcc = xyes ; then
         CFLAGS="$CFLAGS -Wshadow"
@@ -134,10 +214,10 @@ AC_ARG_ENABLE(socks,
 [  --enable-socks          Enable SOCKS support [default=no]],
               socks_enabled=yes)
 
-if test x$socks_enabled = xyes; then
+if test "$socks_enabled" = "yes"; then
     AC_CHECK_HEADER(socks.h, socks_header=yes, socks_header=no)
     AC_CHECK_LIB(socks, main, socks_library=yes, socks_library=no)
-    if test "$socks_header" = yes && test "$socks_library" = yes; then
+    if test "$socks_header" = "yes" -a "$socks_library" = "yes"; then
         CFLAGS="$CFLAGS -I/usr/include/sock.h -DSOCKS"
         LIBS="$LIBS -lsocks"
     else
@@ -150,7 +230,7 @@ AC_ARG_ENABLE(xtinyproxy,
 [  --enable-xtinyproxy     Include X-Tinyproxy header [default=yes]],
               xtinyproxy_enabled=yes)
 
-if test x$xtinyproxy_enabled != xno ; then
+if test "$xtinyproxy_enabled" = "yes" ; then
     AC_DEFINE(XTINYPROXY_ENABLE)
 fi
 
@@ -159,7 +239,7 @@ AC_ARG_ENABLE(filter,
 [  --enable-filter         Enable filtering of domains/URLs [default=yes]],
               filter_enabled=yes)
 
-if test x$filter_enabled != xno ; then
+if test "$filter_enabled" = "yes" ; then
     LIBOBJS="$LIBOBJS filter.o"
     AC_DEFINE(FILTER_ENABLE)
 fi
@@ -169,7 +249,7 @@ AC_ARG_ENABLE(tunnel,
 [  --enable-tunnel         Enable support for TCP tunneling [default=yes]],
               tunnel_enabled=yes)
 
-if test x$tunnel_enabled != xno ; then
+if test "$tunnel_enabled" = "yes" ; then
     AC_DEFINE(TUNNEL_SUPPORT)
 fi
 
