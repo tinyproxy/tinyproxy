@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.61 2002-04-17 20:55:21 rjkaes Exp $
+/* $Id: reqs.c,v 1.62 2002-04-18 17:58:52 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -546,18 +546,26 @@ get_all_headers(int fd, hashmap_t hashofheaders)
 	ssize_t len;
 
 	for (;;) {
-		if ((len = readline(fd, &header)) <= 0)
+		if ((len = readline(fd, &header)) <= 0) {
+			safefree(header);
 			return -1;
+		}
 
 		/*
 		 * If we received just a CR LF on a line, the headers are
 		 * finished.
 		 */
-		if (CHECK_CRLF(header, len))
+		if (CHECK_CRLF(header, len)) {
+			safefree(header);
 			return 0;
+		}
 
-		if (add_header_to_connection(hashofheaders, header, len) < 0)
+		if (add_header_to_connection(hashofheaders, header, len) < 0) {
+			safefree(header);
 			return -1;
+		}
+
+		safefree(header);
 	}
 }
 
