@@ -1,4 +1,4 @@
-/* $Id: htmlerror.c,v 1.4 2003-04-01 16:41:33 rjkaes Exp $
+/* $Id: htmlerror.c,v 1.5 2003-05-31 23:02:21 rjkaes Exp $
  * 
  * This file contains source code for the handling and display of
  * HTML error pages with variable substitution.
@@ -64,11 +64,11 @@ static char*
 get_html_file(int errornum) {
 	int i;
 
-	if(!config.errorpages) return(config.errorpage_undef);
+	if (!config.errorpages) return(config.errorpage_undef);
 
-	for(i = 0; config.errorpages[i]; i++) {
-		if(config.errorpages[i]->errorpage_errnum == errornum)
-			return(config.errorpages[i]->errorpage_path);
+	for (i = 0; config.errorpages[i]; i++) {
+		if (config.errorpages[i]->errorpage_errnum == errornum)
+			return config.errorpages[i]->errorpage_path;
 	}
 
 	return(config.errorpage_undef);
@@ -81,9 +81,9 @@ static char*
 lookup_variable(struct conn_s *connptr, char *varname) {
 	int i;
 
-	for(i = 0; i<connptr->error_variable_count; i++) {
-		if(!strcasecmp(connptr->error_variables[i]->error_key, varname))
-			return(connptr->error_variables[i]->error_val);
+	for (i = 0; i != connptr->error_variable_count; i++) {
+		if (!strcasecmp(connptr->error_variables[i]->error_key, varname))
+			return connptr->error_variables[i]->error_val;
 	}
 
 	return(NULL);
@@ -101,7 +101,7 @@ send_html_file(FILE *infile, struct conn_s *connptr) {
 	int in_variable = 0, writeret;
 
 	while(fgets(inbuf, HTML_BUFSIZE, infile) != NULL) {
-		for(p = inbuf; *p; p++) {
+		for (p = inbuf; *p; p++) {
 			switch(*p) {
 				case '}':
 					if(in_variable) {

@@ -1,4 +1,4 @@
-/* $Id: http_message.c,v 1.1 2003-03-13 05:25:30 rjkaes Exp $
+/* $Id: http_message.c,v 1.2 2003-05-31 23:02:21 rjkaes Exp $
  *
  * See 'http_message.h' for a detailed description.
  *
@@ -188,7 +188,7 @@ http_message_add_headers(http_message_t msg, char** headers,
 			return -ENOMEM;
 
 		/* Copy the array */
-		for (i = 0; i < msg->headers.used; ++i)
+		for (i = 0; i != msg->headers.used; ++i)
 			new_headers[i] = msg->headers.strings[i];
 
 		/* Remove the old array and replace it with the new array */
@@ -200,7 +200,7 @@ http_message_add_headers(http_message_t msg, char** headers,
 	/*
 	 * Add the new headers to the structure
 	 */
-	for (i = 0; i < num_headers; ++i)
+	for (i = 0; i != num_headers; ++i)
 		msg->headers.strings[i + msg->headers.used] = headers[i];
 	msg->headers.used += num_headers;
 
@@ -229,7 +229,7 @@ http_message_send(http_message_t msg, int fd)
 		      msg->response.code, msg->response.string);
 
 	/* Go through all the headers */
-	for (i = 0; i < msg->headers.used; ++i)
+	for (i = 0; i != msg->headers.used; ++i)
 		write_message(fd, "%s\r\n", msg->headers.strings[i]);
 
 	/* Output the date */

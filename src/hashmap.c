@@ -1,4 +1,4 @@
-/* $Id: hashmap.c,v 1.11 2002-05-24 04:45:32 rjkaes Exp $
+/* $Id: hashmap.c,v 1.12 2003-05-31 23:02:21 rjkaes Exp $
  *
  * A hashmap implementation.  The keys are case-insensitive NULL terminated
  * strings, and the data is arbitrary lumps of data.  Copies of both the
@@ -158,7 +158,7 @@ hashmap_delete(hashmap_t map)
 	if (map == NULL)
 		return -EINVAL;
 
-	for (i = 0; i < map->size; i++) {
+	for (i = 0; i != map->size; i++) {
 		if (map->buckets[i] != NULL) {
 			delete_hashbucket(map->buckets[i]);
 			map->buckets[i] = NULL;
@@ -313,7 +313,7 @@ hashmap_find(hashmap_t map, const char* key)
 	 * Loop through all the keys and look for the first occurrence
 	 * of a particular key.
 	 */
-	for (i = 0; i < map->size; i++) {
+	for (i = 0; i != map->size; i++) {
 		ptr = map->buckets[i];
 
 		while (ptr) {
@@ -353,7 +353,7 @@ hashmap_return_entry(hashmap_t map, hashmap_iter iter,
 	if (!map || iter < 0 || !key || !data)
 		return -EINVAL;
 
-	for (i = 0; i < map->size; i++) {
+	for (i = 0; i != map->size; i++) {
 		ptr = map->buckets[i];
 		while (ptr) {
 			if (count == iter) {

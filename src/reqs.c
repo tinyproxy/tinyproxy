@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.100 2003-05-30 16:22:30 rjkaes Exp $
+/* $Id: reqs.c,v 1.101 2003-05-31 23:02:20 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -127,7 +127,7 @@ check_allowed_connect_ports(int port)
 	if (!ports_allowed_by_connect)
 		return 1;
 
-	for (i = 0; i < vector_length(ports_allowed_by_connect); ++i) {
+	for (i = 0; i != vector_length(ports_allowed_by_connect); ++i) {
 		data = vector_getentry(ports_allowed_by_connect, i, NULL);
 		if (!data)
 			return -1;
@@ -905,7 +905,7 @@ remove_connection_headers(hashmap_t hashofheaders)
 	ssize_t len;
 	int i;
 
-	for (i = 0; i < (sizeof(headers) / sizeof(char *)); ++i) {
+	for (i = 0; i != (sizeof(headers) / sizeof(char *)); ++i) {
 		/* Look for the connection header.  If it's not found, return. */
 		len = hashmap_entry_by_key(hashofheaders, headers[i], (void **)&data);
 		if (len <= 0)
@@ -1056,7 +1056,7 @@ process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 	/*
 	 * Delete the headers listed in the skipheaders list
 	 */
-	for (i = 0; i < (sizeof(skipheaders) / sizeof(char *)); i++) {
+	for (i = 0; i != (sizeof(skipheaders) / sizeof(char *)); i++) {
 		hashmap_remove(hashofheaders, skipheaders[i]);
 	}
 
@@ -1206,7 +1206,7 @@ process_server_headers(struct conn_s *connptr)
 	/*
 	 * Delete the headers listed in the skipheaders list
 	 */
-	for (i = 0; i < (sizeof(skipheaders) / sizeof(char *)); i++) {
+	for (i = 0; i != (sizeof(skipheaders) / sizeof(char *)); i++) {
 		hashmap_remove(hashofheaders, skipheaders[i]);
 	}
 

@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.10 2003-04-16 18:04:58 rjkaes Exp $
+/* $Id: child.c,v 1.11 2003-05-31 23:02:21 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -319,12 +319,12 @@ child_pool_create(void)
 		child_config.startservers = child_config.maxclients;
 	}
 
-	for (i = 0; i < child_config.maxclients; i++) {
+	for (i = 0; i != child_config.maxclients; i++) {
 		child_ptr[i].status = T_EMPTY;
 		child_ptr[i].connects = 0;
 	}
 
-	for (i = 0; i < child_config.startservers; i++) {
+	for (i = 0; i != child_config.startservers; i++) {
 		DEBUG2("Trying to create child %d of %d", i + 1, child_config.startservers);
 		child_ptr[i].status = T_WAITING;
 		child_ptr[i].tid = child_make(&child_ptr[i]);
@@ -370,7 +370,7 @@ child_main_loop(void)
 
 			SERVER_COUNT_UNLOCK();
 
-			for (i = 0; i < child_config.maxclients; i++) {
+			for (i = 0; i != child_config.maxclients; i++) {
 				if (child_ptr[i].status == T_EMPTY) {
 					child_ptr[i].status = T_WAITING;
 					child_ptr[i].tid = child_make(&child_ptr[i]);
@@ -418,7 +418,7 @@ child_kill_children(void)
 {
 	int i;
 	
-	for (i = 0; i < child_config.maxclients; i++) {
+	for (i = 0; i != child_config.maxclients; i++) {
 		if (child_ptr[i].status != T_EMPTY)
 			kill(child_ptr[i].tid, SIGTERM);
 	}
