@@ -1,4 +1,4 @@
-/* $Id: dnscache.c,v 1.6 2000-09-26 04:59:48 rjkaes Exp $
+/* $Id: dnscache.c,v 1.7 2000-10-23 21:42:31 rjkaes Exp $
  *
  * This is a caching DNS system. When a host name is needed we look it up here
  * and see if there is already an answer for it. The domains are placed in a
@@ -34,7 +34,6 @@
 #include "utils.h"
 
 #define DNSEXPIRE (5 * 60)
-#define DNS_GARBAGE_COL	10
 
 struct dnscache_s {
 	struct in_addr ipaddr;
@@ -43,14 +42,16 @@ struct dnscache_s {
 
 static TERNARY dns_tree;
 
+int new_dnscache(void)
+{
+	dns_tree = ternary_new();
+
+	return dns_tree;
+}
+
 static int dns_lookup(struct in_addr *addr, char *domain)
 {
 	struct dnscache_s *ptr;
-	
-	if (dns_tree == 0) {
-		if (TE_ISERROR(dns_tree = ternary_new()))
-			return dns_tree;
-	}
 
 	if (TE_ISERROR(ternary_search(dns_tree, domain, (void *)&ptr))) 
 		return -1;
@@ -82,16 +83,7 @@ static int dns_insert(struct in_addr *addr, char *domain)
 
 int dnscache(struct in_addr *addr, char *domain)
 {
-	static unsigned int dns_garbage_collect = 0;
 	struct hostent *resolv;
-	
-#if 0
-	if (++dns_garbage_collect > DNS_GARBAGE_COL) {
-		ternary_destroy(&dns_root, &free);
-		DEBUG1("Doing garbage collection.");
-		dns_garbage_collect = 0;
-	}
-#endif
 
 	if (inet_aton(domain, (struct in_addr *) addr) != 0)
 		return 0;

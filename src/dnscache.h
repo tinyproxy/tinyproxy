@@ -1,4 +1,4 @@
-/* $Id: dnscache.h,v 1.2 2000-09-11 23:42:43 rjkaes Exp $
+/* $Id: dnscache.h,v 1.3 2000-10-23 21:42:31 rjkaes Exp $
  *
  * See 'dnscache.c' for a detailed description.
  *
@@ -20,6 +20,7 @@
 
 #include <arpa/inet.h>
 
+extern int new_dnscache(void);
 extern int dnscache(struct in_addr *addr, char *domain);
 
 #endif
