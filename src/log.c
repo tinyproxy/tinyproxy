@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.18 2002-04-25 18:56:43 rjkaes Exp $
+/* $Id: log.c,v 1.19 2002-04-26 16:50:55 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -159,13 +159,14 @@ send_stored_logs(void)
 	char *level;
 	char *string;
 	
-	for (iter = hashmap_first(log_message_storage);
-	     iter != hashmap_is_end(log_message_storage, iter);
-	     ++iter) {
-		hashmap_return_entry(log_message_storage,
-				     iter,
-				     &string,
-				     (void **)&level);
+	iter = hashmap_first(log_message_storage);
+	if (iter >= 0) {
+		for ( ; iter != hashmap_is_end(log_message_storage, iter); ++iter) {
+			hashmap_return_entry(log_message_storage,
+					     iter,
+					     &string,
+					     (void **)&level);
+		}
 	}
 
 	hashmap_delete(log_message_storage);

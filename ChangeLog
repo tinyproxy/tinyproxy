@@ -1,5 +1,8 @@
 2002-04-26  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/log.c (send_stored_logs): Check the return value of
+	hashmap_first() since it could be -1, indicating an empty hashmap.
+
 	* src/reqs.c (process_client_headers):
 	(process_server_headers): Test the return value of hashmap_first()
 	since the hashmap could be empty (returning a -1 via hashmap_first.)
