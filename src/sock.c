@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.35 2002-05-24 04:44:36 rjkaes Exp $
+/* $Id: sock.c,v 1.36 2002-05-26 18:51:17 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -23,7 +23,6 @@
 
 #include "tinyproxy.h"
 
-#include "dnsclient.h"
 #include "log.h"
 #include "heap.h"
 #include "sock.h"
@@ -38,23 +37,16 @@
 static int
 lookup_domain(struct in_addr *addr, const char *domain)
 {	
-	struct in_addr *addresses;
-	int dns;
-	
-	dns = dns_connect();
-	if (dns < 0)
-		return -1;
+	struct hostent* result;
 
-	if (dns_getaddrbyname(dns, domain, &addresses) < 0) {
-		dns_disconnect(dns);
-		return -1;
-	}
+	assert(domain != NULL);
 
-	memcpy(addr, addresses, sizeof(addr));
-	
-	dns_disconnect(dns);
-	safefree(addresses);
-	return 0;
+	result = gethostbyname(domain);
+	if (result) {
+		memcpy(addr, result->h_addr_list[0], result->h_length);
+		return 0;
+	} else
+		return -1;
 }
 
 /* This routine is so old I can't even remember writing it.  But I do
@@ -207,7 +199,7 @@ getpeer_information(int fd, char* ipaddr, char* string_addr)
 {
 	struct sockaddr_in name;
 	size_t namelen = sizeof(name);
-	int dns;
+	struct hostent* result;
 
 	assert(fd >= 0);
 	assert(ipaddr != NULL);
@@ -229,11 +221,10 @@ getpeer_information(int fd, char* ipaddr, char* string_addr)
 			PEER_IP_LENGTH);
 	}
 
-	dns = dns_connect();
-	if (dns < 0)
+	result = gethostbyaddr(ipaddr, strlen(ipaddr), AF_INET);
+	if (result) {
+		strlcpy(string_addr, result->h_name, PEER_STRING_LENGTH);
+		return 0;
+	} else
 		return -1;
-	dns_gethostbyaddr(dns, ipaddr, &string_addr, PEER_STRING_LENGTH);
-	dns_disconnect(dns);
-       
-	return 0;
 }
