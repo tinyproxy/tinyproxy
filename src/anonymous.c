@@ -1,4 +1,4 @@
-/* $Id: anonymous.c,v 1.11 2002-04-09 20:04:39 rjkaes Exp $
+/* $Id: anonymous.c,v 1.12 2002-04-16 03:19:19 rjkaes Exp $
  *
  * Handles insertion and searches for headers which should be let through when
  * the anonymous feature is turned on.
@@ -32,8 +32,8 @@ is_anonymous_enabled(void)
 }
 
 /*
- * Search for the header. If it's found return 0
- * else return -1.
+ * Search for the header.  This function returns a positive value greater than
+ * zero if the string was found, zero if it wasn't and negative upon error.
  */
 int
 anonymous_search(char *s)
@@ -41,19 +41,18 @@ anonymous_search(char *s)
 	assert(s != NULL);
 	assert(anonymous_map != NULL);
 
-	return (hashmap_search(anonymous_map, s, NULL) > 0) ? 0 : -1;
+	return hashmap_search(anonymous_map, s, NULL);
 }
 
 /*
  * Insert a new header.
  *
- * Return -1 if there is an error, 0 if the string already exists, and 1 if
- * it's been inserted.
+ * Return -1 if there is an error, otherwise a 0 is returned if the insert was
+ * successful.
  */
 int
 anonymous_insert(char *s)
 {
-	int len;
 	char data = 1;
 
 	assert(s != NULL);
@@ -70,6 +69,5 @@ anonymous_insert(char *s)
 	}
 
 	/* Insert the new key */
-	len = hashmap_insert(anonymous_map, s, &data, sizeof(data));
-	return (len == 0) ? 1 : len;
+	return hashmap_insert(anonymous_map, s, &data, sizeof(data));
 }
