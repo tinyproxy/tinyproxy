@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.71 2002-05-08 03:29:23 rjkaes Exp $
+/* $Id: reqs.c,v 1.72 2002-05-14 00:43:38 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -964,13 +964,13 @@ relay_connection(struct conn_s *connptr)
 		    config.idletimeout - difftime(time(NULL), last_access);
 		tv.tv_usec = 0;
 
-		if (BUFFER_SIZE(connptr->sbuffer) > 0)
+		if (buffer_size(connptr->sbuffer) > 0)
 			FD_SET(connptr->client_fd, &wset);
-		if (BUFFER_SIZE(connptr->cbuffer) > 0)
+		if (buffer_size(connptr->cbuffer) > 0)
 			FD_SET(connptr->server_fd, &wset);
-		if (BUFFER_SIZE(connptr->sbuffer) < MAXBUFFSIZE)
+		if (buffer_size(connptr->sbuffer) < MAXBUFFSIZE)
 			FD_SET(connptr->server_fd, &rset);
-		if (BUFFER_SIZE(connptr->cbuffer) < MAXBUFFSIZE)
+		if (buffer_size(connptr->cbuffer) < MAXBUFFSIZE)
 			FD_SET(connptr->client_fd, &rset);
 
 		ret = select(maxfd, &rset, &wset, NULL, &tv);
@@ -1026,7 +1026,7 @@ relay_connection(struct conn_s *connptr)
 	 * remainder to the client and then exit.
 	 */
 	socket_blocking(connptr->client_fd);
-	while (BUFFER_SIZE(connptr->sbuffer) > 0) {
+	while (buffer_size(connptr->sbuffer) > 0) {
 		if (write_buffer(connptr->client_fd, connptr->sbuffer) < 0)
 			break;
 	}
@@ -1035,7 +1035,7 @@ relay_connection(struct conn_s *connptr)
 	 * Try to send any remaining data to the server if we can.
 	 */
 	socket_blocking(connptr->server_fd);
-	while (BUFFER_SIZE(connptr->cbuffer) > 0) {
+	while (buffer_size(connptr->cbuffer) > 0) {
 		if (write_buffer(connptr->client_fd, connptr->cbuffer) < 0)
 			break;
 	}

@@ -1,5 +1,9 @@
 2002-05-13  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/buffer.h (_TINYPROXY_BUFFER_H_): Moved the definition of the
+	buffer_s structure.  Data hiding is a good thing.  Also, replaced
+	the BUFFER_SIZE macro with a buffer_size() function.
+
 	* src/vector.c: Added the "tail" pointer to make insertions more
 	efficient.
 

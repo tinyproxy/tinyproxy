@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.19 2001-12-19 20:41:28 rjkaes Exp $
+/* $Id: buffer.c,v 1.20 2002-05-14 00:43:38 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -35,6 +35,16 @@ struct bufline_s {
 	struct bufline_s *next;	/* pointer to next in linked list */
 	size_t length;		/* length of the string of data */
 	size_t pos;		/* start sending from this offset */
+};
+
+/*
+ * The buffer structure points to the beginning and end of the buffer list
+ * (and includes the total size)
+ */
+struct buffer_s {
+	struct bufline_s *head;	/* top of the buffer */
+	struct bufline_s *tail;	/* bottom of the buffer */
+	size_t size;		/* total size of the buffer */
 };
 
 /*
@@ -103,7 +113,7 @@ new_buffer(void)
 	 * moment.
 	 */
 	BUFFER_HEAD(buffptr) = BUFFER_TAIL(buffptr) = NULL;
-	BUFFER_SIZE(buffptr) = 0;
+	buffptr->size = 0;
 
 	return buffptr;
 }
@@ -128,6 +138,14 @@ delete_buffer(struct buffer_s *buffptr)
 }
 
 /*
+ * Return the current size of the buffer.
+ */
+size_t buffer_size(struct buffer_s *buffptr)
+{
+	return buffptr->size;
+}
+
+/*
  * Push a new line on to the end of the buffer.
  */
 int
@@ -144,9 +162,9 @@ add_to_buffer(struct buffer_s *buffptr, unsigned char *data, size_t length)
 	 * have a size greater than zero, and vice-versa.
 	 */
 	if (BUFFER_HEAD(buffptr) == NULL)
-		assert(BUFFER_SIZE(buffptr) == 0);
+		assert(buffptr->size == 0);
 	else
-		assert(BUFFER_SIZE(buffptr) > 0);
+		assert(buffptr->size > 0);
 
 	/*
 	 * Make a new line so we can add it to the buffer.
@@ -154,12 +172,12 @@ add_to_buffer(struct buffer_s *buffptr, unsigned char *data, size_t length)
 	if (!(newline = makenewline(data, length)))
 		return -1;
 
-	if (BUFFER_SIZE(buffptr) == 0)
+	if (buffptr->size == 0)
 		BUFFER_HEAD(buffptr) = BUFFER_TAIL(buffptr) = newline;
 	else
 		BUFFER_TAIL(buffptr) = (BUFFER_TAIL(buffptr)->next = newline);
 
-	BUFFER_SIZE(buffptr) += length;
+	buffptr->size += length;
 
 	return 0;
 }
@@ -200,7 +218,7 @@ read_buffer(int fd, struct buffer_s * buffptr)
 	/*
 	 * Don't allow the buffer to grow larger than MAXBUFFSIZE
 	 */
-	if (BUFFER_SIZE(buffptr) >= MAXBUFFSIZE)
+	if (buffptr->size >= MAXBUFFSIZE)
 		return 0;
 
 	bytesin = read(fd, buffer, READ_BUFFER_SIZE);
@@ -251,7 +269,7 @@ write_buffer(int fd, struct buffer_s * buffptr)
 	assert(fd >= 0);
 	assert(buffptr != NULL);
 
-	if (BUFFER_SIZE(buffptr) == 0)
+	if (buffptr->size == 0)
 		return 0;
 
 	/* Sanity check. It would be bad to be using a NULL pointer! */
