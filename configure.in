@@ -1,4 +1,4 @@
-dnl $Id: configure.in,v 1.19 2001-08-27 17:47:25 rjkaes Exp $
+dnl $Id: configure.in,v 1.20 2001-08-27 19:57:24 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -107,7 +107,7 @@ else
         CFLAGS="-D_REENTRANT $CFLAGS"
     else
         AC_CHECK_LIB(c_r, pthread_create)
-        if test "$ac_cv_c_r_pthread_create" = "yes"; then
+        if test "$ac_cv_lib_c_r_pthread_create" = "yes"; then
             CFLAGS="-pthread -D_REENTRANT $CFLAGS"
         else
 	    AC_MSG_ERROR(You must have a POSIX compliant threading library installed)
