@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.5 2002-06-27 16:29:21 rjkaes Exp $
+/* $Id: child.c,v 1.6 2002-10-03 20:33:09 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -164,8 +164,11 @@ child_main(struct child_s* ptr)
 	socklen_t clilen;
 
 	cliaddr = safemalloc(addrlen);
-	if (!cliaddr)
+	if (!cliaddr) {
+		log_message(LOG_CRIT,
+			    "Could not allocate memory for child address.");
 		exit(0);
+	}
 
 	ptr->connects = 0;
 
@@ -382,6 +385,8 @@ child_main_loop(void)
 
 		/* Handle log rotation if it was requested */
 		if (received_sighup) {
+			truncate_log_file();
+
 #ifdef FILTER_ENABLE
 			if (config.filter) {
 				filter_destroy();
