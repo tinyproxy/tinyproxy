@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.50 2003-03-10 20:07:55 rjkaes Exp $
+dnl $Id: configure.ac,v 2.51 2003-04-01 16:46:45 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -14,7 +14,7 @@ dnl 8. System services
 dnl
 dnl Read the Autoconf manual for details.
 
-AC_INIT([tinyproxy], [1.5.3], [rjkaes@users.sourceforge.net])
+AC_INIT([tinyproxy], [1.6.0pre1], [rjkaes@users.sourceforge.net])
 AC_CONFIG_SRCDIR([src/tinyproxy.c])
 AC_PREREQ(2.52)
 
@@ -29,7 +29,7 @@ AM_CONFIG_HEADER(config.h)
 
 dnl Check if we're compiling on a weird platform :)
 AC_AIX
-AC_ISC_POSIX
+AC_GNU_SOURCE
 AC_MINIX
 
 dnl
@@ -151,10 +151,9 @@ dnl
 
 cflags_save="$CFLAGS"
 
-AC_PROG_AWK
 AC_PROG_MAKE_SET
 AC_PROG_CC
-AC_PROG_CC_STDC
+AC_ISC_POSIX
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AM_PROG_LEX
@@ -194,7 +193,8 @@ dnl
 dnl Checks for headers
 dnl
 AC_HEADER_STDC
-AC_CHECK_HEADERS([sys/types.h sys/ioctl.h sys/mman.h sys/resource.h \
+AC_HEADER_TIME
+AC_CHECK_HEADERS([sys/ioctl.h sys/mman.h sys/resource.h \
 		  sys/select.h sys/socket.h sys/stat.h sys/time.h sys/uio.h \
 		  sys/un.h sys/wait.h arpa/inet.h netinet/in.h alloca.h \
 		  assert.h ctype.h errno.h fcntl.h grp.h io.h libintl.h \
@@ -212,6 +212,7 @@ esac
 
 AC_CHECK_HEADER(socks.h, socks_header=yes, socks_header=no)
 
+
 dnl
 dnl Checks for types
 dnl
@@ -219,7 +220,8 @@ AM_C_PROTOTYPES
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
-AC_HEADER_TIME
+AC_TYPE_PID_T
+AC_TYPE_SIGNAL
 AC_UNP_CHECK_TYPE(uint8_t, unsigned char)
 AC_UNP_CHECK_TYPE(int16_t, short)
 AC_UNP_CHECK_TYPE(uint16_t, unsigned short)
@@ -228,23 +230,15 @@ AC_UNP_CHECK_TYPE(uint32_t, unsigned int)
 AC_UNP_CHECK_TYPE(ssize_t, int)
 AC_UNP_CHECK_TYPE(socklen_t, unsigned int)
 AC_UNP_CHECK_TYPE(in_addr_t, uint32_t)
-AC_TYPE_PID_T
+
 
 dnl
 dnl Checks for libary functions
 dnl
 AC_FUNC_ALLOCA
-AC_FUNC_FORK
-AC_FUNC_MALLOC
-AC_TYPE_SIGNAL
-AC_FUNC_STRERROR_R
-AC_FUNC_STRFTIME
-AC_CHECK_FUNCS([btowc bzero ftruncate gethostbyaddr gethostbyname gethostname \
-		inet_ntoa memchr memset re_comp regcomp \
-		regexec select setrlimit socket strncasecmp strchr strdup \
-		strerror strstr strtol vsyslog vsnprintf])
 
-AC_CHECK_FUNCS(strlcpy strlcat)
+AC_CHECK_FUNCS([isascii memcpy setrlimit ftruncate regexec])
+AC_CHECK_FUNCS([strlcpy strlcat])
 
 dnl
 dnl Compiler characteristics
