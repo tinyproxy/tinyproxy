@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.1 2000-09-12 00:07:44 rjkaes Exp $
+/* $Id: thread.c,v 1.2 2000-12-08 03:35:07 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -39,7 +39,6 @@ struct thread_config_s {
 
 static unsigned int servers_waiting;	/* servers waiting for a connection */
 static pthread_mutex_t servers_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t servers_cond = PTHREAD_COND_INITIALIZER;
 
 #define LOCK_SERVERS()	 pthread_mutex_lock(&servers_mutex)
 #define UNLOCK_SERVERS() pthread_mutex_unlock(&servers_mutex)
@@ -155,50 +154,33 @@ int thread_pool_create(void)
 int thread_main_loop(void)
 {
 	int i;
-	struct timeval tv;
-	struct timespec ts;
 
-	while (config.quit == FALSE) {
-		/* Wait for one of the threads to signal */
-		pthread_mutex_lock(&servers_mutex);
-		while (config.quit == FALSE
-		       && servers_waiting < thread_config.maxspareservers
-		       && servers_waiting > thread_config.minspareservers) {
-			if (gettimeofday(&tv, NULL) < 0) {
-				return -1;
-			}
-			ts.tv_sec = tv.tv_sec + 1;
-			ts.tv_nsec = tv.tv_usec * 1000;
-			pthread_cond_timedwait(&servers_cond, &servers_mutex, &ts);
-		}
+	/* If there are not enough spare servers, create more */
+	LOCK_SERVERS();
 
-		if (config.quit == TRUE)
-			return 0;
-
-		/* If there are not enough spare servers, create more */
-		if (servers_waiting < thread_config.minspareservers) {
-			for (i = 0; i < thread_config.maxclients; i++) {
-				if (thread_ptr[i].status == T_EMPTY) {
-					pthread_create(&thread_ptr[i].tid, NULL, &thread_main, &thread_ptr[i]);
-					thread_ptr[i].status = T_WAITING;
-					servers_waiting++;
-					log(LOG_NOTICE, "Created a new thread.");
-					break;
-				}
-			}
-		} else if (servers_waiting > thread_config.maxspareservers) {
-			for (i = 0; i < thread_config.maxclients; i++) {
-				if (thread_ptr[i].status == T_WAITING) {
-					pthread_join(thread_ptr[i].tid, NULL);
-					servers_waiting--;
-					thread_ptr[i].status = T_EMPTY;
-					log(LOG_NOTICE, "Killed off a thread.");
-					break;
-				}
+	if (servers_waiting < thread_config.minspareservers) {
+		for (i = 0; i < thread_config.maxclients; i++) {
+			if (thread_ptr[i].status == T_EMPTY) {
+				pthread_create(&thread_ptr[i].tid, NULL, &thread_main, &thread_ptr[i]);
+				thread_ptr[i].status = T_WAITING;
+				servers_waiting++;
+				log(LOG_NOTICE, "Created a new thread.");
+				break;
 			}
 		}
-		pthread_mutex_unlock(&servers_mutex);
+	} else if (servers_waiting > thread_config.maxspareservers) {
+		for (i = 0; i < thread_config.maxclients; i++) {
+			if (thread_ptr[i].status == T_WAITING) {
+				pthread_join(thread_ptr[i].tid, NULL);
+				servers_waiting--;
+				thread_ptr[i].status = T_EMPTY;
+				log(LOG_NOTICE, "Killed off a thread.");
+				break;
+			}
+		}
 	}
+	
+	UNLOCK_SERVERS();
 	return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.7 2000-11-23 04:46:48 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.8 2000-12-08 03:35:07 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -82,6 +82,7 @@ void takesig(int sig)
 		log(LOG_INFO, "SIGTERM received.");
 		break;
 	}
+
 	if (sig != SIGTERM)
 		signal(sig, takesig);
 	signal(SIGPIPE, SIG_IGN);
@@ -326,7 +327,10 @@ int main(int argc, char **argv)
 	 * Start the main loop.
 	 */
 	log(LOG_INFO, "Starting main loop. Accepting connections.");
-	thread_main_loop();
+	do {
+		thread_main_loop();
+		sleep(1);
+	} while (!config.quit);
 
 	log(LOG_INFO, "Shutting down.");
 	thread_close_sock();
