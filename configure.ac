@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.3 2001-12-17 00:28:28 rjkaes Exp $
+dnl $Id: configure.ac,v 2.4 2001-12-17 19:10:06 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -160,15 +160,6 @@ CFLAGS="$cflags_save"
 dnl Make sure YACC is actually bison
 if test x"$YACC" != x"bison -y"; then
     AC_MSG_WARN([You will need bison if you want to regenerate the parser.])
-else
-    AC_MSG_CHECKING([bison version])
-    oldIFS=$IFS; IFS=.
-    set `bison -V | sed -e 's/^GNU Bison version //'`
-    IFS=$oldIFS
-    if test x"$1" = x"1" -a "$2" -lt "25"; then
-        AC_MSG_WARN([Bison 1.25 or newer needed to regenerate parsers (found $1.$2).])
-    fi
-    AC_MSG_RESULT([$1.$2 (ok)])
 fi
 
 dnl
