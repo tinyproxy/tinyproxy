@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.13 2002-05-27 01:52:44 rjkaes Exp $
+/* $Id: grammar.y,v 1.14 2002-06-06 20:26:13 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -171,8 +171,12 @@ statement
         | KW_CONNECTPORT NUMBER         { add_connect_port_allowed($2); }
         | KW_BIND NUMERIC_ADDRESS
           {
+#ifndef TRANSPARENT_PROXY
 		  log_message(LOG_INFO, "Binding outgoing connections to %s", $2);
 	          config.bind_address = $2;
+#else
+		  log_message(LOG_WARNING, "The 'Bind' directive can not be used with transparent proxy support.  Ignoring the directive.");
+#endif
           }
 	;
 
