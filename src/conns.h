@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.7 2002-04-11 20:27:51 rjkaes Exp $
+/* $Id: conns.h,v 1.8 2002-04-15 02:07:27 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -34,7 +34,10 @@ struct conn_s {
 	char *request_line;
 
 	bool_t connect_method;
-	bool_t response_message_sent;
+
+	/* Store the error response if there is one */
+	char *error_string;
+	int error_number;
 
 	/* A Content-Length value from the remote server */
 	long remote_content_length;

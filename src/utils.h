@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.13 2001-11-25 02:22:05 rjkaes Exp $
+/* $Id: utils.h,v 1.14 2002-04-15 02:07:27 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -32,7 +32,8 @@
 
 extern int send_http_message(struct conn_s *connptr, int http_code,
 			     const char *error_title, const char *message);
-extern int httperr(struct conn_s *connptr, int err, const char *msg);
+extern int send_http_error_message(struct conn_s *connptr);
+extern int indicate_http_error(struct conn_s* connptr, int number, const char *string);
 
 extern void makedaemon(void);
 extern void pidfile_create(const char *path);

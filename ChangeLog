@@ -1,3 +1,14 @@
+2002-04-14  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/conns.h: Replaced the error boolean with a pointer to an
+	error string and error number for use in the
+	send_http_error_message() function.
+
+	* src/utils.c (indicate_http_error): Replaced the httperr()
+	function with this one.  Instead of sending the error right away,
+	we store the error string and number and send them _after_ the
+	client headers have been processed.
+
 2002-04-13  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/sock.c (opensock): If the Listen directive is in use, then

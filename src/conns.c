@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.8 2002-04-11 20:27:51 rjkaes Exp $
+/* $Id: conns.c,v 1.9 2002-04-15 02:07:27 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connnection related tasks put here, but for now the header
@@ -57,7 +57,10 @@ initialize_conn(int client_fd)
 
 	connptr->request_line = NULL;
 
-	connptr->response_message_sent = FALSE;
+	/* These store any error strings */
+	connptr->error_string = NULL;
+	connptr->error_number = -1;
+
 	connptr->connect_method = FALSE;
 
 	connptr->protocol.major = connptr->protocol.minor = 0;
@@ -97,6 +100,9 @@ destroy_conn(struct conn_s *connptr)
 
 	if (connptr->request_line)
 		safefree(connptr->request_line);
+
+	if (connptr->error_string)
+		safefree(connptr->error_string);
 
 	safefree(connptr);
 

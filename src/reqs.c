@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.57 2002-04-12 17:00:42 rjkaes Exp $
+/* $Id: reqs.c,v 1.58 2002-04-15 02:07:27 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -348,7 +348,7 @@ process_request(struct conn_s *connptr)
 		log_message(LOG_ERR,
 			    "process_request: Bad Request on file descriptor %d",
 			    connptr->client_fd);
-		httperr(connptr, 400, "Bad Request. No request found.");
+		indicate_http_error(connptr, 400, "Bad Request. No request found.");
 
 		safefree(url);
 		free_request_struct(request);
@@ -364,7 +364,7 @@ process_request(struct conn_s *connptr)
 		log_message(LOG_ERR,
 			    "process_request: Null URL on file descriptor %d",
 			    connptr->client_fd);
-		httperr(connptr, 400, "Bad Request. Null URL.");
+		indicate_http_error(connptr, 400, "Bad Request. Null URL.");
 
 		safefree(url);
 		free_request_struct(request);
@@ -377,7 +377,7 @@ process_request(struct conn_s *connptr)
 		memcpy(url, "http", 4);
 
 		if (extract_http_url(url, request) < 0) {
-			httperr(connptr, 400,
+			indicate_http_error(connptr, 400,
 				"Bad Request. Could not parse URL.");
 
 			safefree(url);
@@ -387,7 +387,7 @@ process_request(struct conn_s *connptr)
 		}
 	} else if (strcmp(request->method, "CONNECT") == 0) {
 		if (extract_ssl_url(url, request) < 0) {
-			httperr(connptr, 400,
+			indicate_http_error(connptr, 400,
 				"Bad Request. Could not parse URL.");
 
 			safefree(url);
@@ -398,7 +398,7 @@ process_request(struct conn_s *connptr)
 
 		/* Verify that the port in the CONNECT method is allowed */
 		if (check_allowed_connect_ports(request->port) <= 0) {
-			httperr(connptr, 403,
+			indicate_http_error(connptr, 403,
 				"CONNECT method not allowed with selected port.");
 			log_message(LOG_INFO, "Refused CONNECT method on port %d",
 				    request->port);
@@ -414,7 +414,7 @@ process_request(struct conn_s *connptr)
 		log_message(LOG_ERR,
 			    "process_request: Unknown URL type on file descriptor %d",
 			    connptr->client_fd);
-		httperr(connptr, 400, "Bad Request. Unknown URL type.");
+		indicate_http_error(connptr, 400, "Bad Request. Unknown URL type.");
 
 		safefree(url);
 		free_request_struct(request);
@@ -435,7 +435,7 @@ process_request(struct conn_s *connptr)
 			log_message(LOG_NOTICE,
 				    "Proxying refused on filtered domain \"%s\"",
 				    request->host);
-			httperr(connptr, 404,
+			indicate_http_error(connptr, 404,
 				"Connection to filtered domain is now allowed.");
 
 			free_request_struct(request);
@@ -495,7 +495,7 @@ pull_client_data(struct conn_s *connptr, unsigned long int length)
 			return -1;
 		}
 
-		if (!connptr->response_message_sent) {
+		if (!connptr->error_string) {
 			if (safe_write(connptr->server_fd, buffer, len) < 0) {
 				safefree(buffer);
 				return -1;
@@ -1022,7 +1022,7 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 	if (connptr->server_fd < 0) {
 		log_message(LOG_WARNING,
 			    "Could not connect to upstream proxy.");
-		httperr(connptr, 404, "Unable to connect to upstream proxy.");
+		indicate_http_error(connptr, 404, "Unable to connect to upstream proxy.");
 		return -1;
 	}
 
@@ -1094,7 +1094,7 @@ connect_to_tunnel(struct conn_s *connptr)
 	if (connptr->server_fd < 0) {
 		log_message(LOG_WARNING,
 			    "Could not connect to tunnel.");
-		httperr(connptr, 404, "Unable to connect to tunnel.");
+		indicate_http_error(connptr, 404, "Unable to connect to tunnel.");
 
 		return -1;
 	}
@@ -1136,7 +1136,7 @@ handle_connection(int fd)
 
 	if (check_acl(fd) <= 0) {
 		update_stats(STAT_DENIED);
-		httperr(connptr, 403,
+		indicate_http_error(connptr, 403,
 			"You do not have authorization for using this service.");
 		goto send_error;
 	}
@@ -1157,7 +1157,7 @@ handle_connection(int fd)
 
 	request = process_request(connptr);
 	if (!request) {
-		if (!connptr->response_message_sent) {
+		if (!connptr->error_string) {
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
 			return;
@@ -1171,7 +1171,7 @@ handle_connection(int fd)
 	} else {
 		connptr->server_fd = opensock(request->host, request->port);
 		if (connptr->server_fd < 0) {
-			httperr(connptr, 500, HTTP500ERROR);
+			indicate_http_error(connptr, 500, HTTP500ERROR);
 			goto send_error;
 		}
 
@@ -1188,13 +1188,14 @@ handle_connection(int fd)
 
 	if (process_client_headers(connptr) < 0) {
 		update_stats(STAT_BADCONN);
-		if (!connptr->response_message_sent) {
+		if (!connptr->error_string) {
 			destroy_conn(connptr);
 			return;
 		}
 	}
 
-	if (connptr->response_message_sent) {
+	if (connptr->error_string) {
+		send_http_error_message(connptr);
 		destroy_conn(connptr);
 		return;
 	}

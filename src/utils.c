@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.22 2002-04-07 21:37:07 rjkaes Exp $
+/* $Id: utils.c,v 1.23 2002-04-15 02:07:27 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -100,8 +100,6 @@ send_http_message(struct conn_s *connptr, int http_code,
 
 	safe_write(connptr->client_fd, message, strlen(message));
 
-	connptr->response_message_sent = TRUE;
-
 	return 0;
 }
 
@@ -109,7 +107,7 @@ send_http_message(struct conn_s *connptr, int http_code,
  * Display an error to the client.
  */
 int
-httperr(struct conn_s *connptr, int err, const char *msg)
+send_http_error_message(struct conn_s *connptr)
 {
 	static char *message = \
 		"<html><head><title>%s</title></head>\r\n" \
@@ -135,7 +133,9 @@ httperr(struct conn_s *connptr, int err, const char *msg)
 	 * See the write_message() function in sock.c for more information.
 	 */
 	while (1) {
-		n = snprintf(message_buffer, size, message, msg, err, msg, PACKAGE, VERSION);
+		n = snprintf(message_buffer, size, message,
+			     connptr->error_string, connptr->error_number,
+			     connptr->error_string, PACKAGE, VERSION);
 
 		if (n > -1 && n < size)
 			break;
@@ -152,9 +152,24 @@ httperr(struct conn_s *connptr, int err, const char *msg)
 			message_buffer = tmpbuf;
 	}
 
-	ret = send_http_message(connptr, err, msg, message_buffer);
+	ret = send_http_message(connptr, connptr->error_number,
+				connptr->error_string, message_buffer);
 	safefree(message_buffer);
 	return ret;
+}
+
+/*
+ * Add the error information to the conn structure.
+ */
+int
+indicate_http_error(struct conn_s* connptr, int number, const char* string)
+{
+	connptr->error_string = strdup(string);
+	if (!connptr->error_string)
+		return -1;
+	connptr->error_number = number;
+
+	return 0;
 }
 
 void
