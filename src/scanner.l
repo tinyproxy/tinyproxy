@@ -1,4 +1,4 @@
-/* $Id: scanner.l,v 1.7 2001-11-25 02:20:54 rjkaes Exp $
+/* $Id: scanner.l,v 1.8 2002-04-10 17:29:18 rjkaes Exp $
  *
  * This builds the scanner for the tinyproxy configuration file. This
  * file needs to stay in sync with grammar.y. If someone knows lex and yacc
