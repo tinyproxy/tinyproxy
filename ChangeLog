@@ -1,10 +1,17 @@
+2003-07-14  Robert James Kaes  <rjkaes@flarenet.com>
+
+	Released tinyproxy 1.6.0 (2003-07-14)
+
+	* src/htmlerror.c (indicate_http_error):
+	Added calls to va_end() before leaving the function.
+
 2003-06-26  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (upstream_add):
 	Rewrote the function to actually handle the various types of
 	upstream configurations correctly.  Hopefully, the code is also a
 	little clearer in it's implementation.
-
+	
 	* src/scanner.l:
 	Modified the patterns to allow the new upstream directives to work
 	as defined in the tinyproxy.conf documentation.
