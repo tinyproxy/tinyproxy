@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.17 2002-11-26 21:44:43 rjkaes Exp $
+/* $Id: grammar.y,v 1.18 2003-01-27 17:57:39 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -48,6 +48,7 @@ int yylex(void);
 %token KW_USER KW_GROUP
 %token KW_ANONYMOUS KW_XTINYPROXY
 %token KW_FILTER KW_FILTERURLS KW_FILTEREXTENDED KW_FILTER_DEFAULT_DENY
+%token KW_FILTER_CASESENSITIVE
 %token KW_UPSTREAM
 %token KW_CONNECTPORT KW_BIND KW_HTTP_VIA
 %token KW_ALLOW KW_DENY
@@ -131,6 +132,14 @@ statement
           {
 #ifdef FILTER_ENABLE
 		  config.filter_extended = $2;
+#else
+		  log_message(LOG_WARNING, "Filter support was not compiled in.");
+#endif
+	  }
+        | KW_FILTER_CASESENSITIVE yesno
+          {
+#ifdef FILTER_ENABLE
+		  config.filter_casesensitive = $2;
 #else
 		  log_message(LOG_WARNING, "Filter support was not compiled in.");
 #endif

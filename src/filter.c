@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.15 2002-10-03 20:40:39 rjkaes Exp $
+/* $Id: filter.c,v 1.16 2003-01-27 17:57:39 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  * Copyright (c) 2002  James E. Flemer (jflemer@acm.jhu.edu)
@@ -57,9 +57,11 @@ filter_init(void)
 		if (fd) {
 			p = NULL;
 
-			cflags = REG_NEWLINE | REG_NOSUB | REG_ICASE;
+			cflags = REG_NEWLINE | REG_NOSUB;
 			if (config.filter_extended)
 				cflags |= REG_EXTENDED;
+			if (!config.filter_casesensitive)
+				cflags |= REG_ICASE;
 
 			while (fgets(buf, FILTER_BUFFER_LEN, fd)) {
 				s = buf;

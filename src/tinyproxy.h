@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.36 2002-12-04 17:06:14 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.37 2003-01-27 17:57:37 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -38,6 +38,7 @@ struct config_s {
 	char *filter;
 	unsigned int filter_url; /* boolean */
 	unsigned int filter_extended; /* boolean */
+        unsigned int filter_casesensitive; /* boolean */
 #endif				/* FILTER_ENABLE */
 #ifdef XTINYPROXY_ENABLE
 	char *my_domain;
