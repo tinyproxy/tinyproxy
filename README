@@ -41,7 +41,7 @@
 	--enable-upstream	Enable support for proxying connections
 				through another proxy server.
 	--enable-transparent-proxy
-				Allow tinyproxy to be used a
+				Allow tinyproxy to be used as a
 				transparent proxy daemon
 	--enable-static		Compile a static version of tinyproxy
 
