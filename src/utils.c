@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.29 2002-04-28 20:03:53 rjkaes Exp $
+/* $Id: utils.c,v 1.30 2002-05-23 18:28:12 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -24,85 +24,12 @@
 #include "buffer.h"
 #include "conns.h"
 #include "filter.h"
+#include "heap.h"
 #include "log.h"
+#include "network.h"
 #include "sock.h"
 #include "utils.h"
 
-/*
- * These are the debugging calloc, malloc, and free versions
- */
-#ifndef NDEBUG
-
-void *
-debugging_calloc(size_t nmemb, size_t size, const char *file,
-		 unsigned long line)
-{
-	void *ptr;
-
-	assert(nmemb > 0);
-	assert(size > 0);
-
-	ptr = calloc(nmemb, size);
-	fprintf(stderr, "{calloc: %p:%u x %u} %s:%lu\n", ptr, nmemb, size, file,
-		line);
-	return ptr;
-}
-
-void *
-debugging_malloc(size_t size, const char *file, unsigned long line)
-{
-	void *ptr;
-
-	assert(size > 0);
-
-	ptr = malloc(size);
-	fprintf(stderr, "{malloc: %p:%u} %s:%lu\n", ptr, size, file, line);
-	return ptr;
-}
-
-void *
-debugging_realloc(void *ptr, size_t size, const char *file, unsigned long line)
-{
-	void *newptr;
-	
-	assert(ptr != NULL);
-	assert(size > 0);
-	
-	newptr = realloc(ptr, size);
-	fprintf(stderr, "{realloc: %p -> %p:%u} %s:%lu\n", ptr, newptr, size,
-		file, line);
-	return newptr;
-}
-
-void
-debugging_free(void *ptr, const char *file, unsigned long line)
-{
-	assert(ptr != NULL);
-
-	fprintf(stderr, "{free: %p} %s:%lu\n", ptr, file, line);
-	free(ptr);
-	return;
-}
-
-char*
-debugging_strdup(const char* s, const char* file, unsigned long line)
-{
-	char* ptr;
-	size_t len;
-
-	assert(s != NULL);
-
-	len = strlen(s) + 1;
-	ptr = malloc(len);
-	if (!ptr)
-		return NULL;
-	memcpy(ptr, s, len);
-
-	fprintf(stderr, "{strdup: %p:%u} %s:%lu\n", ptr, len, file, line);
-	return ptr;
-}
-
-#endif
 
 #define HEADER_SIZE (1024 * 8)
 /*
@@ -205,26 +132,6 @@ indicate_http_error(struct conn_s* connptr, int number, const char* string)
 	connptr->error_number = number;
 
 	return 0;
-}
-
-void
-makedaemon(void)
-{
-	if (fork() != 0)
-		exit(0);
-
-	setsid();
-	signal(SIGHUP, SIG_IGN);
-
-	if (fork() != 0)
-		exit(0);
-
-	chdir("/");
-	umask(077);
-
-	close(0);
-	close(1);
-	close(2);
 }
 
 /*
@@ -362,82 +269,6 @@ pidfile_create(const char *filename)
 
 	fprintf(fd, "%ld\n", (long) getpid());
 	fclose(fd);
-}
-
-#ifndef HAVE_STRLCPY
-/*
- * Function API taken from OpenBSD. Like strncpy(), but does not 0 fill the
- * buffer, and always NULL terminates the buffer. size is the size of the
- * destination buffer.
- */
-size_t
-strlcpy(char *dst, const char *src, size_t size)
-{
-	size_t len = strlen(src);
-	size_t ret = len;
-
-	if (len >= size)
-		len = size - 1;
-
-	memcpy(dst, src, len);
-	dst[len] = '\0';
-
-	return ret;
-}
-#endif
-
-#ifndef HAVE_STRLCAT
-/*
- * Function API taken from OpenBSD. Like strncat(), but does not 0 fill the
- * buffer, and always NULL terminates the buffer. size is the length of the
- * buffer, which should be one more than the maximum resulting string
- * length.
- */
-size_t
-strlcat(char *dst, const char *src, size_t size)
-{
-	size_t len1 = strlen(dst);
-	size_t len2 = strlen(src);
-	size_t ret = len1 + len2;
-
-	if (len1 + len2 >= size)
-		len2 = size - len1 - 1;
-	if (len2 > 0) {
-		memcpy(dst + len1, src, len2);
-		dst[len1 + len2] = '\0';
-	}
-
-	return ret;
-}
-#endif
-
-/*
- * Removes any new-line or carriage-return characters from the end of the
- * string. This function is named afrer the same function in Perl.
- * "length" should be the number of characters in the buffer, not including
- * the trailing NULL.
- *
- * Returns the number of characters removed from the end of the string.
- */
-size_t
-chomp(char *buffer, size_t length)
-{
-	size_t chars;
-
-	assert(buffer != NULL);
-
-	chars = 0;
-
-	--length;
-	while (buffer[length] == '\r' || buffer[length] == '\n') {
-		buffer[length--] = '\0';
-		chars++;
-
-		if (length < 0)
-			break;
-	}
-
-	return chars;
 }
 
 /*

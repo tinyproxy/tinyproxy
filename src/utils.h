@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.17 2002-05-17 16:39:35 rjkaes Exp $
+/* $Id: utils.h,v 1.18 2002-05-23 18:28:12 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -16,67 +16,22 @@
  * General Public License for more details.
  */
 
-#ifndef _TINYPROXY_UTILS_H_
-#define _TINYPROXY_UTILS_H_
-
-#include "tinyproxy.h"
-
-#include "conns.h"
+#ifndef TINYPROXY_UTILS_H
+#define TINYPROXY_UTILS_H
 
 /*
- * Error codes used within the utility functions.
+ * Forward declaration.
  */
-#define EERROR		1	/* Generic error */
-#define ENOMEMORY	2	/* Out of memory (or allocation error) */
-#define EOUTRANGE	3	/* The variable is out of range */
+struct conn_s;
 
 extern int send_http_message(struct conn_s *connptr, int http_code,
 			     const char *error_title, const char *message);
 extern int send_http_error_message(struct conn_s *connptr);
 extern int indicate_http_error(struct conn_s* connptr, int number, const char *string);
 
-extern void makedaemon(void);
 extern void pidfile_create(const char *path);
-
 extern int create_file_safely(const char *filename);
 
-#ifndef HAVE_STRLCAT
-extern size_t strlcat(char *dst, const char *src, size_t size);
-#endif				/* HAVE_STRLCAT */
-
-#ifndef HAVE_STRLCPY
-extern size_t strlcpy(char *dst, const char *src, size_t size);
-#endif				/* HAVE_STRLCPY */
-
-extern size_t chomp(char *buffer, size_t length);
 extern void rotate_log_files(void);
-
-/*
- * The following is to allow for better memory checking.
- */
-#ifndef NDEBUG
-
-extern void *debugging_calloc(size_t nmemb, size_t size, const char *file,
-			      unsigned long line);
-extern void *debugging_malloc(size_t size, const char *file,
-			      unsigned long line);
-extern void debugging_free(void *ptr, const char *file, unsigned long line);
-extern void *debugging_realloc(void *ptr, size_t size, const char *file,
-			       unsigned long line);
-extern char *debugging_strdup(const char* s, const char* file,
-			      unsigned long line);
-
-#  define safecalloc(x, y) debugging_calloc(x, y, __FILE__, __LINE__)
-#  define safemalloc(x) debugging_malloc(x, __FILE__, __LINE__)
-#  define saferealloc(x, y) debugging_realloc(x, y, __FILE__, __LINE__)
-#  define safefree(x) debugging_free(x, __FILE__, __LINE__); (x) = NULL
-#  define safestrdup(x) debugging_strdup(x, __FILE__, __LINE__)
-#else
-#  define safecalloc(x, y) calloc(x, y)
-#  define safemalloc(x) malloc(x)
-#  define saferealloc(x, y) realloc(x, y)
-#  define safefree(x) free(x); (x) = NULL
-#  define safestrdup(x) strdup(x)
-#endif
 
 #endif
