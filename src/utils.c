@@ -1,12 +1,12 @@
-/* $Id: utils.c,v 1.19 2001-11-25 22:08:11 rjkaes Exp $
+/* $Id: utils.c,v 1.20 2001-12-20 04:48:52 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
  * the load cutoff routine is in here. Could not think of a better place for
  * it, so it's in here.
  *
- * Copyright (C) 1998  Steven Young
- * Copyright (C) 1999  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 1998       Steven Young
+ * Copyright (C) 1999,2001  Robert James Kaes (rjkaes@flarenet.com)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
