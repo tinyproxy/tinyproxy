@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.17 2001-11-25 22:05:42 rjkaes Exp $
+/* $Id: buffer.c,v 1.18 2001-11-26 01:39:07 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -197,10 +197,13 @@ read_buffer(int fd, struct buffer_s * buffptr)
 	assert(fd >= 0);
 	assert(buffptr != NULL);
 
-	if (BUFFER_SIZE(buffptr) >= READ_BUFFER_SIZE)
+	/*
+	 * Don't allow the buffer to grow larger than MAXBUFFSIZE
+	 */
+	if (BUFFER_SIZE(buffptr) >= MAXBUFFSIZE)
 		return 0;
 
-	bytesin = read(fd, buffer, READ_BUFFER_SIZE - BUFFER_SIZE(buffptr));
+	bytesin = read(fd, buffer, READ_BUFFER_SIZE);
 
 	if (bytesin > 0) {
 		if (add_to_buffer(buffptr, buffer, bytesin) < 0) {
