@@ -5,6 +5,8 @@
 	(hashmap_remove): Fixed a problem where an entry could have it's
 	"prev" pointer still pointing at freed memory.  Thanks to Justin
 	Guyett for finding and fixing this problem.
+	(hashmap_insert): Thanks to Justin Guyett for changing the code to
+	use a constant time insert.  Much cleaner _and_ faster.
 
 2002-05-10  Robert James Kaes  <rjkaes@flarenet.com>
 

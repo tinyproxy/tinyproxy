@@ -1,4 +1,4 @@
-/* $Id: hashmap.c,v 1.8 2002-05-13 18:47:46 rjkaes Exp $
+/* $Id: hashmap.c,v 1.9 2002-05-13 20:02:23 rjkaes Exp $
  *
  * A hashmap implementation.  The keys are case-insensitive NULL terminated
  * strings, and the data is arbitrary lumps of data.  Copies of both the
@@ -185,7 +185,7 @@ int
 hashmap_insert(hashmap_t map, const char *key,
 	       const void *data, size_t len)
 {
-	struct hashentry_s *ptr, *prevptr;
+	struct hashentry_s *ptr;
 	int hash;
 	char *key_copy;
 	void *data_copy;
@@ -223,40 +223,29 @@ hashmap_insert(hashmap_t map, const char *key,
 		data_copy = NULL;
 	}
 
-	ptr = map->buckets[hash];
-	if (ptr) {
-		/* There is already an entry, so tack onto the end */
-		while (ptr) {
-			prevptr = ptr;
-			ptr = ptr->next;
-		}
-
-		ptr = safecalloc(1, sizeof(struct hashentry_s));
-		if (!ptr)
-			goto MEM_ERROR_EXIT;
-
-		ptr->prev = prevptr;
-		ptr->next = NULL;
-		prevptr->next = ptr;
-	} else {
-		ptr = map->buckets[hash] = safecalloc(1, sizeof(struct hashentry_s));
-		if (!ptr)
-			goto MEM_ERROR_EXIT;
-
-		ptr->next = ptr->prev = NULL;
+	ptr = safemalloc(sizeof(struct hashentry_s));
+	if (!ptr) {
+		safefree(key_copy);
+		safefree(data_copy);
+		return -ENOMEM;
 	}
 
 	ptr->key = key_copy;
 	ptr->data = data_copy;
 	ptr->len = len;
 
+	/*
+	 * Put the entry at the beginning of the chain.  This is a constant
+	 * time insert.  Thanks to Justin Guyett for the code.
+	 */
+	ptr->prev = NULL;
+	ptr->next = map->buckets[hash];
+	map->buckets[hash] = ptr;
+	if (ptr->next)
+		ptr->next->prev = ptr;
+
 	map->end_iterator++;
 	return 0;
-
-  MEM_ERROR_EXIT:
-	safefree(key_copy);
-        safefree(data_copy);
-        return -ENOMEM;
 }
 
 /*
