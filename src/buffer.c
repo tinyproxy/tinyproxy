@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.9 2001-09-11 19:26:49 rjkaes Exp $
+/* $Id: buffer.c,v 1.10 2001-09-14 19:49:10 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -232,8 +232,8 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 			safefree(buffer);
 			return 0;
 		default:
-			log_message(LOG_ERR, "recv error (%s) in 'readbuff'.",
-				    strerror(errno));
+			log_message(LOG_ERR, "recv error (fd %d: %s:%d) in 'readbuff'.",
+				    fd, strerror(errno), errno);
 			safefree(buffer);
 			return -1;
 		}
@@ -279,13 +279,13 @@ ssize_t writebuff(int fd, struct buffer_s *buffptr)
 		case ENOBUFS:
 		case ENOMEM:
 			log_message(LOG_ERR,
-				    "send error [NOBUFS/NOMEM] (%s) in 'writebuff'.",
+				    "write error [NOBUFS/NOMEM] (%s) in 'writebuff'.",
 				    strerror(errno));
 			return 0;
 		default:
 			log_message(LOG_ERR,
-				    "send error (%s) in 'writebuff'.",
-				    strerror(errno));
+				    "write error (fd %d: %s:%d) in 'writebuff'.",
+				    fd, strerror(errno), errno);
 			return -1;
 		}
 	}
