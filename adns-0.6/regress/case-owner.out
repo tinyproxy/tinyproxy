@@ -1,0 +1,36 @@
+adns debug: using nameserver 172.18.45.6
+chiark.greenend.org.uk flags 4 type 1 A(-) submitted
+chiark.greenend.org.uk flags 4 type 2 NS(raw) submitted
+chiark.greenend.org.uk flags 4 type 5 CNAME(-) submitted
+chiark.greenend.org.uk flags 4 type 6 SOA(raw) submitted
+chiark.greenend.org.uk flags 4 type 12 PTR(raw) submitted
+chiark.greenend.org.uk flags 4 type 13 HINFO(-) submitted
+chiark.greenend.org.uk flags 4 type 15 MX(raw) submitted
+chiark.greenend.org.uk flags 4 type 16 TXT(-) submitted
+chiark.greenend.org.uk flags 4 type 17 RP(raw) submitted
+chiark.greenend.org.uk flags 4 type 65537 A(addr) submitted
+chiark.greenend.org.uk flags 4 type 65538 NS(+addr) submitted
+chiark.greenend.org.uk flags 4 type 65548 PTR(checked) submitted
+chiark.greenend.org.uk flags 4 type 65551 MX(+addr) submitted
+chiark.greenend.org.uk flags 4 type 131078 SOA(822) submitted
+chiark.greenend.org.uk flags 4 type 131089 RP(822) submitted
+chiark.greenend.org.uk flags 4 type A(-): OK; nrrs=1; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+ 195.224.76.132
+chiark.greenend.org.uk flags 4 type NS(raw): No such data; nrrs=0; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+chiark.greenend.org.uk flags 4 type CNAME(-): No such data; nrrs=0; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+chiark.greenend.org.uk flags 4 type SOA(raw): No such data; nrrs=0; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+chiark.greenend.org.uk flags 4 type PTR(raw): No such data; nrrs=0; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+chiark.greenend.org.uk flags 4 type HINFO(-): No such data; nrrs=0; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+chiark.greenend.org.uk flags 4 type MX(raw): OK; nrrs=1; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+ 5 permutation-city.greenend.org.uk
+chiark.greenend.org.uk flags 4 type TXT(-): No such data; nrrs=0; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+chiark.greenend.org.uk flags 4 type RP(raw): No such data; nrrs=0; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+chiark.greenend.org.uk flags 4 type A(addr): OK; nrrs=1; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+ INET 195.224.76.132
+chiark.greenend.org.uk flags 4 type NS(+addr): No such data; nrrs=0; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+chiark.greenend.org.uk flags 4 type PTR(checked): No such data; nrrs=0; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+chiark.greenend.org.uk flags 4 type MX(+addr): OK; nrrs=1; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+ 5 permutation-city.greenend.org.uk ok 0 ok "OK" ( INET 195.224.76.134 )
+chiark.greenend.org.uk flags 4 type SOA(822): No such data; nrrs=0; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+chiark.greenend.org.uk flags 4 type RP(822): No such data; nrrs=0; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+rc=0

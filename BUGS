@@ -1,0 +1,9 @@
+  KNOWN BUGS
+  ==========
+
+  There is exactly one known bug at the time of 1.3.2's release - when compiling
+under some Linux distributions (notably, Debian), the compile process will
+generate a number of warnings regarding __underflow.  However, tinyproxy still
+compiles and runs perfectly.  
+
+  Patches welcome!

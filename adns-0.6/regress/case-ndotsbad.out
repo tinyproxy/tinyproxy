@@ -1,0 +1,3 @@
+adns debug: using nameserver 172.18.45.6
+adns: <supplied configuration text>:4: option `ndots:X' malformed or has bad value
+rc=2

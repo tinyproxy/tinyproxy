@@ -1,0 +1,32 @@
+adns debug: using nameserver 172.18.45.36
+greenend.org.uk flags 0 type 1 A(-) submitted
+greenend.org.uk flags 0 type 2 NS(raw) submitted
+greenend.org.uk flags 0 type 5 CNAME(-) submitted
+greenend.org.uk flags 0 type 6 SOA(raw) submitted
+greenend.org.uk flags 0 type 12 PTR(raw) submitted
+greenend.org.uk flags 0 type 13 HINFO(-) submitted
+greenend.org.uk flags 0 type 15 MX(raw) submitted
+greenend.org.uk flags 0 type 16 TXT(-) submitted
+greenend.org.uk flags 0 type 17 RP(raw) submitted
+greenend.org.uk flags 0 type 65537 A(addr) submitted
+greenend.org.uk flags 0 type 65538 NS(+addr) submitted
+greenend.org.uk flags 0 type 65548 PTR(checked) submitted
+greenend.org.uk flags 0 type 65551 MX(+addr) submitted
+greenend.org.uk flags 0 type 131078 SOA(822) submitted
+greenend.org.uk flags 0 type 131089 RP(822) submitted
+greenend.org.uk flags 0 type A(-) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type NS(raw) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type CNAME(-) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type SOA(raw) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type PTR(raw) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type HINFO(-) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type MX(raw) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type TXT(-) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type RP(raw) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type A(addr) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type NS(+addr) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type PTR(checked) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type MX(+addr) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type SOA(822) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+greenend.org.uk flags 0 type RP(822) ownflags=a: timeout; nrrs=0; cname=$; owner=$; ttl=604770
+rc=0

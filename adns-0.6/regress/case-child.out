@@ -1,0 +1,5 @@
+adns debug: using nameserver 172.18.45.6
+134.76.224.195.in-addr.arpa flags 0 type 65548 PTR(checked) submitted
+134.76.224.195.in-addr.arpa flags 0 type PTR(checked): OK; nrrs=1; cname=$; owner=$; ttl=78694
+ permutation-city.greenend.org.uk
+rc=0

@@ -1,0 +1,8 @@
+adns debug: using nameserver 172.18.45.6
+. flags 0 type 131078 SOA(822) submitted
+. flags 1 type 131078 SOA(822) submitted
+. flags 0 type SOA(822): OK; nrrs=1; cname=$; owner=$; ttl=60222
+ A.ROOT-SERVERS.NET hostmaster@INTERNIC.NET 1999041600 1800 900 604800 86400
+. flags 1 type SOA(822): OK; nrrs=1; cname=$; owner=$; ttl=57210
+ A.ROOT-SERVERS.NET hostmaster@INTERNIC.NET 1999041600 1800 900 604800 86400
+rc=0

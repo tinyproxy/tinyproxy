@@ -1,0 +1,16 @@
+adns debug: using nameserver 172.18.45.6
+newsx.davenant flags 5 type 1 A(-) submitted
+news.davenant flags 5 type 1 A(-) submitted
+news.davenant.greenend.org.uk flags 5 type 1 A(-) submitted
+trunc.test.iwj.relativity flags 5 type 1 A(-) submitted
+trunx.test.iwj.relativity flags 5 type 1 A(-) submitted
+test.iwj.relativity flags 5 type 1 A(-) submitted
+newsx.davenant flags 5 type A(-): No such domain; nrrs=0; cname=$; owner=newsx.davenant; ttl=175
+news.davenant flags 5 type A(-): OK; nrrs=1; cname=davenant.relativity.greenend.org.uk; owner=news.davenant.greenend.org.uk; ttl=86400
+ 172.18.45.6
+news.davenant.greenend.org.uk flags 5 type A(-): OK; nrrs=1; cname=davenant.relativity.greenend.org.uk; owner=news.davenant.greenend.org.uk; ttl=86400
+ 172.18.45.6
+trunc.test.iwj.relativity flags 5 type A(-): No such data; nrrs=0; cname=$; owner=trunc.test.iwj.relativity.greenend.org.uk; ttl=60
+trunx.test.iwj.relativity flags 5 type A(-): No such domain; nrrs=0; cname=$; owner=trunx.test.iwj.relativity.greenend.org.uk; ttl=60
+test.iwj.relativity flags 5 type A(-): No such data; nrrs=0; cname=$; owner=test.iwj.relativity.greenend.org.uk; ttl=60
+rc=0

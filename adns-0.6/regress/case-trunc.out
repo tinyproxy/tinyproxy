@@ -1,0 +1,4 @@
+adns debug: using nameserver 172.18.45.6
+trunc.test.iwj.relativity.greenend.org.uk flags 0 type 1 A(-) submitted
+trunc.test.iwj.relativity.greenend.org.uk flags 0 type A(-): No such data; nrrs=0; cname=$; owner=$; ttl=60
+rc=0

@@ -1,0 +1,38 @@
+adns debug: using nameserver 172.18.45.6
+broken-mail.test.iwj.relativity.greenend.org.uk. flags 0 type 15 MX(raw) submitted
+broken-mail.test.iwj.relativity.greenend.org.uk. flags 0 type 65551 MX(+addr) submitted
+broken-mail.test.iwj.relativity.greenend.org.uk. flags 256 type 15 MX(raw) submitted
+broken-mail.test.iwj.relativity.greenend.org.uk. flags 256 type 65551 MX(+addr) submitted
+broken-mail.test.iwj.relativity.greenend.org.uk. flags 260 type 15 MX(raw) submitted
+broken-mail.test.iwj.relativity.greenend.org.uk. flags 260 type 65551 MX(+addr) submitted
+broken-mail.test.iwj.relativity.greenend.org.uk. flags 0 type MX(raw): OK; nrrs=4; cname=$; owner=$; ttl=60
+ 10 manyaddrs.test.iwj.relativity.greenend.org.uk
+ 20 host.broken-delg.test.iwj.relativity.greenend.org.uk
+ 30 172.18.45.36
+ 40 cname-ptr.test.iwj.relativity.greenend.org.uk
+broken-mail.test.iwj.relativity.greenend.org.uk. flags 256 type MX(raw): OK; nrrs=4; cname=$; owner=$; ttl=60
+ 10 manyaddrs.test.iwj.relativity.greenend.org.uk
+ 20 host.broken-delg.test.iwj.relativity.greenend.org.uk
+ 30 172.18.45.36
+ 40 cname-ptr.test.iwj.relativity.greenend.org.uk
+broken-mail.test.iwj.relativity.greenend.org.uk. flags 260 type MX(raw): OK; nrrs=4; cname=$; owner=broken-mail.test.iwj.relativity.greenend.org.uk; ttl=60
+ 10 manyaddrs.test.iwj.relativity.greenend.org.uk
+ 20 host.broken-delg.test.iwj.relativity.greenend.org.uk
+ 30 172.18.45.36
+ 40 cname-ptr.test.iwj.relativity.greenend.org.uk
+broken-mail.test.iwj.relativity.greenend.org.uk. flags 0 type MX(+addr): OK; nrrs=4; cname=$; owner=$; ttl=30
+ 10 manyaddrs.test.iwj.relativity.greenend.org.uk ok 0 ok "OK" ( INET 127.0.0.1 INET 172.18.45.6 INET 172.18.45.1 INET 172.18.45.35 )
+ 20 host.broken-delg.test.iwj.relativity.greenend.org.uk remotefail 30 timeout "DNS query timed out" ?
+ 30 172.18.45.36 permfail 300 nxdomain "No such domain" ( )
+ 40 cname-ptr.test.iwj.relativity.greenend.org.uk misconfig 101 prohibitedcname "DNS alias found where canonical name wanted" ( )
+broken-mail.test.iwj.relativity.greenend.org.uk. flags 256 type MX(+addr): OK; nrrs=4; cname=$; owner=$; ttl=30
+ 10 manyaddrs.test.iwj.relativity.greenend.org.uk ok 0 ok "OK" ( INET 127.0.0.1 INET 172.18.45.6 INET 172.18.45.1 INET 172.18.45.35 )
+ 20 host.broken-delg.test.iwj.relativity.greenend.org.uk remotefail 30 timeout "DNS query timed out" ?
+ 30 172.18.45.36 permfail 300 nxdomain "No such domain" ( )
+ 40 cname-ptr.test.iwj.relativity.greenend.org.uk ok 0 ok "OK" ( INET 172.18.45.37 )
+broken-mail.test.iwj.relativity.greenend.org.uk. flags 260 type MX(+addr): OK; nrrs=4; cname=$; owner=broken-mail.test.iwj.relativity.greenend.org.uk; ttl=30
+ 10 manyaddrs.test.iwj.relativity.greenend.org.uk ok 0 ok "OK" ( INET 127.0.0.1 INET 172.18.45.6 INET 172.18.45.1 INET 172.18.45.35 )
+ 20 host.broken-delg.test.iwj.relativity.greenend.org.uk remotefail 30 timeout "DNS query timed out" ?
+ 30 172.18.45.36 permfail 300 nxdomain "No such domain" ( )
+ 40 cname-ptr.test.iwj.relativity.greenend.org.uk ok 0 ok "OK" ( INET 172.18.45.37 )
+rc=0

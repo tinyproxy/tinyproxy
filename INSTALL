@@ -1,0 +1,24 @@
+Installing tinyproxy 1.3.2
+==========================
+
+  As of 1.3.2, tinyproxy uses Ian Jackson's adns library to perform non-blocking
+DNS lookups.  As such, before you can do anything to install tinyproxy, you must
+go into the adns-0.6/ subdirectory off the root tinyproxy distribution directory
+and follow the INSTALL directions therein.  Once you have libadns installed, 
+follow these steps:
+
+  (1) Run the tinyproxy 'configure' script, found in the root distribution
+      directory.  If you're unsure of exactly what arguments to use, please
+      consult the output of 'configure --help'.  Additional documentation can
+      be found for configure in the text file INSTALL.configure.
+  (2) Run 'make install'.  This will build all of tinyproxy and install it
+      in the default directory.  You may also wish to peruse src/config.h
+      to be sure everything is configured to your liking.
+  (3) Read the tinyproxy manpage - it will explain what commandline arguments
+      and parameters are available.  More experienced users will probably 
+      be able to get all the information they need from the output of 
+      'tinyproxy -h'.
+
+  Enjoy! Please read the documentation carefully, especially the COPYING
+file which should have been included in this archive explaining the licensing
+terms of tinyproxy.

@@ -1,0 +1,136 @@
+m4_dnl hmacros.h.m4
+m4_dnl (part of complex test harness, not of the library)
+m4_dnl - common macros
+
+m4_dnl  This file is
+m4_dnl    Copyright (C) 1997-1999 Ian Jackson <ian@davenant.greenend.org.uk>
+m4_dnl
+m4_dnl  It is part of adns, which is
+m4_dnl    Copyright (C) 1997-1999 Ian Jackson <ian@davenant.greenend.org.uk>
+m4_dnl    Copyright (C) 1999 Tony Finch <dot@dotat.at>
+m4_dnl  
+m4_dnl  This program is free software; you can redistribute it and/or modify
+m4_dnl  it under the terms of the GNU General Public License as published by
+m4_dnl  the Free Software Foundation; either version 2, or (at your option)
+m4_dnl  any later version.
+m4_dnl  
+m4_dnl  This program is distributed in the hope that it will be useful,
+m4_dnl  but WITHOUT ANY WARRANTY; without even the implied warranty of
+m4_dnl  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+m4_dnl  GNU General Public License for more details.
+m4_dnl  
+m4_dnl  You should have received a copy of the GNU General Public License
+m4_dnl  along with this program; if not, write to the Free Software Foundation,
+m4_dnl  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
+
+m4_define(`hm_args_massage',
+	`m4_ifelse(
+		m4_patsubst(
+				$1,
+				`hm_comma\|[
+	 ]+',
+				`'),
+		`',
+		`$2',
+		`
+	m4_patsubst(m4_patsubst(m4_patsubst(m4_translit($1, `
+	',` '), `\(hm_comma *\)*$', `'), `^\( *hm_comma\)*', `'),
+		`\( *hm_comma *\)+',` hm_comma ')
+	')')
+
+m4_define(`hm_create_nothing', `
+ m4_define(`hm_na',`')
+ m4_define(`hm_arg_nullptr', `')
+ m4_define(`hm_arg_int', `')
+ m4_define(`hm_arg_fdset_io', `')
+ m4_define(`hm_arg_pollfds_io', `')
+ m4_define(`hm_arg_timeval_in_rel_null',`')
+ m4_define(`hm_arg_must', `')
+ m4_define(`hm_arg_socktype',`')
+ m4_define(`hm_arg_ign', `')
+ m4_define(`hm_arg_fd', `')
+ m4_define(`hm_arg_fcntl_cmd_arg',`')
+ m4_define(`hm_arg_addr_in', `')
+ m4_define(`hm_arg_bytes_in', `')
+ m4_define(`hm_arg_bytes_out', `')
+ m4_define(`hm_arg_addr_out', `')
+')
+
+m4_define(`hm_create_proto_h',`
+ m4_define(`hm_na', `hm_comma')
+ m4_define(`hm_arg_nullptr', `$'`1 $'`2')
+ m4_define(`hm_arg_int', `int $'`1')
+ m4_define(`hm_arg_fdset_io', `fd_set *$'`1')
+ m4_define(`hm_arg_pollfds_io', `struct pollfd *$'`1 hm_comma int $'`2')
+ m4_define(`hm_arg_timeval_in_rel_null', `struct timeval *$'`1')
+ m4_define(`hm_arg_must', `$'`1 $'`2')
+ m4_define(`hm_arg_socktype', `int $'`1')
+ m4_define(`hm_arg_ign', `$'`1 $'`2')
+ m4_define(`hm_arg_fd', `int $'`1')
+ m4_define(`hm_arg_fcntl_cmd_arg', `int $'`1 hm_comma ...')
+ m4_define(`hm_arg_addr_in', `const struct sockaddr *$'`1 hm_comma int $'`2')
+ m4_define(`hm_arg_bytes_in', `const $'`1 *$'`2 hm_comma $'`3 $'`4')
+ m4_define(`hm_arg_bytes_out', `$'`1 *$'`2 hm_comma $'`3 $'`4')
+ m4_define(`hm_arg_addr_out', `struct sockaddr *$'`1 hm_comma int *$'`2')
+')
+
+m4_define(`hm_create_proto_q',`
+ hm_create_proto_h
+ m4_define(`hm_arg_nullptr', `')
+ m4_define(`hm_arg_fdset_io', `const fd_set *$'`1')
+ m4_define(`hm_arg_pollfds_io', `const struct pollfd *$'`1 hm_comma int $'`2')
+ m4_define(`hm_arg_must', `')
+ m4_define(`hm_arg_ign', `')
+ m4_define(`hm_arg_fcntl_cmd_arg', `int $'`1 hm_comma long $'`2')
+ m4_define(`hm_arg_bytes_out', `$'`3 $'`4')
+ m4_define(`hm_arg_addr_out', `int $'`2')
+')
+
+m4_define(`hm_create_hqcall_vars',`
+ hm_create_nothing
+ m4_define(`hm_arg_fcntl_cmd_arg',`va_list al; long $'`2;')
+')
+
+m4_define(`hm_create_hqcall_init',`
+ hm_create_nothing
+ m4_define(`hm_arg_nullptr', `Tmust("$1","$'`2",!$'`2);')
+ m4_define(`hm_arg_must', `Tmust("$1","$'`2",$'`2==$'`3);')
+ m4_define(`hm_arg_socktype',`
+  Tmust("$1","$'`1",$'`1==SOCK_STREAM || $'`1==SOCK_DGRAM);')
+ m4_define(`hm_arg_fcntl_cmd_arg',`
+  Tmust("$1","$'`1",$'`1==F_SETFL || $'`1==F_GETFL);
+  if ($'`1 == F_SETFL) {
+    va_start(al,$'`1); $'`2= va_arg(al,long); va_end(al);
+  } else {
+    $'`2= 0;
+  }')
+ m4_define(`hm_arg_addr_out',`Tmust("$1","*$'`2",*$'`2>=sizeof(struct sockaddr_in));')
+')
+
+m4_define(`hm_create_realcall_args',`
+ m4_define(`hm_na',`hm_comma')
+ m4_define(`hm_arg_nullptr', `0')
+ m4_define(`hm_arg_int', `$'`1')
+ m4_define(`hm_arg_fdset_io', `$'`1')
+ m4_define(`hm_arg_pollfds_io', `$'`1 hm_comma $'`2')
+ m4_define(`hm_arg_timeval_in_rel_null', `$'`1')
+ m4_define(`hm_arg_must', `$'`2')
+ m4_define(`hm_arg_socktype', `$'`1')
+ m4_define(`hm_arg_ign', `$'`2')
+ m4_define(`hm_arg_fd', `$'`1')
+ m4_define(`hm_arg_fcntl_cmd_arg', `$'`1 hm_comma $'`2')
+ m4_define(`hm_arg_addr_in', `$'`1 hm_comma $'`2')
+ m4_define(`hm_arg_bytes_in', `$'`2 hm_comma $'`4')
+ m4_define(`hm_arg_bytes_out', `$'`2 hm_comma $'`4')
+ m4_define(`hm_arg_addr_out', `$'`1 hm_comma $'`2')
+')
+
+m4_define(`hm_create_hqcall_args',`
+ hm_create_realcall_args
+ m4_define(`hm_arg_nullptr', `')
+ m4_define(`hm_arg_must', `')
+ m4_define(`hm_arg_ign', `')
+ m4_define(`hm_arg_bytes_in', `$'`2 hm_comma $'`4')
+ m4_define(`hm_arg_bytes_out', `$'`4')
+ m4_define(`hm_arg_addr_out', `*$'`2')
+')

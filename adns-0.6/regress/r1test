@@ -1,0 +1,57 @@
+#!/bin/sh
+# usage: r1test <testcasename>
+
+set -e
+mrc=1
+trap 'exit $mrc' 0
+
+casename="$1"
+case="case-$casename"
+ocase="output-$casename"
+
+exec <"$case.sys"
+read initfile initflags
+read queryargs
+
+initstring="`cat init-$initfile.text`"
+
+rm -f $ocase.*
+
+EF_DISABLE_BANNER=1
+export EF_DISABLE_BANNER
+
+set +e
+ADNS_TEST_REPORT_FD=3 3>>"$ocase.report" >"$ocase.out" 2>"$ocase.err" \
+ ./hplayback $initflags "/$initstring" $queryargs
+rc=$?
+set -e
+
+if [ "$rc" = 5 ]
+then
+	echo -n "SKIPPED-$casename "
+	mrc=5
+	exit
+fi
+
+echo "rc=$rc" >>$ocase.out
+
+failed=false
+for part in err out
+do
+	if diff -u -- "$case.$part" "$ocase.$part"
+	then
+		:
+	else
+		failed=true
+	fi
+done
+
+if $failed
+then
+	echo >&2 "FAILED $case - WRONG OUTPUT - lines of syscall remaining `wc -l`"
+	mrc=2
+	exit
+fi
+
+echo -n "$casename "
+mrc=0

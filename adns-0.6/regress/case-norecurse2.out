@@ -1,0 +1,60 @@
+adns debug: using nameserver 172.18.45.6
+4.204.50.158.in-addr.arpa flags 0 type 1 A(-) submitted
+4.204.50.158.in-addr.arpa flags 0 type 2 NS(raw) submitted
+4.204.50.158.in-addr.arpa flags 0 type 5 CNAME(-) submitted
+4.204.50.158.in-addr.arpa flags 0 type 6 SOA(raw) submitted
+4.204.50.158.in-addr.arpa flags 0 type 12 PTR(raw) submitted
+4.204.50.158.in-addr.arpa flags 0 type 13 HINFO(-) submitted
+4.204.50.158.in-addr.arpa flags 0 type 15 MX(raw) submitted
+4.204.50.158.in-addr.arpa flags 0 type 16 TXT(-) submitted
+4.204.50.158.in-addr.arpa flags 0 type 17 RP(raw) submitted
+4.204.50.158.in-addr.arpa flags 0 type 65537 A(addr) submitted
+4.204.50.158.in-addr.arpa flags 0 type 65538 NS(+addr) submitted
+4.204.50.158.in-addr.arpa flags 0 type 65548 PTR(checked) submitted
+4.204.50.158.in-addr.arpa flags 0 type 65551 MX(+addr) submitted
+4.204.50.158.in-addr.arpa flags 0 type 131078 SOA(822) submitted
+4.204.50.158.in-addr.arpa flags 0 type 131089 RP(822) submitted
+4.204.50.158.in-addr.arpa flags 0 type SOA(raw): No such data; nrrs=0; cname=$; owner=$; ttl=0
+4.204.50.158.in-addr.arpa flags 0 type HINFO(-): No such data; nrrs=0; cname=$; owner=$; ttl=0
+4.204.50.158.in-addr.arpa flags 0 type MX(raw): No such data; nrrs=0; cname=$; owner=$; ttl=0
+4.204.50.158.in-addr.arpa flags 0 type TXT(-): No such data; nrrs=0; cname=$; owner=$; ttl=0
+4.204.50.158.in-addr.arpa flags 0 type MX(+addr): No such data; nrrs=0; cname=$; owner=$; ttl=0
+4.204.50.158.in-addr.arpa flags 0 type A(addr): No such data; nrrs=0; cname=$; owner=$; ttl=0
+4.204.50.158.in-addr.arpa flags 0 type NS(+addr): No such data; nrrs=0; cname=$; owner=$; ttl=0
+4.204.50.158.in-addr.arpa flags 0 type RP(822): No such data; nrrs=0; cname=$; owner=$; ttl=0
+4.204.50.158.in-addr.arpa flags 0 type A(-): No such data; nrrs=0; cname=$; owner=$; ttl=0
+4.204.50.158.in-addr.arpa flags 0 type NS(raw): No such data; nrrs=0; cname=$; owner=$; ttl=0
+4.204.50.158.in-addr.arpa flags 0 type SOA(822): No such data; nrrs=0; cname=$; owner=$; ttl=0
+adns debug: reply not found, id 312c, query owner 4.204.50.158.in-addr.arpa (NS=172.18.45.6)
+adns debug: reply not found, id 311f, query owner 4.204.50.158.in-addr.arpa (NS=172.18.45.6)
+adns debug: reply not found, id 3120, query owner 4.204.50.158.in-addr.arpa (NS=172.18.45.6)
+adns debug: reply not found, id 312a, query owner 4.204.50.158.in-addr.arpa (NS=172.18.45.6)
+4.204.50.158.in-addr.arpa flags 0 type RP(raw): No such data; nrrs=0; cname=$; owner=$; ttl=0
+4.204.50.158.in-addr.arpa flags 0 type CNAME(-): No such data; nrrs=0; cname=$; owner=$; ttl=0
+adns debug: TCP connected (NS=172.18.45.6)
+4.204.50.158.in-addr.arpa flags 0 type PTR(raw): OK; nrrs=23; cname=$; owner=$; ttl=0
+ ns2.afp.com
+ ns.afp.com
+ news.afp.com
+ ns2.afp.fr
+ ns.afp.fr
+ news.afp.fr
+ ns2.agencefrancepresse.com
+ news.agencefrancepresse.com
+ ns2.agencefrancepresse.fr
+ news.agencefrancepresse.fr
+ ns2.agencefrance-presse.com
+ news.agencefrance-presse.com
+ ns2.agencefrance-presse.fr
+ news.agencefrance-presse.fr
+ ns2.imageforum.com
+ news.imageforum.com
+ ns2.imageforum.tm.fr
+ news.imageforum.tm.fr
+ ns2.ooh-lah-lah.com
+ ns2.afpsciences.com
+ ns2.afpdoc.com
+ ns2.afp-notes.com
+ ns2.afp-domino.com
+4.204.50.158.in-addr.arpa flags 0 type PTR(checked): Inconsistent resource records in DNS; nrrs=0; cname=$; owner=$; ttl=-6
+rc=0

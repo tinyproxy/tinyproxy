@@ -1,0 +1,153 @@
+adns debug: using nameserver 195.224.55.129
+254.0.99.203.in-addr.arpa flags 0 type 1 A(-) submitted
+254.0.99.203.in-addr.arpa flags 0 type 2 NS(raw) submitted
+254.0.99.203.in-addr.arpa flags 0 type 5 CNAME(-) submitted
+254.0.99.203.in-addr.arpa flags 0 type 6 SOA(raw) submitted
+254.0.99.203.in-addr.arpa flags 0 type 12 PTR(raw) submitted
+254.0.99.203.in-addr.arpa flags 0 type 13 HINFO(-) submitted
+254.0.99.203.in-addr.arpa flags 0 type 15 MX(raw) submitted
+254.0.99.203.in-addr.arpa flags 0 type 16 TXT(-) submitted
+254.0.99.203.in-addr.arpa flags 0 type 17 RP(raw) submitted
+254.0.99.203.in-addr.arpa flags 0 type 65537 A(addr) submitted
+254.0.99.203.in-addr.arpa flags 0 type 65538 NS(+addr) submitted
+254.0.99.203.in-addr.arpa flags 0 type 65548 PTR(checked) submitted
+254.0.99.203.in-addr.arpa flags 0 type 65551 MX(+addr) submitted
+254.0.99.203.in-addr.arpa flags 0 type 131078 SOA(822) submitted
+254.0.99.203.in-addr.arpa flags 0 type 131089 RP(822) submitted
+adns debug: TCP connected (NS=195.224.55.129)
+254.0.99.203.in-addr.arpa flags 0 type PTR(raw): OK; nrrs=94; cname=$; owner=$; ttl=80790
+ ns.security.co.nz
+ tetra.co.nz
+ mail.agate.co.nz
+ ns.agate.co.nz
+ securitytraining.co.nz
+ ns.giftbasket.co.nz
+ ns.security.gen.nz
+ bouquet.co.nz
+ investigation.co.nz
+ ns.nzipi.org.nz
+ mail.neru.co.nz
+ security.co.nz
+ ns.storewatch.co.nz
+ security.gen.nz
+ ns.tetra.co.nz
+ mail.tetra.co.nz
+ ns.securicard.co.nz
+ ns.underhour.co.nz
+ bcc.co.nz
+ security.org.nz
+ burglaralarms.co.nz
+ ns.safes.co.nz
+ ns.security.org.nz
+ couperconsulting.co.nz
+ securityguards.co.nz
+ ns.guards.co.nz
+ asis.org.nz
+ neru.co.nz
+ giftbasket.co.nz
+ magic.co.nz
+ mail.bcc.co.nz
+ ns.investigation.co.nz
+ nzipi.org.nz
+ ns.bouquet.co.nz
+ mail.safes.co.nz
+ ns.bcc.co.nz
+ ns.burglaralarms.co.nz
+ ns.securityguards.co.nz
+ covertcameras.co.nz
+ ns.neru.co.nz
+ ns.covertcameras.co.nz
+ bouquets.co.nz
+ concentric.co.nz
+ ns.securitytraining.co.nz
+ mail.couperconsulting.co.nz
+ retailsecurity.co.nz
+ ns.concentric.co.nz
+ mail.magic.co.nz
+ nzangling.co.nz
+ ns.couperconsulting.co.nz
+ ns.nzangling.co.nz
+ mail.storewatch.co.nz
+ swift.co.nz
+ mail.selective.co.nz
+ ns.forefront.co.nz
+ mail.nzangling.co.nz
+ guards.co.nz
+ mail.nzdesigns.co.nz
+ storewatch.co.nz
+ ns.securitymanagement.co.nz
+ mail.woolworths.co.nz
+ mail.concentric.co.nz
+ selective.co.nz
+ specialinvestigations.co.nz
+ ns.swift.co.nz
+ mail.swift.co.nz
+ ns.securenet.net.nz
+ privateinvestigation.co.nz
+ ns.privateinvestigation.co.nz
+ etrade.co.nz
+ ns.specialinvestigations.co.nz
+ mail.ansett.co.nz
+ ftp.warrent.co.nz
+ ns.retailsecurity.co.nz
+ mail.securitymanagement.co.nz
+ ns.magic.co.nz
+ mail.forefront.co.nz
+ mail.securicard.co.nz
+ securicard.co.nz
+ ns.nzdesigns.co.nz
+ safes.co.nz
+ ns.selective.co.nz
+ forefront.co.nz
+ securitymanagement.co.nz
+ underhour.co.nz
+ securenet.net.nz
+ mail.specialinvestigations.co.nz
+ nzdesigns.co.nz
+ ns.etrade.co.nz
+ mail.nzipi.org.nz
+ mail.underhour.co.nz
+ ns.asis.org.nz
+ ns.bouquets.co.nz
+ agate.co.nz
+adns debug: reply not found, id 313b, query owner security.gen.nz (NS=195.224.55.129)
+adns debug: reply not found, id 313c, query owner ns.tetra.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 313d, query owner mail.tetra.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 313e, query owner ns.securicard.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 313f, query owner ns.underhour.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3140, query owner bcc.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3141, query owner security.org.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3142, query owner burglaralarms.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3143, query owner ns.safes.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3144, query owner ns.security.org.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3145, query owner couperconsulting.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3146, query owner securityguards.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3147, query owner ns.guards.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3148, query owner asis.org.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3149, query owner neru.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 314a, query owner giftbasket.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 314b, query owner magic.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 314c, query owner mail.bcc.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 314d, query owner ns.investigation.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 314e, query owner nzipi.org.nz (NS=195.224.55.129)
+adns debug: reply not found, id 314f, query owner ns.bouquet.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3150, query owner mail.safes.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3151, query owner ns.bcc.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3152, query owner ns.burglaralarms.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 3153, query owner ns.securityguards.co.nz (NS=195.224.55.129)
+adns debug: reply not found, id 318b, query owner agate.co.nz (NS=195.224.55.129)
+254.0.99.203.in-addr.arpa flags 0 type PTR(checked): Inconsistent resource records in DNS; nrrs=0; cname=$; owner=$; ttl=80790
+254.0.99.203.in-addr.arpa flags 0 type A(-): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+254.0.99.203.in-addr.arpa flags 0 type NS(raw): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+254.0.99.203.in-addr.arpa flags 0 type CNAME(-): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+254.0.99.203.in-addr.arpa flags 0 type SOA(raw): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+254.0.99.203.in-addr.arpa flags 0 type HINFO(-): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+254.0.99.203.in-addr.arpa flags 0 type MX(raw): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+254.0.99.203.in-addr.arpa flags 0 type TXT(-): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+254.0.99.203.in-addr.arpa flags 0 type RP(raw): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+254.0.99.203.in-addr.arpa flags 0 type A(addr): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+254.0.99.203.in-addr.arpa flags 0 type NS(+addr): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+254.0.99.203.in-addr.arpa flags 0 type MX(+addr): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+254.0.99.203.in-addr.arpa flags 0 type SOA(822): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+254.0.99.203.in-addr.arpa flags 0 type RP(822): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+rc=0

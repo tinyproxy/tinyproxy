@@ -1,0 +1,58 @@
+INSTALLATION INSTRUCTIONS for ADNS
+
+   $ ./configure
+   $ make
+   # make install
+
+Unfortunately, since this is a beta, there is no good documentation
+yet.  For now, use the comments in the public header file adns.h.
+
+
+You will find that adns requires a reasonably standard and up to date
+system.
+
+In particular, the build system assumes that you have ELF shared
+libraries.  If you don't then please don't send me patches to support
+your kind of shared libraries, and don't send me patches to use
+libtool.  I'm not interested in supporting non-ELF shared libraries.
+However, if you send me an appropriate patch I'd be willing to make it
+easy or automatic to disable the ELF shared library arrangements.
+
+The adnsresfilter utility uses `tsearch' from the C library (a la SVID
+and X/Open).  If your C library doesn't have tsearch you will find
+that configure arranges for adnsresfilter not to be built.  To rectify
+this, install a C library containing tsearch, such as the GNU C
+library.  It is best if tsearch uses an automatically-balancing tree
+algorithm, like the glibc version does.  Simple binary trees may
+perform badly.
+
+You will probably find that GNU Make is required.
+
+
+COPYRIGHT
+
+This file, INSTALL, contains installation instructions and other
+details for adns.
+
+adns is
+ Copyright (C) 1997-1999 Ian Jackson <ian@davenant.greenend.org.uk>
+ Copyright (C) 1999 Tony Finch <dot@dotat.at>
+
+adns is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with userv as the file COPYING; if not, email me at the address
+above or write to the Free Software Foundation, 59 Temple Place -
+Suite 330, Boston, MA 02111-1307, USA.
+
+# Local variables:
+# mode: text
+# End:

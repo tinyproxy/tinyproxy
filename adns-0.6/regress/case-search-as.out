@@ -1,0 +1,14 @@
+adns debug: using nameserver 172.18.45.6
+news flags 5 type 1 A(-) submitted
+chiark flags 5 type 1 A(-) submitted
+news flags 1 type 1 A(-) submitted
+chiark flags 1 type 1 A(-) submitted
+news flags 5 type A(-): OK; nrrs=1; cname=davenant.relativity.greenend.org.uk; owner=news.davenant.greenend.org.uk; ttl=86400
+ 172.18.45.6
+news flags 1 type A(-): OK; nrrs=1; cname=davenant.relativity.greenend.org.uk; owner=$; ttl=86400
+ 172.18.45.6
+chiark flags 5 type A(-): OK; nrrs=1; cname=$; owner=chiark.greenend.org.uk; ttl=86400
+ 195.224.76.132
+chiark flags 1 type A(-): OK; nrrs=1; cname=$; owner=$; ttl=86400
+ 195.224.76.132
+rc=0

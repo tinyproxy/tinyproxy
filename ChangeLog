@@ -1,0 +1,122 @@
+1.3.2   2000/02/15
+	- Fixed null requests bug.
+	- Fixed fd leak bug.
+	- Fixed connptr bug.
+	- Updated docs.
+	
+1.3.1	1999/12/21
+	- made the dns cache hashing algorithm case-insensitive.
+	- fixed a bug in log() that would cause it to dump garbage to
+          the log file when in unrestricted mode.
+        - this is an interim release to fix the above log() bug.
+
+1.3.0	1999/12/01
+	- autoconf enabled the source tree and moved some of the
+	documentation files into the proper locations. Also, added any
+	files which were needed to conform with the GNU autoconf directory 
+	structure.
+	- Changed the debugging code to use asserts(). I don't know if I'm 
+	completely happy with this. One the one hand it shrinks the size
+	of the executable, but on the other, it doesn't handle weird
+	situations in production code. It's still a toss up.
+	- Did a major reorganization of the source tree. The biggest
+	change is moving a lot of code from reqs.c into more appropriate
+	files.
+	- ANON mode is now always compiled in (since it doesn't take up
+	that much space) and is enabled from the command line.
+	- Changed the states a connection can be in, and also merged both
+	sockets (server/client) into one structure. Makes the code a lot
+	cleaner.
+	- Added a DNS caching mechanism. What happens it that a hash of
+	previously looked up names is maintained, so additional host names 
+	will not need to be fetched from the DNS server again. Helps on
+	most web pages, which have a lot of images from the same server.
+	- Removed the global error variable (tinyerr) by making the
+	functions more consistent with what they return for an error.
+	- Removed the global.* files and merged them back into the
+	tinyproxy.* source.
+	- Added bug fixes in reqs.c to handle bad servers, which do not
+	follow the basic RFC protocol (i.e. using just a LF instead of a
+	CRLF).
+	- Most of reqs.c has been changed to use the readline
+	function. Also, it has been organized around the new connection
+	states and connection structure.
+	- xstrstr can now be both case sensitive or insensitive. Also,
+	added a check to make sure the haystack is longer than the needle.
+
+1.2.10	1999/08/20
+	- Found a memory free bug in the buffer code, and also, a bug in
+	allocating memory for the buffer. Both could be fatal. One leaked
+	memory, and the other could allow all memory to be exhausted. Both
+	are now fixed.
+	- Reorganized some of the code. Moved global variables into the
+	proper files. Should help to eliminate them altogether someday.
+	- Shaun Johnson fixed a problem with compiling with syslog enabled
+	on a SunOS box.
+
+1.2.9	1999/08/17
+	- Changed the writebuff to more explicitly be designed to write
+	from the other connection's buffer. A connection reads into it's
+	own buffer, but write's the other connection's buffer.
+	- You can now specify a particular IP address to listen on. By
+	default, tinyproxy listens on all IP addresses.
+
+1.2.8.1	1999/08/13 (Internal release)
+	- Improved the portability by removing the daemon call and
+	removing the calls to index().
+	- added the buffer.* source into the CVS tree.
+
+1.2.8	1999/08/06
+	- Better logging of incoming connections. Now both the IP address
+	and the requested URL are logged.
+	- You can now specify that only a certain subnet is allowed to
+	access tinyproxy. Currently it only supports one subnet with
+	matching against a string with the IP address.
+	- a bunch of just general code clean up. Mostly stylistic stuff.
+
+1.2.7	1999/07/28
+	- Incoming connections are now logged to the log file/syslog
+	- An "XTinyproxy" header can now sent with each request which
+	  includes the IP address of the client.
+	- Fixed some of the size of the members in the structures.
+	- Fixed an argument problem in listen_sock which was using the 
+	  size of the wrong variable.
+
+1.2.6	1999/06/05
+	- Added the ability to send the HTTP requests to a proxy
+	  server running on a different machine (or even the same
+	  machine if you like)
+	- Fixed a bug in the clientreq() routine which would choke on
+	  requests in the form of GET http://www.url.com HTTP/1.0 (thanks
+	  to Bruno Viaris <viaris@galilee.univ-paris13.fr> for pointing
+	  out the bug and providing the initial fix.)
+
+1.2.5	1999/05/21
+	- Now maintained by Robert James Kaes (rjkaes@flarenet.com)
+	- Non-blocking sockets
+	- Cleaned up the style, and code. Compiles cleanly with -Wall
+	- Logs to syslogd with -S command line argument
+	- Rewrote the clientreq routine to remove tonnes of code
+	- Removed unused routines (rstrtolower, xstrndup, readline, etc.)
+	- Moved the user configurable options into config.h
+	
+1.1	1998/09/15
+	- Load average monitoring added
+	- Remote proxy monitoring added
+	- Added -u (change user).
+
+1.0d
+	- ANON mode now supports -a to let user-specified headers
+	  through
+	- various bug fixes in readline()
+
+1.0c
+	- Support for ANON mode
+
+1.0b
+	- Cleaned up exit codes (now uses sysexits.h)
+	- Uses daemon() from -lbsf instead of daemonize()
+	- Now supports ports other than 80
+
+1.0a
+	- Created by Steven Young (sdyoung@well.com)

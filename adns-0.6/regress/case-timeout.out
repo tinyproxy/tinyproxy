@@ -1,0 +1,4 @@
+adns debug: using nameserver 172.18.45.36
+chiark.greenend.org.uk flags 0 type 1 A(-) submitted
+chiark.greenend.org.uk flags 0 type A(-): DNS query timed out; nrrs=0; cname=$; owner=$; ttl=604770
+rc=0
