@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.96 2003-04-16 18:11:58 rjkaes Exp $
+/* $Id: reqs.c,v 1.97 2003-05-05 16:46:05 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -45,6 +45,12 @@
  * Maximum length of a HTTP line
  */
 #define HTTP_LINE_LENGTH (MAXBUFFSIZE / 6)
+
+/*
+ * Port constants for HTTP (80) and SSL (443)
+ */
+#define HTTP_PORT 80
+#define HTTP_PORT_SSL 443
 
 /*
  * Macro to help test if the Upstream proxy supported is compiled in and
@@ -223,12 +229,12 @@ extract_http_url(const char *url, struct request_s *request)
 	    (url, "%[^:/]:%hu%s", request->host, &request->port,
 	     request->path) == 3) ;
 	else if (sscanf(url, "%[^/]%s", request->host, request->path) == 2)
-		request->port = 80;
+		request->port = HTTP_PORT;
 	else if (sscanf(url, "%[^:/]:%hu", request->host, &request->port)
 		 == 2)
 		strcpy(request->path, "/");
 	else if (sscanf(url, "%[^/]", request->host) == 1) {
-		request->port = 80;
+		request->port = HTTP_PORT;
 		strcpy(request->path, "/");
 	} else {
 		log_message(LOG_ERR, "extract_http_url: Can't parse URL.");
@@ -261,7 +267,7 @@ extract_ssl_url(const char *url, struct request_s *request)
 
 	if (sscanf(url, "%[^:]:%hu", request->host, &request->port) == 2) ;
 	else if (sscanf(url, "%s", request->host) == 1)
-		request->port = 443;
+		request->port = HTTP_PORT_SSL;
 	else {
 		log_message(LOG_ERR, "extract_ssl_url: Can't parse URL.");
 
@@ -275,6 +281,7 @@ extract_ssl_url(const char *url, struct request_s *request)
 	return 0;
 }
 
+#ifdef TRANSPARENT_PROXY
 /*
  * Build a URL from parts.
  */
@@ -295,6 +302,7 @@ build_url(char **url, const char *host, int port, const char *path)
 
 	return snprintf(*url, len, "http://%s:%d%s", host, port, path);
 }
+#endif /* TRANSPARENT_PROXY */
 
 /*
  * Create a connection for HTTP connections.
@@ -302,12 +310,20 @@ build_url(char **url, const char *host, int port, const char *path)
 static int
 establish_http_connection(struct conn_s *connptr, struct request_s *request)
 {
+	char portbuff[7];
+
+	/* Build a port string if it's not a standard port */
+	if (request->port != HTTP_PORT && request->port != HTTP_PORT_SSL)
+		snprintf(portbuff, 7, ":%u", request->port);
+	else
+		portbuff[0] = '\0';
+
 	return write_message(connptr->server_fd,
 			     "%s %s HTTP/1.0\r\n" \
-			     "Host: %s:%u\r\n" \
+			     "Host: %s%s\r\n" \
 			     "Connection: close\r\n",
 			     request->method, request->path,
-			     request->host, request->port);
+			     request->host, portbuff);
 }
 
 /*
@@ -487,7 +503,7 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 			request->host = safemalloc(length+1);
 			if (sscanf(data, "%[^:]:%hu", request->host, &request->port) != 2) {
 				strcpy(request->host, data);
-				request->port = 80;
+				request->port = HTTP_PORT;
 			}
 			request->path = safemalloc(strlen(url) + 1);
 			strcpy(request->path, url);
