@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.46 2001-12-19 05:13:40 rjkaes Exp $
+/* $Id: reqs.c,v 1.47 2001-12-19 05:19:03 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -203,8 +203,8 @@ extract_ssl_url(const char *url, struct request_s *request)
 static int
 write_message(int fd, const char *fmt, ...)
 {
-	size_t n;
-	size_t size = (1024 * 8);	/* start with 8 KB and go from there */
+	ssize_t n;
+	size_t size = (1024 * 2);	/* start with 2 KB and go from there */
 	char *buf, *tmpbuf;
 	va_list ap;
 
@@ -215,6 +215,8 @@ write_message(int fd, const char *fmt, ...)
 		va_start(ap, fmt);
 		n = vsnprintf(buf, size, fmt, ap);
 		va_end(ap);
+
+		DEBUG2("n = %d", n);
 
 		/* If that worked, break out so we can send the buffer */
 		if (n > -1 && n < size)
