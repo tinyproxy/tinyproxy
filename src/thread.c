@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.4 2001-05-23 17:56:35 rjkaes Exp $
+/* $Id: thread.c,v 1.5 2001-05-27 02:33:35 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -42,7 +42,7 @@ struct thread_s {
 static struct thread_s *thread_ptr;
 static pthread_mutex_t mlock = PTHREAD_MUTEX_INITIALIZER;
 
-struct thread_config_s {
+static struct thread_config_s {
 	unsigned int maxclients, maxrequestsperchild;
 	unsigned int maxspareservers, minspareservers, startservers;
 } thread_config;
@@ -105,7 +105,7 @@ static void *thread_main(void *arg)
 
 	cliaddr = malloc(addrlen);
 	if (!cliaddr) {
-		log(LOG_ERR, "Could not allocate memory");
+		log_message(LOG_ERR, "Could not allocate memory");
 		return NULL;
 	}
 	
@@ -122,16 +122,18 @@ static void *thread_main(void *arg)
 		handle_connection(connfd);
 		close(connfd);
 
-		if (thread_config.maxrequestsperchild != 0)
+		if (thread_config.maxrequestsperchild != 0) {
 			ptr->connects++;
 
-		if (ptr->connects > thread_config.maxrequestsperchild) {
-			ptr->status = T_EMPTY;
-			return NULL;
-		} else {
-			ptr->status = T_WAITING;
-
-			SERVER_INC();
+			if (ptr->connects >= thread_config.maxrequestsperchild) {
+				log_message(LOG_NOTICE, "Thread has reached MaxRequestsPerChild... closing.");
+				ptr->status = T_EMPTY;
+				return NULL;
+			} else {
+				ptr->status = T_WAITING;
+				
+				SERVER_INC();
+			}
 		}
 	}
 }
@@ -144,20 +146,20 @@ int thread_pool_create(void)
 	unsigned int i;
 
 	if (thread_config.maxclients == 0) {
-		log(LOG_ERR, "You must set MaxClients to a value greater than 0");
+		log_message(LOG_ERR, "You must set MaxClients to a value greater than 0");
 		return -1;
 	}
 	if (thread_config.startservers == 0) {
-		log(LOG_ERR, "You must set StartServers to a value greate than 0");
+		log_message(LOG_ERR, "You must set StartServers to a value greate than 0");
 		return -1;
 	}
 
-	thread_ptr = calloc(thread_config.maxclients, sizeof(struct thread_s));
+	thread_ptr = calloc((size_t)thread_config.maxclients, sizeof(struct thread_s));
 	if (!thread_ptr)
 		return -1;
 
 	if (thread_config.startservers > thread_config.maxclients) {
-		log(LOG_WARNING, "Can not start more than 'MaxClients' servers. Starting %d servers", thread_config.maxclients);
+		log_message(LOG_WARNING, "Can not start more than 'MaxClients' servers. Starting %d servers", thread_config.maxclients);
 		thread_config.startservers = thread_config.maxclients;
 	}
 
@@ -192,7 +194,7 @@ int thread_main_loop(void)
 
 				SERVER_INC();
 
-				log(LOG_NOTICE, "Created a new thread.");
+				log_message(LOG_NOTICE, "Created a new thread.");
 				break;
 			}
 		}
@@ -204,7 +206,7 @@ int thread_main_loop(void)
 				SERVER_DEC();
 
 				thread_ptr[i].status = T_EMPTY;
-				log(LOG_NOTICE, "Killed off a thread.");
+				log_message(LOG_NOTICE, "Killed off a thread.");
 				break;
 			}
 		}
@@ -213,7 +215,7 @@ int thread_main_loop(void)
 	return 0;
 }
 
-inline int thread_listening_sock(unsigned int port)
+inline int thread_listening_sock(uint16_t port)
 {
 	listenfd = listen_sock(port, &addrlen);
 	return listenfd;

@@ -1,4 +1,4 @@
-/* $Id: thread.h,v 1.1 2000-09-12 00:07:44 rjkaes Exp $
+/* $Id: thread.h,v 1.2 2001-05-27 02:33:35 rjkaes Exp $
  *
  * See 'thread.c' for more information.
  *
@@ -27,7 +27,7 @@ typedef enum {
 } thread_config_t;
 
 extern int thread_pool_create(void);
-extern int thread_listening_sock(unsigned int port);
+extern int thread_listening_sock(uint16_t port);
 extern void thread_close_sock(void);
 extern int thread_main_loop(void);
 
