@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.12 2001-08-26 21:17:30 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.13 2001-08-29 04:01:05 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -346,13 +346,6 @@ int main(int argc, char **argv)
 		log_message(LOG_CRIT, "Could not set SIGHUP\n");
 		exit(EX_OSERR);
 	}
-
-	/*
-	 * Initialize the various subsystems...
-	 */
-	log_message(LOG_INFO, "Starting the DNS caching subsystem.");
-	if (!new_dnscache())
-		exit(EX_SOFTWARE);
 
 	/*
 	 * Start the main loop.
