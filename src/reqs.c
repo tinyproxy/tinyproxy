@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.60 2002-04-16 03:20:43 rjkaes Exp $
+/* $Id: reqs.c,v 1.61 2002-04-17 20:55:21 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -1107,10 +1107,12 @@ handle_connection(int fd)
 		    getpeer_ip(fd, peer_ipaddr));
 
 	connptr = initialize_conn(fd);
-	if (!connptr)
+	if (!connptr) {
+		close(fd);
 		return;
+	}
 
-	if (check_acl(fd) <= 0) {
+	if (check_acl(fd, peer_ipaddr, peer_string) <= 0) {
 		update_stats(STAT_DENIED);
 		indicate_http_error(connptr, 403,
 			"You do not have authorization for using this service.");
