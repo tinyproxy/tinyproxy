@@ -3,17 +3,18 @@
 .\" tinyproxy.1
 .\"
 .\" Copyright (c) 1998-2000  Steven Young and Robert James Kaes.
+.\" Copyright (c) 2001       Robert James Kaes
 .\"
 .\" This program is distributed under the terms of the GNU General Public
 .\" License. See COPYING for additional information.
 .\"
-.TH tinyproxy 1 .\" "tinyproxy Manual" v1.3.4 "August 3, 2000"
+.TH tinyproxy 1 .\" "tinyproxy Manual" "August 3, 2000"
 .SH NAME
 tinyproxy - A small HTTP proxy server
 .SH SYNTAX
 \fBtinyproxy\fR [ \fBoptions\fR ]
 .SH VERSION
-This man page documents tinyproxy version 1.3.4.
+This man page documents tinyproxy
 .SH DESCRIPTION
 \fBtinyproxy\fR is an HTTP proxy server designed to consume a minimum of
 system resources. It listens on a given TCP port and handles HTTP proxy
@@ -44,15 +45,9 @@ connections have been handled.
 .fi
 .SH AUTHORS
 .nf
-Steven Young (sdyoung@well.com)
 Robert James Kaes (rjkaes@flarenet.com)
+Steven Young (sdyoung@users.sourceforge.net)
 .fi
-.SH BUGS
-Due to the way the thread control is implimented, when a SIGTERM is sent
-\fBtinyproxy\fR may not instantly terminate. It will finish sometime in the
-following five seconds, but this could be problems when you need to stop and
-start \fBtinyproxy\fR quickly. If anyone knows how to fix this, please let one
-of the authors know.
 .SH COPYRIGHT
 \fBtinyproxy\fR is distributed under the GNU Public License (GPL).  For more
 information on the GPL, please see the file COPYING which should have been
