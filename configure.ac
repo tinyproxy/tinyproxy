@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.10 2002-04-09 16:32:39 rjkaes Exp $
+dnl $Id: configure.ac,v 2.11 2002-04-09 20:04:05 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -14,7 +14,7 @@ dnl 8. System services
 dnl
 dnl Read the Autoconf manual for details.
 
-AC_INIT([tinyproxy], [1.5.0pre2], [rjkaes@users.sourceforge.net])
+AC_INIT([tinyproxy], [1.5.0pre3], [rjkaes@users.sourceforge.net])
 AC_CONFIG_SRCDIR([src/tinyproxy.c])
 AC_PREREQ(2.52)
 
@@ -180,13 +180,10 @@ else
         else
 	    AC_MSG_ERROR([You must have a POSIX compliant threading library installed])
         fi
-		case "$target" in
-		*-freebsd*)
-			;;
-		*)
-			LIBS = "$LIBS -lc_r"
-			;;
-		esac
+	case "$target" in
+	    *-freebsd*) ;;
+	    *)   	LIBS="$LIBS -lc_r";;
+	    esac
     fi
 fi
 
@@ -225,7 +222,7 @@ AC_CHECK_HEADERS([sys/types.h sys/ioctl.h sys/resource.h sys/select.h \
 dnl OpenBSD machines don't like having malloc included (even if it's present)
 dnl as they expect you to use stdlib.h
 case "$target" in
-    *openbsd*) ;;
+    *-openbsd*) ;;
     *)         AC_CHECK_HEADER(malloc.h);;
 esac
 
