@@ -1,3 +1,8 @@
+2001-11-21  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/sock.c (readline): Replaced the old function with a new
+	version that will allow an arbitrary long string.
+
 2001-11-03  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/buffer.c (remove_from_buffer): This function is never
