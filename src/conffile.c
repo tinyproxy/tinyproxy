@@ -1,4 +1,4 @@
-/* $Id: conffile.c,v 1.3 2004-08-14 03:18:41 rjkaes Exp $
+/* $Id: conffile.c,v 1.4 2004-08-24 16:34:22 rjkaes Exp $
  *
  * Parses the configuration file and sets up the config_s structure for
  * use by the application.  This file replaces the old grammar.y and
@@ -323,10 +323,10 @@ set_string_arg(char** var, const char* line, regmatch_t* match)
 static int
 get_bool_arg(const char* line, regmatch_t* match)
 {
+        const char* p = line + match->rm_so;
+
         assert(line);
         assert(match && match->rm_so != -1);
-
-        const char* p = line + match->rm_so;
 
         /* "y"es or o"n" map as true, otherwise it's false. */
         if (tolower(p[0]) == 'y' || tolower(p[1]) == 'n')
