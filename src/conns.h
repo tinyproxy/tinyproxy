@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.12 2003-03-13 21:27:29 rjkaes Exp $
+/* $Id: conns.h,v 1.13 2003-04-16 16:37:58 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -53,7 +53,10 @@ struct conn_s {
 	char *error_string;
 
 	/* A Content-Length value from the remote server */
-	long remote_content_length;
+	struct {
+		long int server;
+		long int client;
+	} content_length;
 
 	/*
 	 * Store the client's IP and hostname information

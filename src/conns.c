@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.14 2003-03-13 21:27:29 rjkaes Exp $
+/* $Id: conns.c,v 1.15 2003-04-16 16:37:59 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connection related tasks put here, but for now the header
@@ -69,7 +69,8 @@ initialize_conn(int client_fd, const char* ipaddr, const char* string_addr)
 
 	connptr->protocol.major = connptr->protocol.minor = 0;
 
-	connptr->remote_content_length = -1;
+	/* There is _no_ content length initially */
+	connptr->content_length.server = connptr->content_length.client = -1;
 
 	connptr->client_ip_addr = safestrdup(ipaddr);
 	connptr->client_string_addr = safestrdup(string_addr);
