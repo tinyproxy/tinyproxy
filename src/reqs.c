@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.58 2002-04-15 02:07:27 rjkaes Exp $
+/* $Id: reqs.c,v 1.59 2002-04-15 04:14:03 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -137,7 +137,7 @@ check_allowed_connect_ports(int port)
 static int
 read_request_line(struct conn_s *connptr)
 {
-	size_t len;
+	ssize_t len;
 
       retry:
 	len = readline(connptr->client_fd, &connptr->request_line);
