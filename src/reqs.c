@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.25 2001-09-14 19:50:45 rjkaes Exp $
+/* $Id: reqs.c,v 1.26 2001-09-14 21:16:56 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -497,6 +497,7 @@ static int process_client_headers(struct conn_s *connptr)
 
 	static char *skipheaders[] = {
 		"proxy-connection",
+		"host",
 		"connection"
 	};
 	int i;
@@ -519,7 +520,10 @@ static int process_client_headers(struct conn_s *connptr)
 		if (connptr->output_message)
 			continue;
 
-		if (!connptr->ssl && strncasecmp(header, "host", 4) ==0)
+		/*
+		 * Don't send any of the headers if we're in SSL mode.
+		 */
+		if (connptr->ssl)
 			continue;
 
 		/*
@@ -548,7 +552,7 @@ static int process_client_headers(struct conn_s *connptr)
 		}
 	}
 
-	if (!connptr->output_message) {
+	if (!connptr->output_message && !connptr->ssl) {
 #ifdef XTINYPROXY_ENABLE
 		if (config.my_domain
 		    && add_xtinyproxy_header(connptr) < 0) {
@@ -736,6 +740,8 @@ static void destroy_conn(struct conn_s *connptr)
 	update_stats(STAT_CLOSE);
 }
 
+#define SSL_CONNECTION_RESPONSE "HTTP/1.0 200 Connection established\r\n\r\n"
+
 /*
  * This is the main drive for each connection. As you can tell, for the
  * first few steps we are using a blocking socket. If you remember the
@@ -841,7 +847,7 @@ send_error:
 			return;
 		}
 	} else {
-		if (safe_write(connptr->client_fd, "HTTP/1.0 200 Connection established\r\n\r\n", 39) < 0) {
+		if (safe_write(connptr->client_fd, SSL_CONNECTION_RESPONSE, strlen(SSL_CONNECTION_RESPONSE)) < 0) {
 			log_message(LOG_ERR, "Could not send SSL greeting to client.");
 			destroy_conn(connptr);
 			return;
