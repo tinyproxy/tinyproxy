@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.3 2000-12-09 02:35:30 rjkaes Exp $
+/* $Id: thread.c,v 1.4 2001-05-23 17:56:35 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -25,11 +25,20 @@
 
 static int listenfd;
 static socklen_t addrlen;
+
+/*
+ * Stores the internal data needed for each thread (connection)
+ */
 struct thread_s {
 	pthread_t tid;
 	enum { T_EMPTY, T_WAITING, T_CONNECTED } status;
 	unsigned int connects;
 };
+
+/*
+ * A pointer to an array of threads. A certain number of threads are
+ * created when the program is started.
+ */
 static struct thread_s *thread_ptr;
 static pthread_mutex_t mlock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -117,7 +126,6 @@ static void *thread_main(void *arg)
 			ptr->connects++;
 
 		if (ptr->connects > thread_config.maxrequestsperchild) {
-			ptr->connects = 0;
 			ptr->status = T_EMPTY;
 			return NULL;
 		} else {
@@ -127,6 +135,7 @@ static void *thread_main(void *arg)
 		}
 	}
 }
+
 /*
  * Create the initial pool of threads.
  */
@@ -179,6 +188,7 @@ int thread_main_loop(void)
 			if (thread_ptr[i].status == T_EMPTY) {
 				pthread_create(&thread_ptr[i].tid, NULL, &thread_main, &thread_ptr[i]);
 				thread_ptr[i].status = T_WAITING;
+				thread_ptr[i].connects = 0;
 
 				SERVER_INC();
 
