@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.19 2004-08-11 20:09:20 rjkaes Exp $
+/* $Id: acl.c,v 1.20 2004-08-24 16:31:45 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -40,12 +40,12 @@ struct acl_s {
 	acl_access_t access;
 	enum acl_type type;
 	union {
-		char* addr;
-		struct {
-			unsigned char addr[IPV6_LEN];
-			unsigned char mask[IPV6_LEN];
-		} ip;
-	};
+		char* string;
+                struct {
+                        unsigned char octet[IPV6_LEN];
+                        unsigned char mask[IPV6_LEN];
+                } ip;
+	} address;
 };
 
 /*
@@ -94,8 +94,8 @@ insert_acl(char *location, acl_access_t access_type)
          */
         if (full_inet_pton(location, ip_dst) > 0) {
                 acl.type = ACL_NUMERIC;
-                memcpy(acl.ip.addr, ip_dst, IPV6_LEN);
-                memset(acl.ip.mask, 0xff, IPV6_LEN);
+                memcpy(acl.address.ip.octet, ip_dst, IPV6_LEN);
+                memset(acl.address.ip.mask, 0xff, IPV6_LEN);
         } else {
                 /*
                  * At this point we're either a hostname or an
@@ -112,20 +112,20 @@ insert_acl(char *location, acl_access_t access_type)
                                 return -1;
                         
                         acl.type = ACL_NUMERIC;
-                        memcpy(acl.ip.addr, ip_dst, IPV6_LEN);
+                        memcpy(acl.address.ip.octet, ip_dst, IPV6_LEN);
 
                         mask = strtol(p + 1, NULL, 10);
                         for (i = 0; i != IPV6_LEN; ++i) {
                                 if (mask >= ((i + 1) * 8))
-                                        acl.ip.mask[i] = 0xff;
+                                        acl.address.ip.mask[i] = 0xff;
                                 else
-                                        acl.ip.mask[i] = 0xff << (8 - (mask - i * 8));
+                                        acl.address.ip.mask[i] = 0xff << (8 - (mask - i * 8));
                         }
                 } else {
                         /* In all likelihood a string */
                         acl.type = ACL_STRING;
-                        acl.addr = safestrdup(location);
-                        if (!acl.addr)
+                        acl.address.string = safestrdup(location);
+                        if (!acl.address.string)
                                 return -1;
                 }
         }
@@ -134,7 +134,7 @@ insert_acl(char *location, acl_access_t access_type)
          * Add the entry and then clean up.
          */
         ret = vector_append(access_list, &acl, sizeof(struct acl_s));
-        safefree(acl.addr);
+        safefree(acl.address.string);
         return ret;
 }
 
@@ -167,11 +167,11 @@ acl_string_processing(struct acl_s* acl,
 	 * do a string based test only; otherwise, we can do a reverse
 	 * lookup test as well.
 	 */
-	if (acl->addr[0] != '.') {
+	if (acl->address.string[0] != '.') {
 		memset(&hints, 0, sizeof(struct addrinfo));
 		hints.ai_family = AF_UNSPEC;
 		hints.ai_socktype = SOCK_STREAM;
-		if (getaddrinfo(acl->addr, NULL, &hints, &res) != 0)
+		if (getaddrinfo(acl->address.string, NULL, &hints, &res) != 0)
 			goto STRING_TEST;
 
 		ressave = res;
@@ -197,7 +197,7 @@ acl_string_processing(struct acl_s* acl,
 
 STRING_TEST:
 	test_length = strlen(string_address);
-	match_length = strlen(acl->addr);
+	match_length = strlen(acl->address.string);
 
 	/*
 	 * If the string length is shorter than AC string, return a -1 so
@@ -206,7 +206,7 @@ STRING_TEST:
 	if (test_length < match_length)
 		return -1;
 
-	if (strcasecmp(string_address + (test_length - match_length), acl->addr) == 0) {
+	if (strcasecmp(string_address + (test_length - match_length), acl->address.string) == 0) {
 		if (acl->access == ACL_DENY)
 			return 0;
 		else
@@ -237,8 +237,8 @@ check_numeric_acl(const struct acl_s* acl, const char* ip)
 	if (full_inet_pton(ip, &addr) <= 0) return -1;
 
 	for (i = 0; i != IPV6_LEN; ++i) {
-                x = addr[i] & acl->ip.mask[i];
-                y = acl->ip.addr[i] & acl->ip.mask[i];
+                x = addr[i] & acl->address.ip.mask[i];
+                y = acl->address.ip.octet[i] & acl->address.ip.mask[i];
 
                 /* If x and y don't match, the IP addresses don't match */
                 if (x != y)
