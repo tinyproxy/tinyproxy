@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.65 2002-04-24 16:47:19 rjkaes Exp $
+/* $Id: reqs.c,v 1.66 2002-04-25 18:58:08 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -37,6 +37,7 @@
 #include "sock.h"
 #include "stats.h"
 #include "utils.h"
+#include "vector.h"
 
 #define HTTP400ERROR "Unrecognizable request. Only HTTP is allowed."
 #define HTTP500ERROR "Unable to connect to remote server."
@@ -534,6 +535,7 @@ add_header_to_connection(hashmap_t hashofheaders, char *header, size_t len)
 
 	/* Calculate the new length of just the data */
 	len -= sep - header - 1;
+
 	return hashmap_insert(hashofheaders, header, sep, len);
 }
 
@@ -572,44 +574,52 @@ get_all_headers(int fd, hashmap_t hashofheaders)
 
 /*
  * Extract the headers to remove.  These headers were listed in the Connection
- * header sent via the client (which is stored in data right now.)
+ * and Proxy-Connection headers.
  */
 static int
 remove_connection_headers(hashmap_t hashofheaders)
 {
+	static char* headers[] = {
+		"connection",
+		"proxy-connection"
+	};
+
 	char *data;
 	char* ptr;
 	ssize_t len;
+	int i;
 
-	/* Look for the connection header.  If it's not found, return. */
-	len = hashmap_search(hashofheaders, "connection", (void **)&data);
-	if (len <= 0)
-		return 0;
+	for (i = 0; i < (sizeof(headers) / sizeof(char *)); ++i) {
+		/* Look for the connection header.  If it's not found, return. */
+		len = hashmap_entry_by_key(hashofheaders, headers[i], (void **)&data);
+		if (len <= 0)
+			return 0;
 
-	/*
-	 * Go through the data line and replace any special characters with
-	 * a NULL.
-	 */
-	ptr = data;
-	while ((ptr = strpbrk(ptr, "()<>@,;:\\\"/[]?={} \t")))
-		*ptr++ = '\0';
+		/*
+		 * Go through the data line and replace any special characters
+		 * with a NULL.
+		 */
+		ptr = data;
+		while ((ptr = strpbrk(ptr, "()<>@,;:\\\"/[]?={} \t")))
+			*ptr++ = '\0';
 
-	/*
-	 * All the tokens are separated by NULLs.  Now go through the tokens
-	 * and remove them from the hashofheaders.
-	 */
-	ptr = data;
-	while (ptr < data + len) {
-		hashmap_remove(hashofheaders, ptr);
+		/*
+		 * All the tokens are separated by NULLs.  Now go through the
+		 * token and remove them from the hashofheaders.
+		 */
+		ptr = data;
+		while (ptr < data + len) {
+			hashmap_remove(hashofheaders, ptr);
 
-		/* Advance ptr to the next token */
-		ptr += strlen(ptr) + 1;
-		while (*ptr == '\0')
-			ptr++;
+			/* Advance ptr to the next token */
+			ptr += strlen(ptr) + 1;
+			while (*ptr == '\0')
+				ptr++;
+		}
+
+		/* Now remove the connection header it self. */
+		hashmap_remove(hashofheaders, headers[i]);
 	}
-
-	/* Now remove the connection header it self. */
-	hashmap_remove(hashofheaders, "connection");
 
 	return 0;
 }
@@ -625,7 +635,7 @@ get_content_length(hashmap_t hashofheaders)
 	char *data;
 	long content_length = -1;
 
-	len = hashmap_search(hashofheaders, "content-length", (void **)&data);
+	len = hashmap_entry_by_key(hashofheaders, "content-length", (void **)&data);
 	if (len > 0)
 		content_length = atol(data);
 
@@ -653,7 +663,7 @@ write_via_header(int fd, hashmap_t hashofheaders,
 	 * See if there is a "Via" header.  If so, again we need to do a bit
 	 * of processing.
 	 */
-	len = hashmap_search(hashofheaders, "via", (void **)&data);
+	len = hashmap_entry_by_key(hashofheaders, "via", (void **)&data);
 	if (len > 0) {
 		write_message(fd,
 			      "Via: %s, %hu.%hu %s (%s/%s)\r\n",
@@ -689,7 +699,6 @@ process_client_headers(struct conn_s *connptr)
 		"keep-alive",
 		"proxy-authenticate",
 		"proxy-authorization",
-		"proxy-connection",
 		"te",
 		"trailers",
 		"transfer-encoding",
@@ -697,11 +706,10 @@ process_client_headers(struct conn_s *connptr)
 	};
 	int i;
 	hashmap_t hashofheaders;
-	vector_t listofheaders;
+	hashmap_iter iter;
 	long content_length = -1;
 
 	char *data, *header;
-	size_t len;
 
 	hashofheaders = hashmap_create(HEADER_BUCKETS);
 	if (!hashofheaders)
@@ -755,11 +763,13 @@ process_client_headers(struct conn_s *connptr)
 	/*
 	 * Output all the remaining headers to the remote machine.
 	 */
-	listofheaders = hashmap_keys(hashofheaders);
-	for (i = 0; i < vector_length(listofheaders); i++) {
-		len = vector_getentry(listofheaders, i, (void **)&data);
-
-		hashmap_search(hashofheaders, data, (void **)&header);
+	for (iter = hashmap_first(hashofheaders);
+	     !hashmap_is_end(hashofheaders, iter);
+	     ++iter) {
+		hashmap_return_entry(hashofheaders,
+				     iter,
+				     &data,
+				     (void**)&header);
 
 		if (!is_anonymous_enabled() || anonymous_search(data) <= 0) {
 			write_message(connptr->server_fd,
@@ -767,7 +777,6 @@ process_client_headers(struct conn_s *connptr)
 				      data, header);
 		}
 	}
-	vector_delete(listofheaders);
 
 	/* Free the hashofheaders since it's no longer needed */
 	hashmap_delete(hashofheaders);
@@ -783,7 +792,7 @@ process_client_headers(struct conn_s *connptr)
 	/*
 	 * Spin here pulling the data from the client.
 	 */
-	if (content_length >= 0)
+	if (content_length > 0)
 		return pull_client_data(connptr,
 					(unsigned long int) content_length);
 	else
@@ -801,14 +810,13 @@ process_server_headers(struct conn_s *connptr)
 		"keep-alive",
 		"proxy-authenticate",
 		"proxy-authorization",
-		"proxy-connection",
 		"transfer-encoding",
 	};
 
 	char *response_line;
 
 	hashmap_t hashofheaders;
-	vector_t listofheaders;
+	hashmap_iter iter;
 	char *data, *header;
 	ssize_t len;
 	int i;
@@ -865,16 +873,18 @@ process_server_headers(struct conn_s *connptr)
 	/*
 	 * Okay, output all the remaining headers to the client.
 	 */
-	listofheaders = hashmap_keys(hashofheaders);
-	for (i = 0; i < vector_length(listofheaders); ++i) {
-		len = vector_getentry(listofheaders, i, (void **)&data);
-		hashmap_search(hashofheaders, data, (void **)&header);
+	for (iter = hashmap_first(hashofheaders);
+	     !hashmap_is_end(hashofheaders, iter);
+	     ++iter) {
+		hashmap_return_entry(hashofheaders,
+				     iter,
+				     &data,
+				     (void **)&header);
 
 		write_message(connptr->client_fd,
 			      "%s: %s\r\n",
 			      data, header);
 	}
-	vector_delete(listofheaders);
 	hashmap_delete(hashofheaders);
 
 	/* Write the final blank line to signify the end of the headers */
