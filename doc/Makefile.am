@@ -4,7 +4,6 @@ man_MANS = tinyproxy.8
 
 EXTRA_DIST = $(man_MANS) tinyproxy.conf \
 	HTTP_ERROR_CODES RFC_INFO \
-	releases.txt \
 	filter-howto.txt \
 	report.sh.tmpl \
 	$(HTML_VAR_SUBST)
