@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.2 2002-05-29 20:49:55 rjkaes Exp $
+/* $Id: child.c,v 1.3 2002-06-05 17:02:15 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -173,6 +173,8 @@ child_main(struct child_s* ptr)
 		clilen = addrlen;
 
 		connfd = accept(listenfd, cliaddr, &clilen);
+
+		DEBUG2("Process %u has accepted connection", ptr->tid);
 
 		/*
 		 * Make sure no error occurred...
