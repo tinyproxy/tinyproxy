@@ -1,3 +1,8 @@
+2001-11-02  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/acl.c (insert_acl): Tightened the check regarding whether an
+	ACL is a string or a numeric address.
+
 2001-10-25  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* Moved all the system header included into the tinyproxy.h header
