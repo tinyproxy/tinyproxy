@@ -1,3 +1,9 @@
+2002-05-08  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.ac: The --with-config option now supports absolute
+	paths.  If an absolute path is given, the full directory path and
+	file name are extracted into their appropriate parts.
+
 2002-05-07  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (connect_to_tunnel): Removed request logging code in

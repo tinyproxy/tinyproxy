@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.27 2002-05-02 18:22:15 rjkaes Exp $
+dnl $Id: configure.ac,v 2.28 2002-05-08 18:42:44 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -14,7 +14,7 @@ dnl 8. System services
 dnl
 dnl Read the Autoconf manual for details.
 
-AC_INIT([tinyproxy], [1.5.0rc8], [rjkaes@users.sourceforge.net])
+AC_INIT([tinyproxy], [1.5.0rc9], [rjkaes@users.sourceforge.net])
 AC_CONFIG_SRCDIR([src/tinyproxy.c])
 AC_PREREQ(2.52)
 
@@ -50,23 +50,33 @@ AC_ARG_WITH(stathost,
 dnl Set the default configuration file location
 test "$prefix" = "NONE" && prefix=/usr/local
 
-# If sysconfdir is /usr/etc, change it to /etc (since /usr/etc doesn't exist)
-if [[ "/usr/etc" = `eval echo $sysconfdir` -a "/usr" = "$prefix" ]]; then
-	TINYPROXY_CONFIG_DIR="/etc/tinyproxy"
-else
-	TINYPROXY_CONFIG_DIR=`eval echo $sysconfdir/tinyproxy`
-fi
-AC_SUBST(TINYPROXY_CONFIG_DIR)
-
 AH_TEMPLATE([DEFAULT_CONF_FILE],
 	[This is the default file name for the configuration file.])
 AC_ARG_WITH(config,
             [AC_HELP_STRING([--with-config=FILE],
                             [Set the default location of the config file])],
-	    [TINYPROXY_CONFIG_FILE="$withval"],
-	    [TINYPROXY_CONFIG_FILE="tinyproxy.conf"])
-AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$TINYPROXY_CONFIG_DIR/$TINYPROXY_CONFIG_FILE")
+	    [tp_config_file="$withval"],
+	    [tp_config_file="tinyproxy.conf"])
+
+# If the first character is a slash, it's an absolute path
+if [[ `echo $tp_config_file | cut -c1` = "/" ]]; then
+	TINYPROXY_CONFIG_DIR=`echo "$tp_config_file" | sed 's/^\(.*\)\/[[^\/]]*$/\1/'`
+        TINYPROXY_CONFIG_FILE=`echo "$tp_config_file" | sed 's/^.*\/\([[^\/]]*\)$/\1/'`
+else
+	# If sysconfdir is /usr/etc, change it to /etc (since /usr/etc doesn't exist)
+	if [[ "/usr/etc" = `eval echo $sysconfdir` -a "/usr" = "$prefix" ]]; then
+		TINYPROXY_CONFIG_DIR="/etc/tinyproxy"
+	else
+		TINYPROXY_CONFIG_DIR=`eval echo $sysconfdir/tinyproxy`
+	fi
+        TINYPROXY_CONFIG_FILE="$tp_config_file"
+fi
+
+AC_SUBST(TINYPROXY_CONFIG_DIR)
 AC_SUBST(TINYPROXY_CONFIG_FILE)
+
+AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$TINYPROXY_CONFIG_DIR/$TINYPROXY_CONFIG_FILE")
+
 AC_MSG_NOTICE([Default config location and file is: $TINYPROXY_CONFIG_DIR/$TINYPROXY_CONFIG_FILE])
 
 dnl Add compiler-specific optimization flags
