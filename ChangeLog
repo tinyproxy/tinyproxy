@@ -1,5 +1,9 @@
 2002-04-09  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/acl.c (make_netmask): James Flemer cleaned up the
+	make_netmask() function to remove the big static table.  Much
+	nicer now.
+
 	* configure.ac: The configure script now doesn't include a check
 	for the malloc.h header if tinyproxy is being compiled on an
 	OpenBSD machine.  I might actually just remove the malloc.h header
