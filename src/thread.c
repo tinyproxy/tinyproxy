@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.27 2002-04-28 02:37:01 rjkaes Exp $
+/* $Id: thread.c,v 1.28 2002-04-28 03:09:52 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -270,7 +270,7 @@ thread_pool_create(void)
 		thread_config.startservers = thread_config.maxclients;
 	}
 
-	for (i = thread_config.startservers; i < thread_config.maxclients; i++) {
+	for (i = 0; i < thread_config.maxclients; i++) {
 		thread_ptr[i].status = T_EMPTY;
 		thread_ptr[i].connects = 0;
 	}
