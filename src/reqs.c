@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.8 2000-09-12 00:04:42 rjkaes Exp $
+/* $Id: reqs.c,v 1.9 2000-09-26 04:57:46 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -279,12 +279,12 @@ static int process_method(struct conn_s *connptr)
 	if (safe_write(connptr->server_fd, "Connection: close\r\n", 19) < 0)
 		goto COMMON_EXIT;
 
-	free(request);
+	safefree(request);
 	free_uri(uri);
 	return 0;
 
       COMMON_EXIT:
-	free(request);
+	safefree(request);
 	free_uri(uri);
 	return -1;
 }

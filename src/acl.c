@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.1 2000-09-12 00:08:48 rjkaes Exp $
+/* $Id: acl.c,v 1.2 2000-09-26 04:57:46 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -107,7 +107,7 @@ int insert_acl(char *location, acl_access_t access_type)
 
 			new_acl_ptr->netmask = atoi(nptr);
 			if (new_acl_ptr->netmask < 0 || new_acl_ptr->netmask > 32) {
-				free(new_acl_ptr);
+				safefree(new_acl_ptr);
 				return -1;
 			}
 		} else {
@@ -120,7 +120,7 @@ int insert_acl(char *location, acl_access_t access_type)
 
 	new_acl_ptr->location = strdup(location);
 	if (!new_acl_ptr->location) {
-		free(new_acl_ptr);
+		safefree(new_acl_ptr);
 		return -1;
 	}
 
