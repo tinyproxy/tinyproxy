@@ -2,9 +2,9 @@
 
 	* src/anonymous.c (anonymous_insert): Now returns -1 upon error,
 	and 0 upon success.  This simplified the code, since I don't care
-	whether the sucess is from a sucessful insert, or because the
+	whether the success is from a successful insert, or because the
 	string was already present in the hashmap.
-	(anonymous_search): The function now returns a postive number
+	(anonymous_search): The function now returns a positive number
 	greater than zero if the string was found, otherwise zero or a
 	negative value is returned.  Needed to change the _one_ call to
 	this function to use the new return method.
@@ -129,7 +129,7 @@
 
 	* src/thread.c (thread_main_loop): Moved the looping code into
 	this function from the main() function.  Just a bit of clean up.
-	(thread_main): Changed the default cancelation point to
+	(thread_main): Changed the default cancellation point to
 	asynchronous, which means immediately.  This should fix up the
 	problem where the threads would not free correctly.
 
@@ -147,7 +147,7 @@
 	compare_header() function is _vastly_ simplified.  Just read the
 	comments in the source itself for more information.
 
-	* src/conns.c: Clenaed up the initialize_conn and destroy_conn
+	* src/conns.c: Cleaned up the initialize_conn and destroy_conn
 	functions to better handle error conditions.
 
 2002-04-02  Robert James Kaes  <rjkaes@flarenet.com>
@@ -159,7 +159,7 @@
 2002-01-13  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/thread.c (thread_kill_threads): Added a function to
-	explictly go through all the active threads and kill them.
+	explicitly go through all the active threads and kill them.
 
 2002-01-07  Robert James Kaes  <rjkaes@flarenet.com>
 
@@ -308,7 +308,7 @@
 
 	* Moved all the system header included into the tinyproxy.h header
 	and changed all the other files to include it. This should
-	centralise the header dependency issue into one file.
+	centralize the header dependency issue into one file.
 
 	* src/conns.c: Brought back the conns.{c,h} files which contain
 	the connection structure definition plus the creation/destruction
@@ -602,7 +602,7 @@
 
 2001-06-06  Robert James Kaes  <rjkaes@flarenet.com>
 
-	* configure.in: Total reorganization.
+	* configure.in: Total reorganisation.
 
 2001-06-04  Robert James Kaes  <rjkaes@flarenet.com>
 
@@ -714,7 +714,7 @@
 
 2000-10-23 17:44  rjkaes
 
-	* src/tinyproxy.c: Added the initialization section for the DNS and
+	* src/tinyproxy.c: Added the initialisation section for the DNS and
 	Anonymous sub systems.
 
 2000-10-23 17:43  rjkaes
@@ -973,7 +973,7 @@
 
 2000-04-26 12:31  rjkaes
 
-	* ChangeLog, src/dnscache.c, src/uri.c: Reorganized (or added) the
+	* ChangeLog, src/dnscache.c, src/uri.c: Reorganised (or added) the
 	#include <sys/types.h> line so tinyproxy would compile cleanly on
 	FreeBSD systems.
 
