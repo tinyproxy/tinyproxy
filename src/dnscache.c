@@ -1,4 +1,4 @@
-/* $Id: dnscache.c,v 1.2 2000-03-11 20:37:44 rjkaes Exp $
+/* $Id: dnscache.c,v 1.3 2000-03-29 16:18:05 rjkaes Exp $
  *
  * This is a caching DNS system. When a host name is needed we look it up here
  * and see if there is already an answer for it. The domains are placed in a
@@ -33,6 +33,7 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <ctype.h>
+#include <sys/types.h>
 
 #include "utils.h"
 #include "dnscache.h"
