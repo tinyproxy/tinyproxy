@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.13 2001-10-24 00:37:23 rjkaes Exp $
+/* $Id: buffer.c,v 1.14 2001-10-25 04:39:10 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -182,6 +182,7 @@ static struct bufline_s *remove_from_buffer(struct buffer_s *buffptr)
  * Reads the bytes from the socket, and adds them to the buffer.
  * Takes a connection and returns the number of bytes read.
  */
+#define READ_BUFFER_SIZE (1024 * 2)
 ssize_t readbuff(int fd, struct buffer_s *buffptr)
 {
 	ssize_t bytesin;
@@ -191,14 +192,14 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 	assert(fd >= 0);
 	assert(buffptr != NULL);
 
-	if (buffer_size(buffptr) >= MAXBUFFSIZE)
+	if (buffer_size(buffptr) >= READ_BUFFER_SIZE)
 		return 0;
 
-	buffer = safemalloc(MAXBUFFSIZE);
+	buffer = safemalloc(READ_BUFFER_SIZE);
 	if (!buffer)
 		return 0;
 
-	bytesin = read(fd, buffer, MAXBUFFSIZE - buffer_size(buffptr));
+	bytesin = read(fd, buffer, READ_BUFFER_SIZE - buffer_size(buffptr));
 
 	if (bytesin > 0) {
 		newbuffer = saferealloc(buffer, bytesin);
