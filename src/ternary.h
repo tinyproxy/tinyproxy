@@ -1,4 +1,4 @@
-/* $Id: ternary.h,v 1.1 2000-09-12 00:10:28 rjkaes Exp $
+/* $Id: ternary.h,v 1.2 2000-09-26 04:59:20 rjkaes Exp $
  *
  * See 'ternary.c' for a detailed description.
  *
@@ -50,6 +50,7 @@ extern char te_errbuf[256];
 #define TE_NOROOM	-6	/* can't allocate space (sys err) */
 #define TE_TOOMANYTS	-7	/* too many trees in use */
 #define TE_INTINCON	-8	/* internal inconsistency */
+#define TE_EXISTS	-9	/* key already exists in tree */
 
 /*
  * Library functions.

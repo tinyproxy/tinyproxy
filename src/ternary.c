@@ -1,4 +1,4 @@
-/* $Id: ternary.c,v 1.1 2000-09-12 00:10:28 rjkaes Exp $
+/* $Id: ternary.c,v 1.2 2000-09-26 04:59:20 rjkaes Exp $
  *
  * This module creates a Ternary Search Tree which can store both string
  * keys, and arbitrary data for each key. It works similar to a hash, and
@@ -33,7 +33,9 @@
 #include 	<stdlib.h>
 #include	<string.h>
 
+#include	"log.h"
 #include 	"ternary.h"
+#include	"tinyproxy.h"
 
 /*
  * Macros for the tree structures (limits)
@@ -224,7 +226,7 @@ TERNARY ternary_new(void)
 	 */
 	if (TE_ISERROR(token = create_token_ref(cur))) {
 		/* error in token generation -- clean up and return */
-		free(trees[cur]);
+		safefree(trees[cur]);
 		trees[cur] = NULL;
 		return token;
 	}
@@ -237,27 +239,6 @@ TERNARY ternary_new(void)
 	trees[cur]->bufn = trees[cur]->freen = 0;
 
 	return token;
-}
-
-/*
- * Recursively deletes the branches (and their branches)
- *
- * Parameter:	Tnode *p       	node on branch
- *		void(*)(void *) function pointer to free data routine
- * Returned:	none
- * Exceptions:	none
- */
-static void delete_branch(Tnode *p, void (*freeptr)(void *ptr))
-{
-	if (p) {
-		delete_branch(p->lokid, freeptr);
-		delete_branch(p->hikid, freeptr);
-		if (p->splitchar)
-			delete_branch(p->eqkid, freeptr);
-		else
-			(*freeptr)(p->eqkid);
-		free(p);
-	}
 }
 
 /*
@@ -274,7 +255,7 @@ static void delete_branch(Tnode *p, void (*freeptr)(void *ptr))
 int ternary_destroy(TERNARY tno, void (*freeptr)(void *))
 {
 	int cur;		/* index of current tree */
-	unsigned int i;
+	unsigned int i, j;
 
 	/*
 	 * Check that tno refers to an existing tree;
@@ -283,15 +264,18 @@ int ternary_destroy(TERNARY tno, void (*freeptr)(void *))
 	if (TE_ISERROR(cur = read_token_ref(tno)))
 		return cur;
 
-	/*
-	 * Free the tree and reset the array element
-	 */
-	delete_branch(trees[cur]->tree_root, freeptr);
-	for (i = 0; i < trees[cur]->freen; i++)
-		free(trees[cur]->freearr[i]);
+	for (i = 0; i < trees[cur]->freen; i++) {
+		for (j = 0; j < BUFSIZE; j++) {
+			Tnode *ptr = (trees[cur]->freearr[i] + j);
+			if (ptr->splitchar == 0)
+				(*freeptr)(ptr->eqkid);
+			safefree(ptr);
+		}
+	}
 
-	free(trees[cur]);
-	trees[cur] = NULL;
+	trees[cur]->token = 0;
+	trees[cur]->tree_root = trees[cur]->buf = NULL;
+	trees[cur]->bufn = trees[cur]->freen = 0;
 
 	return TE_NONE;
 }
@@ -329,8 +313,10 @@ int ternary_insert(TERNARY tno, const char *s, void *data)
 
 	while ((pp = *p)) {
 		if ((d = *s - pp->splitchar) == 0) {
-			if (*s++ == 0)
-				return TE_NONE;
+			if (*s++ == 0) {
+				DEBUG2("Key exists: %s", s);
+				return TE_EXISTS;
+			}
 			p = &(pp->eqkid);
 		} else if (d < 0)
 			p = &(pp->lokid);
