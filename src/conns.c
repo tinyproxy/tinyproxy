@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.3 2001-10-25 16:58:09 rjkaes Exp $
+/* $Id: conns.c,v 1.4 2001-11-21 01:00:08 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connnection related tasks put here, but for now the header
@@ -36,6 +36,8 @@ void initialize_conn(struct conn_s *connptr)
 
 	connptr->ssl = FALSE;
 	connptr->upstream = FALSE;
+
+	connptr->protocol.major = connptr->protocol.minor = 0;
 
 	update_stats(STAT_OPEN);
 }

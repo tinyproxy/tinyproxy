@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.3 2001-10-25 16:58:09 rjkaes Exp $
+/* $Id: conns.h,v 1.4 2001-11-21 01:00:09 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -30,6 +30,10 @@ struct conn_s {
 	bool_t ssl;
 	bool_t upstream;
 	bool_t send_message;
+	struct {
+		unsigned short int major;
+		unsigned short int minor;
+	} protocol;
 };
 
 /*
