@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.102 2003-06-02 21:55:14 rjkaes Exp $
+/* $Id: reqs.c,v 1.103 2003-06-06 16:14:50 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -1437,9 +1437,9 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 	 * method and path.
 	 */
 	if (connptr->connect_method) {
-		len = strlen(request->host) + 6;
+		len = strlen(request->host) + 7;
 
-		combined_string = safemalloc(len + 1);
+		combined_string = safemalloc(len);
 		if (!combined_string) {
 			return -1;
 		}
@@ -1448,7 +1448,7 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 			 request->port);
 	} else {
 		len = strlen(request->host) + strlen(request->path) + 14;
-		combined_string = safemalloc(len + 1);
+		combined_string = safemalloc(len);
 		if (!combined_string) {
 			return -1;
 		}
@@ -1457,7 +1457,8 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 			 request->port, request->path);
 	}
 
-	safefree(request->path);
+	if (request->path)
+		safefree(request->path);
 	request->path = combined_string;
 
 	return establish_http_connection(connptr, request);
