@@ -1,4 +1,4 @@
-dnl $Id: configure.in,v 1.30 2001-09-16 20:07:24 rjkaes Exp $
+dnl $Id: configure.in,v 1.31 2001-10-01 04:01:10 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -78,9 +78,19 @@ if test "$upstream_enabled" = "yes"; then
     AC_DEFINE(UPSTREAM_SUPPORT)
 fi
 
+dnl Include support for a statically compiled tinyproxy
+AC_ARG_ENABLE(static,
+[  --enable-static         Statically link tinyproxy [default=no]],
+	[ LDFLAGS="-static $LDFLAGS" ])
+
 dnl
 dnl Checks for programs
 dnl
+
+dnl Save $CFLAGS since AC_PROG_CC likes to insert "-g -O2"
+dnl if $CFLAGS is blank
+cflags_save="$CFLAGS"
+
 AC_PROG_AWK
 AC_PROG_MAKE_SET
 AC_PROG_CC
@@ -88,6 +98,8 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AM_PROG_LEX
 AC_PROG_YACC
+
+CFLAGS="$cflags_save"
 
 dnl Make sure YACC is actually bison
 if test "$YACC" != "bison -y"; then
@@ -212,7 +224,6 @@ dnl
 dnl Checks for functions
 dnl
 AC_FUNC_ALLOCA
-dnl AC_FUNC_MEMCMP
 AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(\
@@ -238,15 +249,15 @@ dnl Compiler characteristics
 dnl
 
 dnl Enable the debugging flags (by checking for the GCC compiler)
-CFLAGS="-Wall $CFLAGS"
+CFLAGS="-O2 $CFLAGS"
 if test "$enable_debug" = "yes" ; then
     dnl Add the warnings if we have the GCC compiler
-    if test x$ac_cv_prog_gcc = xyes ; then
+    if test "$ac_cv_prog_gcc" = "yes" ; then
         CFLAGS="-Wshadow -Wcast-qual -Wcast-align -Wstrict-prototypes $CFLAGS"
         CFLAGS="-Wmissing-prototypes -Wmissing-declarations $CFLAGS"
         CFLAGS="-Wpointer-arith -Waggregate-return -Wnested-externs $CFLAGS"
     fi
-    CFLAGS="-DYYDEBUG $CFLAGS"
+    CFLAGS="-Wall -g -DYYDEBUG $CFLAGS"
     YFLAGS="-v -d"
 else
     dnl No debugging information, include the optimizations
@@ -305,6 +316,7 @@ dnl
 dnl Substitute the variables into the various Makefiles
 dnl
 AC_SUBST(CFLAGS)
+AC_SUBST(LDFLAGS)
 AC_SUBST(YFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LIBS)

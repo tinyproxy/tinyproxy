@@ -20,5 +20,4 @@ against the current tree and I'll integrate it if possible.
     really have a good way of doing it yet.
     Suggested: Ed Avis
   - Include the ability to rewrite both incoming and outgoing headers.
-  - Have a configuration option to build a statically linked program
   - Enable an option for chroot() jailing tinyproxy.

@@ -1,3 +1,10 @@
+2001-09-29  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.in: Uses any CFLAGS variable passed to the configure
+	script. Also, '-g -Wall' is _not_ enabled unless debugging support
+	is compiled in. Use --enable-static to compile a statically linked
+	tinyproxy.
+
 2001-09-16  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/tinyproxy.c (main): Don't allow Tunnel and Upstream
