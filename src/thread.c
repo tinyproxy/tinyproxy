@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.14 2001-09-08 18:58:37 rjkaes Exp $
+/* $Id: thread.c,v 1.15 2001-09-11 19:27:09 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -28,7 +28,7 @@
  * This is the stack frame size used by all the threads. We'll start by
  * setting it to 128 KB.
  */
-#define THREAD_STACK_SIZE (1024 * 128)
+#define THREAD_STACK_SIZE (1024 * 32)
 
 static int listenfd;
 static socklen_t addrlen;
