@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.67 2002-04-25 19:20:56 rjkaes Exp $
+/* $Id: reqs.c,v 1.68 2002-04-26 16:43:20 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -769,18 +769,19 @@ process_client_headers(struct conn_s *connptr)
 	/*
 	 * Output all the remaining headers to the remote machine.
 	 */
-	for (iter = hashmap_first(hashofheaders);
-	     !hashmap_is_end(hashofheaders, iter);
-	     ++iter) {
-		hashmap_return_entry(hashofheaders,
-				     iter,
-				     &data,
-				     (void**)&header);
+	iter = hashmap_first(hashofheaders);
+	if (iter >= 0) {
+		for ( ; !hashmap_is_end(hashofheaders, iter); ++iter) {
+			hashmap_return_entry(hashofheaders,
+					     iter,
+					     &data,
+					     (void**)&header);
 
-		if (!is_anonymous_enabled() || anonymous_search(data) <= 0) {
-			write_message(connptr->server_fd,
-				      "%s: %s\r\n",
-				      data, header);
+			if (!is_anonymous_enabled() || anonymous_search(data) <= 0) {
+				write_message(connptr->server_fd,
+					      "%s: %s\r\n",
+					      data, header);
+			}
 		}
 	}
 
@@ -879,17 +880,18 @@ process_server_headers(struct conn_s *connptr)
 	/*
 	 * Okay, output all the remaining headers to the client.
 	 */
-	for (iter = hashmap_first(hashofheaders);
-	     !hashmap_is_end(hashofheaders, iter);
-	     ++iter) {
-		hashmap_return_entry(hashofheaders,
-				     iter,
-				     &data,
-				     (void **)&header);
+	iter = hashmap_first(hashofheaders);
+	if (iter >= 0) {
+		for ( ; !hashmap_is_end(hashofheaders, iter); ++iter) {
+			hashmap_return_entry(hashofheaders,
+					     iter,
+					     &data,
+					     (void **)&header);
 
-		write_message(connptr->client_fd,
-			      "%s: %s\r\n",
-			      data, header);
+			write_message(connptr->client_fd,
+				      "%s: %s\r\n",
+				      data, header);
+		}
 	}
 	hashmap_delete(hashofheaders);
 
