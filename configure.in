@@ -1,4 +1,4 @@
-dnl $Id: configure.in,v 1.14 2001-06-06 19:32:09 rjkaes Exp $
+dnl $Id: configure.in,v 1.15 2001-06-24 18:12:37 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -15,7 +15,7 @@ dnl
 dnl Read the Autoconf manual for details.
 
 AC_INIT()
-AM_INIT_AUTOMAKE(tinyproxy,1.4.0pre7)
+AM_INIT_AUTOMAKE(tinyproxy,1.4.0)
 AM_CONFIG_HEADER(config.h)
 
 AC_CANONICAL_HOST
