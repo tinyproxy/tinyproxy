@@ -1,9 +1,9 @@
-/* $Id: common.h,v 1.4 2003-03-13 16:56:28 rjkaes Exp $
+/* $Id: common.h,v 1.5 2003-03-13 19:31:09 rjkaes Exp $
  *
  * This file groups all the headers required throughout the tinyproxy
  * system.  All this information use to be in the "tinyproxy.h" header,
- * but since dnsserver.c also needs these headers, so it's been moved into
- * this file.
+ * but various other "libraries" in the program need the same information,
+ * without the tinyproxy specific defines.
  *
  * Copyright (C) 2002  Robert James Kaes (rjkaes@flarenet.com)
  *
