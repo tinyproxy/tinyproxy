@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.1 2002-05-23 04:37:54 rjkaes Exp $
+/* $Id: common.h,v 1.2 2002-05-26 18:49:19 rjkaes Exp $
  *
  * This file groups all the headers required throughout the tinyproxy
  * system.  All this information use to be in the "tinyproxy.h" header,
@@ -112,13 +112,6 @@
 #ifdef HAVE_NETDB_H
 #  include	<netdb.h>
 #endif
-#ifdef HAVE_PTHREAD_H
-#  include	<pthread.h>
-#else
-#  ifdef HAVE_PTHREADS_H
-#    include 	<pthreads.h>
-#  endif
-#endif
 #ifdef HAVE_PWD_H
 #  include     	<pwd.h>
 #endif
@@ -161,6 +154,9 @@
 #endif
 #ifdef HAVE_WCTYPE_H
 #  include	<wctype.h>
+#endif
+#ifdef HAVE_SYS_MMAN_H
+#  include      <sys/mman.h>
 #endif
 
 /*
