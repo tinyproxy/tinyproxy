@@ -1,3 +1,9 @@
+2001-09-11  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/uri.c (explode_uri): Fixed a potential memory leak where the
+	regular expression structure might not be freed if there was an
+	error in the expression.
+
 2001-09-08  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/ternary.c (BUFARRAY & BUFSIZE): Lowed the values to help
