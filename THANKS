@@ -40,5 +40,5 @@ only the first person to report it is listed.
   Michael Pearson,
   numerous others               - Reported connptr bug with patch.
   Raja Subramanian		- Reported fd leak bug, with patch.
-  Raja Subramanian,
+  J.D. Bronson			- Helped make version 1.4.0 release ready
   numerous others               - Reported null requests bug.
