@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.26 2001-09-14 21:16:56 rjkaes Exp $
+/* $Id: reqs.c,v 1.27 2001-09-15 21:26:14 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -106,10 +106,8 @@ static char *read_request_line(struct conn_s *connptr)
 	size_t len;
 
 	request_buffer = safemalloc(LINE_LENGTH);
-	if (!request_buffer) {
-		log_message(LOG_ERR, "Could not allocate memory in 'read_request_line'");
+	if (!request_buffer)
 		return NULL;
-	}
 
 	len = readline(connptr->client_fd, request_buffer, LINE_LENGTH);
 	if (len <= 0) {
@@ -147,7 +145,6 @@ static int extract_http_url(const char *url, struct request_s *request)
 	request->path = safemalloc(strlen(url) + 1);
 
 	if (!request->host || !request->path) {
-		log_message(LOG_ERR, "Could not allocate memory in 'extract_http_url'");
 		safefree(request->host);
 		safefree(request->path);
 
@@ -181,12 +178,8 @@ static int extract_http_url(const char *url, struct request_s *request)
 static int extract_ssl_url(const char *url, struct request_s *request)
 {
 	request->host = safemalloc(strlen(url) + 1);
-
-	if (!request->host) {
-		log_message(LOG_ERR, "Could not allocate memory in 'extract_https_url'");
-
+	if (!request->host)
 		return -1;
-	}
 
 	if (sscanf(url, "%[^:]:%d", request->host, &request->port) == 2)
 		;
@@ -205,10 +198,10 @@ static int extract_ssl_url(const char *url, struct request_s *request)
 /*
  * Create a connection for HTTP connections.
  */
-static int establish_http_connection(struct conn_s *connptr,
-				     const char *method,
-				     const char *protocol,
-				     struct request_s *request)
+static inline int establish_http_connection(struct conn_s *connptr,
+					    const char *method,
+					    const char *protocol,
+					    struct request_s *request)
 {
 	/*
 	 * Send the request line
@@ -246,6 +239,30 @@ static int establish_http_connection(struct conn_s *connptr,
 }
 
 /*
+ * These two defines are for the SSL tunnelling.
+ */
+#define SSL_CONNECTION_RESPONSE "HTTP/1.0 200 Connection established\r\n"
+#define PROXY_AGENT "Proxy-agent: " PACKAGE "/" VERSION "\r\n"
+
+/*
+ * Send the appropriate response to the client to establish a SSL
+ * connection.
+ */
+static inline int send_ssl_response(struct conn_s *connptr)
+{
+	if (safe_write(connptr->client_fd, SSL_CONNECTION_RESPONSE, strlen(SSL_CONNECTION_RESPONSE)) < 0)
+		return -1;
+
+	if (safe_write(connptr->client_fd, PROXY_AGENT, strlen(PROXY_AGENT)) < 0)
+		return -1;
+
+	if (safe_write(connptr->client_fd, "\r\n", 2) < 0)
+		return -1;
+
+	return 0;
+}
+
+/*
  * Break the request line apart and figure out where to connect and
  * build a new request line. Finally connect to the remote server.
  */
@@ -271,7 +288,6 @@ static int process_request(struct conn_s *connptr, char *request_line)
 	protocol = safemalloc(request_len);
 
 	if (!method || !url || !protocol) {
-		log_message(LOG_ERR, "Could not allocate memory in 'process_request'");
 		safefree(method);
 		safefree(url);
 		safefree(protocol);
@@ -360,6 +376,20 @@ static int process_request(struct conn_s *connptr, char *request_line)
 		}
 	}
 #endif
+
+	/*
+	 * Check to see if they're requesting the stat host
+	 */
+	if (!config.stathost && strcmp(config.stathost, request.host) == 0) {
+		safefree(request.host);
+		safefree(request.path);
+
+		safefree(method);
+		safefree(protocol);
+
+		showstats(connptr);
+		return 0;
+	}
 
 	/*
 	 * Connect to the remote server.
@@ -507,7 +537,7 @@ static int process_client_headers(struct conn_s *connptr)
 		return -1;
 
 	for ( ; ; ) {
-		if (readline(connptr->client_fd, header, LINE_LENGTH) < 0) {
+		if (readline(connptr->client_fd, header, LINE_LENGTH) <= 0) {
 			safefree(header);
 			return -1;
 		}
@@ -591,7 +621,7 @@ static int process_server_headers(struct conn_s *connptr)
 		return -1;
 
 	for ( ; ; ) {
-		if (readline(connptr->server_fd, header, LINE_LENGTH) < 0) {
+		if (readline(connptr->server_fd, header, LINE_LENGTH) <= 0) {
 			safefree(header);
 			return -1;
 		}
@@ -740,8 +770,6 @@ static void destroy_conn(struct conn_s *connptr)
 	update_stats(STAT_CLOSE);
 }
 
-#define SSL_CONNECTION_RESPONSE "HTTP/1.0 200 Connection established\r\n\r\n"
-
 /*
  * This is the main drive for each connection. As you can tell, for the
  * first few steps we are using a blocking socket. If you remember the
@@ -847,7 +875,7 @@ send_error:
 			return;
 		}
 	} else {
-		if (safe_write(connptr->client_fd, SSL_CONNECTION_RESPONSE, strlen(SSL_CONNECTION_RESPONSE)) < 0) {
+		if (send_ssl_response(connptr) < 0) {
 			log_message(LOG_ERR, "Could not send SSL greeting to client.");
 			destroy_conn(connptr);
 			return;
