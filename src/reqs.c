@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.10 2000-11-23 04:46:25 rjkaes Exp $
+/* $Id: reqs.c,v 1.11 2001-01-15 17:11:57 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -170,12 +170,13 @@ static int process_method(struct conn_s *connptr)
 	if (!uri->scheme || strcasecmp(uri->scheme, "http") != 0) {
 		char *error_string;
 		if (uri->scheme) {
-			error_string = malloc(strlen(uri->scheme) + 64);
+			int error_string_len = strlen(uri->scheme) + 64;
+			error_string = malloc(error_string_len);
 			if (!error_string) {
 				log(LOG_CRIT, "Out of Memory!");
 				return -1;
 			}
-			sprintf(error_string,
+			snprintf(error_string, error_string_len,
 				"Invalid scheme (%s). Only HTTP is allowed.",
 				uri->scheme);
 		} else {

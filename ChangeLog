@@ -1,5 +1,11 @@
 2001-01-15  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/reqs.c (process_method): A potential stack overflow bug fixed.
+	Though, I do not actually think a stack overflow could have occurred
+	in this case. Better safe than sorry.
+
+	* src/stats.c (showstats): Another potential heap overflow bug fixed.
+
 	* src/utils.c (httperr): A heap overflow bug fixed.
 
 2000-12-07  Robert James Kaes  <rjkaes@flarenet.com>

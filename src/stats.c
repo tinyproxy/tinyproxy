@@ -1,4 +1,4 @@
-/* $Id: stats.c,v 1.1 2000-09-12 00:06:09 rjkaes Exp $
+/* $Id: stats.c,v 1.2 2001-01-15 17:11:57 rjkaes Exp $
  *
  * This module handles the statistics for tinyproxy. There are only two
  * public API functions. The reason for the functions, rather than just a
@@ -79,7 +79,7 @@ int showstats(struct conn_s *connptr)
 	}
 
 	LOCK();
-	sprintf(connptr->output_message, msg,
+	snprintf(connptr->output_message, MAXBUFFSIZE, msg,
 		PACKAGE, VERSION, PACKAGE, VERSION,
 		stats.num_open,
 		stats.num_reqs,
