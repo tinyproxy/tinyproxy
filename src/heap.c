@@ -1,4 +1,4 @@
-/* $Id: heap.c,v 1.6 2003-06-26 18:14:13 rjkaes Exp $
+/* $Id: heap.c,v 1.7 2003-07-31 23:42:51 rjkaes Exp $
  *
  * Debugging versions of various heap related functions are combined
  * here.  The debugging versions include assertions and also print
@@ -55,7 +55,6 @@ debugging_realloc(void *ptr, size_t size, const char *file, unsigned long line)
 {
 	void *newptr;
 	
-	assert(ptr != NULL);
 	assert(size > 0);
 	
 	newptr = realloc(ptr, size);
@@ -83,7 +82,7 @@ debugging_strdup(const char* s, const char* file, unsigned long line)
 	assert(s != NULL);
 
 	len = strlen(s) + 1;
-	ptr = malloc(len);
+	ptr = (char*)malloc(len);
 	if (!ptr)
 		return NULL;
 	memcpy(ptr, s, len);
