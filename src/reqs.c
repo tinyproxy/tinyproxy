@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.35 2001-10-25 16:58:50 rjkaes Exp $
+/* $Id: reqs.c,v 1.36 2001-11-02 21:19:46 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -797,7 +797,7 @@ void handle_connection(int fd)
 			goto internal_proxy;
 		}
 
-		log_message(LOG_CONN, "Established a connection to the tunnel \"%s\" using file descriptor %d.", config.tunnel_name, connptr->server_fd);
+		log_message(LOG_INFO, "Established a connection to the tunnel \"%s\" using file descriptor %d.", config.tunnel_name, connptr->server_fd);
 
 		/*
 		 * I know GOTOs are evil, but duplicating the code is even
