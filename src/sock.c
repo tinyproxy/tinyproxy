@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.25 2002-04-13 19:03:18 rjkaes Exp $
+/* $Id: sock.c,v 1.26 2002-04-15 04:16:01 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -477,8 +477,10 @@ readline(int fd, char **whole_buffer)
 	}
 
 	*whole_buffer = safemalloc(whole_buffer_len + 1);
-	if (!*whole_buffer)
-		return -ENOMEMORY;
+	if (!*whole_buffer) {
+		ret = -ENOMEMORY;
+		goto CLEANUP;
+	}
 
 	*(*whole_buffer + whole_buffer_len) = '\0';
 
