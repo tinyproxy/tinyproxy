@@ -1,4 +1,4 @@
-/* $Id: hashmap.c,v 1.6 2002-04-25 18:55:56 rjkaes Exp $
+/* $Id: hashmap.c,v 1.7 2002-04-26 16:51:29 rjkaes Exp $
  *
  * A hashmap implementation.  The keys are case-insensitive NULL terminated
  * strings, and the data is arbitrary lumps of data.  Copies of both the
@@ -248,7 +248,6 @@ hashmap_insert(hashmap_t map, const char *key,
 	ptr->len = len;
 
 	map->end_iterator++;
-
 	return 0;
 }
 
@@ -260,6 +259,8 @@ hashmap_insert(hashmap_t map, const char *key,
 hashmap_iter
 hashmap_first(hashmap_t map)
 {
+	assert(map != NULL);
+
 	if (!map)
 		return -EINVAL;
 
