@@ -1,9 +1,22 @@
+2001-09-15  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* Removed all the log_message()s which reported that memory could
+	not be allocated. There's little point in reporting a memory
+	shortage since the computer will probably crash soon anyway.
+
+	* src/reqs.c (process_request): Added the code for showing the
+	stats back into the function.
+
+	* src/tinyproxy.c (takesig): When SIGHUP is received the log file
+	is rotated instead of being truncated. The rotated log has ".rot"
+	appended to the file name.
+
 2001-09-14  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/uri.c: Removed this file since it's no longer needed.
 
 	* src/reqs.c: Split the process_method() function into separate
-	smaller functions. Added support tunnel SSL connections.
+	smaller functions. Added support for tunnel SSL connections.
 
 	* src/tinyproxy.h: Added a field to handle SSL connections.
 
