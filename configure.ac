@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.51 2003-04-01 16:46:45 rjkaes Exp $
+dnl $Id: configure.ac,v 2.52 2003-04-01 16:50:41 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -195,13 +195,11 @@ dnl
 AC_HEADER_STDC
 AC_HEADER_TIME
 AC_CHECK_HEADERS([sys/ioctl.h sys/mman.h sys/resource.h \
-		  sys/select.h sys/socket.h sys/stat.h sys/time.h sys/uio.h \
+		  sys/select.h sys/socket.h sys/time.h sys/uio.h \
 		  sys/un.h sys/wait.h arpa/inet.h netinet/in.h alloca.h \
 		  assert.h ctype.h errno.h fcntl.h grp.h io.h libintl.h \
-		  memory.h netdb.h pwd.h regex.h signal.h \
-		  stdarg.h stddef.h stdint.h stdio.h stdlib.h string.h \
-		  strings.h sysexits.h syslog.h time.h unistd.h wchar.h \
-		  wctype.h])
+		  netdb.h pwd.h regex.h signal.h stdarg.h stddef.h stdio.h \
+		  sysexits.h syslog.h time.h wchar.h wctype.h])
 
 dnl OpenBSD machines don't like having malloc included (even if it's present)
 dnl as they expect you to use stdlib.h
