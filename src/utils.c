@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.37 2003-03-13 21:34:38 rjkaes Exp $
+/* $Id: utils.c,v 1.38 2003-03-14 06:15:27 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -6,7 +6,8 @@
  * it, so it's in here.
  *
  * Copyright (C) 1998       Steven Young
- * Copyright (C) 1999,2001  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 1999,2001,2003 by
+ *   Robert James Kaes (rjkaes@flarenet.com)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,17 +22,11 @@
 
 #include "tinyproxy.h"
 
-#include "buffer.h"
 #include "conns.h"
-#include "filter.h"
 #include "heap.h"
-#include "log.h"
-#include "network.h"
-#include "sock.h"
+#include "http_message.h"
 #include "utils.h"
 
-
-#define HEADER_SIZE (1024 * 8)
 /*
  * Build the data for a complete HTTP & HTML message for the client.
  */
@@ -39,30 +34,24 @@ int
 send_http_message(struct conn_s *connptr, int http_code,
 		  const char *error_title, const char *message)
 {
-	static char *headers = \
-		"HTTP/1.0 %d %s\r\n" \
-		"Server: %s/%s\r\n" \
-		"Date: %s\r\n" \
-		"Content-Type: text/html\r\n" \
-		"Content-Length: %d\r\n" \
-		"Connection: close\r\n" \
-		"\r\n";
+	static char* headers[] = {
+		"Server: " PACKAGE "/" VERSION,
+		"Content-type: text/html",
+		"Connection: close"
+	};
 
-	char timebuf[30];
-	time_t global_time;
-	size_t message_len = strlen(message);
+	http_message_t msg;
 
-	global_time = time(NULL);
-	strftime(timebuf, sizeof(timebuf), "%a, %d %b %Y %H:%M:%S GMT",
-		 gmtime(&global_time));
-
-	if (write_message(connptr->client_fd,
-			  headers,
-			  http_code, error_title, PACKAGE, VERSION,
-			  timebuf, message_len) < 0)
+	msg = http_message_create(http_code, error_title);
+	if (msg == NULL)
 		return -1;
 
-	return safe_write(connptr->client_fd, message, message_len);
+	http_message_add_headers(msg, headers, 3);
+	http_message_set_body(msg, message, strlen(message));
+	http_message_send(msg, connptr->client_fd);
+	http_message_destroy(msg);
+
+	return 0;
 }
 
 /*
