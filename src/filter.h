@@ -1,4 +1,4 @@
-/* $Id: filter.h,v 1.1.1.1 2000-02-16 17:32:24 sdyoung Exp $
+/* $Id: filter.h,v 1.2 2000-09-11 23:43:59 rjkaes Exp $
  *
  * See 'filter.c' for a detailed description.
  *
@@ -15,8 +15,8 @@
  * General Public License for more details.
  */
 
-#ifndef __FILTER_H_
-#define __FILTER_H_	1
+#ifndef _TINYPROXY_FILTER_H_
+#define _TINYPROXY_FILTER_H_
 
 extern void filter_init(void);
 extern void filter_destroy(void);

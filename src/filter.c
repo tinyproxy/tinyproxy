@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.1.1.1 2000-02-16 17:32:18 sdyoung Exp $
+/* $Id: filter.c,v 1.2 2000-09-11 23:43:59 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  *
@@ -16,27 +16,14 @@
  * General Public License for more details.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <defines.h>
-#endif
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <assert.h>
-
-#include "config.h"
-#include "utils.h"
 #include "tinyproxy.h"
-#include "filter.h"
 
-#include "regexp.h"
+#include <ctype.h>
 #include <sysexits.h>
+
+#include "filter.h"
+#include "regexp.h"
+#include "utils.h"
 
 static int err;
 
@@ -67,11 +54,11 @@ void filter_init(void)
 				s = buf;
 				if (!p)	/* head of list */
 					fl = p = (struct filter_list *)
-					    xmalloc(sizeof
+					    malloc(sizeof
 						    (struct filter_list));
 				else {	/* next entry */
 					p->next = (struct filter_list *)
-					    xmalloc(sizeof
+					    malloc(sizeof
 						    (struct filter_list));
 					p = p->next;
 				}
@@ -83,8 +70,8 @@ void filter_init(void)
 					if (isspace((int) *s))
 						*s = '\0';
 
-				p->pat = xstrdup(buf);
-				p->cpat = xmalloc(sizeof(regex_t));
+				p->pat = strdup(buf);
+				p->cpat = malloc(sizeof(regex_t));
 				if (
 				    (err =
 				     regcomp(p->cpat, p->pat,
@@ -126,13 +113,11 @@ int filter_host(char *host)
 	char *s, *port;
 	int result;
 
-	assert(host);
-
 	if (!fl || !already_init)
 		return (0);
 
 	/* strip off the port number */
-	s = xstrdup(host);
+	s = strdup(host);
 	port = strchr(s, ':');
 	if (port)
 		*port = '\0';
