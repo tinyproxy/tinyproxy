@@ -37,11 +37,9 @@
 				than a HTTP proxy.
 
      Options for file locations etc.
-        --with-port=PORT        Set the port on which tinyproxy listens,
-                                by default 8080.
-        --with-log-file=FILE    Set the default logfile location.
-        --with-user=USER        Set the default user to which tinyproxy
-                                will setuid() upon startup.
+        --with-stathost=HOST	Set the default name of the stats host
+	--with-config=FILE	Set the default location of the
+				configuration file
 
  Once you have completed your installation, if you would like to
  report your success please execute the report.sh script in the doc
@@ -57,7 +55,7 @@
  If you are having problems with tinyproxy, please report the problem
  to:
 
-	Robert James Kaes	<rjkaes@flarenet.com>
+	Robert James Kaes	<rjkaes@users.sourceforge.net>
 	Steven Young		<sdyoung@users.sourceforge.net>
 
  Please recompile tinyproxy with full debug support (--enable-debug)
@@ -78,6 +76,7 @@
 
  to produce a context listing of the location of the error.  Send a
  copy to the authors.
+
 
  HOW TO CONTRIBUTE TO tinyproxy
  ------------------------------
