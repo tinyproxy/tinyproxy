@@ -2,6 +2,8 @@
 
 	* src/sock.c (opensock): If the Listen directive is in use, then
 	we should bind outgoing address to this address.
+	(listen_sock): Added error handling for the bind() and listen()
+	calls when setting up the listening socket.
 
 2002-04-12  Robert James Kaes  <rjkaes@flarenet.com>
 

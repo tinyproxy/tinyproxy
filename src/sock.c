@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.24 2002-04-13 05:20:19 rjkaes Exp $
+/* $Id: sock.c,v 1.25 2002-04-13 19:03:18 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -206,9 +206,17 @@ listen_sock(uint16_t port, socklen_t * addrlen)
 		addr.sin_addr.s_addr = inet_addr("0.0.0.0");
 	}
 
-	bind(listenfd, (struct sockaddr *) &addr, sizeof(addr));
+	if (bind(listenfd, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+		log_message(LOG_ERR, "Unable to bind listening socket because of %s",
+			    strerror(errno));
+		return -1;
+	}
 
-	listen(listenfd, MAXLISTEN);
+	if (listen(listenfd, MAXLISTEN) < 0) {
+		log_message(LOG_ERR, "Unable to start listening socket because of %s",
+			    strerror(errno));
+		return -1;
+	}
 
 	*addrlen = sizeof(addr);
 
