@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.8 2002-04-09 01:45:37 rjkaes Exp $
+dnl $Id: configure.ac,v 2.9 2002-04-09 16:27:34 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -100,7 +100,7 @@ AC_ARG_ENABLE(filter,
               filter_enabled=$enableval, filter_enabled=yes)
 
 if test x"$filter_enabled" = x"yes"; then
-    LIBOBJS="filter.o $LIBOBJS"
+    AC_LIBOBJ([filter])
 
     AH_TEMPLATE([FILTER_ENABLE],
 		[Defined if you would like filtering code included.])
@@ -217,10 +217,17 @@ AC_CHECK_HEADERS([sys/types.h sys/ioctl.h sys/resource.h sys/select.h \
 		  sys/socket.h sys/stat.h sys/time.h sys/uio.h \
 		  sys/un.h sys/wait.h arpa/inet.h netinet/in.h alloca.h \
 		  assert.h ctype.h errno.h fcntl.h grp.h io.h libintl.h \
-		  malloc.h memory.h netdb.h pthread.h pwd.h regex.h signal.h \
+		  memory.h netdb.h pthread.h pwd.h regex.h signal.h \
 		  stdarg.h stddef.h stdint.h stdio.h stdlib.h string.h \
 		  strings.h sysexits.h syslog.h time.h unistd.h wchar.h \
 		  wctype.h])
+
+dnl OpenBSD machines don't like having malloc included (even if it's present)
+dnl as they expect you to use stdlib.h
+case "$target" in
+    *openbsd*) ;;
+    *)         AC_CHECK_HEADER(malloc.h);;
+esac
 
 AC_CHECK_HEADER(socks.h, socks_header=yes, socks_header=no)
 
@@ -341,7 +348,7 @@ if test x"$tinyproxy_use_our_regex" = x"yes" ; then
 		[Defined if you want to use the included regex routines.])
 
     AC_DEFINE(USE_GNU_REGEX)
-    LIBOBJS="gnuregex.o $LIBOBJS"
+    AC_LIBOBJ([gnuregex])
 fi
 
 dnl
@@ -352,7 +359,7 @@ AC_SUBST(LDFLAGS)
 AC_SUBST(YFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LIBS)
-AC_SUBST(LIBOBJS)
+dnl AC_SUBST(LIBOBJS)
 
 AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile])
 AC_OUTPUT
