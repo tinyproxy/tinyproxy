@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.86 2002-11-26 21:44:43 rjkaes Exp $
+/* $Id: reqs.c,v 1.87 2002-11-29 19:25:59 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -190,7 +190,8 @@ free_request_struct(struct request_s *request)
 }
 
 /*
- * Pull the information out of the URL line.
+ * Pull the information out of the URL line.  This will handle both HTTP
+ * and FTP (proxied) URLs.
  */
 static int
 extract_http_url(const char *url, struct request_s *request)
@@ -202,14 +203,14 @@ extract_http_url(const char *url, struct request_s *request)
 		goto ERROR_EXIT;
 
 	if (sscanf
-	    (url, "http://%[^:/]:%hu%s", request->host, &request->port,
+	    (url, "%[^:/]:%hu%s", request->host, &request->port,
 	     request->path) == 3) ;
-	else if (sscanf(url, "http://%[^/]%s", request->host, request->path) == 2)
+	else if (sscanf(url, "%[^/]%s", request->host, request->path) == 2)
 		request->port = 80;
-	else if (sscanf(url, "http://%[^:/]:%hu", request->host, &request->port)
+	else if (sscanf(url, "%[^:/]:%hu", request->host, &request->port)
 		 == 2)
 		strcpy(request->path, "/");
-	else if (sscanf(url, "http://%[^/]", request->host) == 1) {
+	else if (sscanf(url, "%[^/]", request->host) == 1) {
 		request->port = 80;
 		strcpy(request->path, "/");
 	} else {
@@ -347,13 +348,13 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 		return NULL;
 	}
 
-	if (strncasecmp(url, "http://", 7) == 0) {
-		/* Make sure the first four characters are lowercase */
-		memcpy(url, "http", 4);
+	if (strncasecmp(url, "http://", 7) == 0
+	    || (UPSTREAM_CONFIGURED() && strncasecmp(url, "ftp://", 6) == 0)) {
+		char *skipped_type = strstr(url, "//") + 2;
 
-		if (extract_http_url(url, request) < 0) {
+		if (extract_http_url(skipped_type, request) < 0) {
 			indicate_http_error(connptr, 400,
-				"Bad Request. Could not parse URL.");
+					    "Bad Request. Could not parse URL.");
 
 			safefree(url);
 			free_request_struct(request);
