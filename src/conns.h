@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.9 2002-04-18 21:43:53 rjkaes Exp $
+/* $Id: conns.h,v 1.10 2002-05-23 18:23:29 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -44,6 +44,12 @@ struct conn_s {
 	long remote_content_length;
 
 	/*
+	 * Store the client's IP and hostname information
+	 */
+	char* client_ip_addr;
+	char* client_string_addr;
+
+	/*
 	 * Store the incoming request's HTTP protocol.
 	 */
 	struct {
@@ -55,7 +61,8 @@ struct conn_s {
 /*
  * Functions for the creation and destruction of a connection structure.
  */
-extern struct conn_s* initialize_conn(int client_fd);
+extern struct conn_s* initialize_conn(int client_fd, const char* ipaddr,
+				      const char* string_addr);
 extern void destroy_conn(struct conn_s *connptr);
 
 #endif
