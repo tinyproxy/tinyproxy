@@ -4,7 +4,7 @@
 	the "replace" logic in dns_insert() with a call to
 	ternary_replace(). This fixes the segmentation fault problem which
 	I introduced when I "tried" to fix the memory leak. Also changed
-	the LOCKing be around the entire dnscache() again since I still
+	the LOCKing to be around the entire dnscache() again since I still
 	need to work out how locking should be done when accessing the
 	ternary tree.
 
@@ -15,7 +15,7 @@
 	ternary_insert() and ternary_replace() which both call this
 	function with the right arguments.
 
-	* src/utils.c: Removed xstrstr() since it was only used in once
+	* src/utils.c: Removed xstrstr() since it was only used in one
 	place, and could be safely replaced with strstr. I can't even
 	remember why we had this function to begin with.
 
