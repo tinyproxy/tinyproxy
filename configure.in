@@ -1,4 +1,4 @@
-dnl $Id: configure.in,v 1.36 2001-11-23 01:15:01 rjkaes Exp $
+dnl $Id: configure.in,v 1.37 2001-11-23 16:56:59 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -126,7 +126,7 @@ else
     oldIFS=$IFS; IFS=.
     set `bison -V | sed -e 's/^GNU Bison version //'`
     IFS=$oldIFS
-    if test x"$1" = x"1" -a x"$2" -lt x"25"; then
+    if test x"$1" = x"1" -a "$2" -lt "25"; then
         AC_MSG_WARN(Bison 1.25 or newer needed to regenerate parsers (found $1.$2).)
     fi
     AC_MSG_RESULT($1.$2 (ok))
@@ -159,7 +159,9 @@ dnl avoid -lnsl checks, if we already have the functions which are
 dnl usually in libnsl
 
 unset ac_cv_func_yp_get_default_domain
-AC_CHECK_FUNC(yp_get_default_domain, [ tinyproxy_no_nsl_checks=yes ], [ ])
+AC_CHECK_FUNC(yp_get_default_domain,
+              [ tinyproxy_no_nsl_checks=yes ],
+              [ tinyproxy_no_nsl_checks=no ])
 unset ac_cv_func_yp_get_default_domain
 
 if test x"$tinyproxy_no_nsl_checks" != x"yes"; then
