@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.26 2002-05-02 17:36:46 rjkaes Exp $
+dnl $Id: configure.ac,v 2.27 2002-05-02 18:22:15 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -26,6 +26,9 @@ AC_DEFINE_UNQUOTED(TARGET_SYSTEM, ["$target"])
 
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
+
+dnl Set the default CFLAGS
+CFLAGS="-D_REENTRANT"
 
 dnl Check if we're compiling on a weird platform :)
 AC_AIX
@@ -146,8 +149,6 @@ dnl
 dnl Checks for programs
 dnl
 
-dnl Save $CFLAGS since AC_PROG_CC likes to insert "-g -O2"
-dnl if $CFLAGS is blank
 cflags_save="$CFLAGS"
 
 AC_PROG_AWK
@@ -159,9 +160,7 @@ AC_PROG_LN_S
 AM_PROG_LEX
 AC_PROG_YACC
 
-dnl Restore the CFLAGS and add the -D_REENTRANT define since threading is
-dnl in use.
-CFLAGS="$cflags_save -D_REENTRANT"
+CFLAGS="$cflags_save"
 
 dnl Make sure YACC is actually bison
 if test x"$YACC" != x"bison -y"; then
@@ -267,7 +266,6 @@ if test x"$profiling_enabled" = x"yes" ; then
 fi
 
 dnl Enable the debugging flags (by checking for the GCC compiler)
-CFLAGS="-O2 $CFLAGS"
 if test x"$debug_enabled" = x"yes" ; then
     dnl Add the warnings if we have the GCC compiler
     if test x"$GCC" = x"yes" ; then
@@ -282,7 +280,7 @@ if test x"$debug_enabled" = x"yes" ; then
     YFLAGS="-v -d"
 else
     dnl No debugging information, include the optimizations
-    CFLAGS="-DNDEBUG $CFLAGS"
+    CFLAGS="-O2 -DNDEBUG $CFLAGS"
     YFLAGS="-d"
 fi
 
