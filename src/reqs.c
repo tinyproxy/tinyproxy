@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.3 2000-03-28 16:19:12 rjkaes Exp $
+/* $Id: reqs.c,v 1.4 2000-03-28 16:41:45 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections are added to the active list of connections and then the header
@@ -180,6 +180,11 @@ static int clientreq(struct conn_s *connptr)
 
 		httperr(connptr, 400, error_string);
 		safefree(error_string);
+		goto COMMON_EXIT;
+	}
+
+	if (!uri->authority) {
+		httperr(connptr, 400, "Invalid authority.");
 		goto COMMON_EXIT;
 	}
 
