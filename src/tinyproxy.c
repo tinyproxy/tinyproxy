@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.44 2003-02-26 22:37:38 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.45 2003-03-13 21:32:33 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -152,7 +152,6 @@ main(int argc, char **argv)
 	unsigned int godaemon = TRUE; /* boolean */
 	struct passwd *thisuser = NULL;
 	struct group *thisgroup = NULL;
-	char *conf_file = DEFAULT_CONF_FILE;
 
 	/*
 	 * Disable the creation of CORE files right up front.
@@ -167,6 +166,9 @@ main(int argc, char **argv)
 #endif				/* HAVE_SETRLIMIT */
 
 	log_message(LOG_INFO, "Initializing " PACKAGE " ...");
+
+	/* Default configuration file location */
+	config.config_file = DEFAULT_CONF_FILE;
 
 	/*
 	 * Process the various options
@@ -183,8 +185,8 @@ main(int argc, char **argv)
 			godaemon = FALSE;
 			break;
 		case 'c':
-			conf_file = safestrdup(optarg);
-			if (!conf_file) {
+			config.config_file = safestrdup(optarg);
+			if (!config.config_file) {
 				fprintf(stderr,
 					"%s: Could not allocate memory.\n",
 					argv[0]);
@@ -199,13 +201,19 @@ main(int argc, char **argv)
 	}
 
 	/*
+	 * Make sure the HTML error pages array is NULL to begin with.
+	 * (FIXME: Should have a better API for all this)
+	 */
+	config.errorpages = NULL;
+
+	/*
 	 * Read in the settings from the config file.
 	 */
-	yyin = fopen(conf_file, "r");
+	yyin = fopen(config.config_file, "r");
 	if (!yyin) {
 		fprintf(stderr,
 			"%s: Could not open configuration file \"%s\".\n",
-			argv[0], conf_file);
+			argv[0], config.config_file);
 		exit(EX_SOFTWARE);
 	}
 	yyparse();

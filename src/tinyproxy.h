@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.37 2003-01-27 17:57:37 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.38 2003-03-13 21:32:33 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -27,6 +27,7 @@
 
 struct config_s {
 	char *logf_name;
+	char *config_file;
 	unsigned int syslog; /* boolean */
 	int port;
 	char *stathost;
@@ -51,10 +52,28 @@ struct config_s {
 	unsigned int idletimeout;
 	char* bind_address;
 
-	char* dnsserver_location;
-	char* dnsserver_socket;
-
 	unsigned int via_http_header; /* boolean */
+
+	/* 
+	 * Error page support.  This is an array of pointers to structures
+	 * which describe the error page path, and what HTTP error it handles.
+	 * an example would be { "/usr/local/etc/tinyproxy/404.html", 404 }
+	 * Ending of array is noted with NULL, 0.
+	 */
+	struct error_pages_s {
+		char *errorpage_path;
+		unsigned int errorpage_errnum;
+	} **errorpages;
+	/* 
+	 * Error page to be displayed if appropriate page cannot be located
+	 * in the errorpages structure.
+	 */
+	char *errorpage_undef;
+
+	/* 
+	 * The HTML statistics page. 
+	 */
+	char *statpage;
 };
 
 /* Global Structures used in the program */
