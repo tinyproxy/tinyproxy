@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.2 2000-12-08 03:35:07 rjkaes Exp $
+/* $Id: thread.c,v 1.3 2000-12-09 02:35:30 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -28,6 +28,7 @@ static socklen_t addrlen;
 struct thread_s {
 	pthread_t tid;
 	enum { T_EMPTY, T_WAITING, T_CONNECTED } status;
+	unsigned int connects;
 };
 static struct thread_s *thread_ptr;
 static pthread_mutex_t mlock = PTHREAD_MUTEX_INITIALIZER;
@@ -40,8 +41,17 @@ struct thread_config_s {
 static unsigned int servers_waiting;	/* servers waiting for a connection */
 static pthread_mutex_t servers_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-#define LOCK_SERVERS()	 pthread_mutex_lock(&servers_mutex)
-#define UNLOCK_SERVERS() pthread_mutex_unlock(&servers_mutex)
+#define SERVER_INC() do { \
+    pthread_mutex_lock(&servers_mutex); \
+    servers_waiting++; \
+    pthread_mutex_unlock(&servers_mutex); \
+} while (0)
+
+#define SERVER_DEC() do { \
+    pthread_mutex_lock(&servers_mutex); \
+    servers_waiting--; \
+    pthread_mutex_unlock(&servers_mutex); \
+} while (0)
 
 /*
  * Set the configuration values for the various thread related settings.
@@ -96,18 +106,25 @@ static void *thread_main(void *arg)
 		connfd = accept(listenfd, cliaddr, &clilen);
 		pthread_mutex_unlock(&mlock);
 
-		LOCK_SERVERS();
 		ptr->status = T_CONNECTED;
-		servers_waiting--;
-		UNLOCK_SERVERS();
+
+		SERVER_DEC();
 
 		handle_connection(connfd);
 		close(connfd);
 
-		LOCK_SERVERS();
-		ptr->status = T_WAITING;
-		servers_waiting++;
-		UNLOCK_SERVERS();
+		if (thread_config.maxrequestsperchild != 0)
+			ptr->connects++;
+
+		if (ptr->connects > thread_config.maxrequestsperchild) {
+			ptr->connects = 0;
+			ptr->status = T_EMPTY;
+			return NULL;
+		} else {
+			ptr->status = T_WAITING;
+
+			SERVER_INC();
+		}
 	}
 }
 /*
@@ -142,6 +159,7 @@ int thread_pool_create(void)
 	}
 	for (i = thread_config.startservers; i < thread_config.maxclients; i++) {
 		thread_ptr[i].status = T_EMPTY;
+		thread_ptr[i].connects = 0;
 	}
 
 	return 0;
@@ -156,14 +174,14 @@ int thread_main_loop(void)
 	int i;
 
 	/* If there are not enough spare servers, create more */
-	LOCK_SERVERS();
-
 	if (servers_waiting < thread_config.minspareservers) {
 		for (i = 0; i < thread_config.maxclients; i++) {
 			if (thread_ptr[i].status == T_EMPTY) {
 				pthread_create(&thread_ptr[i].tid, NULL, &thread_main, &thread_ptr[i]);
 				thread_ptr[i].status = T_WAITING;
-				servers_waiting++;
+
+				SERVER_INC();
+
 				log(LOG_NOTICE, "Created a new thread.");
 				break;
 			}
@@ -172,7 +190,9 @@ int thread_main_loop(void)
 		for (i = 0; i < thread_config.maxclients; i++) {
 			if (thread_ptr[i].status == T_WAITING) {
 				pthread_join(thread_ptr[i].tid, NULL);
-				servers_waiting--;
+
+				SERVER_DEC();
+
 				thread_ptr[i].status = T_EMPTY;
 				log(LOG_NOTICE, "Killed off a thread.");
 				break;
@@ -180,7 +200,6 @@ int thread_main_loop(void)
 		}
 	}
 	
-	UNLOCK_SERVERS();
 	return 0;
 }
 
