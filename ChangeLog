@@ -1,3 +1,15 @@
+2003-08-06  Robert James Kaes  <rjkaes@flarenet.com>
+
+	Released tinyproxy 1.6.1 (2003-08-06)
+
+	* heap.c (debugging_realloc):
+	Remove the assert on the ptr being NULL since a NULL pointer is
+	allowed by the realloc() spec.
+	
+	* child.c (child_main):
+	Fixed an off-by-one error with the maxrequestsperchild
+	variable.  [Fix proposed by Yannick Koehler]
+
 2003-07-14  Robert James Kaes  <rjkaes@flarenet.com>
 
 	Released tinyproxy 1.6.0 (2003-07-14)
