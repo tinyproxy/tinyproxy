@@ -1,8 +1,21 @@
-/* $Id: htmlerror.c,v 1.1 2003-03-13 21:25:06 rjkaes Exp $
+/* $Id: htmlerror.c,v 1.2 2003-03-14 22:45:59 rjkaes Exp $
  * 
  * This file contains source code for the handling and display of
  * HTML error pages with variable substitution.
+ *
+ * Copyright (C) 2003  Steven Young <sdyoung@well.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
  */
+
 #include "tinyproxy.h"
 
 #include "common.h"
@@ -13,8 +26,11 @@
 #include "network.h"
 #include "utils.h"
 
-/* Add an error number -> filename mapping to the errorpages list. */
-int add_new_errorpage(char *filepath, unsigned int errornum) {
+/*
+ * Add an error number -> filename mapping to the errorpages list.
+ */
+int
+add_new_errorpage(char *filepath, unsigned int errornum) {
 	static int errorpage_count = 1;
 
 	/* First, add space for another pointer to the errorpages array. */
@@ -41,8 +57,11 @@ int add_new_errorpage(char *filepath, unsigned int errornum) {
 	return(0);
 }
 
-/* Get the file appropriate for a given error. */
-char *get_html_file(int errornum) {
+/*
+ * Get the file appropriate for a given error.
+ */
+char*
+get_html_file(int errornum) {
 	int i;
 
 	if(!config.errorpages) return(config.errorpage_undef);
@@ -55,8 +74,11 @@ char *get_html_file(int errornum) {
 	return(config.errorpage_undef);
 }
 
-/* Look up the value for a variable. */
-char *lookup_variable(struct conn_s *connptr, char *varname) {
+/*
+ * Look up the value for a variable.
+ */
+char*
+lookup_variable(struct conn_s *connptr, char *varname) {
 	int i;
 
 	for(i = 0; i<connptr->error_variable_count; i++) {
@@ -69,9 +91,11 @@ char *lookup_variable(struct conn_s *connptr, char *varname) {
 
 #define HTML_BUFSIZE 4096
 
-/* Send an already-opened file to the client with
- * variable substitution. */
-int send_html_file(FILE *infile, struct conn_s *connptr) {
+/*
+ * Send an already-opened file to the client with variable substitution.
+ */
+int
+send_html_file(FILE *infile, struct conn_s *connptr) {
 	char inbuf[HTML_BUFSIZE], *varstart = NULL, *p;
 	char *varval;
 	int in_variable = 0, writeret;
@@ -88,14 +112,11 @@ int send_html_file(FILE *infile, struct conn_s *connptr) {
 												 varval);
 						if(writeret) return(writeret);
 						in_variable = 0;
-						break;
+					} else {
+						writeret = write_message(connptr->client_fd, "%c", *p);
+						if (writeret) return(writeret);
 					}
-					/* If we are not in a variable, then 
-					 * we fallthrough.  the code for { will
-					 * not do anything if in_variable is set to
-					 * 0.  it will end up in the default
-					 * handler which will send the }. 
-					 */
+					break;
 				case '{':
 					/* a {{ will print a single {.  If we are NOT
 					 * already in a { variable, then proceed with
@@ -106,7 +127,8 @@ int send_html_file(FILE *infile, struct conn_s *connptr) {
 					 if(!in_variable) {
 					 	varstart = p+1;
 						in_variable++;
-					}
+					} else
+						in_variable = 0;
 				default:
 					if(!in_variable) {
 						writeret = write_message(connptr->client_fd, "%c", 
@@ -121,7 +143,8 @@ int send_html_file(FILE *infile, struct conn_s *connptr) {
 	return(0);
 }
 
-int send_http_headers(struct conn_s *connptr, int code, char *message) {
+int
+send_http_headers(struct conn_s *connptr, int code, char *message) {
 	char *headers = \
 		"HTTP/1.0 %d %s\r\n" \
 		"Server: %s/%s\r\n" \
@@ -199,8 +222,11 @@ add_error_variable(struct conn_s *connptr, char *key, char *val)
 
 #define ADD_VAR_RET(x, y) if(y) { if(add_error_variable(connptr, x, y) == -1) return(-1); }
 
-/* Set some standard variables used by all HTML pages */
-int add_standard_vars(struct conn_s *connptr) {
+/*
+ * Set some standard variables used by all HTML pages
+ */
+int
+add_standard_vars(struct conn_s *connptr) {
 	char timebuf[30];
 	time_t global_time = time(NULL);
 
@@ -239,4 +265,3 @@ indicate_http_error(struct conn_s* connptr, int number, char *message, ...)
 
 	return(add_standard_vars(connptr));
 }
-
