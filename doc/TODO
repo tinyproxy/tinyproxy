@@ -21,3 +21,5 @@ against the current tree and I'll integrate it if possible.
     Suggested: Ed Avis
   - Include the ability to rewrite both incoming and outgoing headers.
   - Enable an option for chroot() jailing tinyproxy.
+  - Add an option which allows the blocking of connections certain ports
+    (like 25, 110, etc.) that might be used for "bad" things. :)
