@@ -1,4 +1,4 @@
-/* $Id: dnscache.c,v 1.14 2001-09-07 04:17:26 rjkaes Exp $
+/* $Id: dnscache.c,v 1.15 2001-09-08 18:56:30 rjkaes Exp $
  *
  * This is a caching DNS system. When a host name is needed we look it up here
  * and see if there is already an answer for it. The domains are placed in a
@@ -43,7 +43,7 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 #define UNLOCK() pthread_mutex_unlock(&mutex);
 
 #define DNSEXPIRE (5 * 60)
-#define DNS_INSERT_LIMIT 10000            /* free the memory after inserts */
+#define DNS_INSERT_LIMIT 1024            /* free the memory after inserts */
 
 struct dnscache_s {
 	struct in_addr ipaddr;
@@ -80,7 +80,7 @@ static int dns_insert(struct in_addr *addr, char *domain)
 	assert(addr != NULL);
 	assert(domain != NULL);
 
-	if (!(newptr = malloc(sizeof(struct dnscache_s)))) {
+	if (!(newptr = safemalloc(sizeof(struct dnscache_s)))) {
 		return -1;
 	}
 
