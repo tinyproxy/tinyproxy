@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.3 2000-09-26 04:58:35 rjkaes Exp $
+/* $Id: utils.h,v 1.4 2001-05-27 02:38:46 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -29,7 +29,12 @@ extern int httperr(struct conn_s *connptr, int err, char *msg);
 extern void makedaemon(void);
 extern void pidfile_create(const char *path);
 
+#ifndef HAVE_STRLCAT
 extern size_t strlcat(char *dst, const char *src, size_t size);
+#endif /* HAVE_STRLCAT */
+
+#ifndef HAVE_STRLCPY
 extern size_t strlcpy(char *dst, const char *src, size_t size);
+#endif /* HAVE_STRLCPY */
 
 #endif

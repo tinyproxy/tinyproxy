@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.3 2001-01-15 17:06:19 rjkaes Exp $
+/* $Id: utils.c,v 1.4 2001-05-27 02:38:46 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -75,7 +75,7 @@ int httperr(struct conn_s *connptr, int err, char *msg)
 
 	connptr->output_message = malloc(MAXBUFFSIZE);
 	if (!connptr->output_message) {
-		log(LOG_CRIT, "Out of memory!");
+		log_message(LOG_CRIT, "Out of memory!");
 		return -1;
 	}
 
@@ -122,8 +122,8 @@ static int create_file_safely(const char *filename)
 		 * existing", exit.
 		 */
 		if (errno != ENOENT) {
-			log(LOG_ERR, "Error checking PID file %s: %s",
-			    filename, strerror(errno));
+			log_message(LOG_ERR, "Error checking PID file %s: %s",
+				    filename, strerror(errno));
 			return -1;
 		}
 
@@ -133,8 +133,8 @@ static int create_file_safely(const char *filename)
 		 * and open()
 		 */
 		if ((fildes = open(filename, O_RDWR | O_CREAT | O_EXCL, 0600)) < 0) {
-			log(LOG_ERR, "Could not create PID file %s: %s",
-			    filename, strerror(errno));
+			log_message(LOG_ERR, "Could not create PID file %s: %s",
+				    filename, strerror(errno));
 			return -1;
 		}
 	} else {
@@ -144,8 +144,8 @@ static int create_file_safely(const char *filename)
 		 * Open an existing file.
 		 */
 		if ((fildes = open(filename, O_RDWR)) < 0) {
-			log(LOG_ERR, "Could not open PID file %s: %s",
-			    filename, strerror(errno));
+			log_message(LOG_ERR, "Could not open PID file %s: %s",
+				    filename, strerror(errno));
 			return -1;
 		}
 
@@ -157,8 +157,8 @@ static int create_file_safely(const char *filename)
 		    || lstatinfo.st_mode != fstatinfo.st_mode
 		    || lstatinfo.st_ino != fstatinfo.st_ino
 		    || lstatinfo.st_dev != fstatinfo.st_dev) {
-			log(LOG_ERR, "The PID file %s has been changed before it could be opened!",
-			    filename);
+			log_message(LOG_ERR, "The PID file %s has been changed before it could be opened!",
+				    filename);
 			close(fildes);
 			return -1;
 		}
@@ -171,8 +171,8 @@ static int create_file_safely(const char *filename)
 		 * st_mode check would also find this)
 		 */
 		if (fstatinfo.st_nlink > 1 || !S_ISREG(lstatinfo.st_mode)) {
-			log(LOG_ERR, "The PID file %s has too many links, or is not a regular file: %s",
-			    filename, strerror(errno));
+			log_message(LOG_ERR, "The PID file %s has too many links, or is not a regular file: %s",
+				    filename, strerror(errno));
 			close(fildes);
 			return -1;
 		}
@@ -182,19 +182,19 @@ static int create_file_safely(const char *filename)
 		 * do is to close the file and reopen it in create mode, which
 		 * unfortunately leads to a race condition, however "systems
 		 * which don't support ftruncate()" is pretty much SCO only,
-		 * and if you're using that you deserver what you get.
+		 * and if you're using that you deserve what you get.
 		 * ("Little sympathy has been extended")
 		 */
-#if defined NO_FTRUNCATE
+#ifdef HAVE_FTRUNCATE
+		ftruncate(fildes, 0);
+#else
 		close(fildes);
 		if ((fildes = open(filename, O_RDWR | O_CREAT | O_TRUNC, 0600)) < 0) {
-			log(LOG_ERR, "Could not open PID file %s: %s",
-			    filename, strerror(errno));
+			log_message(LOG_ERR, "Could not open PID file %s: %s",
+				    filename, strerror(errno));
 			return -1;
 		}
-#else
-		ftruncate(fildes, 0);
-#endif	/* NO_FTRUNCATE */
+#endif	/* HAVE_FTRUNCATE */
 	}
 
 	return fildes;
@@ -218,8 +218,8 @@ void pidfile_create(const char *filename)
 	 * Open a stdio file over the low-level one.
 	 */
 	if ((fd = fdopen(fildes, "w")) == NULL) {
-		log(LOG_ERR, "fdopen() error on PID file %s: %s",
-		    filename, strerror(errno));
+		log_message(LOG_ERR, "fdopen() error on PID file %s: %s",
+			    filename, strerror(errno));
 		close(fildes);
 		unlink(filename);
 		exit(1);
