@@ -1,4 +1,4 @@
-/* $Id: scanner.l,v 1.12 2002-05-26 18:54:27 rjkaes Exp $
+/* $Id: scanner.l,v 1.13 2002-05-27 01:52:44 rjkaes Exp $
  *
  * This builds the scanner for the tinyproxy configuration file. This
  * file needs to stay in sync with grammar.y. If someone knows lex and yacc
@@ -44,6 +44,8 @@ static struct keyword keywords[] = {
 	{ "group",		 KW_GROUP },
 	{ "anonymous",		 KW_ANONYMOUS },
 	{ "filter",		 KW_FILTER },
+        { "filterurls",          KW_FILTERURLS },
+        { "filterextended",      KW_FILTEREXTENDED },
 	{ "xtinyproxy",		 KW_XTINYPROXY },
 	{ "tunnel",		 KW_TUNNEL },
         { "upstream",            KW_UPSTREAM },
