@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.13 2003-04-16 16:37:58 rjkaes Exp $
+/* $Id: conns.h,v 1.14 2003-05-04 04:35:10 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -40,8 +40,7 @@ struct conn_s {
 	/*
 	 * Store the error response if there is one.
 	 * This structure stores key -> value mappings for substitution
-	 * in the error HTML files.  a NULL pointer indicates the end of 
-	 * the array
+	 * in the error HTML files.
 	 */
 	struct error_variable_s {
 		char *error_key;

@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.15 2003-04-16 16:37:59 rjkaes Exp $
+/* $Id: conns.c,v 1.16 2003-05-04 04:35:10 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connection related tasks put here, but for now the header
@@ -116,7 +116,7 @@ destroy_conn(struct conn_s *connptr)
 	if (connptr->error_variables) {
 		int i;
 
-		for(i = 0; connptr->error_variables[i]; i++) {
+		for (i = 0; i < connptr->error_variable_count; ++i) {
 			safefree(connptr->error_variables[i]->error_key);
 			safefree(connptr->error_variables[i]->error_val);
 			safefree(connptr->error_variables[i]);
