@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.30 2001-10-19 18:03:49 rjkaes Exp $
+/* $Id: reqs.c,v 1.31 2001-10-22 16:08:29 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -111,6 +111,9 @@ struct request_s {
 
 static void free_request_struct(struct request_s *request)
 {
+	if (!request)
+		return;
+
 	safefree(request->method);
 	safefree(request->protocol);
 
@@ -836,33 +839,33 @@ internal_proxy:
 	safefree(request_line);
 
 	if (!request) {
-		update_stats(STAT_BADCONN);
-
 		if (!connptr->send_message) {
+			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
 			return;
 		}
-	} else {
-#ifdef UPSTREAM_SUPPORT
-		if (config.upstream_name && config.upstream_port != -1) {
-			if (connect_to_upstream(connptr, request) < 0)
-				goto send_error;
-		} else {
-#endif
-			connptr->server_fd = opensock(request->host, request->port);
-			if (connptr->server_fd < 0) {
-				httperr(connptr, 500, HTTP500ERROR);
-				goto send_error;
-			}
-
-			log_message(LOG_CONN, "Established connection to host \"%s\" using file descriptor %d.", request->host, connptr->server_fd);
-
-			if (!connptr->ssl)
-				establish_http_connection(connptr, request);
-#ifdef UPSTREAM_SUPPORT
-		}
-#endif
+		goto send_error;
 	}
+
+#ifdef UPSTREAM_SUPPORT
+	if (config.upstream_name && config.upstream_port != -1) {
+		if (connect_to_upstream(connptr, request) < 0)
+			goto send_error;
+	} else {
+#endif
+		connptr->server_fd = opensock(request->host, request->port);
+		if (connptr->server_fd < 0) {
+			httperr(connptr, 500, HTTP500ERROR);
+			goto send_error;
+		}
+
+		log_message(LOG_CONN, "Established connection to host \"%s\" using file descriptor %d.", request->host, connptr->server_fd);
+
+		if (!connptr->ssl)
+			establish_http_connection(connptr, request);
+#ifdef UPSTREAM_SUPPORT
+	}
+#endif
 
 send_error:
 	free_request_struct(request);

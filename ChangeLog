@@ -1,5 +1,10 @@
 2001-10-22  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/reqs.c (free_request_struct): Added a test to return if the
+	pointer is NULL.
+	(handle_connection): Cleaned up the code to better handle the
+	cause where the request is NULL.
+
 	* src/sock.c (getpeer_string):
 	* src/sock.c (getpeer_ip): When the DNS lookup fails, we need to
 	initialized the user's buffer to an empty string; otherwise, the
