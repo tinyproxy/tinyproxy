@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.11 2002-04-09 20:04:05 rjkaes Exp $
+dnl $Id: configure.ac,v 2.12 2002-04-10 17:30:08 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -251,7 +251,6 @@ dnl Checks for libary functions
 dnl
 AC_FUNC_ALLOCA
 AC_FUNC_FORK
-AC_FUNC_LSTAT
 AC_FUNC_MALLOC
 dnl AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
