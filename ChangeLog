@@ -1,3 +1,22 @@
+2001-08-27  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/log.c (log_message): Fixed a problem where the connect
+	messages were not getting through if the log level was set to
+	INFO.
+
+	* src/tinyproxy.h: Moved some of the includes around so that
+	tinyproxy can compile correctly on FreeBSD systems.
+
+	* src/thread.c: Added the pthread_attr_t structure since we're
+	going to be using a non-default sized stack because some OS's have
+	a stack size which is too small.
+
+	* configure.in: Added a test for detecting FreeBSD's -pthread
+	mechanism for telling GCC to use POSIX threading.
+
+	* src/utils.c (httperr): Fixed the MIME type. Should be be
+	text/html, not text/mime. Fix one bug, add two new ones. Sigh.
+
 2001-08-26  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/utils.c (httperr): Split the headers from the actual message
