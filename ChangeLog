@@ -1,3 +1,26 @@
+2002-04-15  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/anonymous.c (anonymous_insert): Now returns -1 upon error,
+	and 0 upon success.  This simplified the code, since I don't care
+	whether the sucess is from a sucessful insert, or because the
+	string was already present in the hashmap.
+	(anonymous_search): The function now returns a postive number
+	greater than zero if the string was found, otherwise zero or a
+	negative value is returned.  Needed to change the _one_ call to
+	this function to use the new return method.
+
+	* src/reqs.c (pull_client_data): Moved the common error exit
+	together.  Better, smaller code is produced.
+	(add_header_to_connection): Changed the code a bit to remove the
+	call to strlen() and the variable associated with it.
+	(establish_http_connection): Changed the three calls to
+	write_message() and safe_write() into one combined call to
+	write_message().
+	(send_ssl_response): Replaced the three calls to safe_write() into
+	one call to write_message().
+	(extract_http_url): Moved the common error code into it's own
+	section and jump to it upon error.
+
 2002-04-14  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/utils.c (chomp): Added an assert to detect a design error.
