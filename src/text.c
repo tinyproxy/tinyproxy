@@ -1,0 +1,99 @@
+/* $Id: text.c,v 1.1 2002-05-23 04:42:30 rjkaes Exp $
+ *
+ * The functions included here are useful for text manipulation.  They
+ * replace or augment the standard C string library.  These functions
+ * are either safer replacements, or they provide services not included
+ * with the standard C string library.
+ *
+ * Copyright (C) 2002  Robert James Kaes (rjkaes@flarenet.com)
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ */
+
+#include "tinyproxy.h"
+
+#include "text.h"
+
+#ifndef HAVE_STRLCPY
+/*
+ * Function API taken from OpenBSD. Like strncpy(), but does not 0 fill the
+ * buffer, and always NULL terminates the buffer. size is the size of the
+ * destination buffer.
+ */
+size_t
+strlcpy(char *dst, const char *src, size_t size)
+{
+	size_t len = strlen(src);
+	size_t ret = len;
+
+	if (len >= size)
+		len = size - 1;
+
+	memcpy(dst, src, len);
+	dst[len] = '\0';
+
+	return ret;
+}
+#endif
+
+#ifndef HAVE_STRLCAT
+/*
+ * Function API taken from OpenBSD. Like strncat(), but does not 0 fill the
+ * buffer, and always NULL terminates the buffer. size is the length of the
+ * buffer, which should be one more than the maximum resulting string
+ * length.
+ */
+size_t
+strlcat(char *dst, const char *src, size_t size)
+{
+	size_t len1 = strlen(dst);
+	size_t len2 = strlen(src);
+	size_t ret = len1 + len2;
+
+	if (len1 + len2 >= size)
+		len2 = size - len1 - 1;
+	if (len2 > 0) {
+		memcpy(dst + len1, src, len2);
+		dst[len1 + len2] = '\0';
+	}
+
+	return ret;
+}
+#endif
+
+/*
+ * Removes any new-line or carriage-return characters from the end of the
+ * string. This function is named afrer the same function in Perl.
+ * "length" should be the number of characters in the buffer, not including
+ * the trailing NULL.
+ *
+ * Returns the number of characters removed from the end of the string.
+ */
+size_t
+chomp(char *buffer, size_t length)
+{
+	size_t chars;
+
+	assert(buffer != NULL);
+
+	chars = 0;
+
+	--length;
+	while (buffer[length] == '\r' || buffer[length] == '\n') {
+		buffer[length--] = '\0';
+		chars++;
+
+		if (length < 0)
+			break;
+	}
+
+	return chars;
+}
