@@ -1,5 +1,8 @@
 2001-10-22  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/sock.c (getpeer_string): Added logging in case the
+	gethostbyaddr() function fails.
+
 	* src/reqs.c (free_request_struct): Added a test to return if the
 	pointer is NULL.
 	(handle_connection): Cleaned up the code to better handle the
