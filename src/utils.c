@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.31 2002-05-24 04:45:32 rjkaes Exp $
+/* $Id: utils.c,v 1.32 2002-05-31 18:26:30 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -138,7 +138,7 @@ indicate_http_error(struct conn_s* connptr, int number, const char* string)
  * Safely creates filename and returns the low-level file descriptor.
  */
 int
-create_file_safely(const char *filename)
+create_file_safely(const char *filename, bool_t truncate_file)
 {
 	struct stat lstatinfo;
 	int fildes;
@@ -155,7 +155,7 @@ create_file_safely(const char *filename)
 		 */
 		if (errno != ENOENT) {
 			log_message(LOG_ERR,
-				    "create_file_safely: Error checking PID file %s: %s.",
+				    "create_file_safely: Error checking file %s: %s.",
 				    filename, strerror(errno));
 			return -1;
 		}
@@ -168,19 +168,24 @@ create_file_safely(const char *filename)
 		if ((fildes =
 		     open(filename, O_RDWR | O_CREAT | O_EXCL, 0600)) < 0) {
 			log_message(LOG_ERR,
-				    "create_file_safely: Could not create PID file %s: %s.",
+				    "create_file_safely: Could not create file %s: %s.",
 				    filename, strerror(errno));
 			return -1;
 		}
 	} else {
 		struct stat fstatinfo;
+		int flags;
+
+		flags = O_RDWR;
+		if (!truncate_file)
+			flags |= O_APPEND;
 
 		/*
 		 * Open an existing file.
 		 */
-		if ((fildes = open(filename, O_RDWR)) < 0) {
+		if ((fildes = open(filename, flags)) < 0) {
 			log_message(LOG_ERR,
-				    "create_file_safely: Could not open PID file %s: %s.",
+				    "create_file_safely: Could not open file %s: %s.",
 				    filename, strerror(errno));
 			return -1;
 		}
@@ -194,7 +199,7 @@ create_file_safely(const char *filename)
 		    || lstatinfo.st_ino != fstatinfo.st_ino
 		    || lstatinfo.st_dev != fstatinfo.st_dev) {
 			log_message(LOG_ERR,
-				    "create_file_safely: The PID file %s has been changed before it could be opened.",
+				    "create_file_safely: The file %s has been changed before it could be opened.",
 				    filename);
 			close(fildes);
 			return -1;
@@ -209,11 +214,18 @@ create_file_safely(const char *filename)
 		 */
 		if (fstatinfo.st_nlink > 1 || !S_ISREG(lstatinfo.st_mode)) {
 			log_message(LOG_ERR,
-				    "create_file_safely: The PID file %s has too many links, or is not a regular file: %s.",
+				    "create_file_safely: The file %s has too many links, or is not a regular file: %s.",
 				    filename, strerror(errno));
 			close(fildes);
 			return -1;
 		}
+
+		/*
+		 * Just return the file descriptor if we _don't_ want the file
+		 * truncated.
+		 */
+		if (!truncate_file)
+			return fildes;
 
 		/*
 		 * On systems which don't support ftruncate() the best we can
@@ -230,7 +242,7 @@ create_file_safely(const char *filename)
 		if ((fildes =
 		     open(filename, O_RDWR | O_CREAT | O_TRUNC, 0600)) < 0) {
 			log_message(LOG_ERR,
-				    "create_file_safely: Could not open PID file %s: %s.",
+				    "create_file_safely: Could not open file %s: %s.",
 				    filename, strerror(errno));
 			return -1;
 		}
@@ -252,7 +264,7 @@ pidfile_create(const char *filename)
 	/*
 	 * Create a new file
 	 */
-	if ((fildes = create_file_safely(filename)) < 0)
+	if ((fildes = create_file_safely(filename, TRUE)) < 0)
 		exit(1);
 
 	/*
@@ -306,7 +318,7 @@ rotate_log_files(void)
 
 		rename(config.logf_name, rename_file);
 
-		log_file_des = create_file_safely(config.logf_name);
+		log_file_des = create_file_safely(config.logf_name, TRUE);
 		if (log_file_des < 0) {
 			log_message(LOG_CRIT,
 				    "Could not properly create the new log file; therefore the log has not been rotated.");
