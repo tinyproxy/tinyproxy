@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.6 2001-11-25 22:06:20 rjkaes Exp $
+/* $Id: conns.c,v 1.7 2002-04-07 21:32:01 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connnection related tasks put here, but for now the header
@@ -25,24 +25,64 @@
 #include "stats.h"
 #include "utils.h"
 
-void
-initialize_conn(struct conn_s *connptr)
+struct conn_s *
+initialize_conn(int client_fd)
 {
-	connptr->client_fd = connptr->server_fd = -1;
-	connptr->cbuffer = new_buffer();
-	connptr->sbuffer = new_buffer();
+	struct conn_s *connptr;
+	struct buffer_s *cbuffer, *sbuffer;
 
-	connptr->send_response_message = FALSE;
+	assert(client_fd >= 0);
+
+	/*
+	 * Allocate the memory for all the internal componets
+	 */
+	cbuffer = new_buffer();
+	sbuffer = new_buffer();
+
+	if (!cbuffer || !sbuffer)
+		goto error_exit;
+
+	/*
+	 * Allocate the space for the conn_s structure itself.
+	 */
+	connptr = safemalloc(sizeof(struct conn_s));
+	if (!connptr)
+		goto error_exit;
+
+	connptr->client_fd = client_fd;
+	connptr->server_fd = -1;
+
+	connptr->cbuffer = cbuffer;
+	connptr->sbuffer = sbuffer;
+
+	connptr->request_line = NULL;
+
+	connptr->response_message_sent = FALSE;
 	connptr->connect_method = FALSE;
 
 	connptr->protocol.major = connptr->protocol.minor = 0;
 
 	update_stats(STAT_OPEN);
+
+	return connptr;
+
+error_exit:
+	/*
+	 * If we got here, there was a problem allocating memory
+	 */
+	if (cbuffer)
+		delete_buffer(cbuffer);
+	if (sbuffer)
+		delete_buffer(sbuffer);
+
+	return NULL;
 }
 
 void
 destroy_conn(struct conn_s *connptr)
 {
+	assert(connptr != NULL);
+
 	if (connptr->client_fd != -1)
 		close(connptr->client_fd);
 	if (connptr->server_fd != -1)
@@ -52,6 +92,9 @@ destroy_conn(struct conn_s *connptr)
 		delete_buffer(connptr->cbuffer);
 	if (connptr->sbuffer)
 		delete_buffer(connptr->sbuffer);
+
+	if (connptr->request_line)
+		safefree(connptr->request_line);
 
 	safefree(connptr);
 

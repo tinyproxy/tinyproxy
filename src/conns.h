@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.5 2001-11-25 22:06:20 rjkaes Exp $
+/* $Id: conns.h,v 1.6 2002-04-07 21:32:01 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -30,8 +30,11 @@ struct conn_s {
 	struct buffer_s *cbuffer;
 	struct buffer_s *sbuffer;
 
+	/* The request line (first line) from the client */
+	char *request_line;
+
 	bool_t connect_method;
-	bool_t send_response_message;
+	bool_t response_message_sent;
 
 	/*
 	 * Store the incoming request's HTTP protocol.
@@ -45,7 +48,7 @@ struct conn_s {
 /*
  * Functions for the creation and destruction of a connection structure.
  */
-extern void initialize_conn(struct conn_s *connptr);
+extern struct conn_s* initialize_conn(int client_fd);
 extern void destroy_conn(struct conn_s *connptr);
 
 #endif
