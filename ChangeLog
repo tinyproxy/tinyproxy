@@ -1,3 +1,19 @@
+2001-09-06  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/thread.c (thread_main): The code which closes a thread
+	doesn't actually work correct so I've moved the test to just after
+	a thread has handled a connection. The code still needs to be
+	cleaned up to handle locking.
+
+	* src/ternary.c (ternary_destroy): Fixed the deletion code as it
+	would cause a segfault if it was every called. Also, lowered the
+	sizes of the arrays for better memory usage.
+
+	* src/dnscache.c: After a certain number of insertions delete the
+	DNS cache and free the memory. The reason for this is that a
+	ternary tree doesn't lend itself to removing individual
+	entries. It's just easier (and cleaner) to simply delete the cache.
+
 2001-09-04  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (process_client_headers): Moved the skip header test
