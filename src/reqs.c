@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.29 2001-10-17 04:15:35 rjkaes Exp $
+/* $Id: reqs.c,v 1.30 2001-10-19 18:03:49 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -182,8 +182,8 @@ static int extract_ssl_url(const char *url, struct request_s *request)
 /*
  * Create a connection for HTTP connections.
  */
-static inline int establish_http_connection(struct conn_s *connptr,
-					    struct request_s *request)
+static int establish_http_connection(struct conn_s *connptr,
+				     struct request_s *request)
 {
 	/*
 	 * Send the request line
@@ -708,6 +708,54 @@ static void destroy_conn(struct conn_s *connptr)
 	update_stats(STAT_CLOSE);
 }
 
+#ifdef UPSTREAM_SUPPORT
+/*
+ * Establish a connection to the upstream proxy server.
+ */
+static int connect_to_upstream(struct conn_s *connptr,
+			       struct request_s *request)
+{
+	char *combined_host_path;
+	int len;
+
+	connptr->server_fd = opensock(config.upstream_name, config.upstream_port);
+
+	if (connptr->server_fd < 0) {
+		log_message(LOG_WARNING, "Could not connect to upstream proxy.");
+		httperr(connptr, 404, "Unable to connect to upstream proxy.");
+		return -1;
+	}
+
+	log_message(LOG_CONN, "Established connection to upstream proxy \"%s\" using file descriptor %d.", config.upstream_name, connptr->server_fd);
+
+	if (connptr->ssl) {
+		safe_write(connptr->server_fd, "CONNECT ", 8);
+		safe_write(connptr->server_fd, request->host, strlen(request->host));
+		safe_write(connptr->server_fd, ":443 HTTP/1.0\r\n", 15);
+
+		return 0;
+	}
+
+	/*
+	 * Since we're going to use the establish_http_connection() function
+	 * we need to rebuild the "path" by combining the host, port, and
+	 * path so we can use the common send functions.
+	 */
+	len = strlen(request->host) + strlen(request->path) + 14;
+	combined_host_path = safemalloc(len + 1);
+	if (!combined_host_path) {
+		return -1;
+	}
+
+        snprintf(combined_host_path, len, "http://%s:%d%s", request->host, request->port, request->path);
+
+	safefree(request->path);
+	request->path = combined_host_path;
+	
+	return establish_http_connection(connptr, request);
+}
+#endif
+
 /*
  * This is the main drive for each connection. As you can tell, for the
  * first few steps we are using a blocking socket. If you remember the
@@ -720,7 +768,7 @@ static void destroy_conn(struct conn_s *connptr)
 void handle_connection(int fd)
 {
 	struct conn_s *connptr;
-	struct request_s *request;
+	struct request_s *request = NULL;
 
 	char peer_ipaddr[PEER_IP_LENGTH];
 	char peer_string[PEER_STRING_LENGTH];
@@ -757,12 +805,15 @@ void handle_connection(int fd)
 			    config.tunnel_name, config.tunnel_port);
 
 		connptr->server_fd = opensock(config.tunnel_name, config.tunnel_port);
+		
 		if (connptr->server_fd < 0) {
 			log_message(LOG_WARNING, "Could not connect to tunnel.");
 			httperr(connptr, 404, "Unable to connect to tunnel.");
 
 			goto internal_proxy;
 		}
+
+		log_message(LOG_CONN, "Established a connection to the tunnel \"%s\" using file descriptor %d.", config.tunnel_name, connptr->server_fd);
 
 		/*
 		 * I know GOTOs are evil, but duplicating the code is even
@@ -794,71 +845,28 @@ internal_proxy:
 	} else {
 #ifdef UPSTREAM_SUPPORT
 		if (config.upstream_name && config.upstream_port != -1) {
-			connptr->server_fd = opensock(config.upstream_name, config.upstream_port);
-
-			if (connptr->server_fd < 0) {
-				log_message(LOG_WARNING, "Could not connect to upstream proxy.");
-				httperr(connptr, 404, "Unable to connect to upstream proxy.");
+			if (connect_to_upstream(connptr, request) < 0)
 				goto send_error;
-			}
-
-			if (!connptr->ssl) {
-				/*
-				 * Send a new request line, plus the Host and
-				 * Connection headers. The reason for the new
-				 * request line is that we need to specify
-				 * the HTTP/1.0 protocol.
-				 */
-				safe_write(connptr->server_fd, request->method, strlen(request->method));
-				safe_write(connptr->server_fd, " http://", 8);
-				safe_write(connptr->server_fd, request->host, strlen(request->host));
-				if (request->port != 80) {
-					char port_string[16];
-					sprintf(port_string, ":%d", request->port);
-				
-					safe_write(connptr->server_fd, port_string, strlen(port_string));
-			}
-
-				safe_write(connptr->server_fd, request->path, strlen(request->path));
-				safe_write(connptr->server_fd, " HTTP/1.0\r\n", 11);
-			
-				safe_write(connptr->server_fd, "Host: ", 6);
-				safe_write(connptr->server_fd, request->host, strlen(request->host));
-				safe_write(connptr->server_fd, "\r\nConnection: close\r\n", 21);
-			} else {
-				/*
-				 * This is a CONNECT request, so send that.
-				 */
-				char port_string[16];
-				sprintf(port_string, ":%d", request->port);
-
-				safe_write(connptr->server_fd, request->method, strlen(request->method));
-				safe_write(connptr->server_fd, " ", 1);
-				safe_write(connptr->server_fd, request->host, strlen(request->host));
-				safe_write(connptr->server_fd, port_string, strlen(port_string));
-				safe_write(connptr->server_fd, " HTTP/1.0\r\n", 11);
-			}
-
-			free_request_struct(request);
 		} else {
 #endif
 			connptr->server_fd = opensock(request->host, request->port);
 			if (connptr->server_fd < 0) {
 				httperr(connptr, 500, HTTP500ERROR);
-				free_request_struct(request);
 				goto send_error;
 			}
 
+			log_message(LOG_CONN, "Established connection to host \"%s\" using file descriptor %d.", request->host, connptr->server_fd);
+
 			if (!connptr->ssl)
 				establish_http_connection(connptr, request);
-
-			free_request_struct(request);
 #ifdef UPSTREAM_SUPPORT
 		}
 #endif
 	}
 
 send_error:
+	free_request_struct(request);
+
 	if (!connptr->simple_req) {
 		if (process_client_headers(connptr) < 0) {
 			update_stats(STAT_BADCONN);
@@ -874,7 +882,7 @@ send_error:
 		return;
 	}
 
-	if (!connptr->ssl) {
+	if (!connptr->ssl || config.upstream_name) {
 		if (process_server_headers(connptr) < 0) {
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);

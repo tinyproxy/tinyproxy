@@ -1,5 +1,9 @@
 2001-10-18  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/reqs.c (connect_to_upstream): Moved the code needed to
+	rebuild the request line when using the upstream feature into it's
+	own function. Simplifies the handle_connection() function.
+
 	* src/buffer.c (readbuff): Fixed a problem where a full buffer
 	would cause the connection to be closed. Thanks to Jeffrey
 	Wheelhouse for helping me find this problem.
@@ -78,7 +82,7 @@
 
 2001-09-08  Robert James Kaes  <rjkaes@flarenet.com>
 
-	* src/ternary.c (BUFARRAY & BUFSIZE): Lowed the values to help
+	* src/ternary.c (BUFARRAY & BUFSIZE): Lowered the values to help
 	lower memory usage. A ternary tree will now max out at 4MB.
 
 	* src/utils.c: Added debugging_(malloc|calloc|free) to help track
@@ -91,7 +95,7 @@
 
 2001-09-07  Robert James Kaes  <rjkaes@flarenet.com>
 
-	* src/thread.c (thread_pool_create): Explictly set the detach
+	* src/thread.c (thread_pool_create): Explicitly set the detach
 	state for threads to PTHREAD_CREATE_DETACHED.
 
 	* Various error message clean up.
