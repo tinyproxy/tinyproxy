@@ -1,3 +1,17 @@
+2003-10-17  Robert James Kaes  <rjkaes@flarenet.com>
+
+	Released tinyproxy 1.6.2 (2003-10-17)
+
+	* Makefile.am:
+	Removed a redundant "mkdir" command, since the $(mkinstalldirs)
+	command handles it correctly.
+
+2003-10-16  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/filter.c (filter_init):
+	Fixed up the comment handling code.  Closes bug 822226
+	[https://sourceforge.net/tracker/index.php?func=detail&aid=822226&group_id=2632&atid=102632]
+
 2003-08-06  Robert James Kaes  <rjkaes@flarenet.com>
 
 	Released tinyproxy 1.6.1 (2003-08-06)
