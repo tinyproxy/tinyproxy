@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.38 2003-03-13 21:32:33 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.39 2003-05-29 19:43:57 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -25,6 +25,15 @@
 #define MAXBUFFSIZE	((size_t)(1024 * 96))	/* Max size of buffer */
 #define MAX_IDLE_TIME 	(60 * 10)	/* 10 minutes of no activity */
 
+#ifdef UPSTREAM_SUPPORT
+struct upstream {
+	struct upstream *next;
+	char *domain; /* optional */
+	char *host;
+	int port;
+};
+#endif
+
 struct config_s {
 	char *logf_name;
 	char *config_file;
@@ -45,8 +54,7 @@ struct config_s {
 	char *my_domain;
 #endif
 #ifdef UPSTREAM_SUPPORT
-	char *upstream_name;
-	int upstream_port;
+	struct upstream *upstream_list;
 #endif				/* UPSTREAM_SUPPORT */
 	char *pidpath;
 	unsigned int idletimeout;

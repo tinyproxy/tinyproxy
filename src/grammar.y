@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.20 2003-03-13 21:42:46 rjkaes Exp $
+/* $Id: grammar.y,v 1.21 2003-05-29 19:43:58 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -171,12 +171,27 @@ statement
         | KW_UPSTREAM unique_address ':' NUMBER
           {
 #ifdef UPSTREAM_SUPPORT
-                  config.upstream_name = $2;
-                  config.upstream_port = $4;
+		  upstream_add($2, $4, NULL);
 #else
                   log_message(LOG_WARNING, "Upstream proxy support was not compiled in.");
 #endif
           }
+	| KW_UPSTREAM unique_address ':' NUMBER STRING
+	  {
+#ifdef UPSTREAM_SUPPORT
+		  upstream_add($2, $4, $5);
+#else
+                  log_message(LOG_WARNING, "Upstream proxy support was not compiled in.");
+#endif
+	  }
+	| KW_NO KW_UPSTREAM STRING
+	  {
+#ifdef UPSTREAM_SUPPORT
+		  upstream_add(NULL, 0, $3);
+#else
+                  log_message(LOG_WARNING, "Upstream proxy support was not compiled in.");
+#endif
+	  }
 	| KW_LISTEN NUMERIC_ADDRESS
           {
 		  log_message(LOG_INFO, "Establishing listening socket on IP %s", $2);

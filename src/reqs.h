@@ -1,4 +1,4 @@
-/* $Id: reqs.h,v 1.3 2002-04-12 17:00:42 rjkaes Exp $
+/* $Id: reqs.h,v 1.4 2003-05-29 19:43:57 rjkaes Exp $
  *
  * See 'reqs.c' for a detailed description.
  *
@@ -21,5 +21,6 @@
 
 extern void handle_connection(int fd);
 extern void add_connect_port_allowed(int port);
+extern void upstream_add(const char *host, int port, const char *domain);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.97 2003-05-05 16:46:05 rjkaes Exp $
+/* $Id: reqs.c,v 1.98 2003-05-29 19:43:57 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -57,9 +57,11 @@
  * enabled.
  */
 #ifdef UPSTREAM_SUPPORT
-#  define UPSTREAM_CONFIGURED() (config.upstream_name && config.upstream_port != -1)
+#  define UPSTREAM_CONFIGURED() (config.upstream_list != NULL)
+#  define UPSTREAM_HOST(host) upstream_get(host)
 #else
 #  define UPSTREAM_CONFIGURED() (0)
+#  define UPSTREAM_HOST(host) (NULL)
 #endif
 
 /*
@@ -72,6 +74,19 @@
  * the CONNECT method.  It's a security thing.
  */
 static vector_t ports_allowed_by_connect = NULL;
+
+/*
+ * This structure holds the information pulled from a URL request.
+ */
+struct request_s {
+	char *method;
+	char *protocol;
+
+	char *host;
+	uint16_t port;
+
+	char *path;
+};
 
 /*
  * Now, this routine adds a "port" to the list.  It also creates the list if
@@ -163,18 +178,8 @@ read_request_line(struct conn_s *connptr)
 }
 
 /*
- * This structure holds the information pulled from a URL request.
+ * Free all the memory allocated in a request.
  */
-struct request_s {
-	char *method;
-	char *protocol;
-
-	char *host;
-	uint16_t port;
-
-	char *path;
-};
-
 static void
 free_request_struct(struct request_s *request)
 {
@@ -303,6 +308,129 @@ build_url(char **url, const char *host, int port, const char *path)
 	return snprintf(*url, len, "http://%s:%d%s", host, port, path);
 }
 #endif /* TRANSPARENT_PROXY */
+
+#ifdef UPSTREAM_SUPPORT
+/*
+ * Add an entry to the upstream list
+ */
+void
+upstream_add(const char *host, int port, const char *domain)
+{
+	struct upstream *up = safemalloc(sizeof (struct upstream));
+
+	if (!up) {
+		log_message(LOG_WARNING,
+			    "Could not allocate memory for upstream host configuration");
+		return;
+	}
+	
+	if (domain && domain[0] != '\0')
+		up->domain = safestrdup(domain);
+	else
+		up->domain = NULL;
+
+	if (host && host[0] != '\0' && port > 0)
+		up->host = safestrdup(host);
+	else
+		up->host = NULL;
+
+	if (port > 0)
+		up->port = port;
+	else
+		up->port = 0;
+ 
+	if (host) {
+		log_message(LOG_INFO, "Adding upstream %s:%d for %s",
+			    host, port, domain ? domain : "[default]");
+	} else if (domain) {
+		log_message(LOG_INFO, "Adding no-upstream for %s",
+			    domain ? domain : "[default]");
+	} else {
+		log_message(LOG_WARNING,
+			    "Nonsense upstream rule: no proxy or domain");
+
+		goto upstream_cleanup;
+	}
+
+	if (!up->domain) {
+                /* always add default to end */
+		struct upstream *tmp = config.upstream_list;
+
+		while (tmp) {
+			if (!tmp->domain) {
+				log_message(LOG_WARNING,
+					    "Duplicate default upstream");
+				
+				goto upstream_cleanup;
+			}
+
+			if (!tmp->next) {
+				up->next = NULL;
+				tmp->next = up;
+				return;
+			}
+			tmp = tmp->next;
+		}
+	}
+
+	up->next = config.upstream_list;
+	config.upstream_list = up;
+
+	return;
+
+      upstream_cleanup:
+	safefree(up->host);
+	safefree(up->domain);
+	safefree(up);
+
+	return;
+}
+
+/*
+ * Check if a host is in the upstream list
+ */
+static struct upstream *
+upstream_get(char *host)
+{
+	struct upstream *up = config.upstream_list;
+
+	while (up) {
+		if (!up->domain)
+			break; /* no domain, default, match */
+
+		if (strcasecmp(host, up->domain) == 0)
+			break; /* exact match */
+
+		if (up->domain[0] == '.') { /* domain starts with dot... */
+			char *dot = strchr(host, '.');
+			if (!dot && !up->domain[1])
+				break; /* domain exactly ".", host is local */
+
+			while (dot) {
+				if (strcasecmp(dot, up->domain) == 0)
+					break; /* subdomain match */
+				dot = strchr(dot+1, '.');
+			}
+
+			if (dot)
+				break; /* trailing part of domain matches */
+		}
+
+		up = up->next;
+	}
+
+	if (up && (!up->host || !up->port))
+		up = NULL;
+
+	if (up)
+		log_message(LOG_INFO, "Found proxy %s:%d for %s",
+			    up->host, up->port, host);
+	else
+		log_message(LOG_INFO, "No proxy for %s", host);
+
+	return up;
+}
+#endif
 
 /*
  * Create a connection for HTTP connections.
@@ -1249,8 +1377,17 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 	char *combined_string;
 	int len;
 
+	struct upstream *cur_upstream = upstream_get(request->host);
+	if(!cur_upstream) {
+		log_message(LOG_WARNING,
+			    "No upstream proxy defined for %s.",
+			    request->host);
+		indicate_http_error(connptr, 404, "Unable to connect to upstream proxy.");
+		return -1;
+	}
+
 	connptr->server_fd =
-	    opensock(config.upstream_name, config.upstream_port);
+	    opensock(cur_upstream->host, cur_upstream->port);
 
 	if (connptr->server_fd < 0) {
 		log_message(LOG_WARNING,
@@ -1263,7 +1400,7 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 
 	log_message(LOG_CONN,
 		    "Established connection to upstream proxy \"%s\" using file descriptor %d.",
-		    config.upstream_name, connptr->server_fd);
+		    cur_upstream->host, connptr->server_fd);
 
 	/*
 	 * We need to re-write the "path" part of the request so that we
@@ -1383,7 +1520,7 @@ handle_connection(int fd)
 		goto send_error;
 	}
 
-	if (UPSTREAM_CONFIGURED()) {
+	if (UPSTREAM_CONFIGURED() && (UPSTREAM_HOST(request->host) != NULL)) {
 		if (connect_to_upstream(connptr, request) < 0) {
 			goto send_error;
 		}
