@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.2 2002-05-26 18:49:19 rjkaes Exp $
+/* $Id: common.h,v 1.3 2002-12-04 17:06:13 rjkaes Exp $
  *
  * This file groups all the headers required throughout the tinyproxy
  * system.  All this information use to be in the "tinyproxy.h" header,
@@ -175,14 +175,16 @@
 
 #define MAXLISTEN	1024	/* Max number of connections */
 
-/* Useful function macros */
-#define min(a,b)	((a) < (b) ? (a) : (b))
-#define max(a,b)	((a) > (b) ? (a) : (b))
+/* Define boolean values */
+#ifndef FALSE
+# define FALSE 0
+# define TRUE (!FALSE)
+#endif
 
-/* Make a new type: bool_t */
-typedef enum {
-	FALSE = 0,
-	TRUE = 1
-} bool_t;
+/* Useful function macros */
+#if !defined(min) || !defined(max)
+#  define min(a,b)	((a) < (b) ? (a) : (b))
+#  define max(a,b)	((a) > (b) ? (a) : (b))
+#endif
 
 #endif

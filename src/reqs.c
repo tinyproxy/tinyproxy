@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.87 2002-11-29 19:25:59 rjkaes Exp $
+/* $Id: reqs.c,v 1.88 2002-12-04 17:06:13 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -605,7 +605,7 @@ get_all_headers(int fd, hashmap_t hashofheaders)
 {
 	char *header;
 	ssize_t len;
-	bool_t double_cgi = FALSE;
+	unsigned int double_cgi = FALSE; /* boolean */
 
 	assert(fd >= 0);
 	assert(hashofheaders != NULL);

@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.10 2002-05-23 18:23:29 rjkaes Exp $
+/* $Id: conns.h,v 1.11 2002-12-04 17:06:13 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -33,8 +33,9 @@ struct conn_s {
 	/* The request line (first line) from the client */
 	char *request_line;
 
-	bool_t connect_method;
-	bool_t show_stats;
+	/* Booleans */
+	unsigned int connect_method;
+	unsigned int show_stats;
 
 	/* Store the error response if there is one */
 	char *error_string;

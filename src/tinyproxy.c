@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.41 2002-11-21 21:52:59 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.42 2002-12-04 17:06:14 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -46,8 +46,8 @@ extern FILE *yyin;
  */
 struct config_s config;
 float load = 0.00;
-bool_t received_sighup = FALSE;
-bool_t processed_config_file = FALSE;
+unsigned int received_sighup = FALSE; /* boolean */
+unsigned int processed_config_file = FALSE; /* boolean */
 
 /*
  * Handle a signal
@@ -150,7 +150,7 @@ int
 main(int argc, char **argv)
 {
 	int optch;
-	bool_t godaemon = TRUE;
+	unsigned int godaemon = TRUE; /* boolean */
 	struct passwd *thisuser = NULL;
 	struct group *thisgroup = NULL;
 	char *conf_file = DEFAULT_CONF_FILE;

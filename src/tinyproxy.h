@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.35 2002-11-26 21:44:43 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.36 2002-12-04 17:06:14 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -27,17 +27,17 @@
 
 struct config_s {
 	char *logf_name;
-	bool_t syslog;
+	unsigned int syslog; /* boolean */
 	int port;
 	char *stathost;
-	bool_t quit;
+	unsigned int quit; /* boolean */
 	char *username;
 	char *group;
 	char *ipAddr;
 #ifdef FILTER_ENABLE
 	char *filter;
-	bool_t filter_url;
-	bool_t filter_extended;
+	unsigned int filter_url; /* boolean */
+	unsigned int filter_extended; /* boolean */
 #endif				/* FILTER_ENABLE */
 #ifdef XTINYPROXY_ENABLE
 	char *my_domain;
@@ -53,12 +53,12 @@ struct config_s {
 	char* dnsserver_location;
 	char* dnsserver_socket;
 
-	bool_t via_http_header;
+	unsigned int via_http_header; /* boolean */
 };
 
 /* Global Structures used in the program */
 extern struct config_s config;
-extern bool_t received_sighup;
-extern bool_t processed_config_file;
+extern unsigned int received_sighup; /* boolean */
+extern unsigned int processed_config_file; /* boolean */
 
 #endif

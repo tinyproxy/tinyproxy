@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.35 2002-11-21 21:51:34 rjkaes Exp $
+/* $Id: utils.c,v 1.36 2002-12-04 17:06:14 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -138,7 +138,7 @@ indicate_http_error(struct conn_s* connptr, int number, const char* string)
  * Safely creates filename and returns the low-level file descriptor.
  */
 int
-create_file_safely(const char *filename, bool_t truncate_file)
+create_file_safely(const char *filename, unsigned int truncate_file)
 {
 	struct stat lstatinfo;
 	int fildes;
