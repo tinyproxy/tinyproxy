@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.24 2002-05-02 04:44:03 rjkaes Exp $
+dnl $Id: configure.ac,v 2.25 2002-05-02 17:35:27 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -46,20 +46,25 @@ AC_ARG_WITH(stathost,
 
 dnl Set the default configuration file location
 test "$prefix" = "NONE" && prefix=/usr/local
-TINYPROXY_CONFIG_DIR=`eval echo $sysconfdir/tinyproxy`
+
+# If sysconfdir is /usr/etc, change it to /etc (since /usr/etc doesn't exist)
+if [[ "/usr/etc" = `eval echo $sysconfdir` -a "/usr" = "$prefix" ]]; then
+	TINYPROXY_CONFIG_DIR="/etc/tinyproxy"
+else
+	TINYPROXY_CONFIG_DIR=`eval echo $sysconfdir/tinyproxy`
+fi
 AC_SUBST(TINYPROXY_CONFIG_DIR)
 
 AH_TEMPLATE([DEFAULT_CONF_FILE],
-	[This is the default location of the configuration file.])
+	[This is the default file name for the configuration file.])
 AC_ARG_WITH(config,
             [AC_HELP_STRING([--with-config=FILE],
                             [Set the default location of the config file])],
-	    [TINYPROXY_CONFIG="$withval"],
-	    [TINYPROXY_CONFIG="$TINYPROXY_CONFIG_DIR/tinyproxy.conf"])
-AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$TINYPROXY_CONFIG")
-AC_SUBST(TINYPROXY_CONFIG)
-#	    [AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$withval")],
-#	    [AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "/etc/tinyproxy/tinyproxy.conf")])
+	    [TINYPROXY_CONFIG_FILE="$withval"],
+	    [TINYPROXY_CONFIG_FILE="tinyproxy.conf"])
+AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$TINYPROXY_CONFIG_DIR/$TINYPROXY_CONFIG_FILE")
+AC_SUBST(TINYPROXY_CONFIG_FILE)
+AC_MSG_NOTICE([Default config location and file is: $TINYPROXY_CONFIG_DIR/$TINYPROXY_CONFIG_FILE])
 
 dnl Add compiler-specific optimization flags
 AC_ARG_ENABLE(debug,
