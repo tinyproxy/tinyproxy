@@ -1,3 +1,11 @@
+2000-04-26  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/uri.c: Added the #include <sys/types.h> for compatibility
+	with FreeBSD.
+
+	* src/dnscache.c: Moved the #include <sys/types.h> above the
+	#include <sys/socket.h> reference for compatibility with FreeBSD.
+
 2000-03-31  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (clientreq): Removed the hack for POST methods with

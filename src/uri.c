@@ -1,4 +1,4 @@
-/* $Id: uri.c,v 1.1.1.1 2000-02-16 17:32:23 sdyoung Exp $
+/* $Id: uri.c,v 1.2 2000-04-26 16:31:29 rjkaes Exp $
  *
  * This borrows the REGEX from RFC2396 to split a URI string into the five
  * primary components. The components are:
@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <sys/types.h>
 
 #include "uri.h"
 #include "utils.h"
