@@ -1,4 +1,4 @@
-/* $Id: stats.c,v 1.2 2001-01-15 17:11:57 rjkaes Exp $
+/* $Id: stats.c,v 1.3 2001-05-23 17:59:08 rjkaes Exp $
  *
  * This module handles the statistics for tinyproxy. There are only two
  * public API functions. The reason for the functions, rather than just a
@@ -116,7 +116,6 @@ int update_stats(status_t update_level)
 		stats.num_denied++;
 		break;
 	default:
-		DEBUG2("An invalid STATUS type (%d)", update_level);
 		UNLOCK();
 		return -1;
 	}
