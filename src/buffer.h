@@ -1,4 +1,4 @@
-/* $Id: buffer.h,v 1.3 2000-09-11 23:41:32 rjkaes Exp $
+/* $Id: buffer.h,v 1.4 2001-05-27 02:23:08 rjkaes Exp $
  *
  * See 'buffer.c' for a detailed description.
  *
@@ -20,9 +20,9 @@
 
 extern struct buffer_s *new_buffer(void);
 extern void delete_buffer(struct buffer_s *buffptr);
-extern unsigned int buffer_size(struct buffer_s *buffptr);
+extern size_t buffer_size(struct buffer_s *buffptr);
 
-extern int readbuff(int fd, struct buffer_s *buffptr);
-extern int writebuff(int fd, struct buffer_s *buffptr);
+extern ssize_t readbuff(int fd, struct buffer_s *buffptr);
+extern ssize_t writebuff(int fd, struct buffer_s *buffptr);
 
 #endif				/* __BUFFER_H_ */

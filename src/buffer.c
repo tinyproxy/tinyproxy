@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.4 2001-05-23 18:01:23 rjkaes Exp $
+/* $Id: buffer.c,v 1.5 2001-05-27 02:23:08 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -33,20 +33,20 @@
 struct bufline_s {
 	unsigned char *string;	/* the actual string of data */
 	struct bufline_s *next;	/* pointer to next in linked list */
-	unsigned int length;	/* length of the string of data */
-	unsigned int pos;	/* start sending from this offset */
+	size_t length;	/* length of the string of data */
+	size_t pos;	/* start sending from this offset */
 };
 
 struct buffer_s {
 	struct bufline_s *head;	/* top of the buffer */
 	struct bufline_s *tail;	/* bottom of the buffer */
-	unsigned int size;	/* total size of the buffer */
+	size_t size;	/* total size of the buffer */
 };
 
 /*
  * Return the size of the supplied buffer.
  */
-unsigned int buffer_size(struct buffer_s *buffptr)
+size_t buffer_size(struct buffer_s *buffptr)
 {
 	assert(buffptr != NULL);
 
@@ -57,7 +57,7 @@ unsigned int buffer_size(struct buffer_s *buffptr)
  * Take a string of data and a length and make a new line which can be added
  * to the buffer
  */
-static struct bufline_s *makenewline(unsigned char *data, unsigned int length)
+static struct bufline_s *makenewline(unsigned char *data, size_t length)
 {
 	struct bufline_s *newline;
 
@@ -131,7 +131,7 @@ void delete_buffer(struct buffer_s *buffptr)
  * Push a new line on to the end of the buffer
  */
 static int add_to_buffer(struct buffer_s *buffptr, unsigned char *data,
-			 unsigned int length)
+			 size_t length)
 {
 	struct bufline_s *newline;
 
@@ -183,9 +183,9 @@ static struct bufline_s *remove_from_buffer(struct buffer_s *buffptr)
  * Reads the bytes from the socket, and adds them to the buffer.
  * Takes a connection and returns the number of bytes read.
  */
-int readbuff(int fd, struct buffer_s *buffptr)
+ssize_t readbuff(int fd, struct buffer_s *buffptr)
 {
-	int bytesin;
+	ssize_t bytesin;
 	unsigned char inbuf[MAXBUFFSIZE];
 	unsigned char *buffer;
 
@@ -199,7 +199,7 @@ int readbuff(int fd, struct buffer_s *buffptr)
 
 	if (bytesin > 0) {
 		if (!(buffer = malloc(bytesin))) {
-			log(LOG_CRIT, "Could not allocate memory in readbuff() [%s:%d]", __FILE__, __LINE__);
+			log_message(LOG_CRIT, "Could not allocate memory in readbuff() [%s:%d]", __FILE__, __LINE__);
 			return 0;
 		}
 
@@ -224,7 +224,7 @@ int readbuff(int fd, struct buffer_s *buffptr)
 		case EINTR:
 			return 0;
 		default:
-			log(LOG_ERR, "readbuff: recv (%s)", strerror(errno));
+			log_message(LOG_ERR, "readbuff: recv (%s)", strerror(errno));
 			return -1;
 		}
 	}
@@ -234,9 +234,9 @@ int readbuff(int fd, struct buffer_s *buffptr)
  * Write the bytes in the buffer to the socket.
  * Takes a connection and returns the number of bytes written.
  */
-int writebuff(int fd, struct buffer_s *buffptr)
+ssize_t writebuff(int fd, struct buffer_s *buffptr)
 {
-	int bytessent;
+	ssize_t bytessent;
 	struct bufline_s *line;
 
 	assert(fd >= 0);
@@ -268,10 +268,10 @@ int writebuff(int fd, struct buffer_s *buffptr)
 			return 0;
 		case ENOBUFS:
 		case ENOMEM:
-			log(LOG_ERR, "writebuff: send [NOBUFS/NOMEM] %s", strerror(errno));
+			log_message(LOG_ERR, "writebuff: send [NOBUFS/NOMEM] %s", strerror(errno));
 			return 0;
 		default:
-			log(LOG_ERR, "writebuff: send (%s)", strerror(errno));
+			log_message(LOG_ERR, "writebuff: send (%s)", strerror(errno));
 			return -1;
 		}
 	}
