@@ -1,3 +1,10 @@
+2003-06-25  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/common.h:
+	Added a test to define INADDR_NONE if it's not present.  For
+	example, SunOS (solaris 2.8) does not include this define.  [Thank
+	to Ben Hartshorne for pointing this out.]
+
 2003-06-20  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* doc/tinyproxy.conf, src/grammar.y, src/reqs.c, src/scanner.l, src/tinyproxy.h:
