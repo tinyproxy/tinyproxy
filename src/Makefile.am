@@ -1,7 +1,26 @@
+# $Id: Makefile.am,v 1.3 2000-09-11 23:37:01 rjkaes Exp $
+#
+# 
+#
+# Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2, or (at your option) any
+# later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+
+YFLAGS = @YFLAGS@
+
 bin_PROGRAMS = tinyproxy
-tinyproxy_SOURCES = config.h \
+
+tinyproxy_SOURCES = \
 	buffer.c buffer.h \
-	conns.c conns.h \
 	dnscache.c dnscache.h \
 	log.c log.h \
 	reqs.c reqs.h \
@@ -10,6 +29,11 @@ tinyproxy_SOURCES = config.h \
 	uri.c uri.h \
 	utils.c utils.h \
 	anonymous.c anonymous.h \
+	stats.c stats.h \
+	thread.c thread.h \
+	grammar.y scanner.l \
+	acl.c acl.h \
+	ternary.c ternary.h \
 	regexp.h
 
 tinyproxy_LDADD = @LIBOBJS@
@@ -17,4 +41,7 @@ tinyproxy_LDADD = @LIBOBJS@
 EXTRA_DIST = gnuregex.c gnuregex.h \
 	filter.c filter.h
 
-LDADD = @LIBOBJS
+EXTRA_tinyproxy_SOURCES = grammar.h
+
+scanner.c: scanner.l grammar.h
+	$(LEX) $(AM_LFLAGS) $(LFLAGS) -i $< && mv $(LEX_OUTPUT_ROOT).c $@
