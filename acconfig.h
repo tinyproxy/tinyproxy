@@ -5,12 +5,8 @@
 #undef XTINYPROXY_ENABLE
 
 /*
- * These are the defaults, but they can be changed by configure at compile
- * time, or on the command line at runtime.
+ * This is the default location of the configuration file
  */
-#define DEFAULT_LOG "/var/log/tinyproxy"
-#define DEFAULT_PORT 8888
-#define DEFAULT_USER ""
 #define DEFAULT_CONF_FILE "/etc/tinyproxy/tinyproxy.conf"
 
 /*
