@@ -3,6 +3,8 @@
 	* src/vector.c:
 	* src/hashmap.c: Changed all calls to malloc, calloc, free, and
 	strdup to the appropriate safe variety.
+	(hashmap_delete): Fixed a memory leak where the maps were not
+	being freed properly.
 
 	* src/utils.c (debugging_strdup): Added this function to be used
 	by the safestrdup() macro to replace all the calls to strdup().
