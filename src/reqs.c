@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.37 2001-11-05 15:23:34 rjkaes Exp $
+/* $Id: reqs.c,v 1.38 2001-11-21 00:59:33 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -214,13 +214,6 @@ static int establish_http_connection(struct conn_s *connptr,
 	if (safe_write(connptr->server_fd, "\r\n", 2) < 0)
 		return -1;
 
-	/*
-	 * Send the Connection header since we don't support persistant
-	 * connections.
-	 */
-	if (safe_write(connptr->server_fd, "Connection: close\r\n", 19) < 0)
-		return -1;
-
 	return 0;
 }
 
@@ -368,6 +361,14 @@ static struct request_s *process_request(struct conn_s *connptr,
 		return NULL;
 	}
 
+	/*
+	 * Break apart the protocol and update the connection structure.
+	 */
+	if (strncasecmp(request->protocol, "http", 4) == 0) {
+		memcpy(request->protocol, "HTTP", 4);
+		sscanf(request->protocol, "HTTP/%hu.%hu", &connptr->protocol.major, &connptr->protocol.minor);
+	}
+
 	return request;
 }
 
@@ -466,10 +467,13 @@ static int process_client_headers(struct conn_s *connptr)
 {
 	char *header;
 	long content_length = -1;
+	short int sent_via_header = 0;
 
 	static char *skipheaders[] = {
 		"proxy-connection",
-		"host",
+		"keep-alive",
+		"proxy-authenticate",
+		"proxy-authorization",
 		"connection"
 	};
 	int i;
@@ -500,6 +504,24 @@ static int process_client_headers(struct conn_s *connptr)
 			continue;
 
 		/*
+		 * If we find a Via header we need to append our information
+		 * to the end of it.
+		 */
+		if (strncasecmp(header, "via", 3) == 0) {
+			char hostname[128];
+			char via_header_buffer[256];
+
+			sent_via_header = 1;
+
+			gethostname(hostname, sizeof(hostname));
+			snprintf(via_header_buffer, sizeof(via_header_buffer), ", %hu.%hu %s (%s/%s)\r\n", connptr->protocol.major, connptr->protocol.minor, hostname, PACKAGE, VERSION);
+
+			trim(header, strlen(header));
+
+			strlcat(header, via_header_buffer, LINE_LENGTH);
+		}
+
+		/*
 		 * Don't send certain headers.
 		 */
 		for (i = 0; i < (sizeof(skipheaders) / sizeof(char *)); i++) {
@@ -523,6 +545,19 @@ static int process_client_headers(struct conn_s *connptr)
 			safefree(header);
 			return -1;
 		}
+	}
+
+	if (sent_via_header == 0) {
+		/*
+		 * We're the first proxy so send the first Via header.
+		 */
+		char via_header_buffer[256];
+		char hostname[128];
+
+		gethostname(hostname, sizeof(hostname));
+		snprintf(via_header_buffer, sizeof(via_header_buffer), "Via: %hu.%hu %s (%s/%s)\r\n", connptr->protocol.major, connptr->protocol.minor, hostname, PACKAGE, VERSION);
+
+		safe_write(connptr->server_fd, via_header_buffer, strlen(via_header_buffer));
 	}
 
 	if (!connptr->send_message && (connptr->upstream || !connptr->ssl)) {
