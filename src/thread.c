@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.21 2002-01-25 00:01:45 rjkaes Exp $
+/* $Id: thread.c,v 1.22 2002-04-08 21:35:10 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -272,28 +272,37 @@ thread_main_loop(void)
 {
 	int i;
 
-	/* If there are not enough spare servers, create more */
-	SERVER_LOCK();
-	if (servers_waiting < thread_config.minspareservers) {
-		SERVER_UNLOCK();
+	while (1) {
+		if (config.quit)
+			return;
 
-		for (i = 0; i < thread_config.maxclients; i++) {
-			if (thread_ptr[i].status == T_EMPTY) {
-				pthread_create(&thread_ptr[i].tid, &thread_attr,
-					       &thread_main, &thread_ptr[i]);
-				thread_ptr[i].status = T_WAITING;
-				thread_ptr[i].connects = 0;
+		/* If there are not enough spare servers, create more */
+		SERVER_LOCK();
+		if (servers_waiting < thread_config.minspareservers) {
+			SERVER_UNLOCK();
 
-				SERVER_INC();
+			for (i = 0; i < thread_config.maxclients; i++) {
+				if (thread_ptr[i].status == T_EMPTY) {
+					pthread_create(&thread_ptr[i].tid,
+						       &thread_attr,
+						       &thread_main,
+						       &thread_ptr[i]);
+					thread_ptr[i].status = T_WAITING;
+					thread_ptr[i].connects = 0;
 
-				log_message(LOG_NOTICE,
-					    "Waiting servers is less than MinSpareServers. Creating new thread.");
+					SERVER_INC();
 
-				break;
+					log_message(LOG_NOTICE,
+						    "Waiting servers is less than MinSpareServers. Creating new thread.");
+
+					break;
+				}
 			}
 		}
+		SERVER_UNLOCK();
+
+		sleep(5);
 	}
-	SERVER_UNLOCK();
 }
 
 /*

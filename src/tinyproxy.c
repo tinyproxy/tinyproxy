@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.23 2002-04-07 21:36:39 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.24 2002-04-08 21:35:10 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -426,10 +426,8 @@ main(int argc, char **argv)
 	 * Start the main loop.
 	 */
 	log_message(LOG_INFO, "Starting main loop. Accepting connections.");
-	do {
-		thread_main_loop();
-		sleep(1);
-	} while (!config.quit);
+
+	thread_main_loop();
 
 	log_message(LOG_INFO, "Shutting down.");
 

@@ -1,3 +1,8 @@
+2002-04-08  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/thread.c (thread_main_loop): Moved the looping code into
+	this function from the main() function.  Just a bit of clean up.
+
 2002-04-07  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/hashmap.c:
