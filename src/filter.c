@@ -1,7 +1,8 @@
-/* $Id: filter.c,v 1.13 2002-06-07 18:36:22 rjkaes Exp $
+/* $Id: filter.c,v 1.14 2002-06-07 19:10:05 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  * Copyright (c) 2002  James E. Flemer (jflemer@acm.jhu.edu)
+ * Copyright (c) 2002  Robert James Kaes (rjkaes@flarenet.com)
  *
  * A substring of the domain to be filtered goes into the file
  * pointed at by DEFAULT_FILTER.
