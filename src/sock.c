@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.8 2001-09-16 20:11:07 rjkaes Exp $
+/* $Id: sock.c,v 1.9 2001-10-22 15:56:11 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -162,6 +162,7 @@ char *getpeer_ip(int fd, char *ipaddr)
 
 	if (getpeername(fd, (struct sockaddr*)&name, &namelen) != 0) {
 		log_message(LOG_ERR, "Connect: 'could not get peer name'");
+		*ipaddr = '\0';
 	} else {
 		strlcpy(ipaddr,
 			inet_ntoa(*(struct in_addr*)&name.sin_addr.s_addr),
@@ -186,6 +187,7 @@ char *getpeer_string(int fd, char *string)
 
 	if (getpeername(fd, (struct sockaddr *)&name, &namelen) != 0) {
 		log_message(LOG_ERR, "Connect: 'could not get peer name'");
+		*string = '\0';
 	} else {
 		LOCK();
 		peername = gethostbyaddr((char *)&name.sin_addr.s_addr,

@@ -1,3 +1,11 @@
+2001-10-22  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/sock.c (getpeer_string):
+	* src/sock.c (getpeer_ip): When the DNS lookup fails, we need to
+	initialized the user's buffer to an empty string; otherwise, the
+	user's buffer will contain garbage and cause a SEGFAULT. Thanks to
+	Jeffrey Wheelhouse for finding this bug.
+
 2001-10-18  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (connect_to_upstream): Moved the code needed to
