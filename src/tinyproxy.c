@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.45 2003-03-13 21:32:33 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.46 2003-03-17 04:24:19 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -165,8 +165,6 @@ main(int argc, char **argv)
 	}
 #endif				/* HAVE_SETRLIMIT */
 
-	log_message(LOG_INFO, "Initializing " PACKAGE " ...");
-
 	/* Default configuration file location */
 	config.config_file = DEFAULT_CONF_FILE;
 
@@ -199,6 +197,8 @@ main(int argc, char **argv)
 			exit(EX_OK);
 		}
 	}
+
+	log_message(LOG_INFO, "Initializing " PACKAGE " ...");
 
 	/*
 	 * Make sure the HTML error pages array is NULL to begin with.
