@@ -1,5 +1,14 @@
 2002-04-14  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/utils.c (chomp): Added an assert to detect a design error.
+
+	* src/reqs.c (read_request_line): Fixed the return type to be an
+	unsigned variable, so that we preserve a negative return value
+	upon an error.
+
+	* src/sock.c (readline): Added a test for allocating enough memory
+	for the whole_buffer.
+
 	* src/conns.h: Replaced the error boolean with a pointer to an
 	error string and error number for use in the
 	send_http_error_message() function.
