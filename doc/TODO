@@ -1,25 +1,43 @@
-The following are some features that I'd like to add to tinyproxy in the
+TODO List
+---------
+
+The following are features that I would like to add to tinyproxy in the
 future.  Where possible, I've listed the person who suggested it.  This
 list is in no particular order.  And hey, if you want to implement one of
 these, or another idea you have, go right ahead.  Just mail me the diff
-against the current tree and I'll integrate it if possible. 
+against the current tree and I'll integrate it if possible.
 
-  - Include hooks so other types of proxies can be modularly added to  
-    the source tree.  Then people can simply choose which types of 
-    proxies (ftp, www, etc) they'd like enabled in tinyproxy.h 
-    Suggested: Tarun Tuli.
-  - Find a more elegant solution to embedding HTML documents in the 
-    source than the current method.  (see httperr() and showstats() for 
-    examples of how it's done right now).
-  - Include a function to rewrite the incoming requests. Should not be
-    much of a problem. Just need to modify the process_method() code
-    to look up the URL and rewrite it. If we want to go really fancy
-    with RegEx mapping this could get ugly. :)
-  - Have the ability to send the data from the connections through an
-    external filtering program. I kind of like this idea, but I don't
-    really have a good way of doing it yet.
-    Suggested: Ed Avis
-  - Include the ability to rewrite both incoming and outgoing headers.
-  - Enable an option for chroot() jailing tinyproxy.
-  - Add an option which allows the blocking of connections certain ports
-    (like 25, 110, etc.) that might be used for "bad" things. :)
+    [ Actually, the ordering has become kind of important as of
+      late. Basically, I'm adding new ideas to the bottom of the list
+      as I go. ]
+
+ * Include hooks so other types of proxies can be modularly added to
+   the source tree.  Then people can simply choose which types of
+   proxies (ftp, www, etc) they'd like enabled in tinyproxy.h
+   Suggested: Tarun Tuli.
+
+ * Find a more elegant solution to embedding HTML documents in the
+   source than the current method.  (see httperr() and showstats() for
+   examples of how it's done right now).
+
+ * Include a function to rewrite the incoming requests.  Should not be
+   much of a problem.  Just need to modify the process_method() code
+   to look up the URL and rewrite it.  If we want to go really fancy
+   with RegEx mapping this could get ugly. :)
+
+ * Have the ability to send the data from the connections through an
+   external filtering program.  I kind of like this idea, but I don't
+   really have a good way of doing it yet.
+   Suggested: Ed Avis
+
+ * Include the ability to rewrite both incoming and outgoing headers.
+
+ * Enable an option for chroot() jailing tinyproxy.
+
+ * Add an option which allows the blocking of connections to certain
+   ports (like 25, 110, etc.) that might be used for "bad" things. :)
+
+ * Come up with a more consistent (and elegant) way of logging errors
+   for the administrators.  Right now it's more a hodge-podge
+   collections of error messages without a _real_ standard.  I would
+   prefer a more uniform look.
