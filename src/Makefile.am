@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.18 2003-08-07 16:32:12 rjkaes Exp $
+# $Id: Makefile.am,v 1.19 2004-08-13 20:19:50 rjkaes Exp $
 #
 # Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
 #
@@ -24,6 +24,7 @@ tinyproxy_SOURCES = \
 	buffer.c buffer.h \
 	child.c child.h \
 	common.h \
+	conffile.c conffile.h \
 	conns.c conns.h \
 	daemon.c daemon.h \
 	hashmap.c hashmap.h \
