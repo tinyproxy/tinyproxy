@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.23 2001-09-12 03:33:15 rjkaes Exp $
+/* $Id: reqs.c,v 1.24 2001-09-14 04:56:29 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -34,22 +34,13 @@
 #include "reqs.h"
 #include "sock.h"
 #include "stats.h"
-#include "uri.h"
 #include "utils.h"
-
-#define HTTPPATTERN "^([a-z]+)[ \t]+([^ \t]+)([ \t]+(HTTP/[0-9]+\\.[0-9]+))?"
-#define NMATCH 4
-#define METHOD_IND   1
-#define URI_IND      2
-#define VERSION_MARK 3
-#define VERSION_IND  4
 
 #define HTTP400ERROR "Unrecognizable request. Only HTTP is allowed."
 #define HTTP500ERROR "Unable to connect to remote server."
 #define HTTP503ERROR "Internal server error."
 
 #define LINE_LENGTH (MAXBUFFSIZE / 3)
-#define HTTP_PORT 80
 
 /*
  * Write the buffer to the socket. If an EINTR occurs, pick up and try
@@ -105,228 +96,322 @@ static inline void trim(char *string, unsigned int len)
 }
 
 /*
- * Parse a client HTTP request and then establish connection.
+ * Read in the first line from the client (the request line for HTTP
+ * connections. The request line is allocated from the heap, but it must
+ * be freed in another function.
  */
-static int process_method(struct conn_s *connptr)
+static char *read_request_line(struct conn_s *connptr)
 {
-	URI *uri = NULL;
-	char *inbuf;
-	char *buffer = NULL, *request = NULL, *port = NULL;
-
-	regex_t preg;
-	regmatch_t pmatch[NMATCH];
-
-	size_t request_len;
+	char *request_buffer;
 	size_t len;
-	int fd, port_no = HTTP_PORT;
 
-	char peer_ipaddr[PEER_IP_LENGTH];
-
-	getpeer_ip(connptr->client_fd, peer_ipaddr);
-
-	inbuf = safemalloc(LINE_LENGTH);
-	if (!inbuf) {
-		log_message(LOG_ERR, "Could not allocate memory in 'process_method'.");
-		return -2;
+	request_buffer = safemalloc(LINE_LENGTH);
+	if (!request_buffer) {
+		log_message(LOG_ERR, "Could not allocate memory in 'read_request_line'");
+		return NULL;
 	}
 
-	len = readline(connptr->client_fd, inbuf, LINE_LENGTH);
+	len = readline(connptr->client_fd, request_buffer, LINE_LENGTH);
 	if (len <= 0) {
-		log_message(LOG_ERR, "Client [%s] closed socket before read.", peer_ipaddr);
-		update_stats(STAT_BADCONN);
-		safefree(inbuf);
-		return -2;
+		log_message(LOG_ERR, "Client (file descriptor: %d) closed socket before read.", connptr->client_fd);
+		safefree(request_buffer);
+		return NULL;
 	}
 
 	/*
-	 * Strip the newline and character return from the string.
+	 * Strip the new line and character return from the string.
 	 */
-	trim(inbuf, len);
+	trim(request_buffer, len);
 
-	log_message(LOG_CONN, "Request: %s", inbuf);
+	log_message(LOG_CONN, "Request (file descriptor %d): %s",
+		    connptr->client_fd, request_buffer);
 
-	if (regcomp(&preg, HTTPPATTERN, REG_EXTENDED | REG_ICASE) != 0) {
-		log_message(LOG_ERR, "Regular Expression compiling error.");
-		httperr(connptr, 503, HTTP503ERROR);
-		update_stats(STAT_BADCONN);
-		goto EARLY_EXIT;
-	}
-	if (regexec(&preg, inbuf, NMATCH, pmatch, 0) != 0) {
-		log_message(LOG_ERR, "Regular Expression search error.");
-		regfree(&preg);
-		httperr(connptr, 503, HTTP503ERROR);
-		update_stats(STAT_BADCONN);
-		goto EARLY_EXIT;
-	}
-	regfree(&preg);
+	return request_buffer;
+}
 
-	/*
-	 * Test for a simple request, or a request from version 0.9
-	 *	- rjkaes
-	 */
-	if (pmatch[VERSION_MARK].rm_so == -1
-	    || !strncasecmp("http/0.9", inbuf + pmatch[VERSION_IND].rm_so, 8))
-		connptr->simple_req = TRUE;
-	
+/*
+ * This structure holds the information pulled from a URL request.
+ */
+struct request_s {
+	char *host;
+	char *path;
+	int port;
+};
 
-	if (pmatch[METHOD_IND].rm_so == -1 || pmatch[URI_IND].rm_so == -1) {
-		log_message(LOG_ERR, "Incomplete request line from [%s].",
-			    peer_ipaddr);
-		httperr(connptr, 400, HTTP400ERROR);
-		update_stats(STAT_BADCONN);
-		goto EARLY_EXIT;
+/*
+ * Pull the information out of the URL line.
+ */
+static int extract_http_url(const char *url, struct request_s *request)
+{
+	request->host = safemalloc(strlen(url) + 1);
+	request->path = safemalloc(strlen(url) + 1);
+
+	if (!request->host || !request->path) {
+		log_message(LOG_ERR, "Could not allocate memory in 'extract_http_url'");
+		safefree(request->host);
+		safefree(request->path);
+
+		return -1;
 	}
 
-	len = pmatch[URI_IND].rm_eo - pmatch[URI_IND].rm_so;
-	if (!(buffer = safemalloc(len + 1))) {
-		log_message(LOG_ERR,
-			    "Could not allocate memory for request from [%s].",
-			    peer_ipaddr);
-		httperr(connptr, 503, HTTP503ERROR);
-		update_stats(STAT_BADCONN);
-		goto EARLY_EXIT;
-	}
-	memcpy(buffer, inbuf + pmatch[URI_IND].rm_so, len);
-	buffer[len] = '\0';
-	if (!(uri = explode_uri(buffer))) {
-		safefree(buffer);
-		httperr(connptr, 503, HTTP503ERROR);
-		update_stats(STAT_BADCONN);
-		goto EARLY_EXIT;
-	}
-	safefree(buffer);
-
-	if (!uri->scheme || strcasecmp(uri->scheme, "http") != 0) {
-		char *error_string;
-		if (uri->scheme) {
-			size_t error_string_len = strlen(uri->scheme) + 64;
-			error_string = safemalloc(error_string_len);
-			if (!error_string) {
-				log_message(LOG_ERR,
-					    "Could not allocate memory for request from [%s].",
-					    peer_ipaddr);
-				goto COMMON_EXIT;
-			}
-			snprintf(error_string, error_string_len,
-				"Invalid scheme (%s). Only HTTP is allowed.",
-				uri->scheme);
-		} else {
-			error_string =
-				strdup("Invalid scheme (NULL). Only HTTP is allowed.");
-			if (!error_string) {
-				log_message(LOG_ERR,
-					    "Could not allocate memory for request from [%s].",
-					    peer_ipaddr);
-				goto COMMON_EXIT;
-			}
-		}
-
-		httperr(connptr, 400, error_string);
-		safefree(error_string);
-		update_stats(STAT_BADCONN);
-		goto COMMON_EXIT;
-	}
-
-	if (!uri->authority) {
-		httperr(connptr, 400, "Invalid authority.");
-		update_stats(STAT_BADCONN);
-		goto COMMON_EXIT;
-	}
-
-	if ((strlen(config.stathost) > 0) &&
-	    strcasecmp(uri->authority, config.stathost) == 0) {
-		showstats(connptr);
-		goto COMMON_EXIT;
-	}
-
-	if ((port = strchr(uri->authority, ':'))) {
-		*port++ = '\0';
-		if (strlen(port) > 0)
-			port_no = atoi(port);
-	}
-
-#ifdef FILTER_ENABLE
-	/* Filter domains out */
-	if (config.filter) {
-		if (filter_url(uri->authority)) {
-			log_message(LOG_ERR,
-				    "Proxying refused on filtered domain \"%s\" from [%s].",
-				    uri->authority,
-				    peer_ipaddr);
-			httperr(connptr, 404,
-				"Connection to filtered domain is not allowed.");
-			update_stats(STAT_DENIED);
-			goto COMMON_EXIT;
-		}
-	}
-#endif /* FILTER_ENABLE */
-
-	/* Build a new request from the first line of the header */
-	request_len = strlen(inbuf) + 1;
-	if (!(request = safemalloc(request_len))) {
-		log_message(LOG_ERR,
-			    "Could not allocate memory for request from [%s].",
-			    peer_ipaddr);
-		httperr(connptr, 503, HTTP503ERROR);
-		update_stats(STAT_BADCONN);
-		goto COMMON_EXIT;
-	}
-
-	memcpy(request, inbuf, pmatch[METHOD_IND].rm_eo);
-	request[pmatch[METHOD_IND].rm_eo] = '\0';
-	strlcat(request, " ", request_len);
-	if (strlen(uri->path) > 0) {
-		strlcat(request, uri->path, request_len);
-		if (uri->query) {
-			strlcat(request, "?", request_len);
-			strlcat(request, uri->query, request_len);
-		}
+	if (sscanf(url, "http://%[^:/]:%d%s", request->host, &request->port, request->path) == 3)
+		;
+	else if (sscanf(url, "http://%[^/]%s", request->host, request->path) == 2)
+		request->port = 80;
+	else if (sscanf(url, "http://%[^:/]:%d", request->host, &request->port) == 2)
+		strcpy(request->path, "/");
+	else if (sscanf(url, "http://%[^/]", request->host) == 1) {
+		request->port = 80;
+		strcpy(request->path, "/");
 	} else {
-		strlcat(request, "/", request_len);
-	}
-	strlcat(request, " HTTP/1.0\r\n", request_len);
+		log_message(LOG_ERR, "Can't parse URL.");
 
-	fd = opensock(uri->authority, port_no);
-	if (fd < 0) {
-		httperr(connptr, 500, HTTP500ERROR);
-		update_stats(STAT_DENIED);
-		goto COMMON_EXIT;
+		safefree(request->host);
+		safefree(request->path);
+		
+		return -1;
 	}
 
-	connptr->server_fd = fd;
+	return 0;
+}
 
-	if (safe_write(connptr->server_fd, request, strlen(request)) < 0)
-		goto COMMON_EXIT;
-	
+/*
+ * Extract the URL from a SSL connection.
+ */
+static int extract_ssl_url(const char *url, struct request_s *request)
+{
+	request->host = safemalloc(strlen(url) + 1);
+
+	if (!request->host) {
+		log_message(LOG_ERR, "Could not allocate memory in 'extract_https_url'");
+
+		return -1;
+	}
+
+	if (sscanf(url, "%[^:]:%d", request->host, &request->port) == 2)
+		;
+	else if (sscanf(url, "%s", request->host) == 1)
+		request->port = 443;
+	else {
+		log_message(LOG_ERR, "Can't parse URL.");
+
+		safefree(request->host);
+		return -1;
+	}
+
+	return 0;
+}
+
+/*
+ * Create a connection for HTTP connections.
+ */
+static int establish_http_connection(struct conn_s *connptr,
+				     const char *method,
+				     const char *protocol,
+				     struct request_s *request)
+{
+	char *request_line;
+	size_t request_len;
+
+	request_len = strlen(method) + strlen(protocol) + strlen(request->path) + 13;
+
+	request_line = safemalloc(request_len);
+	if (!request_line) {
+		log_message(LOG_ERR, "Could not allocate memory in 'process_request'");
+		httperr(connptr, 503, HTTP503ERROR);
+
+		return -1;
+	}
+
+	strlcpy(request_line, method, request_len);
+	strlcat(request_line, " ", request_len);
+	strlcat(request_line, request->path, request_len);
+	strlcat(request_line, " ", request_len);
+	strlcat(request_line, "HTTP/1.0", request_len);
+	strlcat(request_line, "\r\n", request_len);
+
+	if (safe_write(connptr->server_fd, request_line, strlen(request_line)) < 0) {
+		safefree(request_line);
+
+		return -1;
+	}
+	safefree(request_line);
+
 	/*
-	 * Send the Host: header
+	 * Send headers
 	 */
-	if (safe_write(connptr->server_fd, "Host: ", 6) < 0)
-		goto COMMON_EXIT;
-	if (safe_write(connptr->server_fd, uri->authority, strlen(uri->authority)) < 0)
-		goto COMMON_EXIT;
+	if (safe_write(connptr->server_fd, "Host: ", 6) < 0) {
+		return -1;
+	}
+	if (safe_write(connptr->server_fd, request->host, strlen(request->host)) < 0) {
+		return -1;
+	}
+
 	if (safe_write(connptr->server_fd, "\r\n", 2) < 0)
-		goto COMMON_EXIT;
+		return -1;
 
 	/*
 	 * Send the Connection header since we don't support persistant
 	 * connections.
 	 */
 	if (safe_write(connptr->server_fd, "Connection: close\r\n", 19) < 0)
-		goto COMMON_EXIT;
+		return -1;
 
-	safefree(inbuf);
-	safefree(request);
-	free_uri(uri);
 	return 0;
+}
 
-COMMON_EXIT:
-	free_uri(uri);
-	
-EARLY_EXIT:
-	safefree(inbuf);
-	safefree(request);
-	return -1;
+/*
+ * Break the request line apart and figure out where to connect and
+ * build a new request line. Finally connect to the remote server.
+ */
+static int process_request(struct conn_s *connptr, char *request_line)
+{
+	char *method;
+	char *url;
+	char *protocol;
+
+	struct request_s request;
+
+	int ret;
+
+	size_t request_len;
+
+	/* NULL out all the fields so free's don't cause segfaults. */
+	memset(&request, 0, sizeof(struct request_s));
+
+	request_len = strlen(request_line) + 1;
+
+	method = safemalloc(request_len);
+	url = safemalloc(request_len);
+	protocol = safemalloc(request_len);
+
+	if (!method || !url || !protocol) {
+		log_message(LOG_ERR, "Could not allocate memory in 'process_request'");
+		safefree(method);
+		safefree(url);
+		safefree(protocol);
+		return -1;
+	}
+
+	ret = sscanf(request_line, "%[^ ] %[^ ] %[^ ]", method, url, protocol);
+	if (ret < 2) {
+		log_message(LOG_ERR, "Bad Request on file descriptor %d", connptr->client_fd);
+		httperr(connptr, 400, "Bad Request. No request found.");
+
+		safefree(method);
+		safefree(url);
+		safefree(protocol);
+
+		return -1;
+	} else if (ret == 2) {
+		connptr->simple_req = TRUE;
+	}
+
+	if (!url) {
+		log_message(LOG_ERR, "Null URL on file descriptor %d", connptr->client_fd);
+		httperr(connptr, 400, "Bad Request. Null URL.");
+
+		safefree(method);
+		safefree(url);
+		safefree(protocol);
+
+		return -1;
+	}
+
+	if (strncasecmp(url, "http://", 7) == 0) {
+		/* Make sure the first four characters are lowercase */
+		memcpy(url, "http", 4);
+
+		if (extract_http_url(url, &request) < 0) {
+			httperr(connptr, 400, "Bad Request. Could not parse URL.");
+			
+			safefree(method);
+			safefree(url);
+			safefree(protocol);
+
+			return -1;
+		}
+		connptr->ssl = FALSE;
+	} else if (strcmp(method, "CONNECT") == 0) {
+		if (extract_ssl_url(url, &request) < 0) {
+			httperr(connptr, 400, "Bad Request. Could not parse URL.");
+
+			safefree(method);
+			safefree(url);
+			safefree(protocol);
+
+			return -1;
+		}
+		connptr->ssl = TRUE;
+	} else {
+		log_message(LOG_ERR, "Unknown URL type on file descriptor %d", connptr->client_fd);
+		httperr(connptr, 400, "Bad Request. Unknown URL type.");
+
+		safefree(method);
+		safefree(url);
+		safefree(protocol);
+
+		return -1;
+	}
+
+	safefree(url);
+
+#ifdef FILTER_ENABLE
+	/*
+	 * Filter restricted domains
+	 */
+	if (config.filter) {
+		if (filter_url(request.host)) {
+			log_message(LOG_ERR, "Proxying refused on filtered domain \"%s\"", request.host);
+			httperr(connptr, 404, "Connection to filtered domain is now allowed.");
+
+			safefree(request.host);
+			safefree(request.path);
+
+			safefree(method);
+			safefree(url);
+
+			return -1;
+		}
+	}
+#endif
+
+	/*
+	 * Connect to the remote server.
+	 */
+	connptr->server_fd = opensock(request.host, request.port);
+	if (connptr->server_fd < 0) {
+		httperr(connptr, 500, HTTP500ERROR);
+
+		safefree(request.host);
+		safefree(request.path);
+
+		safefree(method);
+		safefree(protocol);
+
+		return -1;
+	}
+
+	if (!connptr->ssl) {
+		if (establish_http_connection(connptr, method, protocol, &request) < 0) {
+
+			safefree(method);
+			safefree(protocol);
+
+			safefree(request.host);
+			safefree(request.path);
+
+			return -1;
+		}
+	}
+
+	safefree(method);
+	safefree(protocol);
+
+	safefree(request.host);
+	safefree(request.path);
+
+	return 0;
 }
 
 /*
@@ -641,6 +726,8 @@ static void initialize_conn(struct conn_s *connptr)
 	connptr->output_message = NULL;
 	connptr->simple_req = FALSE;
 
+	connptr->ssl = FALSE;
+
 	update_stats(STAT_OPEN);
 }
 
@@ -677,7 +764,10 @@ void handle_connection(int fd)
 	char peer_ipaddr[PEER_IP_LENGTH];
 	char peer_string[PEER_STRING_LENGTH];
 
-	log_message(LOG_CONN, "Connect: %s [%s]",
+	char *request_line;
+
+	log_message(LOG_CONN, "Connect (file descriptor %d): %s [%s]",
+		    fd,
 		    getpeer_string(fd, peer_string),
 		    getpeer_ip(fd, peer_ipaddr));
 
@@ -726,13 +816,22 @@ void handle_connection(int fd)
 #endif /* TUNNEL_SUPPORT */
 
 internal_proxy:
-	if (process_method(connptr) < -1) {
+	request_line = read_request_line(connptr);
+	if (!request_line) {
 		destroy_conn(connptr);
 		return;
 	}
 
+	if (process_request(connptr, request_line) < 0) {
+		safefree(request_line);
+		destroy_conn(connptr);
+		return;
+	}
+
+	safefree(request_line);
+
 send_error:
-	if (!connptr->simple_req) {
+	if (!connptr->simple_req && !connptr->ssl) {
 		if (process_client_headers(connptr) < 0) {
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
@@ -748,10 +847,18 @@ send_error:
 		return;
 	}
 
-	if (process_server_headers(connptr) < 0) {
-		update_stats(STAT_BADCONN);
-		destroy_conn(connptr);
-		return;
+	if (!connptr->ssl) {
+		if (process_server_headers(connptr) < 0) {
+			update_stats(STAT_BADCONN);
+			destroy_conn(connptr);
+			return;
+		}
+	} else {
+		if (safe_write(connptr->client_fd, "HTTP/1.0 200 Connection established\r\n\r\n", 39) < 0) {
+			log_message(LOG_ERR, "Could not send SSL greeting to client.");
+			destroy_conn(connptr);
+			return;
+		}
 	}
 
 relay_proxy:
