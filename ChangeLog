@@ -1,7 +1,280 @@
+2000-08-23  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/utils.c (pidfile_create): Improved the security of this
+	function. Prevents cracker abuse of the pid file creation.
+
+	* sec/ternary.c: Overhauled to improve the robustness of the code.
+	Prevents people from effecting the internal system from outside
+	the official API. I think this is a good example of how all the
+	functions should be coded. It is a little more complex, but it
+	handles "problems" much better.
+
+2000-08-21  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/utils.c (strlcat)
+	* src/utils.c (strlcpy): Added these two functions which take their
+	API from the OpenBSD versions. Replaces strncpy/strncat.
+
+2000-08-17  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/ternary.c: Added a ternary tree module to replace the uses
+	of hashes in the source. There _were_ two different hash methods
+	before, which have been replaced with this general purpose module.
+	
+2000-08-12  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/log.c (log): Removed the static variables by changing them to
+	automatic.
+
+2000-08-03  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* doc/tinyproxy.8: Updated the manual documentation to match what
+	tinyproxy actually does. :)
+
+	* src/grammar.y: Finished handling the various config keywords.
+
+2000-08-02  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/tinyproxy.c (main): Fixed the change user/group ability.
+
+2000-07-31  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (process_method): Trying to change to a 1.1 compliant
+	browser. So, the Host header is set and sent. Also, tinyproxy doesn't
+	handle persistent connections, so tinyproxy needs to send the
+	Connection: close header.
+
+2000-07-30  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/thread.c (thread_main_loop): Added in the controls for handling
+	the creating and destruction of threads based on their numbers.
+	This is used for load control. Adjust MaxSpareServers, MinSpareServers,
+	and MaxClients.
+
+2000-07-29  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/acl.c: Added the ACL control system. This is much more advanced
+	then the simple one IP address test. Read doc/tinyproxy.conf for
+	more information.
+
+2000-07-22  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/log.h: Paired down the logging levels and provided a
+	description for each level. Please try to be consistent with
+	these. Also, added the two DEBUG?() function macros for use with
+	debugging.
+
+	* src/thread.c (thread_pool_create): Make sure we don't try to start
+	more than MaxClients servers.
+
+	* src/tinyproxy.c (main): Log when tinyproxy is using default
+	values rather than specified ones.
+
+	* src/reqs.c (relay_connection): Fixed a few difftime() problems
+	where the two arguments were being reversed.
+	(relay_connection): Added logging to handle if an Idle Timeout
+	occured on a connection.
+
+2000-07-19  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/tinyproxy.c (main): Cleaned up the command line arguments
+	since we now have a configuration file. See grammar.y and
+	scanner.l for more information.
+	(versiondisp): Moved the version information out of usagedisp().
+
+2000-07-11  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/utils.c (pidfile_create): Moved from tinyproxy.c
+
+	* src/thread.c: Moved all the thread creation code into a seperate
+	file.
+
+2000-07-10  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/tinyproxy.c (pidfile_create): All the process to write it's
+	PID to the specified file.
+	(thread_main, thread_make): Instread of creating a new thread on
+	each connection, we now have a pool of threads. Right now the pool
+	is hard coded, but I'd like to have a system similar to Apache
+	where the pool can change as demand changes.
+
+	* src/sock.c (getpeer_string): Needed to add locking around the call
+	to gethostbyname(). Could use gethostbyname_r() but I can't find a
+	consistent definition for the function.
+
+2000-07-03  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (safe_write): Added safe_write so that EINTR errors
+	would be handled correctly when trying to write on a blocking
+	socket. Non blocking is already handled in the writebuff function.
+	(safe_read): Matched pair for safe_write(). Same reason.
+	(pull_client_data): Removed the malloc of the length, and switched
+	to a fixed buffer. This prevents a DoS where the client specifies
+	a HUGE buffer and exhausted memory.
+
+2000-07-01  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c: Added the ability for sheding connections due to high
+	system load.
+
+	* src/buffer.c (readbuff): Now you can not have a buffer larger
+	than MAXBUFFSIZE. The read() function will attempt to read in
+	MAXBUFFSIZE - buffer_size().
+
+	* src/tinyproxy.h (MAXBUFFSIZE): This is the main control for all
+	the buffers in tinyproxy. Currently it is set to 48K since that is
+	nicely divisable by 2 and 3. The key is by 3 since this give
+	you 16K which is more than enough for a header line.
+
+	* src/stats.c: New file to handle the statistic functions. Needed
+	since with multiple threads, there has to be some locking around
+	any changes to the values. Moved the showstats() function here from
+	utils.c since logically it should be with the other stats routines.
+
+	* src/tinyproxy.c (main): Removed the USR1 signal since
+	LinuxThreads on a libc5 system needs the USR1 and USR2 for internal
+	processing. This means the USR1 signal dump stats is removed.
+
+	* src/reqs.c (handle_connection): Log incoming connections here so
+	that the information is logged even if we are doing an upstream
+	relay.
+
+	* src/tinyproxy.h: Moved all the common header files here to help
+	remove the clutter from all the other source files. Removed the
+	references to client_header and server_header from struct conn_s
+	since they are no longer used.
+
+	* src/reqs.c (validuser): Had the test for a valid user in reverse.
+	Fixed.
+
+	* src/tinyproxy.c (main): Moved the getreqs() function back into
+	the main function.
+
+2000-06-30  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/dnscache.c (dnscache): Added back the garbage collection
+	phase of the DNS caching system. Also, cleaned up the source so
+	only dnscache() is exposed to the rest of the system.
+
+	* src/buffer.c: Moved the structure definitions into src/buffer.c
+	from src/buffer.h. Removed *_buffer() functions. Made buffer_size()
+	a function so the structure definition does not need to be included
+	in the header. Removed the references to working_string and
+	working_length in struct buffer_s since it is no longer needed.
+
+	* configure.in: Added the checks for various "standard" data types.
+	Cleaned up the source, and fixed a problem with SOCKs support.
+
+	* acinclude.m4: Added the AC_UNP_CHECK_TYPE macro from
+	Unix Network Programming, W. Richard Stevens.
+
+	* src/reqs.c (handle_connection): Added the UPSTREAM_PROXY code
+	back into tinyproxy. It uses GOTOs, but it doesn't create spaghetti
+	code, at least it better not! :)
+
+	* src/utils.h:
+	* src/utils.c: Removed the xmalloc and xstrdup functions since they
+	really did not add anything to the standard malloc and strdup
+	functions.
+
+	* (all) Went through and removed all the references to xmalloc and
+	xstrdup. Still need to add the error checking to all these calls
+	though.
+
+2000-06-29  Robert James Kaes  <rjkaes@flarenet.com>
+	
+	* src/sock.c (opensock): Added mutex locking around the call to
+	dnscache since I don't want more than one thread to be adding to
+	the linked list.
+
+	* configure.in: moved the tests for USE_PROC, UPTIME_PATH,
+	DEFAULT_CUTOFFLOAD, DEFAULT_STATHOST from src/config.h
+
+	* src/tinyproxy.c: Moved the LOAD_RECALCTIMER define from
+	src/config.h
+
+	* src/reqs.c (handle_method, process_server_headers,
+		      handle_connection):
+	Handle simple and HTTP/0.9 requests properly.
+
+	* src/buffer.h: Changed the default MAXBUFFSIZE to 24 KB.
+
+2000-06-28  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/sock.c (listen_sock): This replaces the init_listen_sock
+	function and removed the global sockaddr and setup_fd variables.
+
+	* src/tinyproxy.c (getreqs): Not at all like the old function by the
+	same name. This just blocks on accept for new connections and then
+	creates a new thread for each connection.
+
+	* src/tinyproxy.h: Moved the struct conn_s into this header so
+	we can completely remove the src/conns.h and src/conns.c files as
+	they are no longer needed.
+
+	* src/reqs.c (process_server_headers): Handle server headers
+	separately from relay_connection since we'll need to be able to read
+	them in the future if we want to support caching.
+	(process_client_headers): Check for the Content-Length header. If
+	it is present then we need to read in all the client's data before
+	we can process any server headers or send back an error message.
+	(pull_client_header): Read in Content-Length number of bytes from
+	the client.
+
+2000-06-27  Robert James Kaes  <rjkaes@flarenet.com>
+	
+	* src/sock.c (socket_blocking, socket_nonblocking): Added the
+	functions since we need to selectively change a socket's state as
+	the program runs.
+	(opensock): Removed the call for making the socket nonblocking since
+	it should only be switched into nonblocking when it's absolutely
+	needed.
+
+	* src/buffer.c (readbuff, writebuff): Added tests at the beginning of
+	the functions to return if the limits on the buffer size have been
+	exceeded. Maybe this should be an assert instead, since these
+	functions should not be called with exceeded limits.
+
+	* src/config.h: Moved this to ./config.h instead. Updated the source
+	to reflect this change.
+
+	* src/log.c: Added logging levels which are duplicates of the syslog
+	levels. Helps to make the logfile a little easier to parse. This
+	also means all the calls to log(...) needed to be changed to
+	log(level, ...)
+
+2000-06-26  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/sock.c (readline): Completely gutted the function and replaced
+	it with a simpler function which is very similar to the original
+	function back in version 1.0. :) We can reuse this function again
+	since the sockets are now blocking again.
+
+2000-06-22  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c: A _MASSIVE_ rewrite of the whole connection process.
+	The old state machine is now gone. Each new connection is now a
+	separate thread. This allows the sockets to be blocking most of
+	the time, which made the rest of the functions a lot easier to
+	code. Some functions have been renamed and a bunch are new. The
+	changes are really too numerous to list, but the main idea is that
+	there is a separate function to handle each part of a connection and
+	the non-blocking code is only needed in the relay_connection
+	function. Take a look at the code, it's a lot easier to understand
+	now.
+
+2000-06-21  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/dnscache.h:
+	* src/dnscache.c: Renamed the functions lookup and insert to
+	dns_lookup and dns_insert.
+	(dns_lookup): Cleaned up the code to make it more streamlined.
+
+
 2000-06-06  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* fixed the links in doc/tinyproxy.8 for locating tinyproxy to
-	point to the new location at SorceForge.net. Thanks to Simon Baker
+	point to the new location at SourceForge.net. Thanks to Simon Baker
 	for pointing this out.
 
 2000-04-26  Robert James Kaes  <rjkaes@flarenet.com>
