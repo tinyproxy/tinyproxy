@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.7 2002-04-02 17:17:30 rjkaes Exp $
+/* $Id: grammar.y,v 1.8 2002-04-12 16:59:37 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -24,6 +24,7 @@
 #include "acl.h"
 #include "anonymous.h"
 #include "log.h"
+#include "reqs.h"
 #include "thread.h"
 
 void yyerror(char *s);
@@ -46,6 +47,7 @@ int yylex(void);
 %token KW_USER KW_GROUP
 %token KW_ANONYMOUS KW_FILTER KW_XTINYPROXY
 %token KW_TUNNEL KW_UPSTREAM
+%token KW_CONNECTPORT
 %token KW_ALLOW KW_DENY
 
 /* yes/no switches */
@@ -145,6 +147,7 @@ statement
 	| KW_ALLOW network_address	{ insert_acl($2, ACL_ALLOW); }
 	| KW_DENY network_address	{ insert_acl($2, ACL_DENY); }
         | KW_LOGLEVEL loglevels         { set_log_level($2); }
+        | KW_CONNECTPORT NUMBER         { add_connect_port_allowed($2); }
 	;
 
 loglevels
