@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.4 2001-12-17 19:10:06 rjkaes Exp $
+dnl $Id: configure.ac,v 2.5 2001-12-28 22:31:12 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -206,7 +206,7 @@ dnl Checks for headers
 dnl
 AC_HEADER_STDC
 AC_CHECK_HEADERS([sys/types.h sys/ioctl.h sys/resource.h sys/select.h \
-		  sys/socket.h sys/stat.h sys/sysctl.h sys/time.h sys/uio.h \
+		  sys/socket.h sys/stat.h sys/time.h sys/uio.h \
 		  sys/un.h sys/wait.h arpa/inet.h netinet/in.h alloca.h \
 		  assert.h ctype.h errno.h fcntl.h grp.h io.h libintl.h \
 		  malloc.h memory.h netdb.h pthread.h pwd.h regex.h signal.h \

@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.25 2001-12-23 18:44:02 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.26 2001-12-28 22:31:12 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -50,9 +50,6 @@
 #endif
 #ifdef HAVE_SYS_STAT_H
 #  include	<sys/stat.h>
-#endif
-#ifdef HAVE_SYS_SYSCTL_H
-#  include	<sys/sysctl.h>
 #endif
 
 #ifdef HAVE_SYS_TIME_H
