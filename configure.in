@@ -1,4 +1,4 @@
-dnl $Id: configure.in,v 1.31 2001-10-01 04:01:10 rjkaes Exp $
+dnl $Id: configure.in,v 1.32 2001-10-22 21:30:18 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -19,7 +19,7 @@ AC_INIT()
 AC_CANONICAL_SYSTEM
 AC_DEFINE_UNQUOTED(TARGET_SYSTEM, "$target")
 
-AM_INIT_AUTOMAKE(tinyproxy,1.4.3pre5)
+AM_INIT_AUTOMAKE(tinyproxy,1.4.3pre6)
 AM_CONFIG_HEADER(config.h)
 
 dnl
