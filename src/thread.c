@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.6 2001-08-26 21:14:30 rjkaes Exp $
+/* $Id: thread.c,v 1.7 2001-08-27 17:45:50 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -41,6 +41,9 @@ struct thread_s {
  */
 static struct thread_s *thread_ptr;
 static pthread_mutex_t mlock = PTHREAD_MUTEX_INITIALIZER;
+
+/* Used to override the default statck size. */
+static pthread_attr_t thread_attr;
 
 static struct thread_config_s {
 	unsigned int maxclients, maxrequestsperchild;
@@ -146,6 +149,13 @@ int thread_pool_create(void)
 {
 	unsigned int i;
 
+	/*
+	 * Initialize thread_attr to contain a non-default stack size
+	 * because the default on some OS's is too small.
+	 */
+	pthread_attr_init(&thread_attr);
+	pthread_attr_setstacksize(&thread_attr, (1024 * 1024));
+
 	if (thread_config.maxclients == 0) {
 		log_message(LOG_ERR, "You must set MaxClients to a value greater than 0");
 		return -1;
@@ -167,7 +177,7 @@ int thread_pool_create(void)
 	for (i = 0; i < thread_config.startservers; i++) {
 		thread_ptr[i].status = T_WAITING;
 		servers_waiting++;
-		pthread_create(&thread_ptr[i].tid, NULL, &thread_main, &thread_ptr[i]);
+		pthread_create(&thread_ptr[i].tid, &thread_attr, &thread_main, &thread_ptr[i]);
 	}
 	for (i = thread_config.startservers; i < thread_config.maxclients; i++) {
 		thread_ptr[i].status = T_EMPTY;
@@ -189,7 +199,7 @@ int thread_main_loop(void)
 	if (servers_waiting < thread_config.minspareservers) {
 		for (i = 0; i < thread_config.maxclients; i++) {
 			if (thread_ptr[i].status == T_EMPTY) {
-				pthread_create(&thread_ptr[i].tid, NULL, &thread_main, &thread_ptr[i]);
+				pthread_create(&thread_ptr[i].tid, &thread_attr, &thread_main, &thread_ptr[i]);
 				thread_ptr[i].status = T_WAITING;
 				thread_ptr[i].connects = 0;
 
