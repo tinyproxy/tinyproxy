@@ -1,6 +1,0 @@
-* handle SSL (on port 443)
-* allow selective logging. For example, you may want to only log errors.
-* ability to rewrite headers (both incoming and outgoing)
-* take a look at squid and find out why ICQ doesn't work through tinyproxy
-* selective binding based on incoming IP address
-* make sure tinyproxy works with sshtunnels
