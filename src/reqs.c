@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.84 2002-11-03 17:10:32 rjkaes Exp $
+/* $Id: reqs.c,v 1.85 2002-11-13 17:48:48 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -1103,6 +1103,7 @@ relay_connection(struct conn_s *connptr)
 		if (write_buffer(connptr->client_fd, connptr->sbuffer) < 0)
 			break;
 	}
+	shutdown(connptr->client_fd, SHUT_WR);
 
 	/*
 	 * Try to send any remaining data to the server if we can.
