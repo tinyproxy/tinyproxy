@@ -1,10 +1,10 @@
-/* $Id: acl.c,v 1.15 2002-05-23 18:20:27 rjkaes Exp $
+/* $Id: acl.c,v 1.16 2002-06-05 16:59:21 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
  * which is then used to compare incoming connections.
  *
- * Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2000,2002  Robert James Kaes (rjkaes@flarenet.com)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -133,17 +133,87 @@ insert_acl(char *location, acl_access_t access_type)
 }
 
 /*
- * Checks whether  file descriptor is allowed.
+ * This function is called whenever a "string" access control is found in
+ * the ACL.  From here we do both a text based string comparison, along with
+ * a reverse name lookup comparison of the IP addresses.
+ *
+ * Return: 0 if host is denied
+ *         1 if host is allowed
+ *        -1 if no tests match, so skip
+ */
+static inline int
+acl_string_processing(struct acl_s* aclptr,
+		      const char* ip_address,
+		      const char* string_address)
+{
+	int i;
+	struct hostent* result;
+	size_t test_length, match_length;
+
+	/*
+	 * If the first character of the ACL string is a period, we need to
+	 * do a string based test only; otherwise, we can do a reverse
+	 * lookup test as well.
+	 */
+	if (aclptr->location[0] != '.') {
+		/* It is not a partial domain, so do a reverse lookup. */
+		result = gethostbyname(aclptr->location);
+		if (!result)
+			goto STRING_TEST;
+				
+		for (i = 0; result->h_addr_list[i]; ++i) {
+			if (strcmp(ip_address,
+				   inet_ntoa(*((struct in_addr*)result->h_addr_list[i]))) == 0) {
+				/* We have a match */
+				if (aclptr->acl_access == ACL_DENY) {
+					return 0;
+				} else {
+					DEBUG2("Matched using reverse domain lookup: %s", ip_address);
+					return 1;
+				}
+			}
+		}
+
+		/*
+		 * If we got this far, the reverse didn't match, so drop down
+		 * to a standard string test.
+		 */
+	}
+
+STRING_TEST:
+	test_length = strlen(string_address);
+	match_length = strlen(aclptr->location);
+
+	/*
+	 * If the string length is shorter than AC string, return a -1 so
+	 * that the "driver" will skip onto the next control in the list.
+	 */
+	if (test_length < match_length)
+		return -1;
+
+	if (strcasecmp(string_address + (test_length - match_length), aclptr->location) == 0) {
+		if (aclptr->acl_access == ACL_DENY)
+			return 0;
+		else
+			return 1;
+	}
+
+	/* Indicate that no tests succeeded, so skip to next control. */
+	return -1;
+}
+
+/*
+ * Checks whether file descriptor is allowed.
  *
  * Returns:
  *     1 if allowed
  *     0 if denied
- *    -1 if error
  */
 int
 check_acl(int fd, const char* ip_address, const char* string_address)
 {
-	struct acl_s *aclptr;
+	struct acl_s* aclptr;
+	int ret;
 
 	assert(fd >= 0);
 	assert(ip_address != NULL);
@@ -158,26 +228,16 @@ check_acl(int fd, const char* ip_address, const char* string_address)
 
 	while (aclptr) {
 		if (aclptr->type == ACL_STRING) {
-			size_t test_length = strlen(string_address);
-			size_t match_length = strlen(aclptr->location);
-
-			if (test_length < match_length) {
-				aclptr = aclptr->next;
-				continue;
-			}
-
-			if (strcasecmp
-			    (string_address + (test_length - match_length),
-			     aclptr->location) == 0) {
-				if (aclptr->acl_access == ACL_DENY) {
-					log_message(LOG_NOTICE,
-						    "Unauthorized access from \"%s\"",
+			ret = acl_string_processing(aclptr,
+						    ip_address,
 						    string_address);
-					return 0;
-				} else {
-					return 1;
-				}
-			}
+			if (ret == 0)
+				goto UNAUTHORIZED;
+			else if (ret == 1)
+				return 1;
+
+			aclptr = aclptr->next;
+			continue;
 		} else {
 			struct in_addr test_addr, match_addr;
 			in_addr_t netmask_addr;
@@ -194,14 +254,10 @@ check_acl(int fd, const char* ip_address, const char* string_address)
 
 			if ((test_addr.s_addr & netmask_addr) ==
 			    (match_addr.s_addr & netmask_addr)) {
-				if (aclptr->acl_access == ACL_DENY) {
-					log_message(LOG_NOTICE,
-						    "Unauthorized access from [%s].",
-						    ip_address);
-					return 0;
-				} else {
+				if (aclptr->acl_access == ACL_DENY)
+					goto UNAUTHORIZED;
+				else
 					return 1;
-				}
 			}
 		}
 
@@ -214,6 +270,7 @@ check_acl(int fd, const char* ip_address, const char* string_address)
 	/*
 	 * Deny all connections by default.
 	 */
+UNAUTHORIZED:
 	log_message(LOG_NOTICE, "Unauthorized connection from \"%s\" [%s].",
 		    string_address, ip_address);
 	return 0;
