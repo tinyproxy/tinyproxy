@@ -1,3 +1,11 @@
+2002-05-13  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/hashmap.c (hashmap_insert): Fixed a potential SEGFAULT if
+	the memory for the new hashmap entry could not be allocated.
+	(hashmap_remove): Fixed a problem where an entry could have it's
+	"prev" pointer still pointing at freed memory.  Thanks to Justin
+	Guyett for finding and fixing this problem.
+
 2002-05-10  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* Makefile.am (install-data-local): Fixed up the tinyproxy.conf
