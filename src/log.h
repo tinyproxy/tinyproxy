@@ -1,4 +1,4 @@
-/* $Id: log.h,v 1.5 2001-06-02 02:07:34 rjkaes Exp $
+/* $Id: log.h,v 1.6 2001-06-02 03:09:27 rjkaes Exp $
  *
  * See 'log.c' for a detailed description.
  *
@@ -90,5 +90,6 @@
 #endif
 
 extern void log_message(short int level, char *fmt, ...);
+extern void set_log_level(short int level);
 
 #endif

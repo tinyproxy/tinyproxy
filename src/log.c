@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.4 2001-05-27 02:26:11 rjkaes Exp $
+/* $Id: log.c,v 1.5 2001-06-02 03:09:27 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -38,6 +38,19 @@ static char *syslog_level[] = {
 #define STRING_LENGTH 800
 
 /*
+ * Store the log level setting.
+ */
+static short int log_level = LOG_ERR;
+
+/*
+ * Set the log level for writing to the log file.
+ */
+void set_log_level(short int level)
+{
+	log_level = level;
+}
+
+/*
  * This routine logs messages to either the log file or the syslog function.
  */
 void log_message(short int level, char *fmt, ...)
@@ -50,6 +63,12 @@ void log_message(short int level, char *fmt, ...)
 #if defined(HAVE_SYSLOG_H) && !defined(HAVE_VSYSLOG_H)
 	char str[STRING_LENGTH];
 #endif
+
+	/*
+	 * Figure out if we should write the message or not.
+	 */
+	if (level > log_level)
+		return;
 
 	va_start(args, fmt);
 
