@@ -2,6 +2,9 @@
 
 	* src/reqs.c (clientreq): Removed the hack for POST methods with
 	regard to anonymous access.
+	(clientreq): fixed a bug with the request line. If the PATH was
+	empty, it would send an malformed request to the server. This is
+	checked now and if the path is empty, a "/" is used instread.
 
 	* src/config.h (SOCK_TIMEOUT): Increased the time out to 10
 	seconds.

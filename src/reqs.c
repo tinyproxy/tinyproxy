@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.6 2000-03-31 20:13:36 rjkaes Exp $
+/* $Id: reqs.c,v 1.7 2000-03-31 22:55:22 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections are added to the active list of connections and then the header
@@ -230,10 +230,14 @@ static int clientreq(struct conn_s *connptr)
 	memcpy(request, inbuf, pmatch[METHOD_IND].rm_eo);
 	request[pmatch[METHOD_IND].rm_eo] = '\0';
 	strcat(request, " ");
-	strcat(request, uri->path);
-	if (uri->query) {
-		strcat(request, "?");
-		strcat(request, uri->query);
+	if (strlen(uri->path) > 0) {
+		strcat(request, uri->path);
+		if (uri->query) {
+			strcat(request, "?");
+			strcat(request, uri->query);
+		}
+	} else {
+		strcat(request, "/");
 	}
 	strcat(request, " HTTP/1.0\r\n");
 
