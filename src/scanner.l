@@ -1,4 +1,4 @@
-/* $Id: scanner.l,v 1.20 2003-06-20 17:02:13 rjkaes Exp $
+/* $Id: scanner.l,v 1.21 2003-06-26 18:16:09 rjkaes Exp $
  *
  * This builds the scanner for the tinyproxy configuration file. This
  * file needs to stay in sync with grammar.y. If someone knows lex and yacc
@@ -81,17 +81,22 @@ static struct keyword keywords[] = {
 
 #define MAX_REGEXP_LEN	1024
 
-unsigned int scanner_lineno = 1;
-
 char tiny_buf[MAX_REGEXP_LEN];
 char *tiny_str;
 
 static int check_reserved_words(char *token);
 static void append_string(int length, char *str);
 static void append_char(char c);
+
+#ifdef NDEBUG
+/* Turn off debugging if this is a production build. */
+yy_flex_debug = 0;
+#endif 
+
+
 %}
 
-%option noyywrap
+%option noyywrap batch yylineno debug
 
 white		[ \t]
 digit		[0-9]
@@ -104,14 +109,15 @@ word		[^ \#'"\(\)\{\}\\;\n\t,|\.]
 %%
 
 \#.*$		        ;
-\n                      { ++scanner_lineno; return '\n'; }
-:                       { return ':'; }
+\n                      { return '\n'; }
+":"                     { return ':'; }
 {white}+                ;
 0x{digit}+              { yylval.num = strtol(yytext, NULL, 16); return NUMBER; }
 0{digit}+               { yylval.num = strtol(yytext, NULL, 8); return NUMBER; }
 {digit}+                { yylval.num = atoi(yytext); return NUMBER; }
-{alpha}+	        { return check_reserved_words(yytext); }
-\"			{
+{alpha}({alphanum}|[-._])+	        { return check_reserved_words(yytext); }
+
+\"		{
 			        tiny_str = tiny_buf;
 				BEGIN(string);
 			}
@@ -131,7 +137,6 @@ word		[^ \#'"\(\)\{\}\\;\n\t,|\.]
 
 ({digit}{1,3}\.){3}{digit}{1,3} { yylval.cptr = strdup(yytext); return NUMERIC_ADDRESS; }
 ({digit}{1,3}\.){3}{digit}{1,3}\/{digit}+ { yylval.cptr = strdup(yytext); return NETMASK_ADDRESS; }
-([-_a-z0-9]+\.)+[a-z]+		{ yylval.cptr = strdup(yytext); return STRING_ADDRESS; }
 
 
 %%
