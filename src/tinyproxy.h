@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.3 2000-03-31 20:08:19 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.4 2000-09-12 00:03:53 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -16,70 +16,96 @@
  * General Public License for more details.
  */
 
-#ifndef _TINYPROXY_H_
-#define _TINYPROXY_H_	1
+#ifndef _TINYPROXY_TINYPROXY_H_
+#define _TINYPROXY_TINYPROXY_H_
 
 #ifdef HAVE_CONFIG_H
-#include <defines.h>
+#  include "../config.h"
 #endif
 
-#include <stdio.h>
-#include <time.h>
+/*
+ * Include standard headers which are used through-out tinyproxy
+ */
+#ifdef HAVE_SYS_SELECT_H
+#  include	<sys/select.h>
+#endif
+#include	<sys/socket.h>
+#include	<sys/stat.h>
+#include	<sys/time.h>
+#include	<sys/types.h>
+#include	<sys/uio.h>
+#include	<arpa/inet.h>
+#include	<netinet/in.h>
+#include	<errno.h>
+#include	<fcntl.h>
+#include	<netdb.h>
+#ifdef HAVE_PTHREAD_H
+#  include	<pthread.h>
+#endif
+#include	<stdint.h>
+#include	<stdio.h>
+#include	<stdlib.h>
+#include	<string.h>
+#ifdef HAVE_STRINGS_H
+#  include	<strings.h>
+#endif
+#include	<time.h>
+#include	<unistd.h>
 
-#include "config.h"
+#ifndef SHUT_RD			/* these three Posix.1g names are quite new */
+#  define SHUT_RD	0	/* shutdown for reading */
+#  define SHUT_WR	1	/* shutdown for writing */
+#  define SHUT_RDWR	2	/* shutdown for reading and writing */
+#endif
 
 /* Global variables for the main controls of the program */
-#define BUFFER (1024 * 2)	/* Size of buffer for reading */
-#define MAXLISTEN 128		/* Max number of connections to listen for */
+#define MAXBUFFSIZE	(1024 * 48)	/* Max size of buffer */
+#define MAXLISTEN	1024		/* Max number of connections */
+#define MAX_IDLE_TIME 	(60 * 10)	/* 10 minutes of no activity */
 
-/* Make a new type: flag */
-typedef char flag;
+/* Useful function macros */
+#define min(a,b)	((a) < (b) ? (a) : (b))
+#define max(a,b)	((a) > (b) ? (a) : (b))
 
-/* Other stuff */
-#define FALSE (0)
-#define TRUE  (!FALSE)
+/* Make a new type: bool_t */
+typedef enum {
+	FALSE = 0,
+	TRUE = (!FALSE)
+} bool_t;
 
 struct config_s {
 	FILE *logf;
 	char *logf_name;
-	flag syslog;
-	float cutoffload;
+	bool_t syslog;
 	int port;
 	char *stathost;
-	flag quit;
-	char *changeuser;
-	flag anonymous;
-	char *subnet;
+	bool_t quit;
+	char *username;
+	char *group;
+	bool_t anonymous;
 	char *ipAddr;
 #ifdef FILTER_ENABLE
 	char *filter;
 #endif				/* FILTER_ENABLE */
-	flag restricted;
-#ifdef XTINYPROXY
+#ifdef XTINYPROXY_ENABLE
 	char *my_domain;
 #endif
-#ifdef UPSTREAM_PROXY
-	char *upstream_name;
-	int upstream_port;
-#endif
+#ifdef TUNNEL_SUPPORT
+	char *tunnel_name;
+	int tunnel_port;
+#endif				/* TUNNEL_SUPPORT */
+	char *pidpath;
+	unsigned int idletimeout;
 };
 
-struct stat_s {
-	unsigned long int num_reqs;
-	unsigned long int num_cons;
-	unsigned long int num_badcons;
-	unsigned long int num_opens;
-	unsigned long int num_listens;
-	unsigned long int num_tx;
-	unsigned long int num_rx;
-	unsigned long int num_garbage;
-	unsigned long int num_idles;
-	unsigned long int num_refused;
+struct conn_s {
+	int client_fd, server_fd;
+	struct buffer_s *cbuffer, *sbuffer;
+	bool_t simple_req;
+	char *output_message;
 };
 
 /* Global Structures used in the program */
 extern struct config_s config;
-extern struct stat_s stats;
-extern float load;
 
 #endif
