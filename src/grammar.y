@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.18 2003-01-27 17:57:39 rjkaes Exp $
+/* $Id: grammar.y,v 1.19 2003-03-13 21:28:37 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -25,6 +25,7 @@
 #include "anonymous.h"
 #include "child.h"
 #include "filter.h"
+#include "htmlerror.h"
 #include "log.h"
 #include "reqs.h"
 
@@ -52,6 +53,8 @@ int yylex(void);
 %token KW_UPSTREAM
 %token KW_CONNECTPORT KW_BIND KW_HTTP_VIA
 %token KW_ALLOW KW_DENY
+%token KW_ERRORPAGE KW_DEFAULT_ERRORPAGE
+%token KW_STATPAGE
 
 /* yes/no switches */
 %token KW_YES KW_NO
@@ -112,6 +115,9 @@ statement
 	| KW_USER string		{ config.username = $2; }
 	| KW_GROUP string		{ config.group = $2; }
 	| KW_ANONYMOUS string		{ anonymous_insert($2); }
+	| KW_ERRORPAGE NUMBER string	{ add_new_errorpage($3, $2); }
+	| KW_DEFAULT_ERRORPAGE string	{ config.errorpage_undef = $2; }
+	| KW_STATPAGE string	{ config.statpage = $2; }
 	| KW_FILTER string
 	  {
 #ifdef FILTER_ENABLE
@@ -236,5 +242,12 @@ extern unsigned int yylineno;
 void
 yyerror(char *s)
 {
-	fprintf(stderr, "Line %d: %s\n", yylineno, s);
+	static int headerdisplayed = 0;
+
+	if (!headerdisplayed) {
+		fprintf(stderr, "Errors in configuration file:\n");
+		headerdisplayed = 1;
+	}
+
+	fprintf(stderr, "\t%s:%d: %s\n", config.config_file, yylineno, s);
 }
