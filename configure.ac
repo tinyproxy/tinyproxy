@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.13 2002-04-10 19:10:07 rjkaes Exp $
+dnl $Id: configure.ac,v 2.14 2002-04-11 02:57:20 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -100,7 +100,7 @@ AC_ARG_ENABLE(filter,
               filter_enabled=$enableval, filter_enabled=yes)
 
 if test x"$filter_enabled" = x"yes"; then
-    AC_LIBOBJ([filter])
+    ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS filter.o"
 
     AH_TEMPLATE([FILTER_ENABLE],
 		[Defined if you would like filtering code included.])
@@ -314,16 +314,26 @@ else
     AC_MSG_CHECKING([whether the system's regex library is broken])
     AC_CACHE_VAL(tinyproxy_cv_regex_broken,
                  [AC_TRY_RUN([
-#ifdef HAVE_UNISTD_H
+#if HAVE_SYS_TYPES_H
+#  include <sys/types.h>
+#endif
+#if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
-#ifdef HAVE_REGEX_H
+#if HAVE_REGEX_H
 # include <regex.h>
 #endif
 int main(void)
 {
 	regex_t blah;
-	return regcomp(&blah, "foo.*bar", REG_NOSUB) || regexec(&blah, "foobar", 0, NULL, 0);
+	if (regcomp(&blah, "foo.*bar", REG_NOSUB) != 0)
+		exit(1);
+	if (regexec(&blah, "foobar", 0, NULL, 0) != 0)
+		exit(1);
+	else
+		exit(0);
+
+	return 0;
 }
                             ],
                             tinyproxy_cv_regex_broken=no,
@@ -343,7 +353,7 @@ if test x"$tinyproxy_use_our_regex" = x"yes" ; then
 		[Defined if you want to use the included regex routines.])
 
     AC_DEFINE(USE_GNU_REGEX)
-    AC_LIBOBJ([gnuregex])
+    ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS gnuregex.o"
 fi
 
 dnl
@@ -354,7 +364,7 @@ AC_SUBST(LDFLAGS)
 AC_SUBST(YFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LIBS)
-dnl AC_SUBST(LIBOBJS)
+AC_SUBST(ADDITIONAL_OBJECTS)
 
 AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile])
 AC_OUTPUT
