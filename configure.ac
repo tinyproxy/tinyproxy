@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.57 2003-06-25 18:23:11 rjkaes Exp $
+dnl $Id: configure.ac,v 2.58 2003-06-26 18:23:01 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -265,6 +265,7 @@ if test x"$debug_enabled" = x"yes" ; then
     fi
     CFLAGS="-Wall -g -DYYDEBUG $CFLAGS"
     YFLAGS="-v -d"
+    LEX_FLAGS="--warn"
 else
     dnl No debugging information, include the optimizations
     CFLAGS="-O2 -DNDEBUG $CFLAGS"
@@ -341,6 +342,7 @@ AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(YFLAGS)
 AC_SUBST(CPPFLAGS)
+AC_SUBST(LEX_FLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(ADDITIONAL_OBJECTS)
 AC_SUBST(TINYPROXY_CONFIG_DIR)

@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.16 2003-03-13 21:23:01 rjkaes Exp $
+# $Id: Makefile.am,v 1.17 2003-06-26 18:23:01 rjkaes Exp $
 #
 # Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
 #
@@ -48,7 +48,7 @@ tinyproxy_DEPENDENCIES = @ADDITIONAL_OBJECTS@
 tinyproxy_LDADD = @ADDITIONAL_OBJECTS@
 
 scanner.c: scanner.l grammar.h
-	$(LEX) $(AM_LFLAGS) $(LFLAGS) -i $< && mv $(LEX_OUTPUT_ROOT).c $@
+	$(LEX) $(LEX_FLAGS) $(LFLAGS) -i $< && mv $(LEX_OUTPUT_ROOT).c $@
 
 clean:
 	rm -f *.da
