@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.11 2002-05-27 01:56:22 rjkaes Exp $
+/* $Id: filter.c,v 1.12 2002-06-06 20:30:04 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  * Copyright (c) 2002  James E. Flemer (jflemer@acm.jhu.edu)
@@ -21,6 +21,7 @@
 
 #include "filter.h"
 #include "heap.h"
+#include "log.h"
 #include "regexp.h"
 #include "reqs.h"
 
@@ -133,27 +134,18 @@ int
 filter_domain(const char *host)
 {
 	struct filter_list *p;
-	char *s, *port;
 	int result;
 
 	if (!fl || !already_init)
 		return (0);
 
-	/* strip off the port number */
-	s = safestrdup(host);
-	port = strchr(s, ':');
-	if (port)
-		*port = '\0';
-
 	result = 0;
-
 	for (p = fl; p; p = p->next) {
-		result = !regexec(p->cpat, s, (size_t) 0, (regmatch_t *) 0, 0);
+		result = !regexec(p->cpat, host, (size_t) 0, (regmatch_t *) 0, 0);
 
 		if (result)
 			break;
 	}
-	safefree(s);
 	return (result);
 }
 
