@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.33 2002-04-24 16:48:34 rjkaes Exp $
+/* $Id: sock.c,v 1.34 2002-05-23 18:25:55 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -23,18 +23,11 @@
 
 #include "tinyproxy.h"
 
+#include "dnsclient.h"
 #include "log.h"
+#include "heap.h"
 #include "sock.h"
-#include "utils.h"
-
-/*
- * The mutex is used for locking around any calls which access global
- * variables.
- *	- rjkaes
- */
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-#define LOCK()   pthread_mutex_lock(&mutex);
-#define UNLOCK() pthread_mutex_unlock(&mutex);
+#include "text.h"
 
 /*
  * Take a string host address and return a struct in_addr so we can connect
@@ -44,25 +37,23 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
  */
 static int
 lookup_domain(struct in_addr *addr, const char *domain)
-{
-	struct hostent *resolv;
-
-	if (!addr || !domain)
+{	
+	struct in_addr *addresses;
+	int dns;
+	
+	dns = dns_connect();
+	if (dns < 0)
 		return -1;
 
-	/*
-	 * Okay, it's an alpha-numeric domain, so look it up.
-	 */
-	LOCK();
-	if (!(resolv = gethostbyname(domain))) {
-		UNLOCK();
+	if (dns_getaddrbyname(dns, domain, &addresses) < 0) {
+		dns_disconnect(dns);
 		return -1;
 	}
 
-	memcpy(addr, resolv->h_addr_list[0], resolv->h_length);
-
-	UNLOCK();
-
+	memcpy(addr, addresses, sizeof(addr));
+	
+	dns_disconnect(dns);
+	safefree(addresses);
 	return 0;
 }
 
@@ -209,6 +200,46 @@ listen_sock(uint16_t port, socklen_t * addrlen)
 }
 
 /*
+ * Return the peer's socket information.
+ */
+int
+getpeer_information(int fd, char* ipaddr, char* string_addr)
+{
+	struct sockaddr_in name;
+	size_t namelen = sizeof(name);
+	int dns;
+
+	assert(fd >= 0);
+	assert(ipaddr != NULL);
+	assert(string_addr != NULL);
+
+	/*
+	 * Clear the memory.
+	 */
+	memset(ipaddr, '\0', PEER_IP_LENGTH);
+	memset(string_addr, '\0', PEER_STRING_LENGTH);
+
+	if (getpeername(fd, (struct sockaddr *)&name, &namelen) != 0) {
+		log_message(LOG_ERR, "getpeer_information: getpeername() error: %s",
+			    strerror(errno));
+		return -1;
+	} else {
+		strlcpy(ipaddr,
+			inet_ntoa(*(struct in_addr *)&name.sin_addr.s_addr),
+			PEER_IP_LENGTH);
+	}
+
+	dns = dns_connect();
+	if (dns < 0)
+		return -1;
+	dns_gethostbyaddr(dns, ipaddr, &string_addr, PEER_STRING_LENGTH);
+	dns_disconnect(dns);
+       
+	return 0;
+}
+
+#if 0
+/*
  * Takes a socket descriptor and returns the string contain the peer's
  * IP address.
  */
@@ -245,9 +276,9 @@ getpeer_ip(int fd, char *ipaddr)
 char *
 getpeer_string(int fd, char *string)
 {
-	struct sockaddr_in name;
-	size_t namelen = sizeof(name);
-	struct hostent *peername;
+	int dns;
+	char peer_ip_buffer[PEER_IP_LENGTH];
+
 
 	assert(fd >= 0);
 	assert(string != NULL);
@@ -257,237 +288,18 @@ getpeer_string(int fd, char *string)
 	 */
 	*string = '\0';
 
-	if (getpeername(fd, (struct sockaddr *) &name, &namelen) != 0) {
-		log_message(LOG_ERR,
-			    "getpeer_string: getpeername() error \"%s\".",
-			    strerror(errno));
-	} else {
-		LOCK();
-		peername = gethostbyaddr((char *) &name.sin_addr.s_addr,
-					 sizeof(name.sin_addr.s_addr), AF_INET);
-		if (peername)
-			strlcpy(string, peername->h_name, PEER_STRING_LENGTH);
-		else
-			log_message(LOG_ERR,
-				    "getpeer_string: gethostbyaddr() error");
+	return string;
 
-		UNLOCK();
+	getpeer_ip(fd, peer_ip_buffer);
+
+	dns = connect_to_dns();
+	if (dns < 0) {
+		return string;
 	}
+	dns_gethostbyaddr(dns, peer_ip_buffer, &string, PEER_STRING_LENGTH);
+	shutdown_dns_connection(dns);
 
 	return string;
 }
 
-/*
- * Write the buffer to the socket. If an EINTR occurs, pick up and try
- * again. Keep sending until the buffer has been sent.
- */
-ssize_t
-safe_write(int fd, const char *buffer, size_t count)
-{
-	ssize_t len;
-	size_t bytestosend;
-
-	assert(fd >= 0);
-	assert(buffer != NULL);
-	assert(count > 0);
-
-	bytestosend = count;
-
-	while (1) {
-		len = send(fd, buffer, bytestosend, MSG_NOSIGNAL);
-
-		if (len < 0) {
-			if (errno == EINTR)
-				continue;
-			else
-				return -errno;
-		}
-
-		if (len == bytestosend)
-			break;
-
-		buffer += len;
-		bytestosend -= len;
-	}
-
-	return count;
-}
-
-/*
- * Matched pair for safe_write(). If an EINTR occurs, pick up and try
- * again.
- */
-ssize_t
-safe_read(int fd, char *buffer, size_t count)
-{
-	ssize_t len;
-
-	do {
-		len = read(fd, buffer, count);
-	} while (len < 0 && errno == EINTR);
-
-	return len;
-}
-
-/*
- * Send a "message" to the file descriptor provided. This handles the
- * differences between the various implementations of vsnprintf. This code
- * was basically stolen from the snprintf() man page of Debian Linux
- * (although I did fix a memory leak. :)
- */
-int
-write_message(int fd, const char *fmt, ...)
-{
-	ssize_t n;
-	size_t size = (1024 * 8);	/* start with 8 KB and go from there */
-	char *buf, *tmpbuf;
-	va_list ap;
-
-	if ((buf = safemalloc(size)) == NULL)
-		return -1;
-
-	while (1) {
-		va_start(ap, fmt);
-		n = vsnprintf(buf, size, fmt, ap);
-		va_end(ap);
-
-		/* If that worked, break out so we can send the buffer */
-		if (n > -1 && n < size)
-			break;
-
-		/* Else, try again with more space */
-		if (n > -1)
-			/* precisely what is needed (glibc2.1) */
-			size = n + 1;
-		else
-			/* twice the old size (glibc2.0) */
-			size *= 2;
-
-		if ((tmpbuf = saferealloc(buf, size)) == NULL) {
-			safefree(buf);
-			return -1;
-		} else
-			buf = tmpbuf;
-	}
-
-	if (safe_write(fd, buf, n) < 0) {
-		DEBUG2("Error in write_message(): %d", fd);
-
-		safefree(buf);
-		return -1;
-	}
-
-	safefree(buf);
-	return 0;
-}
-
-/*
- * Read in a "line" from the socket. It might take a few loops through
- * the read sequence. The full string is allocate off the heap and stored
- * at the whole_buffer pointer. The caller needs to free the memory when
- * it is no longer in use. The returned line is NULL terminated.
- *
- * Returns the length of the buffer on success (not including the NULL
- * termination), 0 if the socket was closed, and -1 on all other errors.
- */
-#define SEGMENT_LEN (512)
-#define MAXIMUM_BUFFER_LENGTH (128 * 1024)
-ssize_t
-readline(int fd, char **whole_buffer)
-{
-	ssize_t whole_buffer_len;
-	char buffer[SEGMENT_LEN];
-	char *ptr;
-
-	ssize_t ret;
-	ssize_t diff;
-
-	struct read_lines_s {
-		char *data;
-		size_t len;
-		struct read_lines_s *next;
-	};
-	struct read_lines_s *first_line, *line_ptr;
-
-	first_line = safecalloc(sizeof(struct read_lines_s), 1);
-	if (!first_line)
-		return -ENOMEMORY;
-
-	line_ptr = first_line;
-
-	whole_buffer_len = 0;
-	for (;;) {
-		ret = recv(fd, buffer, SEGMENT_LEN, MSG_PEEK);
-		if (ret <= 0)
-			goto CLEANUP;
-
-		ptr = memchr(buffer, '\n', ret);
-		if (ptr)
-			diff = ptr - buffer + 1;
-		else
-			diff = ret;
-
-		whole_buffer_len += diff;
-
-		/*
-		 * Don't allow the buffer to grow without bound. If we
-		 * get to more than MAXIMUM_BUFFER_LENGTH close.
-		 */
-		if (whole_buffer_len > MAXIMUM_BUFFER_LENGTH) {
-			ret = -EOUTRANGE;
-			goto CLEANUP;
-		}
-
-		line_ptr->data = safemalloc(diff);
-		if (!line_ptr->data) {
-			ret = -ENOMEMORY;
-			goto CLEANUP;
-		}
-
-		recv(fd, line_ptr->data, diff, 0);
-		line_ptr->len = diff;
-
-		if (ptr) {
-			line_ptr->next = NULL;
-			break;
-		}
-
-		line_ptr->next = safecalloc(sizeof(struct read_lines_s), 1);
-		if (!line_ptr->next) {
-			ret = -ENOMEMORY;
-			goto CLEANUP;
-		}
-		line_ptr = line_ptr->next;
-	}
-
-	*whole_buffer = safemalloc(whole_buffer_len + 1);
-	if (!*whole_buffer) {
-		ret = -ENOMEMORY;
-		goto CLEANUP;
-	}
-
-	*(*whole_buffer + whole_buffer_len) = '\0';
-
-	whole_buffer_len = 0;
-	line_ptr = first_line;
-	while (line_ptr) {
-		memcpy(*whole_buffer + whole_buffer_len, line_ptr->data,
-		       line_ptr->len);
-		whole_buffer_len += line_ptr->len;
-
-		line_ptr = line_ptr->next;
-	}
-
-	ret = whole_buffer_len;
-
-      CLEANUP:
-	do {
-		line_ptr = first_line->next;
-		if (first_line->data)
-			safefree(first_line->data);
-		safefree(first_line);
-		first_line = line_ptr;
-	} while (first_line);
-
-	return ret;
-}
+#endif

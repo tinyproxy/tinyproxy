@@ -1,4 +1,4 @@
-/* $Id: sock.h,v 1.9 2001-12-24 00:01:32 rjkaes Exp $
+/* $Id: sock.h,v 1.10 2002-05-23 18:25:55 rjkaes Exp $
  *
  * See 'sock.c' for a detailed description.
  *
@@ -19,8 +19,6 @@
 #ifndef TINYPROXY_SOCK_H
 #define TINYPROXY_SOCK_H
 
-#include "tinyproxy.h"
-
 #define PEER_IP_LENGTH		16
 #define PEER_STRING_LENGTH	256
 
@@ -32,13 +30,6 @@ extern int listen_sock(uint16_t port, socklen_t * addrlen);
 extern int socket_nonblocking(int sock);
 extern int socket_blocking(int sock);
 
-extern char *getpeer_ip(int fd, char *ipaddr);
-extern char *getpeer_string(int fd, char *string);
-
-extern ssize_t safe_write(int fd, const char *buffer, size_t count);
-extern ssize_t safe_read(int fd, char *buffer, size_t count);
-
-extern int write_message(int fd, const char *fmt, ...);
-extern ssize_t readline(int fd, char **whole_buffer);
+extern int getpeer_information(int fd, char* ipaddr, char* string_addr);
 
 #endif
