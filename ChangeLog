@@ -1,3 +1,52 @@
+2002-06-07  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/filter.c, src/filter.h:
+	Added code to handle the "FilterDefaultDeny" directive.  The
+	filter_set_default_policy() function is used to select the default
+	policy (either default allow or default deny) for the filtering
+	code.  Also, the two filtering functions now support the policy
+	code.
+
+	* doc/tinyproxy.conf, src/grammar.y, src/scanner.l:
+	Added the "FilterDefaultDeny" directive to allow the user to
+	select whether the default policy of the filter is to allow
+	everything which isn't denied, or to deny everything which isn't
+	allowed.
+
+2002-06-06  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c:
+	A bunch of changes from Petr Lampa that add transparent proxy
+	support to tinyproxy.  The additional code is in
+	process_request(), but Petr also had to change around some of the
+	other functions (like process_client_headers and
+	handle_connection.)  Note: Right now this code has not been
+	tested, but it is believed to work.  To enable run ./configure
+	--enable-transparent-proxy
+
+	* src/filter.c (filter_domain):
+	Removed code which stripped of a port number from the host name.
+	The "host" variable will _always_ be just the name by the time
+	filter_domain() is called.
+
+	* src/tinyproxy.c (display_usage):
+	Added a message indicating whether transparent proxy support has
+	been compiled in.
+
+	* configure.ac:
+	Added the "--enable-transparent-proxy" flag and moved the
+	AH_TEMPLATE() macros to _outside_ the "if" tests.
+
+	* src/grammar.y:
+	Added a warning message to the Bind directive stating that it will
+	be ignored if "transparent proxy" has been compiled into
+	tinyproxy.
+
+	* src/log.c (send_stored_logs):
+	Actually included the code to output the stored logs.  Plus, there
+	was a bug with how I was calling the hashmap_is_end() function.
+	This has now been fixed.
+
 2002-06-05  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* doc/Makefile.am:
