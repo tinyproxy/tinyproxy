@@ -1,3 +1,39 @@
+2002-11-29  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (extract_http_url):
+	Removed the leading "http://" from all the tests, since it's
+	skipped by the caller before the URL is passed to this function.
+
+	(process_request): Include code to handle proxy FTP requests as
+	well.  This also lead to a bit of a cleanup in the calling
+	conventions of extract_http_url function.  tinyproxy can handle
+	both types of resources by skipping the leading :// part.
+
+2002-11-26  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* doc/tinyproxy.conf, src/grammar.y, src/reqs.c, src/scanner.l,
+	* src/tinyproxy.h:
+	Included code to disable the sending of the Via header.  This is
+	now controlled by the ViaHeader configure directive.
+
+2002-11-21  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/child.c (child_main):
+	Cleaned up the notice string to be more clear why a child is being
+	closed.
+
+	* src/tinyproxy.c (main):
+	Check to see if the PID file was created successfully, and if not
+	report this to the user and close the program.
+
+	* src/utils.c (create_file_safely):
+	Rather than exiting the program if there is an error, a negative
+	"error code" is returned to the program.  The various callers then
+	need to decide what to do.
+
+	(pidfile_create): Returns an error status depending on whether the
+	PID file was created successfully.
+
 2002-11-13  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (relay_connection):
