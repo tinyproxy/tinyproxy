@@ -9,6 +9,7 @@ tinyproxy_SOURCES = config.h \
 	tinyproxy.c tinyproxy.h \
 	uri.c uri.h \
 	utils.c utils.h \
+	anonymous.c anonymous.h \
 	regexp.h
 
 tinyproxy_LDADD = @LIBOBJS@
