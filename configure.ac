@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.20 2002-04-18 18:48:57 rjkaes Exp $
+dnl $Id: configure.ac,v 2.21 2002-04-25 19:00:03 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -14,7 +14,7 @@ dnl 8. System services
 dnl
 dnl Read the Autoconf manual for details.
 
-AC_INIT([tinyproxy], [1.5.0rc4], [rjkaes@users.sourceforge.net])
+AC_INIT([tinyproxy], [1.5.0rc5], [rjkaes@users.sourceforge.net])
 AC_CONFIG_SRCDIR([src/tinyproxy.c])
 AC_PREREQ(2.52)
 
@@ -155,7 +155,9 @@ AC_PROG_LN_S
 AM_PROG_LEX
 AC_PROG_YACC
 
-CFLAGS="$cflags_save"
+dnl Restore the CFLAGS and add the -D_REENTRANT define since threading is
+dnl in use.
+CFLAGS="$cflags_save -D_REENTRANT"
 
 dnl Make sure YACC is actually bison
 if test x"$YACC" != x"bison -y"; then
@@ -166,24 +168,12 @@ dnl
 dnl Checks for libraries
 dnl
 AC_CHECK_LIB(pthread, pthread_create)
-if test x"$ac_cv_lib_pthread_pthread_create" = x"yes"; then
-    CFLAGS="-D_REENTRANT $CFLAGS"
-else
+if test x"$ac_cv_lib_pthread_pthread_create" != x"yes"; then
     AC_CHECK_LIB(pthreads, pthread_create)
-    if test x"$ac_cv_lib_pthreads_pthread_create" = x"yes"; then
-        CFLAGS="-D_REENTRANT $CFLAGS"
-    else
+    if test x"$ac_cv_lib_pthreads_pthread_create" != x"yes"; then
         AC_CHECK_LIB(c_r, pthread_create,
-		  USE_PTHREAD=1 PTHREAD_LDFLAGS="-lc_r")
-        if test x"$ac_cv_lib_c_r_pthread_create" = x"yes"; then
-            CFLAGS="-pthread -D_REENTRANT $CFLAGS"
-        else
-	    AC_MSG_ERROR([You must have a POSIX compliant threading library installed])
-        fi
-	case "$target" in
-	    *-freebsd*) ;;
-	    *)   	LIBS="$LIBS -lc_r";;
-	    esac
+		     [CFLAGS="-pthread $CFLAGS"],
+		     [AC_MSG_ERROR([You must have a POSIX compliant threading library installed])])
     fi
 fi
 
