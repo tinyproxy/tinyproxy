@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.4 2001-08-26 21:08:36 rjkaes Exp $
+/* $Id: grammar.y,v 1.5 2001-09-16 20:08:24 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -44,7 +44,8 @@ int yylex(void);
 %token KW_MAXREQUESTSPERCHILD
 %token KW_TIMEOUT
 %token KW_USER KW_GROUP
-%token KW_ANONYMOUS KW_FILTER KW_XTINYPROXY KW_TUNNEL
+%token KW_ANONYMOUS KW_FILTER KW_XTINYPROXY
+%token KW_TUNNEL KW_UPSTREAM
 %token KW_ALLOW KW_DENY
 
 /* yes/no switches */
@@ -124,6 +125,15 @@ statement
 		  log_message(LOG_WARNING, "Tunnel support was not compiled in.");
 #endif
 	  }
+        | KW_UPSTREAM unique_address ':' NUMBER
+          {
+#ifdef UPSTREAM_SUPPORT
+                  config.upstream_name = $2;
+                  config.upstream_port = $4;
+#else
+                  log_message(LOG_WARNING, "Upstream proxy support was not compiled in.");
+#endif
+          }
 	| KW_LISTEN NUMERIC_ADDRESS	{ config.ipAddr = $2; }
 	| KW_ALLOW network_address	{ insert_acl($2, ACL_ALLOW); }
 	| KW_DENY network_address	{ insert_acl($2, ACL_DENY); }
