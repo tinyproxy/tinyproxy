@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.17 2001-09-16 20:11:54 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.18 2001-10-25 17:27:39 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -23,15 +23,6 @@
  */
 
 #include "tinyproxy.h"
-
-#ifdef HAVE_SYS_RESOURCE_H
-#  include <sys/resource.h>
-#endif /* HAVE_SYS_RESOUCE_H */
-#include <grp.h>
-#include <pwd.h>
-#include <signal.h>
-#include <sysexits.h>
-#include <syslog.h>
 
 #include "anonymous.h"
 #include "buffer.h"

@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.6 2001-09-12 03:32:54 rjkaes Exp $
+/* $Id: filter.c,v 1.7 2001-10-25 17:27:39 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  *
@@ -17,9 +17,6 @@
  */
 
 #include "tinyproxy.h"
-
-#include <ctype.h>
-#include <sysexits.h>
 
 #include "filter.h"
 #include "regexp.h"

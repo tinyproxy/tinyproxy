@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.18 2001-10-25 16:58:50 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.19 2001-10-25 17:27:39 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -27,6 +27,9 @@
  * Include standard headers which are used through-out tinyproxy
  */
 #include        <sys/types.h>
+#ifdef HAVE_SYS_RESOURCE_H
+#  include      <sys/resource.h>
+#endif
 #ifdef HAVE_SYS_SELECT_H
 #  include	<sys/select.h>
 #endif
@@ -45,12 +48,18 @@
 #include	<sys/uio.h>
 #include	<netinet/in.h>
 #include	<arpa/inet.h>
+#include        <assert.h>
+#include        <ctype.h>
 #include	<errno.h>
 #include	<fcntl.h>
+#include        <grp.h>
 #include	<netdb.h>
 #ifdef HAVE_PTHREAD_H
 #  include	<pthread.h>
 #endif
+#include        <pwd.h>
+#include        <signal.h>
+#include        <stdarg.h>
 #ifdef HAVE_STDINT_H
 #  include	<stdint.h>
 #endif
@@ -60,8 +69,9 @@
 #ifdef HAVE_STRINGS_H
 #  include	<strings.h>
 #endif
+#include        <sysexits.h>
+#include        <syslog.h>
 #include        <unistd.h>
-#include        <assert.h>
 
 #ifndef SHUT_RD			/* these three Posix.1g names are quite new */
 #  define SHUT_RD	0	/* shutdown for reading */

@@ -1,4 +1,4 @@
-/* $Id: ternary.c,v 1.10 2001-09-08 18:58:02 rjkaes Exp $
+/* $Id: ternary.c,v 1.11 2001-10-25 17:27:39 rjkaes Exp $
  *
  * This module creates a Ternary Search Tree which can store both string
  * keys, and arbitrary data for each key. It works similar to a hash, and
@@ -21,23 +21,11 @@
  * General Public License for more details.
  */
 
-#if defined HAVE_CONFIG_H
-#  include 	<config.h>
-#endif
+#include "tinyproxy.h"
 
-#if defined HAVE_SYS_TYPES_H
-#  include 	<sys/types.h>
-#endif
-
-#include        <ctype.h>
-#include 	<stdio.h>
-#include 	<stdlib.h>
-#include	<string.h>
-
-#include	"log.h"
-#include 	"ternary.h"
-#include	"tinyproxy.h"
-#include	"utils.h"
+#include "log.h"
+#include "ternary.h"
+#include "utils.h"
 
 /*
  * Macros for the tree structures (limits)

@@ -1,4 +1,4 @@
-/* $Id: scanner.l,v 1.5 2001-09-16 20:08:24 rjkaes Exp $
+/* $Id: scanner.l,v 1.6 2001-10-25 17:27:39 rjkaes Exp $
  *
  * This builds the scanner for the tinyproxy configuration file. This
  * file needs to stay in sync with grammar.y. If someone knows lex and yacc
@@ -19,9 +19,8 @@
 %{
 
 #include "tinyproxy.h"
+
 #include "grammar.h"
-#include <string.h>
-#include <stdio.h>
 
 struct keyword {
         char *kw_name;

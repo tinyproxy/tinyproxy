@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.15 2001-10-25 16:58:50 rjkaes Exp $
+/* $Id: utils.c,v 1.16 2001-10-25 17:27:39 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -20,10 +20,6 @@
  */
 
 #include "tinyproxy.h"
-
-#include <ctype.h>
-#include <signal.h>
-#include <sysexits.h>
 
 #include "buffer.h"
 #include "conns.h"

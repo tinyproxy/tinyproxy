@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.14 2001-09-04 16:50:22 rjkaes Exp $
+/* $Id: log.c,v 1.15 2001-10-25 17:27:39 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -18,8 +18,6 @@
  */
 
 #include "tinyproxy.h"
-
-#include <stdarg.h>
 
 #include "log.h"
 

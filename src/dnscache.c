@@ -1,4 +1,4 @@
-/* $Id: dnscache.c,v 1.16 2001-09-12 03:32:24 rjkaes Exp $
+/* $Id: dnscache.c,v 1.17 2001-10-25 17:27:39 rjkaes Exp $
  *
  * This is a caching DNS system. When a host name is needed we look it up here
  * and see if there is already an answer for it. The domains are placed in a
@@ -20,14 +20,7 @@
  * General Public License for more details.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#include <sys/types.h>
-#include <assert.h>
-#include <ctype.h>
-#include <unistd.h>
+#include "tinyproxy.h"
 
 #include "dnscache.h"
 #include "log.h"

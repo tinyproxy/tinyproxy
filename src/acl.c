@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.8 2001-09-15 21:21:01 rjkaes Exp $
+/* $Id: acl.c,v 1.9 2001-10-25 17:27:39 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -18,8 +18,6 @@
  */
 
 #include "tinyproxy.h"
-
-#include <ctype.h>
 
 #include "acl.h"
 #include "log.h"

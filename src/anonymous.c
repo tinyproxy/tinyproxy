@@ -1,4 +1,4 @@
-/* $Id: anonymous.c,v 1.6 2001-08-26 21:07:27 rjkaes Exp $
+/* $Id: anonymous.c,v 1.7 2001-10-25 17:27:39 rjkaes Exp $
  *
  * Handles insertion and searches for headers which should be let through when
  * the anonymous feature is turned on. The headers are stored in a Ternary
@@ -18,15 +18,7 @@
  * General Public License for more details.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#include <sys/types.h>
-#include <assert.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "tinyproxy.h"
 
 #include "anonymous.h"
 #include "log.h"
