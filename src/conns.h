@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.14 2003-05-04 04:35:10 rjkaes Exp $
+/* $Id: conns.h,v 1.15 2003-08-01 00:14:34 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -19,6 +19,7 @@
 #define TINYPROXY_CONNS_H
 
 #include "tinyproxy.h"
+#include "hashmap.h"
 
 /*
  * Connection Definition
@@ -37,16 +38,11 @@ struct conn_s {
 	unsigned int connect_method;
 	unsigned int show_stats;
 
-	/*
-	 * Store the error response if there is one.
+        /*
 	 * This structure stores key -> value mappings for substitution
 	 * in the error HTML files.
 	 */
-	struct error_variable_s {
-		char *error_key;
-		char *error_val;
-	} **error_variables;
-	int error_variable_count;
+	hashmap_t error_variables;
 
 	int error_number;
 	char *error_string;

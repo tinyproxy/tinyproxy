@@ -1,4 +1,4 @@
-/* $Id: htmlerror.c,v 1.6 2003-07-14 17:42:43 rjkaes Exp $
+/* $Id: htmlerror.c,v 1.7 2003-08-01 00:14:34 rjkaes Exp $
  * 
  * This file contains source code for the handling and display of
  * HTML error pages with variable substitution.
@@ -29,31 +29,23 @@
 /*
  * Add an error number -> filename mapping to the errorpages list.
  */
+#define ERRORNUM_BUFSIZE 8     /* this is more than required */
+#define ERRPAGES_BUCKETCOUNT 16
+
 int
 add_new_errorpage(char *filepath, unsigned int errornum) {
-	static int errorpage_count = 1;
+	char errornbuf[ERRORNUM_BUFSIZE];
 
-	/* First, add space for another pointer to the errorpages array. */
-	config.errorpages = saferealloc(config.errorpages, sizeof(struct error_pages_s *) * (errorpage_count + 1));
-	if(!config.errorpages)
+	config.errorpages = hashmap_create(ERRPAGES_BUCKETCOUNT);
+	if (!config.errorpages)
 		return(-1);
 
-	/* Allocate space for an actual structure */
-	config.errorpages[errorpage_count - 1] = safemalloc(sizeof(struct error_pages_s));
-	if(!config.errorpages[errorpage_count - 1])
+	snprintf(errornbuf, ERRORNUM_BUFSIZE, "%u", errornum);
+
+	if (hashmap_insert(config.errorpages, errornbuf,
+			   filepath, strlen(filepath) + 1) < 0)
 		return(-1);
 
-	/* Set values for errorpage structure. */
-	config.errorpages[errorpage_count - 1]->errorpage_path = safestrdup(filepath);
-	if(!config.errorpages[errorpage_count - 1]->errorpage_path)
-		return(-1);
-
-	config.errorpages[errorpage_count - 1]->errorpage_errnum = errornum;
-
-	/* Set NULL to denote end of array */
-	config.errorpages[errorpage_count] = NULL;
-
-	errorpage_count++;
 	return(0);
 }
 
@@ -61,17 +53,28 @@ add_new_errorpage(char *filepath, unsigned int errornum) {
  * Get the file appropriate for a given error.
  */
 static char*
-get_html_file(int errornum) {
-	int i;
+get_html_file(unsigned int errornum) {
+	hashmap_iter result_iter;
+	char errornbuf[ERRORNUM_BUFSIZE];
+	char *key;
+	static char *val;
+
+	assert(errornum >= 100 && errornum < 1000);
 
 	if (!config.errorpages) return(config.errorpage_undef);
 
-	for (i = 0; config.errorpages[i]; i++) {
-		if (config.errorpages[i]->errorpage_errnum == errornum)
-			return config.errorpages[i]->errorpage_path;
-	}
+	snprintf(errornbuf, ERRORNUM_BUFSIZE, "%u", errornum);
 
-	return(config.errorpage_undef);
+	result_iter = hashmap_find(config.errorpages, errornbuf);
+
+	if (hashmap_is_end(config.errorpages, result_iter))
+		return(config.errorpage_undef);
+
+	if (hashmap_return_entry(config.errorpages, result_iter,
+				 &key, (void **)&val) < 0)
+		return(config.errorpage_undef);
+
+	return(val);
 }
 
 /*
@@ -79,14 +82,20 @@ get_html_file(int errornum) {
  */
 static char*
 lookup_variable(struct conn_s *connptr, char *varname) {
-	int i;
+	hashmap_iter result_iter;
+	char *key;
+	static char *data;
 
-	for (i = 0; i != connptr->error_variable_count; i++) {
-		if (!strcasecmp(connptr->error_variables[i]->error_key, varname))
-			return connptr->error_variables[i]->error_val;
-	}
+	result_iter = hashmap_find(connptr->error_variables, varname);
 
-	return(NULL);
+	if (hashmap_is_end(connptr->error_variables, result_iter))
+		return(NULL);
+
+	if (hashmap_return_entry(connptr->error_variables, result_iter,
+				 &key, (void **)&data) < 0)
+		return(NULL);
+
+	return(data);
 }
 
 #define HTML_BUFSIZE 4096
@@ -195,31 +204,19 @@ send_http_error_message(struct conn_s *connptr)
 /* 
  * Add a key -> value mapping for HTML file substitution.
  */
+
+#define ERRVAR_BUCKETCOUNT 16
+
 int 
 add_error_variable(struct conn_s *connptr, char *key, char *val) 
 {
-	connptr->error_variable_count++;
-
-	/* Add space for a new pointer to the error_variables structure. */
-	if (!connptr->error_variables)
-		connptr->error_variables = safemalloc(sizeof(struct error_variables_s *) * connptr->error_variable_count);
-	else
-		connptr->error_variables = saferealloc(connptr->error_variables, sizeof(struct error_variable_s *) * connptr->error_variable_count);
-
 	if(!connptr->error_variables)
-		return(-1);
-	
-	/* Allocate a new variable mapping structure. */
-	connptr->error_variables[connptr->error_variable_count - 1] = safemalloc(sizeof(struct error_variable_s));
-	if(!connptr->error_variables[connptr->error_variable_count - 1])
-		return(-1);
+		if (!(connptr->error_variables = hashmap_create(ERRVAR_BUCKETCOUNT)))
+			return(-1);
 
-	/* Set values for variable mapping. */
-	connptr->error_variables[connptr->error_variable_count - 1]->error_key = safestrdup(key);
-	connptr->error_variables[connptr->error_variable_count - 1]->error_val = safestrdup(val);
-	if((!connptr->error_variables[connptr->error_variable_count - 1]->error_key)
-	|| (!connptr->error_variables[connptr->error_variable_count - 1]->error_val))
-	   	return(-1);
+	if (hashmap_insert(connptr->error_variables, key, val,
+			   strlen(val) + 1) < 0)
+		return(-1);
 
 	return(0);
 }

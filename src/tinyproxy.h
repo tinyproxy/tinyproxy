@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.41 2003-06-20 17:02:12 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.42 2003-08-01 00:14:34 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -20,6 +20,7 @@
 #define TINYPROXY_TINYPROXY_H
 
 #include "common.h"
+#include "hashmap.h"
 
 /* Global variables for the main controls of the program */
 #define MAXBUFFSIZE	((size_t)(1024 * 96))	/* Max size of buffer */
@@ -35,6 +36,9 @@ struct upstream {
 };
 #endif
 
+/*
+ * Hold all the configuration time information.
+ */
 struct config_s {
 	char *logf_name;
 	char *config_file;
@@ -66,16 +70,11 @@ struct config_s {
 	 */
 	char* via_proxy_name;
 
-	/* 
-	 * Error page support.  This is an array of pointers to structures
-	 * which describe the error page path, and what HTTP error it handles.
-	 * an example would be { "/usr/local/etc/tinyproxy/404.html", 404 }
-	 * Ending of array is noted with NULL, 0.
+        /* 
+	 * Error page support.  Map error numbers to file paths.
 	 */
-	struct error_pages_s {
-		char *errorpage_path;
-		unsigned int errorpage_errnum;
-	} **errorpages;
+	hashmap_t errorpages;
+
 	/* 
 	 * Error page to be displayed if appropriate page cannot be located
 	 * in the errorpages structure.

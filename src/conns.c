@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.18 2003-07-31 23:38:28 rjkaes Exp $
+/* $Id: conns.c,v 1.19 2003-08-01 00:14:34 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connection related tasks put here, but for now the header
@@ -60,7 +60,6 @@ initialize_conn(int client_fd, const char* ipaddr, const char* string_addr)
 
 	/* These store any error strings */
 	connptr->error_variables = NULL;
-	connptr->error_variable_count = 0;
 	connptr->error_string = NULL;
 	connptr->error_number = -1;
 
@@ -113,17 +112,8 @@ destroy_conn(struct conn_s *connptr)
 	if (connptr->request_line)
 		safefree(connptr->request_line);
 
-	if (connptr->error_variables) {
-		int i;
-
-		for (i = 0; i != connptr->error_variable_count; ++i) {
-			safefree(connptr->error_variables[i]->error_key);
-			safefree(connptr->error_variables[i]->error_val);
-			safefree(connptr->error_variables[i]);
-		}
-
-		safefree(connptr->error_variables);
-	}
+	if (connptr->error_variables)
+		hashmap_delete(connptr->error_variables);
 
 	if (connptr->error_string)
 		safefree(connptr->error_string);
