@@ -1,3 +1,27 @@
+2001-08-30  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/dnscache.c: Removed the insert_data() function and replaced
+	the "replace" logic in dns_insert() with a call to
+	ternary_replace(). This fixes the segmentation fault problem which
+	I introduced when I "tried" to fix the memory leak. Also changed
+	the LOCKing be around the entire dnscache() again since I still
+	need to work out how locking should be done when accessing the
+	ternary tree.
+
+	* src/ternary.c (ternary_insert_replace): Renamed ternary_insert()
+	to ternary_insert_replace() and added a extra argument. The
+	function can now "replace" data already in the tree without
+	causing a memory leak. Added two DEFINES to make coding easier:
+	ternary_insert() and ternary_replace() which both call this
+	function with the right arguments.
+
+	* src/utils.c: Removed xstrstr() since it was only used in once
+	place, and could be safely replaced with strstr. I can't even
+	remember why we had this function to begin with.
+
+	* src/reqs.c (compare_header): Removed the call to xstrstr() since
+	it's been removed from the source.
+
 2001-08-28  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/log.c (log_message): Handle a debug enabled compile better.
