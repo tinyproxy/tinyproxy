@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.34 2002-05-27 01:58:41 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.35 2002-05-31 18:24:36 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -230,7 +230,7 @@ main(int argc, char **argv)
 			exit(EX_SOFTWARE);
 		}
 
-		log_file_fd = create_file_safely(config.logf_name);
+		log_file_fd = create_file_safely(config.logf_name, FALSE);
 		if (log_file_fd < 0) {
 			fprintf(stderr,
 				"Could not safely create logfile \"%s\".\n",
@@ -238,7 +238,7 @@ main(int argc, char **argv)
 			exit(EX_CANTCREAT);
 		}
 
-		config.logf = fdopen(log_file_fd, "w");
+		config.logf = fdopen(log_file_fd, "w+");
 		if (!config.logf) {
 			fprintf(stderr, "Could not write to log file \"%s\".\n",
 				config.logf_name);
