@@ -1,4 +1,4 @@
-/* $Id: regexp.h,v 1.1.1.1 2000-02-16 17:32:24 sdyoung Exp $
+/* $Id: regexp.h,v 1.2 2000-09-11 23:50:07 rjkaes Exp $
  *
  * We need this little header to help distinguish whether to use the REGEX
  * library installed in the system, or to include our own version (the GNU
@@ -17,8 +17,17 @@
  * General Public License for more details.
  */
 
+#ifndef _TINYPROXY_REGEXP_H_
+#define _TINYPROXY_REGEXP_H_
+
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #ifdef USE_GNU_REGEX
 #  include "gnuregex.h"
 #else
 #  include <regex.h>
+#endif
+
 #endif
