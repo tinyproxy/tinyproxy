@@ -1,5 +1,8 @@
 2001-09-07  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/thread.c (thread_pool_create): Explictly set the detach
+	state for threads to PTHREAD_CREATE_DETACHED.
+
 	* Various error message clean up.
 
 	* src/thread.c (thread_main): Add locking around the

@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.11 2001-09-07 04:19:05 rjkaes Exp $
+/* $Id: thread.c,v 1.12 2001-09-07 18:19:39 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -175,9 +175,12 @@ short int thread_pool_create(void)
 
 	/*
 	 * Initialize thread_attr to contain a non-default stack size
-	 * because the default on some OS's is too small.
+	 * because the default on some OS's is too small. Also, make sure
+	 * we're using a detached creation method so all resources are
+	 * reclaimed when the thread exits.
 	 */
 	pthread_attr_init(&thread_attr);
+	pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
 	pthread_attr_setstacksize(&thread_attr, THREAD_STACK_SIZE);
 
 	if (thread_config.maxclients == 0) {
