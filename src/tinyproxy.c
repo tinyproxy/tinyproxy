@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.48 2004-08-13 21:03:11 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.49 2004-08-14 03:21:28 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -218,35 +218,36 @@ main(int argc, char **argv)
 			argv[0], config.config_file);
 		exit(EX_SOFTWARE);
 	}
-        config_compile();
-        if (config_parse(&config, config_file) != 0) {
+        if (config_compile() || config_parse(&config, config_file)) {
                 fprintf(stderr,
                         "Unable to parse configuration file.  Not starting.\n");
                 exit(EX_SOFTWARE);
         }
         fclose(config_file);
 
-	/* Open the log file if not using syslog */
-	if (config.syslog == FALSE) {
-		if (!config.logf_name) {
-			fprintf(stderr,
-				"%s: You MUST set a LogFile in the configuration file.\n",
-				argv[0]);
-			exit(EX_SOFTWARE);
-		} else {
-			if (open_log_file(config.logf_name) < 0) {
-				fprintf(stderr,
-					"%s: Could not create log file.\n",
-					argv[0]);
-				exit(EX_SOFTWARE);
-			}
-		}
-	} else {
+        /*
+         * Write to a user supplied log file if it's defined.  This
+         * will override using the syslog even if syslog is defined.
+         */
+        if (config.logf_name) {
+                if (open_log_file(config.logf_name) < 0) {
+                        fprintf(stderr,
+                                "%s: Could not create log file.\n",
+                                argv[0]);
+                        exit(EX_SOFTWARE);
+                }
+                config.syslog = FALSE; /* disable syslog */
+        } else if (config.syslog) {
 		if (godaemon == TRUE)
 			openlog("tinyproxy", LOG_PID, LOG_DAEMON);
 		else
 			openlog("tinyproxy", LOG_PID, LOG_USER);
-	}
+	} else {
+                fprintf(stderr,
+                        "%s: Either define a logfile or enable syslog logging\n",
+                        argv[0]);
+                exit(EX_SOFTWARE);
+        }
 
 	processed_config_file = TRUE;
 	send_stored_logs();
