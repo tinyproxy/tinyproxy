@@ -1,16 +1,16 @@
-/* $Id: reqs.c,v 1.7 2000-03-31 22:55:22 rjkaes Exp $
+/* $Id: reqs.c,v 1.8 2000-09-12 00:04:42 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
- * connections are added to the active list of connections and then the header
- * is processed to determine what is being requested. tinyproxy then connects
- * to the remote server and begins to relay the bytes back and forth between
- * the client and the remote server. Basically, we sit there and sling bytes
- * back and forth. Optionally, we can weed out headers we do not want to send,
- * and also add a header of our own.
+ * connections have a new thread created for them. The thread then
+ * processes the headers from the client, the response from the server,
+ * and then relays the bytes between the two.
+ * If the UPSTEAM_PROXY is enabled, then tinyproxy will actually work
+ * as a simple buffering TCP tunnel. Very cool! (Robert actually uses
+ * this feature for a buffering NNTP tunnel).
  *
- * Copyright (C) 1998  Steven Young
- * Copyright (C) 1999  Robert James Kaes (rjkaes@flarenet.com)
- * Copyright (C) 2000  Chris Lightfoot (chris@ex-parrot.com)
+ * Copyright (C) 1998	    Steven Young
+ * Copyright (C) 1999,2000  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2000       Chris Lightfoot (chris@ex-parrot.com)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,64 +23,19 @@
  * General Public License for more details.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <defines.h>
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <sys/uio.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <sysexits.h>
-#include <assert.h>
-
-#include "config.h"
 #include "tinyproxy.h"
-#include "sock.h"
-#include "utils.h"
-#include "conns.h"
-#include "log.h"
-#include "reqs.h"
+
+#include "acl.h"
+#include "anonymous.h"
 #include "buffer.h"
 #include "filter.h"
-#include "uri.h"
+#include "log.h"
 #include "regexp.h"
-#include "anonymous.h"
-
-/* chris - for asynchronous DNS */
-#include "dnscache.h"
-#include <adns.h>
-extern adns_state adns;
-
-#ifdef XTINYPROXY
-
-static void Add_XTinyproxy_Header(struct conn_s *connptr)
-{
-	char *header_line;
-	char ipaddr[PEER_IP_LENGTH];
-	int length;
-
-	assert(connptr);
-
-	if (!(header_line = xmalloc(sizeof(char) * 32)))
-		return;
-
-	length = sprintf(header_line, "X-Tinyproxy: %s\r\n",
-			 getpeer_ip(connptr->client_fd, ipaddr));
-
-	unshift_buffer(connptr->cbuffer, header_line, length);
-}
-
-#endif
+#include "reqs.h"
+#include "sock.h"
+#include "stats.h"
+#include "uri.h"
+#include "utils.h"
 
 #define HTTPPATTERN "^([a-z]+)[ \t]+([^ \t]+)([ \t]+(HTTP/[0-9]+\\.[0-9]+))?"
 #define NMATCH 4
@@ -93,77 +48,121 @@ static void Add_XTinyproxy_Header(struct conn_s *connptr)
 #define HTTP500ERROR "Unable to connect to remote server."
 #define HTTP503ERROR "Internal server error."
 
+#define LINE_LENGTH (MAXBUFFSIZE / 3)
+#define HTTP_PORT 80
+
+/*
+ * Write the buffer to the socket. If an EINTR occurs, pick up and try
+ * again.
+ */
+static ssize_t safe_write(int fd, void *buffer, size_t count)
+{
+	ssize_t len;
+
+	do {
+		len = write(fd, buffer, count);
+	} while (len < 0 && errno == EINTR);
+
+	return len;
+}
+
+/*
+ * Matched pair for safe_write(). If an EINTR occurs, pick up and try
+ * again.
+ */
+static ssize_t safe_read(int fd, void *buffer, size_t count)
+{
+	ssize_t len;
+
+	do {
+		len = read(fd, buffer, count);
+	} while (len < 0 && errno == EINTR);
+
+	return len;
+}
+
 /*
  * Parse a client HTTP request and then establish connection.
  */
-static int clientreq(struct conn_s *connptr)
+static int process_method(struct conn_s *connptr)
 {
 	URI *uri = NULL;
-	char *inbuf, *buffer, *request, *port;
-	char *inbuf_ptr;
+	char inbuf[LINE_LENGTH];
+	char *buffer = NULL, *request = NULL, *port = NULL;
+	char *inbuf_ptr = NULL;
 
 	regex_t preg;
 	regmatch_t pmatch[NMATCH];
 
+	size_t request_len;
 	long len;
-	int fd, port_no;
+	int fd, port_no = HTTP_PORT;
 
 	char peer_ipaddr[PEER_IP_LENGTH];
 
-	assert(connptr);
-
 	getpeer_ip(connptr->client_fd, peer_ipaddr);
-	/* chris - getpeer_string could block, so for the moment take it out */
 
-	if ((len
-	     = readline(connptr->client_fd, connptr->cbuffer, &inbuf)) <= 0) {
-		return len;
+	if (readline(connptr->client_fd, inbuf, LINE_LENGTH) <= 0) {
+		log(LOG_ERR, "client closed before read");
+		update_stats(STAT_BADCONN);
+		return -2;
 	}
+	len = strlen(inbuf);
 
 	inbuf_ptr = inbuf + len - 1;
 	while (*inbuf_ptr == '\r' || *inbuf_ptr == '\n')
 		*inbuf_ptr-- = '\0';
 
-	/* Log the incoming connection */
-	if (!config.restricted) {
-		log("Connect: %s", peer_ipaddr);
-		log("Request: %s", inbuf);
-	}
+	log(LOG_INFO, "Request: %s", inbuf);
 
 	if (regcomp(&preg, HTTPPATTERN, REG_EXTENDED | REG_ICASE) != 0) {
-		log("ERROR clientreq: regcomp");
-		return 0;
+		log(LOG_ERR, "clientreq: regcomp");
+		httperr(connptr, 503, HTTP503ERROR);
+		update_stats(STAT_BADCONN);
+		goto COMMON_EXIT;
 	}
 	if (regexec(&preg, inbuf, NMATCH, pmatch, 0) != 0) {
-		log("ERROR clientreq: regexec");
+		log(LOG_ERR, "clientreq: regexec");
 		regfree(&preg);
-		return -1;
+		httperr(connptr, 503, HTTP503ERROR);
+		update_stats(STAT_BADCONN);
+		goto COMMON_EXIT;
 	}
 	regfree(&preg);
 
-	if (pmatch[VERSION_MARK].rm_so == -1)
+	/*
+	 * Test for a simple request, or a request from version 0.9
+	 *	- rjkaes
+	 */
+	if (pmatch[VERSION_MARK].rm_so == -1
+	    || !strncasecmp("http/0.9", inbuf + pmatch[VERSION_IND].rm_so, 8))
 		connptr->simple_req = TRUE;
+	
 
 	if (pmatch[METHOD_IND].rm_so == -1 || pmatch[URI_IND].rm_so == -1) {
-		log("ERROR clientreq: Incomplete line from %s (%s)",
+		log(LOG_ERR, "clientreq: Incomplete line from %s (%s)",
 		    peer_ipaddr, inbuf);
 		httperr(connptr, 400, HTTP400ERROR);
+		update_stats(STAT_BADCONN);
 		goto COMMON_EXIT;
 	}
 
 	len = pmatch[URI_IND].rm_eo - pmatch[URI_IND].rm_so;
-	if (!(buffer = xmalloc(len + 1))) {
-		log("ERROR clientreq: Cannot allocate buffer for request from %s",
+	if (!(buffer = malloc(len + 1))) {
+		log(LOG_ERR,
+		    "clientreq: Cannot allocate buffer for request from %s",
 		    peer_ipaddr);
 		httperr(connptr, 503, HTTP503ERROR);
+		update_stats(STAT_BADCONN);
 		goto COMMON_EXIT;
 	}
 	memcpy(buffer, inbuf + pmatch[URI_IND].rm_so, len);
 	buffer[len] = '\0';
 	if (!(uri = explode_uri(buffer))) {
 		safefree(buffer);
-		log("ERROR clientreq: Problem with explode_uri");
+		log(LOG_ERR, "clientreq: Problem with explode_uri");
 		httperr(connptr, 503, HTTP503ERROR);
+		update_stats(STAT_BADCONN);
 		goto COMMON_EXIT;
 	}
 	safefree(buffer);
@@ -171,21 +170,32 @@ static int clientreq(struct conn_s *connptr)
 	if (!uri->scheme || strcasecmp(uri->scheme, "http") != 0) {
 		char *error_string;
 		if (uri->scheme) {
-			error_string = xmalloc(strlen(uri->scheme) + 64);
+			error_string = malloc(strlen(uri->scheme) + 64);
+			if (!error_string) {
+				log(LOG_CRIT, "Out of Memory!");
+				return -1;
+			}
 			sprintf(error_string,
 				"Invalid scheme (%s). Only HTTP is allowed.",
 				uri->scheme);
 		} else {
-			error_string = strdup("Invalid scheme (NULL). Only HTTP is allowed.");
+			error_string =
+				strdup("Invalid scheme (NULL). Only HTTP is allowed.");
+			if (!error_string) {
+				log(LOG_CRIT, "Out of Memory!");
+				return -1;
+			}
 		}
 
 		httperr(connptr, 400, error_string);
 		safefree(error_string);
+		update_stats(STAT_BADCONN);
 		goto COMMON_EXIT;
 	}
 
 	if (!uri->authority) {
 		httperr(connptr, 400, "Invalid authority.");
+		update_stats(STAT_BADCONN);
 		goto COMMON_EXIT;
 	}
 
@@ -195,694 +205,503 @@ static int clientreq(struct conn_s *connptr)
 		goto COMMON_EXIT;
 	}
 
-	port_no = 80;
 	if ((port = strchr(uri->authority, ':'))) {
 		*port++ = '\0';
 		if (strlen(port) > 0)
 			port_no = atoi(port);
 	}
 
-	/* chris - so this can be passed on to clientreq_dnscomplete. */
-	connptr->port_no = port_no;
-
 #ifdef FILTER_ENABLE
 	/* Filter domains out */
 	if (config.filter) {
 		if (filter_host(uri->authority)) {
-			log("ERROR clientreq: Filtered connection (%s)",
+			log(LOG_ERR, "clientreq: Filtered connection (%s)",
 			    peer_ipaddr);
 			httperr(connptr, 404,
 				"Unable to connect to filtered host.");
+			update_stats(STAT_DENIED);
 			goto COMMON_EXIT;
 		}
 	}
-#endif				/* FILTER_ENABLE */
+#endif /* FILTER_ENABLE */
 
 	/* Build a new request from the first line of the header */
-	if (!(request = xmalloc(strlen(inbuf) + 1))) {
-		log("ERROR clientreq: cannot allocate buffer for request from %s",
+	request_len = strlen(inbuf) + 1;
+	if (!(request = malloc(request_len))) {
+		log(LOG_ERR,
+		    "clientreq: cannot allocate buffer for request from %s",
 		    peer_ipaddr);
 		httperr(connptr, 503, HTTP503ERROR);
+		update_stats(STAT_BADCONN);
 		goto COMMON_EXIT;
 	}
 
-	/* We need to set the version number WE support */
 	memcpy(request, inbuf, pmatch[METHOD_IND].rm_eo);
 	request[pmatch[METHOD_IND].rm_eo] = '\0';
-	strcat(request, " ");
+	strlcat(request, " ", request_len);
 	if (strlen(uri->path) > 0) {
-		strcat(request, uri->path);
+		strlcat(request, uri->path, request_len);
 		if (uri->query) {
-			strcat(request, "?");
-			strcat(request, uri->query);
+			strlcat(request, "?", request_len);
+			strlcat(request, uri->query, request_len);
 		}
 	} else {
-		strcat(request, "/");
+		strlcat(request, "/", request_len);
 	}
-	strcat(request, " HTTP/1.0\r\n");
+	strlcat(request, " HTTP/1.0\r\n", request_len);
 
-	/* chris - If domain is in dotted-quad format or is already in the
-	 * DNS cache, then go straight to WAITCONN.
+	fd = opensock(uri->authority, port_no);
+	if (fd < 0) {
+		httperr(connptr, 500, HTTP500ERROR);
+		update_stats(STAT_DENIED);
+		goto COMMON_EXIT;
+	}
+
+	connptr->server_fd = fd;
+
+	if (safe_write(connptr->server_fd, request, strlen(request)) < 0)
+		goto COMMON_EXIT;
+	
+	/*
+	 * Send the Host: header
 	 */
-	if (inet_aton(uri->authority, NULL)
-	    || lookup(NULL, uri->authority)) {
-		if ((fd = opensock(uri->authority, port_no)) < 0) {
-			safefree(request);
-			httperr(connptr, 500,
-				"Unable to connect to host (cannot create sock)");
-			stats.num_badcons++;
-			goto COMMON_EXIT;
-		}
+	if (safe_write(connptr->server_fd, "Host: ", 6) < 0)
+		goto COMMON_EXIT;
+	if (safe_write(connptr->server_fd, uri->authority, strlen(uri->authority)) < 0)
+		goto COMMON_EXIT;
+	if (safe_write(connptr->server_fd, "\r\n", 2) < 0)
+		goto COMMON_EXIT;
 
-		connptr->server_fd = fd;
-		connptr->type = WAITCONN;
-	}
-	/* Otherwise submit a DNS request and hope for the best. */
-	else {
-		if (adns_submit(adns, uri->authority, adns_r_a, adns_qf_quoteok_cname | adns_qf_cname_loose, connptr, &(connptr->adns_qu))) {
-			safefree(request);
-			httperr(connptr, 500, "Resolver error connecting to host");
-			stats.num_badcons++;
-			goto COMMON_EXIT;
-		} else {
-#ifdef __DEBUG__
-			log("DNS request submitted");
-#endif
-			/* copy domain for later caching */
-			connptr->domain = strdup(uri->authority);
-			connptr->type = DNS_WAITCONN;
-		}
-	}
+	/*
+	 * Send the Connection header since we don't support persistant
+	 * connections.
+	 */
+	if (safe_write(connptr->server_fd, "Connection: close\r\n", 19) < 0)
+		goto COMMON_EXIT;
 
-#ifdef XTINYPROXY
-	/* Add a X-Tinyproxy header which contains our IP address */
-	if (config.my_domain
-	    && xstrstr(uri->authority, config.my_domain,
-		       strlen(uri->authority), FALSE)) {
-		Add_XTinyproxy_Header(connptr);
-	}
-#endif
-
-	/* Add the rewritten request to the buffer */
-	unshift_buffer(connptr->cbuffer, request, strlen(request));
-
-      COMMON_EXIT:
-	safefree(inbuf);
+	free(request);
 	free_uri(uri);
 	return 0;
-}
 
-/* chris - added this to move a connection from the DNS_WAITCONN state
- * to the WAITCONN state by connecting it to the server, once the name
- * has been resolved.
- */
-static int clientreq_dnscomplete(struct conn_s *connptr, struct in_addr *inaddr) {
-	int fd;
-
-	fd = opensock_inaddr(inaddr, connptr->port_no);
-
-	if (fd < 0) {
-#ifdef __DEBUG__
-		log("Failed to open connection to server");
-#endif
-		httperr(connptr, 500,
-			"Unable to connect to host (cannot create sock)");
-		stats.num_badcons++;
-
-		return 0;
-	} else {
-#ifdef __DEBUG__
-		log("Connected to server");
-#endif
-		connptr->server_fd = fd;
-		connptr->type = WAITCONN;
-	}
-
-	return 0;
-}
-
-/*
- * Finish the client request
- */
-static int clientreq_finish(struct conn_s *connptr)
-{
-	int sockopt, len = sizeof(sockopt);
-
-	assert(connptr);
-
-	if (getsockopt
-	    (connptr->server_fd, SOL_SOCKET, SO_ERROR, &sockopt, &len) < 0) {
-		log("ERROR clientreq_finish: getsockopt error (%s)",
-		    strerror(errno));
-		return -1;
-	}
-
-	if (sockopt != 0) {
-		if (sockopt == EINPROGRESS)
-			return 0;
-		else if (sockopt == ETIMEDOUT) {
-			httperr(connptr, 408, "Connect Timed Out");
-			return 0;
-		} else {
-			log("ERROR clientreq_finish: could not create connection (%s)",
-			    strerror(sockopt));
-			return -1;
-		}
-	}
-
-	connptr->type = RELAYCONN;
-	stats.num_opens++;
-	return 0;
+      COMMON_EXIT:
+	free(request);
+	free_uri(uri);
+	return -1;
 }
 
 /*
  * Check to see if the line is allowed or not depending on the anonymous
  * headers which are to be allowed.
  */
-static int anonheader(char *line)
+static int compare_header(char *line)
 {
 	char *buffer, *ptr;
 	int ret;
 
-	assert(line);
-
 	if ((ptr = xstrstr(line, ":", strlen(line), FALSE)) == NULL)
-		return 0;
+		return -1;
 
 	ptr++;
 
-	if ((buffer = xmalloc(ptr - line + 1)) == NULL)
-		return 0;
+	if ((buffer = malloc(ptr - line + 1)) == NULL)
+		return -1;
 
 	memcpy(buffer, line, ptr - line);
 	buffer[ptr - line] = '\0';
 
 	ret = anon_search(buffer);
-	free(buffer);
-	return ret;
+	safefree(buffer);
+	return ret ? 0 : -1;
 }
 
 /*
- * Used to read in the lines from the header (client side) when we're doing
- * the anonymous header reduction.
+ * pull_client_data is used to pull across any client data (like in a
+ * POST) which needs to be handled before an error can be reported, or
+ * server headers can be processed.
+ *	- rjkaes
  */
-static int readanonconn(struct conn_s *connptr)
+static int pull_client_data(struct conn_s *connptr, unsigned long int length)
 {
-	char *line = NULL;
-	int retv;
+	char buffer[MAXBUFFSIZE];
+	int len;
 
-	assert(connptr);
+	do {
+		len = safe_read(connptr->client_fd, buffer, min(MAXBUFFSIZE, length));
 
-	if ((retv = readline(connptr->client_fd, connptr->cbuffer, &line)) <=
-	    0) {
-		return retv;
-	}
+		if (len <= 0) {
+			return -1;
+		}
 
-	if ((line[0] == '\n') || (strncmp(line, "\r\n", 2) == 0)) {
-		connptr->clientheader = TRUE;
-	} else if (!anonheader(line)) {
-		safefree(line);
-		return 0;
-	}
-	
-	push_buffer(connptr->cbuffer, line, strlen(line));
-	return 0;
-}
-
-/*
- * Read in the bytes from the socket
- */
-static int readconn(int fd, struct buffer_s *buffptr)
-{
-	int bytesin;
-
-	assert(fd >= 0);
-	assert(buffptr);
-
-	if ((bytesin = readbuff(fd, buffptr)) < 0) {
-		return -1;
-	}
-#ifdef __DEBUG__
-	log("readconn [%d]: %d", fd, bytesin);
-#endif
-
-	stats.num_rx += bytesin;
-	return bytesin;
-}
-
-/*
- * Write the bytes from the buffer to the socket
- */
-static int writeconn(int fd, struct buffer_s *buffptr)
-{
-	int bytessent;
-
-	assert(fd >= 0);
-	assert(buffptr);
-
-	if ((bytessent = writebuff(fd, buffptr)) < 0) {
-		return -1;
-	}
-
-	stats.num_tx += bytessent;
-	return bytessent;
-}
-
-/*
- * Factored out the common function to read from the client. It was used in
- * two different places with no change, so no point in having the same code
- * twice.
- */
-static int read_from_client(struct conn_s *connptr, fd_set * readfds)
-{
-	assert(connptr);
-	assert(readfds);
-
-	if (FD_ISSET(connptr->client_fd, readfds)) {
-		if (config.anonymous && !connptr->clientheader) {
-			if (readanonconn(connptr) < 0) {
-				shutdown(connptr->client_fd, 2);
-				shutdown(connptr->server_fd, 2);
-				connptr->type = FINISHCONN;
+		if (!connptr->output_message) {
+			if (safe_write(connptr->server_fd, buffer, len) < 0) {
 				return -1;
 			}
-		} else if (readconn(connptr->client_fd, connptr->cbuffer) < 0) {
-			shutdown(connptr->client_fd, 2);
-			shutdown(connptr->server_fd, 2);
-			connptr->type = FINISHCONN;
-			return -1;
 		}
-		connptr->actiontime = time(NULL);
-	}
+
+		length -= len;
+	} while (length > 0);
 
 	return 0;
 }
 
+#ifdef XTINYPROXY_ENABLE
 /*
- * Factored out the common write to client function since, again, it was used
- * in two different places with no changes.
+ * Add the X-Tinyproxy header to the collection of headers being sent to
+ * the server.
+ *	-rjkaes
  */
-static int write_to_client(struct conn_s *connptr, fd_set * writefds)
-{
-	assert(connptr);
-	assert(writefds);
-
-	if (FD_ISSET(connptr->client_fd, writefds)) {
-		if (writeconn(connptr->client_fd, connptr->sbuffer) < 0) {
-			shutdown(connptr->client_fd, 2);
-			shutdown(connptr->server_fd, 2);
-			connptr->type = FINISHCONN;
-			return -1;
-		}
-		connptr->actiontime = time(NULL);
-	}
-
-	return 0;
-}
-
-/*
- * All of the *_req functions handle the various stages a connection can go
- * through. I moved them out from getreqs because they handle a lot of error
- * code and it was indenting too far in. As you can see they are very simple,
- * and are only called once from getreqs, hence the inlining.
- */
-
-inline static void newconn_req(struct conn_s *connptr, fd_set * readfds)
-{
-#ifdef UPSTREAM_PROXY
-	int fd;
-	char peer_ipaddr[PEER_IP_LENGTH];	
-#endif	/* UPSTREAM_PROXY */
-
-	assert(connptr);
-	assert(readfds);
-
-	if (FD_ISSET(connptr->client_fd, readfds)) {
-#ifdef UPSTREAM_PROXY
-		if (config.upstream_name && config.upstream_port != 0) {
-			getpeer_ip(connptr->client_fd, peer_ipaddr);
-			/* Log the incoming connection */
-			if (!config.restricted) {
-				log("Connect (upstream): %s", peer_ipaddr);
-			}
-
-			if (inet_aton(config.upstream_name, NULL)
-			    || lookup(NULL, config.upstream_name)) {
-				if ((fd = opensock(config.upstream_name, config.upstream_port)) < 0) {
-					httperr(connptr, 500,
-						"Unable to connect to host (cannot create sock)");
-					stats.num_badcons++;
-					return;
-				}
-
-				connptr->server_fd = fd;
-				connptr->type = WAITCONN;
-			}
-			/* Otherwise submit a DNS request and hope for
-			   the best. */
-			else {
-				if (adns_submit(adns, config.upstream_name, adns_r_a, adns_qf_quoteok_cname | adns_qf_cname_loose, connptr, &(connptr->adns_qu))) {
-					httperr(connptr, 500, "Resolver error connecting to host");
-					stats.num_badcons++;
-					return;
-				} else {
-#ifdef __DEBUG__
-					log("DNS request submitted");
-#endif
-					/* copy domain for later caching */
-					connptr->domain = xstrdup(config.upstream_name);
-					connptr->port_no = config.upstream_port;
-					connptr->type = DNS_WAITCONN;
-				}
-			}
-		} else {
-#endif
-			if (clientreq(connptr) < 0) {
-				shutdown(connptr->client_fd, 2);
-				connptr->type = FINISHCONN;
-				return;
-			}
-
-			if (!connptr)
-				abort();
-
-			connptr->actiontime = time(NULL);
-#ifdef UPSTREAM_PROXY
-		}
-#endif	/* UPSTREAM_PROXY */
-	}
-}
-
-inline static void waitconn_req(struct conn_s *connptr, fd_set * readfds,
-				fd_set * writefds)
-{
-	assert(connptr);
-	assert(readfds);
-	assert(writefds);
-
-	if (read_from_client(connptr, readfds) < 0)
-		return;
-
-	if (FD_ISSET(connptr->server_fd, readfds)
-	    || FD_ISSET(connptr->server_fd, writefds)) {
-		if (clientreq_finish(connptr) < 0) {
-			shutdown(connptr->server_fd, 2);
-			shutdown(connptr->client_fd, 2);
-			connptr->type = FINISHCONN;
-			return;
-		}
-		connptr->actiontime = time(NULL);
-	}
-}
-
-inline static void relayconn_req(struct conn_s *connptr, fd_set * readfds,
-				 fd_set * writefds)
-{
-	assert(connptr);
-	assert(readfds);
-	assert(writefds);
-
-	if (read_from_client(connptr, readfds) < 0)
-		return;
-
-	if (FD_ISSET(connptr->server_fd, readfds)) {
-		if (connptr->serverheader) {
-			if (readconn(connptr->server_fd, connptr->sbuffer) < 0) {
-				shutdown(connptr->server_fd, 2);
-				connptr->type = CLOSINGCONN;
-				return;
-			}
-		} else {
-			/*
-			 * We need to read in the first line to rewrite the
-			 * version back down to HTTP/1.0 (if needed)
-			 */
-			char *line = NULL, *ptr, *newline;
-			int retv;
-
-			if (
-			    (retv =
-			     readline(connptr->server_fd, connptr->sbuffer,
-				      &line)) < 0) {
-				shutdown(connptr->server_fd, 2);
-				httperr(connptr, 500, "Server Closed Early");
-				return;
-			} else if (retv == 0)
-				return;
-
-			connptr->serverheader = TRUE;
-
-			if (strncasecmp(line, "HTTP/1.0", 8)) {
-				/* Okay, we need to rewrite it then */
-				if (!(ptr = strchr(line, ' '))) {
-					shutdown(connptr->server_fd, 2);
-					httperr(connptr, 500,
-						"There was Server Error");
-					return;
-				}
-				ptr++;
-
-				if (!(newline = xmalloc(strlen(line) + 1))) {
-					shutdown(connptr->server_fd, 2);
-					httperr(connptr, 503,
-						"No Memory Available");
-					return;
-				}
-
-				sprintf(newline, "HTTP/1.0 %s", ptr);
-				safefree(line);
-				line = newline;
-			}
-
-			push_buffer(connptr->sbuffer, line, strlen(line));
-		}
-		connptr->actiontime = time(NULL);
-	}
-
-	if (write_to_client(connptr, writefds) < 0)
-		return;
-
-	if (FD_ISSET(connptr->server_fd, writefds)) {
-		if (writeconn(connptr->server_fd, connptr->cbuffer) < 0) {
-			shutdown(connptr->server_fd, 2);
-			connptr->type = CLOSINGCONN;
-			return;
-		}
-		connptr->actiontime = time(NULL);
-	}
-}
-
-inline static void closingconn_req(struct conn_s *connptr, fd_set * writefds)
-{
-	assert(connptr);
-	assert(writefds);
-
-	write_to_client(connptr, writefds);
-}
-
-/*
- * Check against the valid subnet to see if we should allow the access
- */
-static int validuser(int fd)
+static int add_xtinyproxy_header(struct conn_s *connptr)
 {
 	char ipaddr[PEER_IP_LENGTH];
+	char xtinyproxy[32];
+	int length;
 
-	assert(fd >= 0);
+	length = snprintf(xtinyproxy, sizeof(xtinyproxy),
+			  "X-Tinyproxy: %s\r\n",
+			  getpeer_ip(connptr->client_fd, ipaddr));
+	if (safe_write(connptr->server_fd, xtinyproxy, length) < 0)
+		return -1;
 
-	if (config.subnet == NULL)
-		return 1;
+	return 0;
+}
+#endif		/* XTINYPROXY */
 
-	if (!strncmp(config.subnet, getpeer_ip(fd, ipaddr),
-		     strlen(config.subnet))) {
-		return 1;
-	} else {
-		return 0;
+/*
+ * Here we loop through all the headers the client is sending. If we
+ * are running in anonymous mode, we will _only_ send the headers listed
+ * (plus a few which are required for various methods).
+ *	- rjkaes
+ */
+static int process_client_headers(struct conn_s *connptr)
+{
+	char header[LINE_LENGTH];
+	long content_length = -1;
+
+	char *skipheaders[] = {
+		"proxy-connection",
+		"host",
+		"connection"
+	};
+	int i;
+
+	for ( ; ; ) {
+		if (readline(connptr->client_fd, header, LINE_LENGTH) <= 0) {
+			return -1;
+		}
+
+		if (header[0] == '\n'
+		    || (header[0] == '\r' && header[1] == '\n')) {
+			break;
+		}
+
+		if (connptr->output_message)
+			continue;
+
+		if (config.anonymous && compare_header(header) < 0)
+			continue;
+
+		/*
+		 * Don't send certain headers.
+		 */
+		for (i = 0; i < (sizeof(skipheaders) / sizeof(char *)); i++) {
+			if (strncasecmp(header, skipheaders[i], strlen(skipheaders[i])) == 0) {
+				break;
+			}
+		}
+		if (i != (sizeof(skipheaders) / sizeof(char *)))
+			continue;
+
+		if (strncasecmp(header, "content-length", 14) == 0) {
+			char *content_ptr = strchr(header, ':') + 1;
+			content_length = atol(content_ptr);
+		}
+
+		if (safe_write(connptr->server_fd, header, strlen(header)) < 0)
+			return -1;
 	}
+
+	if (!connptr->output_message) {
+#ifdef XTINYPROXY_ENABLE
+		if (config.my_domain
+		    && add_xtinyproxy_header(connptr) < 0) {
+			return -1;
+		}
+#endif	/* XTINYPROXY */
+
+		if (safe_write(connptr->server_fd, header, strlen(header)) < 0) {
+			return -1;
+		}
+	}
+
+	/*
+	 * Spin here pulling the data from the client.
+	 */
+	if (content_length >= 0)
+		return pull_client_data(connptr, content_length);
+	else
+		return 0;
 }
 
 /*
- * Loop that checks for new connections, dispatches to the correct
- * routines if bytes are pending, checks to see if it's time for a
- * garbage collect.
+ * Loop through all the headers (including the response code) from the
+ * server.
  */
-int getreqs(void)
+static int process_server_headers(struct conn_s *connptr)
 {
-	static unsigned int garbc = 0;
-	fd_set readfds, writefds, exceptfds; /* chris - ADNS expects exceptfds */
-	struct conn_s *connptr;
-	int fd;
-	struct timeval tv, now; /* chris - for ADNS timeouts */
+	char header[LINE_LENGTH];
 
-	char peer_ipaddr[PEER_IP_LENGTH];
+	for ( ; ; ) {
+		if (readline(connptr->server_fd, header, LINE_LENGTH) <= 0) {
+			return -1;
+		}
 
-	if (setup_fd < 0) {
-		log("ERROR getreqs: setup_fd not a socket");
+		if (header[0] == '\n'
+		    || (header[0] == '\r' && header[1] == '\n')) {
+			break;
+		}
+
+		if (!connptr->simple_req
+		    && safe_write(connptr->client_fd, header, strlen(header)) < 0) {
+			return -1;
+		}
+	}
+	
+	if (!connptr->simple_req
+	    && safe_write(connptr->client_fd, header, strlen(header)) < 0) {
 		return -1;
 	}
-
-	/* Garbage collect the dead connections and close any idle ones */
-	if (garbc++ >= GARBCOLL_INTERVAL) {
-		garbcoll();
-		garbc = 0;
-	}
-	conncoll();
-
-	FD_ZERO(&readfds);
-	FD_ZERO(&writefds);
-	FD_SET(setup_fd, &readfds);
-
-	for (connptr = connections; connptr; connptr = connptr->next) {
-#ifdef __DEBUG__
-		log("Connptr: %p - %d / client %d server %d", connptr,
-		    connptr->type, connptr->client_fd, connptr->server_fd);
-#endif
-		switch (connptr->type) {
-		case NEWCONN:
-			if (buffer_size(connptr->cbuffer) < MAXBUFFSIZE)
-				FD_SET(connptr->client_fd, &readfds);
-			else {
-				httperr(connptr, 414,
-					"Your Request is way too long.");
-			}
-			break;
-
-		/* no case here for DNS_WAITCONN */
-
-		case WAITCONN:
-			FD_SET(connptr->server_fd, &readfds);
-			FD_SET(connptr->server_fd, &writefds);
-
-			if (buffer_size(connptr->cbuffer) < MAXBUFFSIZE)
-				FD_SET(connptr->client_fd, &readfds);
-			break;
-
-		case RELAYCONN:
-			if (buffer_size(connptr->sbuffer) > 0)
-				FD_SET(connptr->client_fd, &writefds);
-			if (buffer_size(connptr->sbuffer) < MAXBUFFSIZE)
-				FD_SET(connptr->server_fd, &readfds);
-
-			if (buffer_size(connptr->cbuffer) > 0)
-				FD_SET(connptr->server_fd, &writefds);
-			if (buffer_size(connptr->cbuffer) < MAXBUFFSIZE)
-				FD_SET(connptr->client_fd, &readfds);
-
-			break;
-
-		case CLOSINGCONN:
-			if (buffer_size(connptr->sbuffer) > 0)
-				FD_SET(connptr->client_fd, &writefds);
-			else {
-				shutdown(connptr->client_fd, 2);
-				shutdown(connptr->server_fd, 2);
-				connptr->type = FINISHCONN;
-			}
-			break;
-
-		default:
-			break;
-		}
-	}
-
-	/* Set a 60 second time out */
-	tv.tv_sec = 1;//60;
-	tv.tv_usec = 0;
-
-	/* chris - Make ADNS do its stuff, too. */
-	{
-		struct timeval *tv_mod = &tv;
-		int foo = FD_SETSIZE;
-		gettimeofday(&now, NULL);
-		FD_ZERO(&exceptfds);
-		adns_beforeselect(adns, &foo, &readfds, &writefds, &exceptfds, &tv_mod, NULL, &now);
-	}
-
-	if (select(FD_SETSIZE, &readfds, &writefds, &exceptfds, &tv) < 0) {
-#ifdef __DEBUG__
-		log("select error: %s", strerror(errno));
-#endif
-		return 0;
-	}
-
-	/* chris - see whether any ADNS lookups have completed */
-	gettimeofday(&now, NULL);
-	adns_afterselect(adns, FD_SETSIZE, &readfds, &writefds, &exceptfds, &now);
-
-	for (connptr = connections; connptr; connptr = connptr->next) {
-		adns_answer *ans;
-
-		if (connptr->type == DNS_WAITCONN &&
-			adns_check(adns, &(connptr->adns_qu), &ans, (void**)&connptr) == 0) {
-
-			if (ans->status == adns_s_ok) {
-				if (connptr->domain) {
-					insert(ans->rrs.inaddr, connptr->domain);
-					free(connptr->domain);
-				}
-
-				clientreq_dnscomplete(connptr, ans->rrs.inaddr);
-				free(ans);
-
-				/* hack */
-				FD_SET(connptr->server_fd, &readfds);
-#ifdef __DEBUG__
-				log("DNS resolution successful");
-#endif
-			} else {
-				free(ans);
-
-				httperr(connptr, 500, "Unable to resolve hostname in URL");
-#ifdef __DEBUG__
-				log("DNS resolution failed");
-#endif
-			}
-		}
-	}
-
-	/* Check to see if there are new connections pending */
-	if (FD_ISSET(setup_fd, &readfds) && (fd = listen_sock()) >= 0) {
-		new_conn(fd);	/* make a connection from the FD */
-
-		if (validuser(fd)) {
-			if (config.cutoffload && (load > config.cutoffload)) {
-				stats.num_refused++;
-				httperr(connptr, 503,
-					"tinyproxy is not accepting connections due to high system load");
-			}
-		} else {
-			httperr(connptr, 403,
-				"You are not authorized to use the service.");
-			log("AUTH Rejected connection from %s",
-			    getpeer_ip(fd, peer_ipaddr));
-		}
-	}
-
-	/* 
-	 * Loop through the connections and dispatch them to the appropriate
-	 * handler
-	 */
-	for (connptr = connections; connptr; connptr = connptr->next) {
-		switch (connptr->type) {
-		case NEWCONN:
-			newconn_req(connptr, &readfds);
-			break;
-
-		case WAITCONN:
-			waitconn_req(connptr, &readfds, &writefds);
-			break;
-
-		case RELAYCONN:
-			relayconn_req(connptr, &readfds, &writefds);
-			break;
-
-		case CLOSINGCONN:
-			closingconn_req(connptr, &writefds);
-			break;
-
-		default:
-			break;
-		}
-	}
-
 	return 0;
+}
+
+/*
+ * Switch the sockets into nonblocking mode and begin relaying the bytes
+ * between the two connections. We continue to use the buffering code
+ * since we want to be able to buffer a certain amount for slower
+ * connections (as this was the reason why I originally modified
+ * tinyproxy oh so long ago...)
+ *	- rjkaes
+ */
+static void relay_connection(struct conn_s *connptr)
+{
+	fd_set rset, wset;
+	struct timeval tv;
+	time_t last_access;
+	int ret;
+	int len;
+	double tdiff;
+	int maxfd = (connptr->client_fd > connptr->server_fd)
+		? connptr->client_fd : connptr->server_fd;
+
+	socket_nonblocking(connptr->client_fd);
+	socket_nonblocking(connptr->server_fd);
+
+	last_access = time(NULL);
+
+	for ( ; ; ) {
+		FD_ZERO(&rset);
+		FD_ZERO(&wset);
+
+		tv.tv_sec = config.idletimeout - difftime(time(NULL), last_access);
+		tv.tv_usec = 0;
+
+		if (buffer_size(connptr->sbuffer) > 0)
+			FD_SET(connptr->client_fd, &wset);
+		if (buffer_size(connptr->cbuffer) > 0)
+			FD_SET(connptr->server_fd, &wset);
+		if (buffer_size(connptr->sbuffer) < MAXBUFFSIZE)
+			FD_SET(connptr->server_fd, &rset);
+		if (buffer_size(connptr->cbuffer) < MAXBUFFSIZE)
+			FD_SET(connptr->client_fd, &rset);
+
+		tdiff = difftime(time(NULL), last_access);
+		if (tdiff > config.idletimeout) {
+			log(LOG_INFO, "Idle Timeout (before select) %g > %u", tdiff, config.idletimeout);
+			return;
+		}
+		
+		ret = select(maxfd + 1, &rset, &wset, NULL, &tv);
+		if (ret == 0) {
+			tdiff = difftime(time(NULL), last_access);
+			if (tdiff > config.idletimeout) {
+				log(LOG_INFO, "Idle Timeout (after select) %g > %u", tdiff, config.idletimeout);
+				return;
+			} else {
+				continue;
+			}
+		} else if (ret < 0)
+			return;
+
+		if (FD_ISSET(connptr->server_fd, &rset)) {
+			len = readbuff(connptr->server_fd, connptr->sbuffer);
+			if (len < 0) {
+				shutdown(connptr->server_fd, SHUT_WR);
+				break;
+			}
+			last_access = time(NULL);
+		}
+		if (FD_ISSET(connptr->client_fd, &rset)) {
+			len = readbuff(connptr->client_fd, connptr->cbuffer);
+			if (len < 0) {
+				return;
+			}
+			last_access = time(NULL);
+		}
+		if (FD_ISSET(connptr->server_fd, &wset)) {
+			len = writebuff(connptr->server_fd, connptr->cbuffer);
+			if (len < 0) {
+				shutdown(connptr->server_fd, SHUT_WR);
+				break;
+			}
+			last_access = time(NULL);
+		}
+		if (FD_ISSET(connptr->client_fd, &wset)) {
+			len = writebuff(connptr->client_fd, connptr->sbuffer);
+			if (len < 0) {
+				return;
+			}
+			last_access = time(NULL);
+		}
+	}
+
+	/*
+	 * Here the server has closed the connection... write the
+	 * remainder to the client and then exit.
+	 */
+	socket_blocking(connptr->client_fd);
+	while (buffer_size(connptr->sbuffer) > 0) {
+		len = writebuff(connptr->client_fd, connptr->sbuffer);
+		if (len < 0) {
+			return;
+		}
+	}
+
+	return;
+}
+
+static void initialize_conn(struct conn_s *connptr)
+{
+	connptr->client_fd = connptr->server_fd = -1;
+	connptr->cbuffer = new_buffer();
+	connptr->sbuffer = new_buffer();
+
+	connptr->output_message = NULL;
+	connptr->simple_req = FALSE;
+
+	update_stats(STAT_OPEN);
+}
+
+static void destroy_conn(struct conn_s *connptr)
+{
+	connptr->client_fd = -1;
+	if (connptr->server_fd != -1)
+		close(connptr->server_fd);
+
+	if (connptr->cbuffer)
+		delete_buffer(connptr->cbuffer);
+	if (connptr->sbuffer)
+		delete_buffer(connptr->sbuffer);
+
+	safefree(connptr->output_message);
+	safefree(connptr);
+
+	update_stats(STAT_CLOSE);
+}
+
+/*
+ * This is the main drive for each connection. As you can tell, for the
+ * first few steps we are using a blocking socket. If you remember the
+ * older tinyproxy code, this use to be a very confusing state machine.
+ * Well, no more! :) The sockets are only switched into nonblocking mode
+ * when we start the relay portion. This makes most of the original
+ * tinyproxy code, which was confusing, redundant. Hail progress.
+ * 	- rjkaes
+ */
+void handle_connection(int fd)
+{
+	struct conn_s *connptr;
+	char peer_ipaddr[PEER_IP_LENGTH];
+	char peer_string[PEER_STRING_LENGTH];
+
+	log(LOG_INFO, "Connect: %s [%s]", getpeer_string(fd, peer_string),
+	    getpeer_ip(fd, peer_ipaddr));
+
+	connptr = malloc(sizeof(struct conn_s));
+	if (!connptr) {
+		log(LOG_CRIT, "Out of memory!");
+		return;
+	}
+
+	initialize_conn(connptr);
+	connptr->client_fd = fd;
+
+	if (check_acl(fd) <= 0) {
+		update_stats(STAT_DENIED);
+		httperr(connptr, 403, "You do not have authorization for using this service.");
+		goto send_error;
+	}
+
+#ifdef TUNNEL_SUPPORT
+        /*
+	 * If an upstream proxy has been configured then redirect any
+	 * connections to it. If we cannot connect to the upstream, see if
+	 * we can handle it ourselves. I know I used GOTOs, but it seems to
+	 * me to be the best way of handling this situations. Sue me. :)
+	 *	- rjkaes
+	 */
+	if (config.tunnel_name && config.tunnel_port != -1) {
+		log(LOG_INFO, "Redirecting to %s:%d",
+		    config.tunnel_name, config.tunnel_port);
+
+		connptr->server_fd = opensock(config.tunnel_name, config.tunnel_port);
+		if (connptr->server_fd < 0) {
+			log(LOG_ERR, "Could not connect to tunnel's end, see if we can handle it ourselves.");
+			goto internal_proxy;
+		}
+
+		/*
+		 * I know GOTOs are evil, but duplicating the code is even
+		 * more evil.
+		 *	- rjkaes
+		 */
+		goto relay_proxy;
+	}
+#endif /* TUNNEL_SUPPORT */
+
+internal_proxy:
+	if (process_method(connptr) < -1) {
+		destroy_conn(connptr);
+		return;
+	}
+
+send_error:
+	if (!connptr->simple_req) {
+		if (process_client_headers(connptr) < 0) {
+			update_stats(STAT_BADCONN);
+			destroy_conn(connptr);
+			return;
+		}
+	}
+
+	if (connptr->output_message) {
+		safe_write(connptr->client_fd, connptr->output_message,
+			   strlen(connptr->output_message));
+		
+		destroy_conn(connptr);
+		return;
+	}
+
+	if (process_server_headers(connptr) < 0) {
+		update_stats(STAT_BADCONN);
+		destroy_conn(connptr);
+		return;
+	}
+
+relay_proxy:
+	relay_connection(connptr);
+
+	/*
+	 * All done... close everything and go home... :)
+	 */
+	destroy_conn(connptr);
+	return;
 }

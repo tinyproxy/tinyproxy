@@ -1,4 +1,4 @@
-/* $Id: reqs.h,v 1.1.1.1 2000-02-16 17:32:23 sdyoung Exp $
+/* $Id: reqs.h,v 1.2 2000-09-12 00:04:42 rjkaes Exp $
  *
  * See 'reqs.c' for a detailed description.
  *
@@ -16,9 +16,9 @@
  * General Public License for more details.
  */
 
-#ifndef _REQS_H_
-#define _REQS_H_	1
+#ifndef _TINYPROXY_REQS_H_
+#define _TINYPROXY_REQS_H_
 
-extern int getreqs(void);
+extern void handle_connection(int fd);
 
 #endif
