@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.13 2001-10-24 00:37:23 rjkaes Exp $
+/* $Id: sock.c,v 1.14 2001-10-25 05:10:32 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -277,5 +277,6 @@ ssize_t readline(int fd, char *ptr, size_t maxlen)
 
 	/* Tack a NIL to the end to make is a standard "C" string */
 	*ptr = '\0';
+
 	return (ssize_t)n;
 }
