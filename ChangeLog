@@ -1,3 +1,20 @@
+2002-04-07  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/hashmap.c:
+	* src/vector.c: These two "modules" are used within the reqs.c
+	file to better handle the headers from the clients.
+
+	* src/reqs.c: Tonnes of functions changed.  The most significant
+	is the process_client_header() function which is now using the
+	hashmap functions to handle the Connection header more
+	accurately.  With the addition of the add_header_to_connection(),
+	get_all_headers(), and remove_connection_headers() function, the
+	compare_header() function is _vastly_ simplified.  Just read the
+	comments in the source itself for more information.
+
+	* src/conns.c: Clenaed up the initialize_conn and destroy_conn
+	functions to better handle error conditions.
+
 2002-04-02  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* configure.ac: Patch from James Flamer which fixes a problem with
