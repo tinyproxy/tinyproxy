@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.10 2001-10-22 16:52:34 rjkaes Exp $
+/* $Id: sock.c,v 1.11 2001-10-23 03:57:34 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -160,9 +160,13 @@ char *getpeer_ip(int fd, char *ipaddr)
 	assert(fd >= 0);
 	assert(ipaddr != NULL);
 
+	/*
+	 * Make sure the user's buffer is initialized to an empty string.
+	 */
+	*ipaddr = '\0';
+
 	if (getpeername(fd, (struct sockaddr*)&name, &namelen) != 0) {
-		log_message(LOG_ERR, "geetpeer_ip: 'could not get peer name' (\"%s\": %d)", strerror(errno), errno);
-		*ipaddr = '\0';
+		log_message(LOG_ERR, "geetpeer_ip: 'could not get peer's IP address' (\"%s\": %d)", strerror(errno), errno);
 	} else {
 		strlcpy(ipaddr,
 			inet_ntoa(*(struct in_addr*)&name.sin_addr.s_addr),
@@ -185,9 +189,13 @@ char *getpeer_string(int fd, char *string)
 	assert(fd >= 0);
 	assert(string != NULL);
 
+	/*
+	 * Make sure the user's buffer is initialized to an empty string.
+	 */
+	*string = '\0';
+
 	if (getpeername(fd, (struct sockaddr *)&name, &namelen) != 0) {
 		log_message(LOG_ERR, "getpeer_string: 'could not get peer name' (\"%s\": %d)", strerror(errno), errno);
-		*string = '\0';
 	} else {
 		LOCK();
 		peername = gethostbyaddr((char *)&name.sin_addr.s_addr,
@@ -195,6 +203,9 @@ char *getpeer_string(int fd, char *string)
 					 AF_INET);
 		if (peername)
 			strlcpy(string, peername->h_name, PEER_STRING_LENGTH);
+		else
+			log_message(LOG_ERR, "getpeer_string: 'gethostbyaddr()' returned an error (\"%s\": %d).", hstrerror(h_errno), h_errno);
+
 		UNLOCK();
 	}
 
