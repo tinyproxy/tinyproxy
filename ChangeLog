@@ -1,3 +1,65 @@
+2002-05-26  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* doc/tinyproxy.conf:
+	Removed the "DNSserver" directives since they're no longer needed.
+
+	* configure.ac:
+	Removed the pthread related tests and added a test for the sys/mman.h
+	header (needed for shared memory.)
+
+	* src/Makefile.am:
+	Removed the "dnsserver" program all together, and changed the names of
+	some of the files.
+
+	* src/heap.c, src/heap.h:
+	Added the malloc_shared_memory() and calloc_shared_memory() function to
+	allow the use of shared memory between all the children.
+
+	* src/log.h, src/reqs.c: Spelling changes (from thread to child.)
+
+	* src/grammar.y, src/scanner.l:
+	Removed the directives for the old DNSserver process.
+
+	* src/stats.c:
+	The stats structure has been moved into a shared memory block since it
+	needs to be shared by all the children.
+
+	* src/tinyproxy.c:
+	Removed all the code relating to the DNS API (dnsclient.h) as it's no
+	longer needed with the new pre-forked model.
+
+	* src/sock.c:
+	Removed the DNS API calls and replaced them with the standard
+	gethostbyname() and gethostbyaddr() functions.  This is possible
+	because tinyproxy now uses a standard pre-forked() method.
+
+	* src/common.h: Removed the "pthread" related includes.
+
+	* src/thread.c, src/thread.h:
+	No longer using a threading model; so these files have been replaced by
+	the child.c/child.h files (which use a pre-forked model.)
+
+	* src/dnsclient.h, src/dnsserver.c, src/dnsclient.c:
+	I didn't like the DNS co-process design so I changed tinyproxy from a
+	threading model to a standard pre-forked model.  This means I don't need
+	the DNS co-process files.  Gone.
+
+	* src/child.c, src/child.h:
+	Changed from using a threading model to a standard pre-forked model.
+	Therefore the thread.c file has been removed and this file replaces it.
+	These files are really just the thread.c and thread.h files with all the
+	threading stuff replaced with fork() code.  Most of the code is identical.
+
+2002-05-24  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/buffer.c, src/conns.c, src/dnsclient.c, src/hashmap.c, src/reqs.c, src/stats.c, src/text.c, src/thread.c, src/tinyproxy.c, src/utils.c, src/vector.c:
+	Fixed a tonne of spelling mistakes.
+
+	* src/sock.c:
+	Fixed some spelling mistakes, and removed the getpeer_ip() and
+	getpeer_string() functions as they've been replaced by the
+	getpeer_information() function.
+
 2002-05-23  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/dnsserver.c: The DNS resolver for use by the various
