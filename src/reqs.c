@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.59 2002-04-15 04:14:03 rjkaes Exp $
+/* $Id: reqs.c,v 1.60 2002-04-16 03:20:43 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -9,7 +9,7 @@
  * this feature for a buffering NNTP tunnel.)
  *
  * Copyright (C) 1998	    Steven Young
- * Copyright (C) 1999-2001  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 1999-2002  Robert James Kaes (rjkaes@flarenet.com)
  * Copyright (C) 2000       Chris Lightfoot (chris@ex-parrot.com)
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -205,12 +205,8 @@ extract_http_url(const char *url, struct request_s *request)
 	request->host = safemalloc(strlen(url) + 1);
 	request->path = safemalloc(strlen(url) + 1);
 
-	if (!request->host || !request->path) {
-		safefree(request->host);
-		safefree(request->path);
-
-		return -1;
-	}
+	if (!request->host || !request->path)
+		goto ERROR_EXIT;
 
 	if (sscanf
 	    (url, "http://%[^:/]:%hu%s", request->host, &request->port,
@@ -225,14 +221,16 @@ extract_http_url(const char *url, struct request_s *request)
 		strcpy(request->path, "/");
 	} else {
 		log_message(LOG_ERR, "extract_http_url: Can't parse URL.");
-
-		safefree(request->host);
-		safefree(request->path);
-
-		return -1;
+		goto ERROR_EXIT;
 	}
 
 	return 0;
+
+  ERROR_EXIT:
+	safefree(request->host);
+	safefree(request->path);
+
+	return -1;
 }
 
 /*
@@ -264,29 +262,18 @@ extract_ssl_url(const char *url, struct request_s *request)
 static int
 establish_http_connection(struct conn_s *connptr, struct request_s *request)
 {
-	if (write_message(connptr->server_fd,
-			  "%s %s HTTP/1.0\r\n",
-			  request->method, request->path) < 0)
-		return -1;
-	
-	if (write_message(connptr->server_fd, "Host: %s\r\n", request->host) < 0)
-		return -1;
-
-	/*
-	 * Send the Connection header since we don't support persistant
-	 * connections.
-	 */
-	if (safe_write(connptr->server_fd, "Connection: close\r\n", 19) < 0)
-		return -1;
-
-	return 0;
+	return write_message(connptr->server_fd,
+			     "%s %s HTTP/1.0\r\n" \
+			     "Host: %s\r\n" \
+			     "Connection: close\r\n",
+			     request->method, request->path, request->host);
 }
 
 /*
  * These two defines are for the SSL tunnelling.
  */
-#define SSL_CONNECTION_RESPONSE "HTTP/1.0 200 Connection established\r\n"
-#define PROXY_AGENT "Proxy-agent: " PACKAGE "/" VERSION "\r\n"
+#define SSL_CONNECTION_RESPONSE "HTTP/1.0 200 Connection established"
+#define PROXY_AGENT "Proxy-agent: " PACKAGE "/" VERSION
 
 /*
  * Send the appropriate response to the client to establish a SSL
@@ -295,18 +282,11 @@ establish_http_connection(struct conn_s *connptr, struct request_s *request)
 static inline int
 send_ssl_response(struct conn_s *connptr)
 {
-	if (safe_write
-	    (connptr->client_fd, SSL_CONNECTION_RESPONSE,
-	     strlen(SSL_CONNECTION_RESPONSE)) < 0)
-		return -1;
-
-	if (safe_write(connptr->client_fd, PROXY_AGENT, strlen(PROXY_AGENT)) < 0)
-		return -1;
-
-	if (safe_write(connptr->client_fd, "\r\n", 2) < 0)
-		return -1;
-
-	return 0;
+	return write_message(connptr->client_fd,
+			     "%s\r\n" \
+			     "%s\r\n" \
+			     "\r\n",
+			     SSL_CONNECTION_RESPONSE, PROXY_AGENT);
 }
 
 /*
@@ -356,7 +336,7 @@ process_request(struct conn_s *connptr)
 		return NULL;
 	}
 	/* 
-	 * NOTE: We need to add code for the simple HTTP/0.9 style GET
+	 * FIXME: We need to add code for the simple HTTP/0.9 style GET
 	 * request.
 	 */
 
@@ -481,25 +461,19 @@ pull_client_data(struct conn_s *connptr, unsigned long int length)
 	char *buffer;
 	ssize_t len;
 
-	buffer = safemalloc(MAXBUFFSIZE);
+	buffer = safemalloc(min(MAXBUFFSIZE, length));
 	if (!buffer)
 		return -1;
 
 	do {
-		len =
-		    safe_read(connptr->client_fd, buffer,
-			      min(MAXBUFFSIZE, length));
-
-		if (len <= 0) {
-			safefree(buffer);
-			return -1;
-		}
+		len = safe_read(connptr->client_fd, buffer,
+				min(MAXBUFFSIZE, length));
+		if (len <= 0)
+			goto ERROR_EXIT;
 
 		if (!connptr->error_string) {
-			if (safe_write(connptr->server_fd, buffer, len) < 0) {
-				safefree(buffer);
-				return -1;
-			}
+			if (safe_write(connptr->server_fd, buffer, len) < 0)
+				goto ERROR_EXIT;
 		}
 
 		length -= len;
@@ -507,6 +481,10 @@ pull_client_data(struct conn_s *connptr, unsigned long int length)
 
 	safefree(buffer);
 	return 0;
+
+  ERROR_EXIT:
+	safefree(buffer);
+	return -1;
 }
 
 #ifdef XTINYPROXY_ENABLE
@@ -523,7 +501,7 @@ add_xtinyproxy_header(struct conn_s *connptr)
 	/*
 	 * Don't try to send if we have an invalid server handle.
 	 */
-	if (connptr->server_fd == -1)
+	if (connptr->server_fd < 0)
 		return 0;
 
 	return write_message(connptr->server_fd,
@@ -541,10 +519,9 @@ static inline int
 add_header_to_connection(hashmap_t hashofheaders, char *header, size_t len)
 {
 	char *sep;
-	size_t data_len;
 
 	/* Get rid of the new line and return at the end */
-	chomp(header, len);
+	len -= chomp(header, len);
 
 	sep = strchr(header, ':');
 	if (!sep)
@@ -553,9 +530,10 @@ add_header_to_connection(hashmap_t hashofheaders, char *header, size_t len)
 	/* Blank out colons, spaces, and tabs. */
 	while (*sep == ':' || *sep == ' ' || *sep == '\t')
 		*sep++ = '\0';
-	
-	data_len = strlen(sep) + 1; /* need to add the null to the length */
-	return hashmap_insert(hashofheaders, header, sep, data_len);
+
+	/* Calculate the new length of just the data */
+	len -= sep - header - 1;
+	return hashmap_insert(hashofheaders, header, sep, len);
 }
 
 /*
@@ -576,13 +554,11 @@ get_all_headers(int fd, hashmap_t hashofheaders)
 		 * finished.
 		 */
 		if (CHECK_CRLF(header, len))
-			break;
+			return 0;
 
 		if (add_header_to_connection(hashofheaders, header, len) < 0)
 			return -1;
 	}
-
-	return 0;
 }
 
 /*
@@ -774,7 +750,7 @@ process_client_headers(struct conn_s *connptr)
 
 		hashmap_search(hashofheaders, data, (void **)&header);
 
-		if (!is_anonymous_enabled() || anonymous_search(data) == 0) {
+		if (!is_anonymous_enabled() || anonymous_search(data) <= 0) {
 			write_message(connptr->server_fd,
 				      "%s: %s\r\n",
 				      data, header);
