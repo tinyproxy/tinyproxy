@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.51 2001-12-23 21:55:08 rjkaes Exp $
+/* $Id: reqs.c,v 1.52 2001-12-24 00:01:02 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -196,58 +196,6 @@ extract_ssl_url(const char *url, struct request_s *request)
 		return -1;
 	}
 
-	return 0;
-}
-
-/*
- * Send a "message" to the file descriptor provided. This handles the
- * differences between the various implementations of vsnprintf. This code
- * was basically stolen from the snprintf() man page of Debian Linux
- * (although I did fix a memory leak. :)
- */
-static int
-write_message(int fd, const char *fmt, ...)
-{
-	ssize_t n;
-	size_t size = (1024 * 2);	/* start with 2 KB and go from there */
-	char *buf, *tmpbuf;
-	va_list ap;
-
-	if ((buf = safemalloc(size)) == NULL)
-		return -1;
-
-	while (1) {
-		va_start(ap, fmt);
-		n = vsnprintf(buf, size, fmt, ap);
-		va_end(ap);
-
-		/* If that worked, break out so we can send the buffer */
-		if (n > -1 && n < size)
-			break;
-
-		/* Else, try again with more space */
-		if (n > -1)
-			/* precisely what is needed (glibc2.1) */
-			size = n + 1;
-		else
-			/* twice the old size (glibc2.0) */
-			size *= 2;
-
-		if ((tmpbuf = saferealloc(buf, size)) == NULL) {
-			safefree(buf);
-			return -1;
-		} else
-			buf = tmpbuf;
-	}
-
-	if (safe_write(fd, buf, n) < 0) {
-		DEBUG2("Error in write_message(): %d", fd);
-
-		safefree(buf);
-		return -1;
-	}
-
-	safefree(buf);
 	return 0;
 }
 
