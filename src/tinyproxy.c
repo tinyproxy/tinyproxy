@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.49 2004-08-14 03:21:28 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.50 2004-08-24 16:36:22 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -37,7 +37,7 @@
 #include "stats.h"
 #include "utils.h"
 
-void takesig(int sig);
+RETSIGTYPE takesig(int sig);
 
 /* 
  * Global Structures
@@ -50,7 +50,7 @@ unsigned int processed_config_file = FALSE; /* boolean */
 /*
  * Handle a signal
  */
-void
+RETSIGTYPE
 takesig(int sig)
 {
 	pid_t pid;
