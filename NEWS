@@ -2,34 +2,21 @@
  NEWS
  ====
 
- There are a few problems with this version of tinyproxy, but I'm hoping
- the benefits outweigh the negative. For some reason tinyproxy is not
- able to handle requests to *.x10.com sites. (As someone mentioned: "maybe
- this is a feature?" :) There also seem to be a few other random sites
- where tinyproxy is not communicating with the server correctly. If you
- find any such sites, let me know so I can add it to the list of domains
- where tinyproxy is failing. I'll need this information for the regression
- tests I plan on performing on the next release.
+    It's been a few months since I release the 1.4.3 version.  That's
+a bit longer than I want to take with this release (which I originally
+thought would be released a week after the 1.4.3 release in November
+21, 2001 :), but my real life kind of intruded on the project.
+Anyway, this release doesn't add any new features or functions; it's
+basically a bug fix and standard compliance release.  A few
+portability bugs have been fixed, and I've rewritten a few request
+processing functions to make them more compliant with the HTTP
+standard.
 
- As for the next release (1.5.0), I will not be adding new features.
- tinyproxy doesn't currently conform correctly to either the HTTP/1.0
- or the HTTP/1.1 standards. The goal of the 1.5 release therefore is
- to achieve standards compliance with at least HTTP/1.0. If you have
- looked at the tinyproxy code you will have noticed that all the real
- work of the proxy is performed in the reqs.c file. Therefore, other
- than bug fixes in the other files, only reqs.c should be changed in
- the 1.5.0 release. Basically, I'm hoping to just gut and replace the
- reqs.c file with a standards compliant version and release a new version.
+    Now, I've tested the request related code personally with all the
+configurations I can think of, but I can't claim that it will work
+perfectly with _every_ configuration and _every_ site.  So, please
+give these pre-releases a thorough testing and let me know if there
+any problems you've noticed.
 
- Depending on my schedule I should have the new version ready for
- pre-testing sometime next week. If you have any suggestions for improving
- tinyproxy please let me know, but I will not be incorporating them until
- 1.6 (which _hopefully_ should come out fairly quickly after 1.5 has
- stabilised.)
-
- "Thank you" go out to all who have helped find bugs in the 1.4.3
- candidates. You know who you are, and if you don't look in the ChangeLog
- for your name. :)
-
- 	Robert James Kaes
- 	November 21, 2001
+	Robert James Kaes
+	April 8, 2002
