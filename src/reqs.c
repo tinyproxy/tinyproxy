@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.80 2002-05-29 18:11:57 rjkaes Exp $
+/* $Id: reqs.c,v 1.81 2002-05-31 18:09:09 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -917,7 +917,7 @@ process_server_headers(struct conn_s *connptr)
 	}
 
 	/* Send the saved response line first */
-	ret = safe_write(connptr->client_fd, response_line, strlen(response_line));
+	ret = write_message(connptr->client_fd, "%s\r\n", response_line);
 	safefree(response_line);
 	if (ret < 0)
 		goto ERROR_EXIT;
