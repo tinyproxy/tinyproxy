@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.14 2001-09-07 04:20:26 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.15 2001-09-15 21:29:22 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -62,10 +62,39 @@ void takesig(int sig)
 {
 	switch (sig) {
 	case SIGHUP:
-		if (config.logf)
-			ftruncate(fileno(config.logf), 0);
-
 		log_message(LOG_NOTICE, "SIGHUP received, cleaning up.");
+
+		if (config.logf) {
+			char *rename_file;
+			int log_file_fd;
+
+			rename_file = safemalloc(strlen(config.logf_name) + 5);
+			if (!rename_file) {
+				fprintf(stderr, "Could not allocate memory in signal handler!\n");
+				exit(EX_OSERR);
+			}
+
+			strcpy(rename_file, config.logf_name);
+			strcat(rename_file, ".rot");
+
+			rename(config.logf_name, rename_file);
+
+			log_file_fd = create_file_safely(config.logf_name);
+			if (log_file_fd < 0) {
+				fprintf(stderr, "Could not safely create new log file.\n");
+				exit(EX_OSERR);
+			}
+			
+			fclose(config.logf);
+			if (!(config.logf = fdopen(log_file_fd, "w"))) {
+				fprintf(stderr, "Could not create new log file.\n");
+				exit(EX_CANTCREAT);
+			}
+
+			log_message(LOG_NOTICE, "Log file rotated.");
+
+			safefree(rename_file);
+		}
 
 #ifdef FILTER_ENABLE
 		if (config.filter) {
@@ -219,15 +248,22 @@ int main(int argc, char **argv)
 
 	/* Open the log file if not using syslog */
 	if (config.syslog == FALSE) {
+		int log_file_fd;
+
 		if (!config.logf_name) {
 			fprintf(stderr, "%s: You MUST set a LogFile in the configuration file.\n", argv[0]);
 			exit(EX_SOFTWARE);
 		}
 
-		if (!(config.logf = fopen(config.logf_name, "a"))) {
-			fprintf(stderr,
-				"Could not append to log file \"%s\".\n",
-				config.logf_name);
+		log_file_fd = create_file_safely(config.logf_name);
+		if (log_file_fd < 0) {
+			fprintf(stderr, "Could not safely create logfile \"%s\".\n", config.logf_name);
+			exit(EX_CANTCREAT);
+		}
+
+		config.logf = fdopen(log_file_fd, "w");
+		if (!config.logf) {
+			fprintf(stderr, "Could not write to log file \"%s\".\n", config.logf_name);
 			exit(EX_CANTCREAT);
 		}
 	} else {
