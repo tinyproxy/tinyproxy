@@ -1,4 +1,4 @@
-/* $Id: heap.c,v 1.3 2002-05-29 20:51:35 rjkaes Exp $
+/* $Id: heap.c,v 1.4 2002-06-05 17:01:09 rjkaes Exp $
  *
  * Debugging versions of various heap related functions are combined
  * here.  The debugging versions include assertions and also print
@@ -110,7 +110,6 @@ malloc_shared_memory(size_t size)
 	static char* shared_file = "/tmp/tinyproxy.shared";
 
 	assert(size > 0);
-	assert(shared_file != NULL);
 
 	strlcpy(buffer, shared_file, sizeof(buffer) - 8);
 	strlcat(buffer, ".XXXXXX", sizeof(buffer));
