@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.23 2001-12-24 00:01:32 rjkaes Exp $
+/* $Id: sock.c,v 1.24 2002-04-13 05:20:19 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -97,6 +97,7 @@ opensock(char *ip_addr, uint16_t port)
 {
 	int sock_fd;
 	struct sockaddr_in port_info;
+	struct sockaddr_in bind_addr;
 	int ret;
 
 	assert(ip_addr != NULL);
@@ -122,6 +123,21 @@ opensock(char *ip_addr, uint16_t port)
 		log_message(LOG_ERR, "opensock: socket() error \"%s\".",
 			    strerror(errno));
 		return -1;
+	}
+
+	/* Bind to our listening address*/
+	if (config.ipAddr) {
+		memset(&bind_addr, 0, sizeof(bind_addr));
+		bind_addr.sin_family = AF_INET;
+		bind_addr.sin_addr.s_addr = inet_addr(config.ipAddr);
+
+		ret = bind(sock_fd, (struct sockaddr *)&bind_addr, sizeof(bind_addr));
+		if (ret < 0) {
+			log_message(LOG_ERR, "Could not bind local address \"%\" because of %s",
+				    config.ipAddr,
+				    strerror(errno));
+			return -1;
+		}
 	}
 
 	if (connect(sock_fd, (struct sockaddr *) &port_info, sizeof(port_info)) < 0) {

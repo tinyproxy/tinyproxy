@@ -1,3 +1,8 @@
+2002-04-13  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/sock.c (opensock): If the Listen directive is in use, then
+	we should bind outgoing address to this address.
+
 2002-04-12  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/scanner.l:
