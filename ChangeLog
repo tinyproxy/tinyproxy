@@ -2,6 +2,9 @@
 
 	* src/reqs.c (write_message): Encapsulate code to handle sending
 	snprintf() built lines to a file descriptor.
+	(process_server_headers): Removed duplicate code and used the
+	return value from readline() instead of recaculating it by
+	strlen().
 
 2001-12-18  Robert James Kaes  <rjkaes@flarenet.com>
 

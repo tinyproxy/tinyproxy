@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.48 2001-12-19 05:20:01 rjkaes Exp $
+/* $Id: reqs.c,v 1.49 2001-12-19 20:40:23 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -702,28 +702,25 @@ static int
 process_server_headers(struct conn_s *connptr)
 {
 	char *header;
+	ssize_t len;
 
-	for (;;) {
-		if (readline(connptr->server_fd, &header) <= 0) {
+	while (1) {
+		if ((len = readline(connptr->server_fd, &header)) <= 0) {
 			DEBUG2("Server (file descriptor %d) closed connection.",
 			       connptr->server_fd);
 			return -1;
 		}
 
-		if (header[0] == '\n'
-		    || (header[0] == '\r' && header[1] == '\n')) {
-			break;
-		}
-
-		if (safe_write(connptr->client_fd, header, strlen(header)) < 0) {
+		if (safe_write(connptr->client_fd, header, len) < 0) {
 			safefree(header);
 			return -1;
 		}
-	}
 
-	if (safe_write(connptr->client_fd, header, strlen(header)) < 0) {
+		if (header[0] == '\n'
+		    || (header[0] == '\r' && header[1] == '\n'))
+			break;
+
 		safefree(header);
-		return -1;
 	}
 
 	safefree(header);
