@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.68 2002-04-26 16:43:20 rjkaes Exp $
+/* $Id: reqs.c,v 1.69 2002-04-26 19:33:09 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -1077,7 +1077,7 @@ static int
 connect_to_tunnel(struct conn_s *connptr)
 {
 	char *request_buf;
-	size_t len;
+	ssize_t len;
 	int pos;
 
 	request_buf = safemalloc(HTTP_LINE_LENGTH);

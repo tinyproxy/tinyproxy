@@ -1,5 +1,9 @@
 2002-04-26  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/reqs.c (connect_to_tunnel): Changed the len type to an
+	signed integer so that we can detect error conditions.  Thanks to
+	Tom Cross for pointing out this problem.
+
 	* src/log.c (send_stored_logs): Check the return value of
 	hashmap_first() since it could be -1, indicating an empty hashmap.
 
