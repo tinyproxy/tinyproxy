@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.6 2001-11-25 02:20:54 rjkaes Exp $
+/* $Id: grammar.y,v 1.7 2002-04-02 17:17:30 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -115,7 +115,14 @@ statement
 	          log_message(LOG_WARNING, "Filter support was not compiled in.");
 #endif
 	  }
-	| KW_XTINYPROXY network_address	{ config.my_domain = $2; }
+	| KW_XTINYPROXY network_address
+	   {
+#ifdef XTINYPROXY_ENABLE
+	   	  config.my_domain = $2;
+#else
+		  log_message(LOG_WARNING, "X-Tinyproxy header support was not compiled in.");
+#endif
+	   }
 	| KW_TUNNEL unique_address ':' NUMBER
 	  {
 #ifdef TUNNEL_SUPPORT
