@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.40 2002-11-03 17:10:32 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.41 2002-11-21 21:52:59 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -278,7 +278,11 @@ main(int argc, char **argv)
 		makedaemon();
 
 	if (config.pidpath) {
-		pidfile_create(config.pidpath);
+		if (pidfile_create(config.pidpath) < 0) {
+			fprintf(stderr, "%s: Could not create PID file.\n",
+				argv[0]);
+			exit(EX_OSERR);
+		}
 	}
 
 	if (set_signal_handler(SIGPIPE, SIG_IGN) == SIG_ERR) {
