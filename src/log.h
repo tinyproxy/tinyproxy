@@ -1,4 +1,4 @@
-/* $Id: log.h,v 1.2 2000-09-11 23:47:52 rjkaes Exp $
+/* $Id: log.h,v 1.3 2000-09-21 16:53:51 rjkaes Exp $
  *
  * See 'log.c' for a detailed description.
  *
@@ -51,6 +51,11 @@
  *		it's default port), but it's a _higher_ level situation
  *		which the admin should be aware of.
  *
+ * LOG_NOTICE	This is for a special condition. Nothing has gone wrong, but
+ *		it is more important than the common LOG_INFO level. Right
+ *		now it is used for actions like creating/destroying threads,
+ *		unauthorized access, signal handling, etc.
+ *
  * LOG_INFO	Everything else ends up here. Logging for incoming
  *		connections, denying due to filtering rules, unable to
  *		connect to remote server, etc.
@@ -66,6 +71,7 @@
 #  define LOG_CRIT    2
 #  define LOG_ERR     3
 #  define LOG_WARNING 4
+#  define LOG_NOTICE  5
 #  define LOG_INFO    6
 #  define LOG_DEBUG   7
 #endif

@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.2 2000-09-11 23:47:52 rjkaes Exp $
+/* $Id: log.c,v 1.3 2000-09-21 16:53:51 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -29,7 +29,7 @@ static char *syslog_level[] = {
 	"CRITICAL",
 	"ERROR",
 	"WARNING",
-	NULL,
+	"NOTICE",
 	"INFO",
 	"DEBUG"
 };
