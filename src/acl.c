@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.3 2001-05-23 17:57:22 rjkaes Exp $
+/* $Id: acl.c,v 1.4 2001-05-27 02:20:54 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -26,7 +26,7 @@
 #include "sock.h"
 
 struct acl_s {
-	acl_access_t access;
+	acl_access_t acl_access;
 	enum { ACL_STRING, ACL_NUMERIC } type;
 	char *location;
 	int netmask;
@@ -69,7 +69,7 @@ static in_addr_t make_netmask(int netmask_num)
  */
 int insert_acl(char *location, acl_access_t access_type)
 {
-	unsigned int i;
+	size_t i;
 	struct acl_s **rev_acl_ptr, *acl_ptr, *new_acl_ptr;
 	char *nptr;
 
@@ -78,8 +78,8 @@ int insert_acl(char *location, acl_access_t access_type)
 	/*
 	 * First check to see if the location is a string or numeric.
 	 */
-	for (i = 0; i < strlen(location); i++) {
-		if (isdigit(location[i]) != 0 && location[i] != '.') {
+	for (i = 0; i < strlen((char *)location); i++) {
+		if (isdigit((unsigned char)location[i]) != 0 && location[i] != '.') {
 			break;
 		}
 	}
@@ -98,7 +98,7 @@ int insert_acl(char *location, acl_access_t access_type)
 		return -1;
 	}
 	
-	new_acl_ptr->access = access_type;
+	new_acl_ptr->acl_access = access_type;
 	
 	if (i != strlen(location)) {
 		/* We did break early, so this a numeric location.
@@ -165,8 +165,8 @@ int check_acl(int fd)
 
 	while (aclptr) {
 		if (aclptr->type == ACL_STRING) {
-			int test_length = strlen(string_address);
-			int match_length = strlen(aclptr->location);
+			size_t test_length = strlen(string_address);
+			size_t match_length = strlen(aclptr->location);
 
 			if (test_length < match_length) {
 				aclptr = aclptr->next;
@@ -174,8 +174,8 @@ int check_acl(int fd)
 			}
 
 			if (strcasecmp(string_address + (test_length - match_length), aclptr->location) == 0) {
-				if (aclptr->access == ACL_DENY) {
-					log(LOG_NOTICE, "Unauthorized access from %s", string_address);
+				if (aclptr->acl_access == ACL_DENY) {
+					log_message(LOG_NOTICE, "Unauthorized access from %s", string_address);
 					return 0;
 				} else {
 					return 1;
@@ -196,8 +196,8 @@ int check_acl(int fd)
 			netmask_addr = make_netmask(aclptr->netmask);
 
 			if ((test_addr.s_addr & netmask_addr) == (match_addr.s_addr & netmask_addr)) {
-				if (aclptr->access == ACL_DENY) {
-					log(LOG_NOTICE, "Unauthorized access from %s", ip_address);
+				if (aclptr->acl_access == ACL_DENY) {
+					log_message(LOG_NOTICE, "Unauthorized access from %s", ip_address);
 					return 0;
 				} else {
 					return 1;
@@ -215,6 +215,6 @@ int check_acl(int fd)
 	/*
 	 * Deny all connections by default.
 	 */
-	log(LOG_NOTICE, "Unauthorized connection from %s [%s]", string_address, ip_address);
+	log_message(LOG_NOTICE, "Unauthorized connection from %s [%s]", string_address, ip_address);
 	return 0;
 }
