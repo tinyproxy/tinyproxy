@@ -1,3 +1,16 @@
+2003-03-08  Robert James Kaes  <rjkaes@flarenet.com>
+
+	Released tinyproxy 1.5.3 (2003-03-10)
+
+	Added the files required for creating tinyproxy RPMs for Redhat based
+	systems. (See packaging/redhat)
+
+2003-02-26  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/tinyproxy.c (main):
+	Removed duplicate code calling the filter_destroy() function.
+	Once is enough.  [Detected by John M Wright]
+
 2003-01-27  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/tinyproxy.c (display_usage):
