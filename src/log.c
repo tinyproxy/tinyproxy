@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.28 2004-02-13 21:27:42 rjkaes Exp $
+/* $Id: log.c,v 1.29 2004-08-14 03:20:01 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -180,6 +180,7 @@ log_message(int level, char *fmt, ...)
 		vsnprintf(str, STRING_LENGTH, fmt, args);
 		write(log_file_fd, str, strlen(str));
 		write(log_file_fd, "\n", 1);
+                fsync(log_file_fd);
 
 #ifdef HAVE_SYSLOG_H
 	}
