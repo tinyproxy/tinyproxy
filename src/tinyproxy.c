@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.32 2002-05-26 18:52:23 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.33 2002-05-27 00:46:24 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -7,9 +7,9 @@
  * stats, etc.) Like any good program, most of the work is actually done
  * elsewhere.
  *
- * Copyright (C) 1998  Steven Young
- * Copyright (C) 1999  Robert James Kaes (rjkaes@flarenet.com)
- * Copyright (C) 2000  Chris Lightfoot (chris@ex-parrot.com>
+ * Copyright (C) 1998       Steven Young
+ * Copyright (C) 1998-2002  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2000       Chris Lightfoot (chris@ex-parrot.com>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -158,7 +158,7 @@ main(int argc, char **argv)
 	/*
 	 * Disable the creation of CORE files right up front.
 	 */
-#ifdef HAVE_SETRLIMIT
+#if defined(HAVE_SETRLIMIT) && defined(NDEBUG)
 	struct rlimit core_limit = { 0, 0 };
 	if (setrlimit(RLIMIT_CORE, &core_limit) < 0) {
 		fprintf(stderr, "%s: Could not set the core limit to zero.\n",
@@ -305,11 +305,6 @@ main(int argc, char **argv)
 			argv[0]);
 		exit(EX_OSERR);
 	}
-	if (set_signal_handler(SIGCHLD, takesig) == SIG_ERR) {
-		fprintf(stderr, "%s: Could not set the \"SIGCHLD\" signal.\n",
-			argv[0]);
-		exit(EX_OSERR);
-	}
 
 #ifdef FILTER_ENABLE
 	if (config.filter)
@@ -375,9 +370,14 @@ main(int argc, char **argv)
 	}
 
 	/*
-	 * These signals are only for the main child.
+	 * These signals are only for the parent process.
 	 */
 	log_message(LOG_INFO, "Setting the various signals.");
+	if (set_signal_handler(SIGCHLD, takesig) == SIG_ERR) {
+		fprintf(stderr, "%s: Could not set the \"SIGCHLD\" signal.\n",
+			argv[0]);
+		exit(EX_OSERR);
+	}
 	if (set_signal_handler(SIGTERM, takesig) == SIG_ERR) {
 		fprintf(stderr, "%s: Could not set the \"SIGTERM\" signal.\n",
 			argv[0]);
