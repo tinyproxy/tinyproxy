@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.54 2003-05-30 16:25:41 rjkaes Exp $
+dnl $Id: configure.ac,v 2.55 2003-06-02 21:57:14 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -14,7 +14,7 @@ dnl 8. System services
 dnl
 dnl Read the Autoconf manual for details.
 
-AC_INIT([tinyproxy], [1.6.0pre3], [rjkaes@users.sourceforge.net])
+AC_INIT([tinyproxy], [1.6.0pre4], [rjkaes@users.sourceforge.net])
 AC_CONFIG_SRCDIR([src/tinyproxy.c])
 AC_PREREQ(2.52)
 
@@ -149,8 +149,6 @@ dnl
 dnl Checks for programs
 dnl
 
-cflags_save="$CFLAGS"
-
 AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_ISC_POSIX
@@ -160,7 +158,13 @@ AM_PROG_LEX
 AC_PROG_YACC
 AC_PROG_LIBTOOL
 
-CFLAGS="$cflags_save"
+dnl If a CFLAGS variable was passed during configure, set the initial
+dnl CFLAGS variable to it; otherwise, start with an empty CFLAGS
+if test x"$ac_env_CFLAGS_set" = x"set" ; then
+    CFLAGS=$ac_env_CFLAGS_value
+else
+    CFLAGS=""
+fi
 
 dnl Make sure YACC is actually bison
 if test x"$YACC" != x"bison -y"; then
