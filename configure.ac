@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.68 2004-08-24 16:41:11 rjkaes Exp $
+dnl $Id: configure.ac,v 2.69 2004-08-24 18:43:17 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -76,30 +76,26 @@ AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$TINYPROXY_CONFIG_DIR/$TINYPROXY_CONFIG_F
 AC_MSG_NOTICE([Default config location and file is: $TINYPROXY_CONFIG_DIR/$TINYPROXY_CONFIG_FILE])
 
 dnl Add compiler-specific optimization flags
-AC_ARG_ENABLE(debug,
-              [AC_HELP_STRING([--enable-debug],
-                              [Disable aggressive optimizations (default is NO)])],
-              debug_enabled=$enableval, debug_enabled=no)
+TP_ARG_ENABLE(debug,
+              [Enable debugging support code and methods (default is NO)],
+              no)
 
 dnl Add in profiling information
-AC_ARG_ENABLE(profiling,
-              [AC_HELP_STRING([--enable-profiling],
-                              [Enable profiling information (default is NO)])],
-              profiling_enabled=$enableval, profiling_enabled=no)
+TP_ARG_ENABLE(profiling,
+              [Enable profiling information (default is NO)],
+              no)
 
 dnl Include SOCKS support
-AC_ARG_ENABLE(socks,
-              [AC_HELP_STRING([--enable-socks],
-                              [Enable SOCKS support (default is NO)])],
-              socks_enabled=$enableval, socks_enabled=no)
+TP_ARG_ENABLE(socks,
+              [Enable SOCKS support (default is NO)],
+              no)
 
 dnl Check to see if the XTinyproxy header is to be included
 AH_TEMPLATE([XTINYPROXY_ENABLE],
 	    [Define if you want to have the peer's IP address included in a XTinyproxy header sent to the server.])
-AC_ARG_ENABLE(xtinyproxy,
-              [AC_HELP_STRING([--enable-xtinyproxy],
-                              [Include X-Tinyproxy header (default is YES)])],
-              xtinyproxy_enabled=$enableval, xtinyproxy_enabled=yes)
+TP_ARG_ENABLE(xtinyproxy,
+              [Include the X-Tinyproxy header (default is YES)],
+              yes)
 
 if test x"$xtinyproxy_enabled" = x"yes"; then
     AC_DEFINE(XTINYPROXY_ENABLE)
@@ -108,10 +104,9 @@ fi
 dnl Include filtering for domain/URLs
 AH_TEMPLATE([FILTER_ENABLE],
 	    [Defined if you would like filtering code included.])
-AC_ARG_ENABLE(filter,
-              [AC_HELP_STRING([--enable-filter],
-                              [Enable filtering of domains/URLs (default is YES)])],
-              filter_enabled=$enableval, filter_enabled=yes)
+TP_ARG_ENABLE(filter,
+              [Enable filtering of domains/URLS (default is YES)],
+              yes)
 
 if test x"$filter_enabled" = x"yes"; then
     ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS filter.o"
@@ -121,10 +116,9 @@ fi
 dnl Include support for upstream proxies?
 AH_TEMPLATE([UPSTREAM_SUPPORT],
             [Include support for connecting to an upstream proxy.])
-AC_ARG_ENABLE(upstream,
-              [AC_HELP_STRING([--enable-upstream],
-                              [Enable support for upstream proxies (default is YES)])],
-              upstream_enabled=$enableval, upstream_enabled=yes)
+TP_ARG_ENABLE(upstream,
+              [Enable upstream proxying (default is YES)],
+              yes)
 if test x"$upstream_enabled" = x"yes"; then
     AC_DEFINE(UPSTREAM_SUPPORT)
 fi
@@ -132,10 +126,9 @@ fi
 dnl Include support for reverse proxy?
 AH_TEMPLATE([REVERSE_SUPPORT],
             [Include support for reverse proxy.])
-AC_ARG_ENABLE(reverse,
-              [AC_HELP_STRING([--enable-reverse],
-                              [Enable support for reverse proxy (default is NO)])],
-              reverse_enabled=$enableval, reverse_enabled=no)
+TP_ARG_ENABLE(reverse,
+              [Enable reverse proxying (default is NO)]
+              no)
 if test x"$reverse_enabled" = x"yes"; then
     AC_DEFINE(REVERSE_SUPPORT)
 fi
@@ -143,20 +136,12 @@ fi
 dnl Include the transparent proxy support
 AH_TEMPLATE([TRANSPARENT_PROXY],
 	    [Include support for using tinyproxy as a transparent proxy.])
-AC_ARG_ENABLE(transparent-proxy,
-	      [AC_HELP_STRING([--enable-transparent-proxy],
-                              [Enable transparent proxy support (default is NO)])],
-	      transparent_enabled=$enableval, transparent_enabled=no)
+TP_ARG_ENABLE(transparent,
+              [Enable transparent proxying code (default is NO)],
+              no)
 if test x"$transparent_enabled" = x"yes"; then
    AC_DEFINE(TRANSPARENT_PROXY)
 fi
-
-dnl Include support for a statically compiled tinyproxy
-AC_ARG_ENABLE(static,
-              [AC_HELP_STRING([--enable-static],
-                              [Statically link tinyproxy (default is NO)])],
-	      [LDFLAGS="-static $LDFLAGS"])
-
 
 dnl
 dnl Checks for programs
