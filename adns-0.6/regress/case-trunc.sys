@@ -1,0 +1,34 @@
+default
+:1 trunc.test.iwj.relativity.greenend.org.uk
+ start 912888921.274801
+ socket type=SOCK_DGRAM
+ socket=4
+ +0.000207
+ fcntl fd=4 cmd=F_GETFL
+ fcntl=~O_NONBLOCK&...
+ +0.000321
+ fcntl fd=4 cmd=F_SETFL O_NONBLOCK|...
+ fcntl=OK
+ +0.000443
+ sendto fd=4 addr=172.18.45.6:53
+     311f0100 00010000 00000000 05747275 6e630474 65737403 69776a0a 72656c61
+     74697669 74790867 7265656e 656e6403 6f726702 756b0000 010001.
+ sendto=59
+ +0.000682
+ select max=5 rfds=[4] wfds=[] efds=[] to=1.999318
+ select=1 rfds=[4] wfds=[] efds=[]
+ +0.006406
+ recvfrom fd=4 buflen=512 *addrlen=16
+ recvfrom=OK addr=172.18.45.6:53
+     311f8580 00010000 00010000 05747275 6e630474 65737403 69776a0a 72656c61
+     74697669 74790867 7265656e 656e6403 6f726702 756b0000 01000104 74657374
+     0369776a 0a72656c 61746976 69747908 67726565 6e656e64 036f7267 02756b00
+     00060001 0000003c 0027036e 7330c044 0a686f73 746d6173 746572c0 44000000
+     0e00000e 10000000 780064c8 00000000 3c.
+ +0.000839
+ recvfrom fd=4 buflen=512 *addrlen=16
+ recvfrom=EAGAIN
+ +0.000141
+ close fd=4
+ close=OK
+ +0.000157

@@ -1,0 +1,5 @@
+adns debug: using nameserver 172.18.45.6
+intel.ugcs.caltech.edu. flags 0 type 1 A(-) submitted
+adns debug: allegedly canonical name ugintel.best.ugcs.caltech.edu is actually alias for drachma.ugcs.caltech.edu (QNAME=intel.ugcs.caltech.edu, QTYPE=A, NS=172.18.45.6)
+intel.ugcs.caltech.edu. flags 0 type A(-): DNS alias found where canonical name wanted; nrrs=0; cname=ugintel.best.ugcs.caltech.edu; owner=$; ttl=497758
+rc=0

@@ -1,0 +1,4 @@
+adns debug: using nameserver 172.18.45.36
+a.b.c.d flags 0 type 1 A(-) submitted
+a.b.c.d flags 0 type A(-): DNS query timed out; nrrs=0; cname=$; owner=$; ttl=604744
+rc=0

@@ -1,0 +1,8 @@
+adns debug: using nameserver 172.18.45.6
+manyaddrs.test.iwj.relativity.greenend.org.uk flags 0 type 1 A(-) submitted
+manyaddrs.test.iwj.relativity.greenend.org.uk flags 0 type A(-): OK; nrrs=4; cname=$; owner=$; ttl=60
+ 127.0.0.1
+ 172.18.45.6
+ 172.18.45.1
+ 172.18.45.35
+rc=0

@@ -1,0 +1,5 @@
+adns debug: using nameserver 172.18.45.6
+news.davenant flags 1 type 1 A(-) submitted
+news.davenant flags 1 type A(-): OK; nrrs=1; cname=davenant.relativity.greenend.org.uk; owner=$; ttl=584
+ 172.18.45.6
+rc=0

@@ -1,0 +1,39 @@
+adns debug: using nameserver 172.18.45.2
+adns debug: using nameserver 172.18.45.6
+trunc.test.iwj.relativity.greenend.org.uk flags 0 type 12 PTR(raw) submitted
+adns warning: datagram receive error: Connection refused
+adns debug: TCP connected (NS=172.18.45.2)
+adns warning: TCP connection failed: read: Broken pipe (NS=172.18.45.2)
+adns debug: TCP connected (NS=172.18.45.6)
+trunc.test.iwj.relativity.greenend.org.uk flags 0 type PTR(raw): OK; nrrs=30; cname=$; owner=$; ttl=60
+ long.domain.to.force.truncation.0.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.1.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.2.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.3.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.4.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.5.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.6.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.7.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.8.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.9.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.10.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.11.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.12.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.13.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.14.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.15.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.16.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.17.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.18.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.19.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.20.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.21.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.22.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.23.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.24.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.25.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.26.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.27.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.28.test.iwj.relativity.greenend.org.uk
+ long.domain.to.force.truncation.29.test.iwj.relativity.greenend.org.uk
+rc=0

@@ -1,0 +1,122 @@
+m4_dnl hsyscalls.i4
+m4_dnl (part of complex test harness, not of the library)
+m4_dnl - list of syscalls to override/log and their args
+
+m4_dnl  This file is
+m4_dnl    Copyright (C) 1997-1999 Ian Jackson <ian@davenant.greenend.org.uk>
+m4_dnl
+m4_dnl  It is part of adns, which is
+m4_dnl    Copyright (C) 1997-1999 Ian Jackson <ian@davenant.greenend.org.uk>
+m4_dnl    Copyright (C) 1999 Tony Finch <dot@dotat.at>
+m4_dnl  
+m4_dnl  This program is free software; you can redistribute it and/or modify
+m4_dnl  it under the terms of the GNU General Public License as published by
+m4_dnl  the Free Software Foundation; either version 2, or (at your option)
+m4_dnl  any later version.
+m4_dnl  
+m4_dnl  This program is distributed in the hope that it will be useful,
+m4_dnl  but WITHOUT ANY WARRANTY; without even the implied warranty of
+m4_dnl  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+m4_dnl  GNU General Public License for more details.
+m4_dnl  
+m4_dnl  You should have received a copy of the GNU General Public License
+m4_dnl  along with this program; if not, write to the Free Software Foundation,
+m4_dnl  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
+
+m4_dnl each system call has
+m4_dnl  hm_syscall(<name>,<returnvalue>,<args>)
+m4_dnl <returnvalue> is one of
+m4_dnl  hm_rv_must       must succeed and return 0
+m4_dnl  hm_rv_any        any nonnegative return allowed, -1 means see errno
+m4_dnl  hm_rv_fd         file descriptor is returned, -1 means see errno
+m4_dnl  hm_rv_succfail   returns 0 (ok) or -1 (see errno)
+m4_dnl  hm_rv_len(<max>) returns length read/written, must be <=max, -1 => errno
+m4_dnl  hm_rv_fcntl      syscall is fcntl, do special processing
+m4_dnl <args> is list of macros for arguments, each followed by hm_na
+m4_dnl  hm_arg_nullptr(<type>,<arg>)    pointer of type type, must be null
+m4_dnl  hm_arg_int(<arg>)               signed integer
+m4_dnl  hm_arg_fdset_io(<arg>,<max>)    fd_set, max bit set is in max
+m4_dnl  hm_arg_timeval_in_rel_null(<t>) struct timeval*, pass in, relative, may be null
+m4_dnl  hm_arg_must(<type>,<arg>,<val>) must have correct value, or abort test
+m4_dnl  hm_arg_socktype(<arg>)          SOCK_STREAM or SOCK_DGRAM (an int)
+m4_dnl  hm_arg_ign(<type>,<arg>)        input parameter ignored
+m4_dnl  hm_arg_fd(<arg>)                fd
+m4_dnl  hm_arg_fcntl_cmd_arg(<ca>,<aa>) syscall is fcntl, do special processing
+m4_dnl  hm_arg_addr_in(<arg>,<len>)     struct sockaddr*, length given by <len> (an int)
+m4_dnl  hm_arg_bytes_in(<objtype>,<objarg>,<lentype>,<lenarg>)
+m4_dnl   some data from caller; <objarg> is of type pointer to const <objtype>
+m4_dnl   and points to <lenarg> bytes (<lenarg> is of type <lentype>)
+m4_dnl  hm_arg_bytes_out(<objtype>,<objarg>,<lentype>,<buflenarg>)
+m4_dnl   buffer for data from syscall; <objarg> is of type pointer to const <objtype>
+m4_dnl   and points to at least <lenarg> bytes (<lenarg> is of type <lentype>)
+m4_dnl   return value from syscall is supposed to be returned length
+m4_dnl  hm_arg_addr_out(<arg>,<lenptr>) struct sockaddr*, length io at <lenptr> (an int*)
+
+hm_syscall(
+	select, `hm_rv_any', `
+	hm_arg_int(max) hm_na
+	hm_arg_fdset_io(rfds,max) hm_na
+	hm_arg_fdset_io(wfds,max) hm_na
+	hm_arg_fdset_io(efds,max) hm_na
+	hm_arg_timeval_in_rel_null(to) hm_na
+')
+
+#ifdef HAVE_POLL
+hm_syscall(
+	poll, `hm_rv_any', `
+        hm_arg_pollfds_io(fds,nfds) hm_na
+	hm_arg_int(timeout) hm_na
+')
+#endif
+
+hm_syscall(
+	socket, `hm_rv_fd', `
+	hm_arg_must(int,domain,AF_INET) hm_na
+	hm_arg_socktype(type) hm_na
+	hm_arg_ign(int,protocol) hm_na
+')
+
+hm_syscall(
+	fcntl, `hm_rv_fcntl', `
+	hm_arg_fd(fd) hm_na
+	hm_arg_fcntl_cmd_arg(cmd,arg) hm_na
+')
+
+hm_syscall(
+	connect, `hm_rv_succfail', `
+	hm_arg_fd(fd) hm_na
+	hm_arg_addr_in(addr,addrlen) hm_na
+')
+
+hm_syscall(
+	close, `hm_rv_succfail', `
+	hm_arg_fd(fd) hm_na
+')
+
+hm_syscall(
+	sendto, `hm_rv_any', `
+	hm_arg_fd(fd) hm_na
+	hm_arg_bytes_in(void,msg,int,msglen) hm_na
+	hm_arg_must(unsigned int,flags,0) hm_na
+	hm_arg_addr_in(addr,addrlen) hm_na
+')
+
+hm_syscall(
+	recvfrom, `hm_rv_len(buflen)', `
+	hm_arg_fd(fd) hm_na
+	hm_arg_bytes_out(void,buf,int,buflen) hm_na
+	hm_arg_must(unsigned int,flags,0) hm_na
+	hm_arg_addr_out(addr,addrlen) hm_na
+')
+
+hm_syscall(
+	read, `hm_rv_len(buflen)', `
+	hm_arg_fd(fd) hm_na
+	hm_arg_bytes_out(void,buf,size_t,buflen) hm_na
+')
+
+hm_syscall(
+	write, `hm_rv_any', `
+	hm_arg_fd(fd) hm_na
+	hm_arg_bytes_in(void,buf,size_t,len) hm_na
+')

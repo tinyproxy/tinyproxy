@@ -1,0 +1,121 @@
+.\" -*- nroff -*-
+.\"
+.\" tinyproxy.1
+.\"
+.\" Copyright (c) 1999, Robert James Kaes, Steven Young.
+.\"
+.\" This program is distributed under the terms of the GNU General Public
+.\" License. See COPYING for additional information.
+.\"
+.TH tinyproxy 1 "December 23, 1999" "tinyproxy" "tinyproxy Manual"
+.SH NAME
+tinyproxy \- a small HTTP proxy server
+.SH SYNOPSIS
+tinyproxy [options]
+.SH DESCRIPTION
+.B tinyproxy
+is an HTTP proxy server designed to consume a minimum of system resources.
+It listens on a given TCP port and handles HTTP proxy requests.
+.SH OPTIONS
+.TP 5
+.B \-v
+Display version information and exit.
+.TP 5
+.B \-h
+Display a short help screen of command line arguments and exit.
+.TP 5
+.B \-d 
+Don't daemonize; stay in the foreground.
+.TP 5
+.B "\-n ip_address"
+Allow access from only those hosts in the subnet.
+.I ip_address
+should be of a form xxx.xxx.xxx. like 192.168.0.
+.TP 5
+.BI "\-i ip_address"
+Only listen to the specific address. Useful for systems with more than one
+network connection.
+.I ip_address
+needs to be in the dotted-decimal form (e.g. 192.168.0.1)
+.TP 5
+.BI "\-p port"
+Listen to
+.I port
+instead of the default as defined in config.h.
+.TP 5
+.BI "\-l logfile"
+Log to the file
+.I logfile
+instead of the default as defined in config.h.
+.TP 5
+.BI \-r
+Restrict the log file to only logging error conditions. The hosts connecting
+and the locations being accessed are not logged.
+.TP 5
+.B \-S
+Log to the syslog daemon
+.TP 5
+.BI "\-a headername"
+Allow the header
+.I headername
+through to the server (anon mode only).  It is highly recommended that you
+specify -a Host: and -a Authorization:, otherwise HTTP/1.1 virtual domains
+and basic authentication will fail. If anon mode is compiled into the
+program, but you do not provide a
+.I headername
+tinyproxy will run as if anon mode was not compiled in.
+.TP 5
+.BI "\-w loadaverage"
+Stop handling requests when the load is
+.I loadaverage
+or higher.  Specifying a
+.I loadaverage
+of 0.00 will disable this feature.
+(disabled by default)
+.TP 5
+.BI "\-u username"
+Begin running as
+.I username
+after the port has been bound and the logfile has been opened.  Only
+works if tinyproxy is being run as root.  "" to disable.
+.SH SIGNALS
+In addition to these command line options, there are also several signals
+that can be sent to tinyproxy while it is running to generate debugging
+information and to force certain events.
+.TP 5
+.B SIGUSR1
+Dump a summary of all current connections to the logfile.
+.TP 5
+.B SIGHUP
+Force
+.B tinyproxy
+to do a garbage collection on the current connections linked list.  This
+is usually done automatically after a certain number of connections have
+been handled.
+.SH FILES
+.SM /var/log/tinyproxy.log
+.SH AUTHORS
+Steven Young (sdyoung@well.com)
+.PP
+Robert James Kaes (rjkaes@flarenet.com)
+.SH BUGS
+For some reason, when sent SIGTERM,
+.B tinyproxy 
+occasionally waits for the
+next incoming connection before exiting.  We believe this bug has 
+been corrected, but please e-mail the authors if you see this 
+behaviour occurring.
+.SH COPYRIGHT
+.B tinyproxy
+is distributed under the GNU Public License (GPL).  For more information
+on the GPL, please see the file COPYING which should have been included in
+the archive with tinyproxy.  Failing that, http://www.fsf.org/ will
+doubtless have a copy up for you to peruse.  Please don't use this
+software if you don't agree to the terms specified therein.
+.SH AVAILABILITY
+The latest version of
+.B tinyproxy
+can be acquired from:
+.PP
+http://www.flarenet.com/tinyproxy/
+http://tinyproxy.attacca.com/

@@ -1,0 +1,27 @@
+The following are some features that I'd like to add to tinyproxy in the
+future.  Where possible, I've listed the person who suggested it.  This
+list is in no particular order.  And hey, if you want to implement one of
+these, or another idea you have, go right ahead.  Just mail me the diff
+against the current tree and I'll integrate it if possible. 
+
+  - Include hooks so other types of proxies can be modularly added to  
+    the source tree.  Then people can simply choose which types of 
+    proxies (ftp, www, etc) they'd like enabled in tinyproxy.h 
+    Suggested: Tarun Tuli.
+  - Make the source tree autoconf-ed so people can avoid editing
+    tinyproxy.h and the like.
+  - Add some kind of access control mechanism - probably IP-based, 
+    so users can choose only to let people from certain networks/ISP
+    use the proxy.  This becomes more of an issue with FTP proxies
+    and the like. (Partially Done. It would be better if there was a
+    config file.)
+  - Find a more elegant solution to embedding HTML documents in the 
+    source than the current method.  (see httperr() and showstats() for 
+    examples of how it's done right now).
+  - Include a function to rewrite the incoming requests. Should not be
+    much of a problem. Just need to modify the clientreq code to look up
+    the URL and rewrite it. If we want to go really fancy with RegEx
+    mapping this could get ugly. :)
+  - Ed Avis suggests having tinyproxy have the ability to send the data
+    from the connections through an external filtering program. I kind of
+    like this idea, but I don't really have a good way of doing it yet.

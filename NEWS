@@ -1,0 +1,41 @@
+
+  NEWS
+  ====
+
+  This is another interim release of tinyproxy that fixes a few more bugs, 
+and adds a feature or two (notably: non-blocking DNS lookups).  It was 
+decided to move back what was previously going to be released as 1.3.2 and
+release it as 1.4.0, as these bug fixes and patches were determined to be 
+too high-priority to wait on.  
+
+  In this version of 1.3.2, the are the following new features:
+ 
+  - Non-blocking DNS lookups.
+  
+  And the following bug fixes:
+ 
+  - A bug where connptr was not correctly being set before httperr was being
+called in reqs.c.
+  - A bug where the system would crash if an empty request was received.
+  - A file descriptor leak where an fd would not be properly closed in 
+event of a bad HTTP request. 
+
+  Here is some information on the upcoming 1.4.0 release:
+
+  1.4.0
+  =====
+
+  1.4.0 is in the works.  Some features you can expect:
+ 
+  - Ability to listen on >1 port.
+  - Ability to set up more than one access list for the allowed
+    IP subnets.
+  - Ability to listen on multiple interfaces specified on the command-line.
+  - Simple caching.
+
+  Under the hood, 1.4.0 should be a bit more modular than 1.3.2.  This
+will hopefully lend itself towards making it easier for third parties to
+develop new features for tinyproxy.  
+
+  Please note that as of 1.3.1, Steven Young <sdyoung@well.com> is once
+again the primary maintainer of tinyproxy.

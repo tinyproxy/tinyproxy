@@ -1,0 +1,39 @@
+adns debug: using nameserver 172.18.45.6
+170.99.219.194.in-addr.arpa flags 292 type 1 A(-) submitted
+170.99.219.194.in-addr.arpa flags 292 type 2 NS(raw) submitted
+170.99.219.194.in-addr.arpa flags 292 type 5 CNAME(-) submitted
+170.99.219.194.in-addr.arpa flags 292 type 6 SOA(raw) submitted
+170.99.219.194.in-addr.arpa flags 292 type 12 PTR(raw) submitted
+170.99.219.194.in-addr.arpa flags 292 type 13 HINFO(-) submitted
+170.99.219.194.in-addr.arpa flags 292 type 15 MX(raw) submitted
+170.99.219.194.in-addr.arpa flags 292 type 16 TXT(-) submitted
+170.99.219.194.in-addr.arpa flags 292 type 17 RP(raw) submitted
+170.99.219.194.in-addr.arpa flags 292 type 65537 A(addr) submitted
+170.99.219.194.in-addr.arpa flags 292 type 65538 NS(+addr) submitted
+170.99.219.194.in-addr.arpa flags 292 type 65548 PTR(checked) submitted
+170.99.219.194.in-addr.arpa flags 292 type 65551 MX(+addr) submitted
+170.99.219.194.in-addr.arpa flags 292 type 131078 SOA(822) submitted
+170.99.219.194.in-addr.arpa flags 292 type 131089 RP(822) submitted
+adns debug: ignoring CNAME (to 170.168.99.219.194.in-addr.arpa) coexisting with RR (QNAME=170.99.219.194.in-addr.arpa, QTYPE=PTR(raw), NS=172.18.45.6)
+adns debug: ignoring RR with an unexpected owner 170.168.99.219.194.in-addr.arpa (QNAME=170.99.219.194.in-addr.arpa, QTYPE=PTR(raw), NS=172.18.45.6)
+adns debug: ignoring CNAME (to 170.168.99.219.194.in-addr.arpa) coexisting with RR (QNAME=170.99.219.194.in-addr.arpa, QTYPE=PTR(checked), NS=172.18.45.6)
+adns debug: ignoring RR with an unexpected owner 170.168.99.219.194.in-addr.arpa (QNAME=170.99.219.194.in-addr.arpa, QTYPE=PTR(checked), NS=172.18.45.6)
+170.99.219.194.in-addr.arpa flags 292 type A(-): No such data; nrrs=0; cname=170.168.99.219.194.in-addr.arpa; owner=170.99.219.194.in-addr.arpa; ttl=0
+170.99.219.194.in-addr.arpa flags 292 type NS(raw): No such data; nrrs=0; cname=170.168.99.219.194.in-addr.arpa; owner=170.99.219.194.in-addr.arpa; ttl=0
+170.99.219.194.in-addr.arpa flags 292 type SOA(raw): No such data; nrrs=0; cname=170.168.99.219.194.in-addr.arpa; owner=170.99.219.194.in-addr.arpa; ttl=0
+170.99.219.194.in-addr.arpa flags 292 type PTR(raw): OK; nrrs=1; cname=$; owner=170.99.219.194.in-addr.arpa; ttl=171727
+ proxy.scoplife.gr
+170.99.219.194.in-addr.arpa flags 292 type HINFO(-): No such data; nrrs=0; cname=170.168.99.219.194.in-addr.arpa; owner=170.99.219.194.in-addr.arpa; ttl=0
+170.99.219.194.in-addr.arpa flags 292 type MX(raw): No such data; nrrs=0; cname=170.168.99.219.194.in-addr.arpa; owner=170.99.219.194.in-addr.arpa; ttl=0
+170.99.219.194.in-addr.arpa flags 292 type TXT(-): No such data; nrrs=0; cname=170.168.99.219.194.in-addr.arpa; owner=170.99.219.194.in-addr.arpa; ttl=0
+170.99.219.194.in-addr.arpa flags 292 type RP(raw): No such data; nrrs=0; cname=170.168.99.219.194.in-addr.arpa; owner=170.99.219.194.in-addr.arpa; ttl=0
+170.99.219.194.in-addr.arpa flags 292 type A(addr): No such data; nrrs=0; cname=170.168.99.219.194.in-addr.arpa; owner=170.99.219.194.in-addr.arpa; ttl=0
+170.99.219.194.in-addr.arpa flags 292 type NS(+addr): No such data; nrrs=0; cname=170.168.99.219.194.in-addr.arpa; owner=170.99.219.194.in-addr.arpa; ttl=0
+170.99.219.194.in-addr.arpa flags 292 type MX(+addr): No such data; nrrs=0; cname=170.168.99.219.194.in-addr.arpa; owner=170.99.219.194.in-addr.arpa; ttl=0
+170.99.219.194.in-addr.arpa flags 292 type SOA(822): No such data; nrrs=0; cname=170.168.99.219.194.in-addr.arpa; owner=170.99.219.194.in-addr.arpa; ttl=0
+170.99.219.194.in-addr.arpa flags 292 type RP(822): No such data; nrrs=0; cname=170.168.99.219.194.in-addr.arpa; owner=170.99.219.194.in-addr.arpa; ttl=0
+170.99.219.194.in-addr.arpa flags 292 type PTR(checked): OK; nrrs=1; cname=$; owner=170.99.219.194.in-addr.arpa; ttl=171727
+ proxy.scoplife.gr
+170.99.219.194.in-addr.arpa flags 292 type CNAME(-): OK; nrrs=1; cname=$; owner=170.99.219.194.in-addr.arpa; ttl=171726
+ 170.168.99.219.194.in-addr.arpa
+rc=0

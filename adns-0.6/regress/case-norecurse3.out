@@ -1,0 +1,32 @@
+adns debug: using nameserver 172.18.45.6
+2.203.156.195.in-addr.arpa1 flags 0 type 1 A(-) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 2 NS(raw) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 5 CNAME(-) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 6 SOA(raw) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 12 PTR(raw) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 13 HINFO(-) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 15 MX(raw) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 16 TXT(-) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 17 RP(raw) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 65537 A(addr) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 65538 NS(+addr) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 65548 PTR(checked) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 65551 MX(+addr) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 131078 SOA(822) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type 131089 RP(822) submitted
+2.203.156.195.in-addr.arpa1 flags 0 type A(-): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type RP(822): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type SOA(822): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type MX(+addr): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type PTR(checked): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type NS(+addr): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type A(addr): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type RP(raw): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type TXT(-): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type MX(raw): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type HINFO(-): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type PTR(raw): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type SOA(raw): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type CNAME(-): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+2.203.156.195.in-addr.arpa1 flags 0 type NS(raw): No such domain; nrrs=0; cname=$; owner=$; ttl=86400
+rc=0

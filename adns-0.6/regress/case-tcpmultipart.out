@@ -1,0 +1,71 @@
+adns debug: using nameserver 172.31.80.9
+132.76.224.195.in-addr.arpa flags 2 type 12 PTR(raw) submitted
+manymorerrs.test.culture.dotat.at. flags 2 type 12 PTR(raw) submitted
+132.76.224.195.in-addr.arpa flags 2 type 12 PTR(raw) submitted
+adns debug: TCP connected (NS=172.31.80.9)
+132.76.224.195.in-addr.arpa flags 2 type PTR(raw): OK; nrrs=1; cname=$; owner=$; ttl=86400
+ chiark.greenend.org.uk
+manymorerrs.test.culture.dotat.at. flags 2 type PTR(raw): OK; nrrs=60; cname=$; owner=$; ttl=86400
+ very-long-domain.to-ensure-truncation.00.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.01.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.02.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.03.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.04.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.05.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.06.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.07.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.08.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.09.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.10.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.11.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.12.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.13.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.14.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.15.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.16.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.17.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.18.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.19.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.20.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.21.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.22.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.23.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.24.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.25.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.26.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.27.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.28.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.29.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.30.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.31.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.32.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.33.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.34.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.35.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.36.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.37.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.38.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.39.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.40.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.41.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.42.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.43.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.44.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.45.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.46.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.47.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.48.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.49.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.50.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.51.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.52.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.53.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.54.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.55.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.56.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.57.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.58.test.culture.dotat.at
+ very-long-domain.to-ensure-truncation.59.test.culture.dotat.at
+132.76.224.195.in-addr.arpa flags 2 type PTR(raw): OK; nrrs=1; cname=$; owner=$; ttl=86400
+ chiark.greenend.org.uk
+rc=0

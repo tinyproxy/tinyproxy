@@ -1,0 +1,22 @@
+adns debug: using nameserver 172.18.45.6
+silly-rp-dm.test.iwj.relativity.greenend.org.uk flags 112 type 17 RP(raw) submitted
+silly-rp-dm.test.iwj.relativity.greenend.org.uk flags 112 type 131089 RP(822) submitted
+silly-rp-lp.test.iwj.relativity.greenend.org.uk flags 112 type 17 RP(raw) submitted
+silly-rp-lp.test.iwj.relativity.greenend.org.uk flags 112 type 131089 RP(822) submitted
+silly-rp-lp.test.iwj.relativity.greenend.org.uk flags 0 type 17 RP(raw) submitted
+silly-rp-lp.test.iwj.relativity.greenend.org.uk flags 0 type 131089 RP(822) submitted
+silly-rp-dm.test.iwj.relativity.greenend.org.uk flags 0 type 17 RP(raw) submitted
+silly-rp-dm.test.iwj.relativity.greenend.org.uk flags 0 type 131089 RP(822) submitted
+silly-rp-dm.test.iwj.relativity.greenend.org.uk flags 112 type RP(raw): OK; nrrs=1; cname=$; owner=$; ttl=60
+ i\..root\000null.org .
+silly-rp-dm.test.iwj.relativity.greenend.org.uk flags 112 type RP(822): Found syntactically invalid domain name; nrrs=0; cname=$; owner=$; ttl=60
+silly-rp-lp.test.iwj.relativity.greenend.org.uk flags 112 type RP(raw): OK; nrrs=1; cname=$; owner=$; ttl=60
+ spong\000flibble.ucam.org .
+silly-rp-lp.test.iwj.relativity.greenend.org.uk flags 112 type RP(822): Found invalid DNS data; nrrs=0; cname=$; owner=$; ttl=60
+silly-rp-lp.test.iwj.relativity.greenend.org.uk flags 0 type RP(raw): OK; nrrs=1; cname=$; owner=$; ttl=60
+ spong\000flibble.ucam.org .
+silly-rp-lp.test.iwj.relativity.greenend.org.uk flags 0 type RP(822): Found invalid DNS data; nrrs=0; cname=$; owner=$; ttl=60
+silly-rp-dm.test.iwj.relativity.greenend.org.uk flags 0 type RP(raw): OK; nrrs=1; cname=$; owner=$; ttl=60
+ i\..root\000null.org .
+silly-rp-dm.test.iwj.relativity.greenend.org.uk flags 0 type RP(822): Found syntactically invalid domain name; nrrs=0; cname=$; owner=$; ttl=60
+rc=0

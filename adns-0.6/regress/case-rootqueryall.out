@@ -1,0 +1,127 @@
+adns debug: using nameserver 172.18.45.6
+. flags 0 type 1 A(-) submitted
+. flags 0 type 2 NS(raw) submitted
+. flags 0 type 5 CNAME(-) submitted
+. flags 0 type 6 SOA(raw) submitted
+. flags 0 type 12 PTR(raw) submitted
+. flags 0 type 13 HINFO(-) submitted
+. flags 0 type 15 MX(raw) submitted
+. flags 0 type 16 TXT(-) submitted
+. flags 0 type 17 RP(raw) submitted
+. flags 0 type 65537 A(addr) submitted
+. flags 0 type 65538 NS(+addr) submitted
+. flags 0 type 65548 PTR(checked) submitted
+. flags 0 type 65551 MX(+addr) submitted
+. flags 0 type 131078 SOA(822) submitted
+. flags 0 type 131089 RP(822) submitted
+. flags 1 type 1 A(-) submitted
+. flags 1 type 2 NS(raw) submitted
+. flags 1 type 5 CNAME(-) submitted
+. flags 1 type 6 SOA(raw) submitted
+. flags 1 type 12 PTR(raw) submitted
+. flags 1 type 13 HINFO(-) submitted
+. flags 1 type 15 MX(raw) submitted
+. flags 1 type 16 TXT(-) submitted
+. flags 1 type 17 RP(raw) submitted
+. flags 1 type 65537 A(addr) submitted
+. flags 1 type 65538 NS(+addr) submitted
+. flags 1 type 65548 PTR(checked) submitted
+. flags 1 type 65551 MX(+addr) submitted
+. flags 1 type 131078 SOA(822) submitted
+. flags 1 type 131089 RP(822) submitted
+. flags 0 type A(-): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+. flags 0 type NS(raw): OK; nrrs=13; cname=$; owner=$; ttl=305624
+ E.ROOT-SERVERS.NET
+ I.ROOT-SERVERS.NET
+ F.ROOT-SERVERS.NET
+ G.ROOT-SERVERS.NET
+ J.ROOT-SERVERS.NET
+ K.ROOT-SERVERS.NET
+ L.ROOT-SERVERS.NET
+ M.ROOT-SERVERS.NET
+ A.ROOT-SERVERS.NET
+ H.ROOT-SERVERS.NET
+ B.ROOT-SERVERS.NET
+ C.ROOT-SERVERS.NET
+ D.ROOT-SERVERS.NET
+. flags 0 type CNAME(-): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+. flags 0 type SOA(raw): OK; nrrs=1; cname=$; owner=$; ttl=54334
+ A.ROOT-SERVERS.NET hostmaster.INTERNIC.NET 1999041600 1800 900 604800 86400
+. flags 0 type PTR(raw): No such data; nrrs=0; cname=$; owner=$; ttl=599
+adns debug: reply not found, id 3123, query owner  (NS=172.18.45.6)
+. flags 0 type HINFO(-): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+adns debug: reply not found, id 3128, query owner  (NS=172.18.45.6)
+adns debug: reply not found, id 312a, query owner  (NS=172.18.45.6)
+adns debug: reply not found, id 312e, query owner  (NS=172.18.45.6)
+. flags 0 type MX(raw): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+. flags 0 type TXT(-): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+. flags 0 type RP(raw): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+. flags 0 type A(addr): No such data; nrrs=0; cname=$; owner=$; ttl=599
+. flags 0 type NS(+addr): OK; nrrs=13; cname=$; owner=$; ttl=305624
+ I.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 192.36.148.17 )
+ F.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 192.5.5.241 )
+ G.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 192.112.36.4 )
+ J.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 198.41.0.10 )
+ K.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 193.0.14.129 )
+ L.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 198.32.64.12 )
+ M.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 202.12.27.33 )
+ A.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 198.41.0.4 )
+ H.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 128.63.2.53 )
+ B.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 128.9.0.107 )
+ C.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 192.33.4.12 )
+ D.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 128.8.10.90 )
+ E.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 192.203.230.10 )
+. flags 0 type PTR(checked): No such data; nrrs=0; cname=$; owner=$; ttl=599
+. flags 0 type MX(+addr): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+. flags 0 type SOA(822): OK; nrrs=1; cname=$; owner=$; ttl=51616
+ A.ROOT-SERVERS.NET hostmaster@INTERNIC.NET 1999041600 1800 900 604800 86400
+. flags 0 type RP(822): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+. flags 1 type A(-): No such data; nrrs=0; cname=$; owner=$; ttl=599
+. flags 1 type NS(raw): OK; nrrs=13; cname=$; owner=$; ttl=305624
+ F.ROOT-SERVERS.NET
+ G.ROOT-SERVERS.NET
+ J.ROOT-SERVERS.NET
+ K.ROOT-SERVERS.NET
+ L.ROOT-SERVERS.NET
+ M.ROOT-SERVERS.NET
+ A.ROOT-SERVERS.NET
+ H.ROOT-SERVERS.NET
+ B.ROOT-SERVERS.NET
+ C.ROOT-SERVERS.NET
+ D.ROOT-SERVERS.NET
+ E.ROOT-SERVERS.NET
+ I.ROOT-SERVERS.NET
+. flags 1 type CNAME(-): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+. flags 1 type SOA(raw): OK; nrrs=1; cname=$; owner=$; ttl=49034
+ A.ROOT-SERVERS.NET hostmaster.INTERNIC.NET 1999041600 1800 900 604800 86400
+. flags 1 type PTR(raw): No such data; nrrs=0; cname=$; owner=$; ttl=599
+. flags 1 type HINFO(-): No such data; nrrs=0; cname=$; owner=$; ttl=599
+adns debug: reply not found, id 3132, query owner  (NS=172.18.45.6)
+adns debug: reply not found, id 3123, query owner  (NS=172.18.45.6)
+adns debug: reply not found, id 3133, query owner  (NS=172.18.45.6)
+adns debug: reply not found, id 3137, query owner  (NS=172.18.45.6)
+adns debug: reply not found, id 3139, query owner  (NS=172.18.45.6)
+. flags 1 type MX(raw): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+. flags 1 type TXT(-): No such data; nrrs=0; cname=$; owner=$; ttl=86400
+. flags 1 type RP(raw): No such data; nrrs=0; cname=$; owner=$; ttl=86399
+. flags 1 type A(addr): No such data; nrrs=0; cname=$; owner=$; ttl=598
+. flags 1 type NS(+addr): OK; nrrs=13; cname=$; owner=$; ttl=305623
+ G.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 192.112.36.4 )
+ J.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 198.41.0.10 )
+ K.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 193.0.14.129 )
+ L.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 198.32.64.12 )
+ M.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 202.12.27.33 )
+ A.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 198.41.0.4 )
+ H.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 128.63.2.53 )
+ B.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 128.9.0.107 )
+ C.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 192.33.4.12 )
+ D.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 128.8.10.90 )
+ E.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 192.203.230.10 )
+ I.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 192.36.148.17 )
+ F.ROOT-SERVERS.NET ok 0 ok "OK" ( INET 192.5.5.241 )
+. flags 1 type PTR(checked): No such data; nrrs=0; cname=$; owner=$; ttl=598
+. flags 1 type MX(+addr): No such data; nrrs=0; cname=$; owner=$; ttl=598
+. flags 1 type SOA(822): OK; nrrs=1; cname=$; owner=$; ttl=46580
+ A.ROOT-SERVERS.NET hostmaster@INTERNIC.NET 1999041600 1800 900 604800 86400
+. flags 1 type RP(822): No such data; nrrs=0; cname=$; owner=$; ttl=598
+rc=0

@@ -1,0 +1,23 @@
+INFO
+----
+The following files were/are useful for the proper coding of
+tinyproxy. Please note: someday tinyproxy will actually be RFC
+compliant, but today is not that day. Right now tinyproxy is pretty
+close to being HTTP/1.0 compliant, but there are probably a few
+incompatibilities kicking around.
+
+RFCs
+----
+1945	Hypertext Transfer Protocol -- HTTP/1.0
+2396	Uniform Resource Identifiers (URI): Generic Syntax
+2616	Hypertext Transfer Protocol -- HTTP/1.1
+2617	HTTP Authentication: Basic and Digest Access Authentication
+
+POSSIBLE LOCATION
+-----------------
+There are many places to obtain a copy of the RFCs, but I use
+
+      http://www.rfc-editor.org/
+
+since it provides a great search feature for finding all the RFCs for
+a particular topic.

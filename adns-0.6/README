@@ -1,0 +1,148 @@
+
+                                   GNU adns
+                                       
+   Advanced, easy to use, asynchronous-capable DNS client library.
+   
+   adns is a resolver library for C (and C++) programs. In contrast with
+   the existing interfaces, gethostbyname et al and libresolv, it has the
+   following features:
+     * It is reasonably easy to use for simple programs which just want
+       to translate names to addresses, look up MX records, etc.
+     * It can be used in an asynchronous, non-blocking, manner. Many
+       queries can be handled simultaneously.
+     * Responses are decoded automatically into a natural representation
+       for a C program - there is no need to deal with DNS packet
+       formats.
+     * Sanity checking (eg, name syntax checking, reverse/forward
+       correspondence, CNAME pointing to CNAME) is performed
+       automatically.
+     * Time-to-live, CNAME and other similar information is returned in
+       an easy-to-use form, without getting in the way.
+     * There is no global state in the library; resolver state is an
+       opaque data structure which the client creates explicitly. A
+       program can have several instances of the resolver.
+     * Errors are reported to the application in a way that distinguishes
+       the various causes of failure properly.
+     * Understands conventional resolv.conf, but this can overridden by
+       environment variables.
+     * Flexibility. For example, the application can tell adns to: ignore
+       environment variables (for setuid programs), disable sanity checks
+       eg to return arbitrary data, override or ignore resolv.conf in
+       favour of supplied configuration, etc.
+     * Believed to be correct ! For example, will correctly back off to
+       TCP in case of long replies or queries, or to other nameservers if
+       several are available. It has sensible handling of bad responses
+       etc.
+       
+Forthcoming:
+
+   I hope that future versions may also have the following features:
+     * The library should be useable by threads in a multithreaded
+       program in a natural way. It should multiplex many threads'
+       queries through a single query socket.
+     * IPv6 support.
+     * Some kind of awareness of DNSSEC.
+     * Possibly some very limited caching behaviour.
+       
+   (Technical note: adns requires a real nameserver like [1]BIND or
+   [2]Dents running on the same system or a nearby one, which must be
+   willing to provide `recursive service'. I.e., adns is a `stub
+   resolver'. All properly configured UN*X and GNU systems will already
+   have such nameserver(s); they are usually listed in /etc/resolv.conf.)
+   
+Documentation
+
+   I'm afraid there is no manual yet. However, competent C programmers
+   should be able to use the library based on the commented [3]adns.h
+   header file (from version 0.4).
+   
+Feedback
+
+   I'd be pleased if you would let me know if you're using my library in
+   your project, and what you think of it.
+   
+   If you are subscribed to adns-discuss please send feedback, including
+   bug reports, there; otherwise send mail to
+   adns-bugreports@chiark.greenend.org.uk. If you'd prefer that your
+   message wasn't forwarded to the adns-bugreports list, send it to
+   adns-maint@chiark.greendend.org.uk.
+   
+Mailinglists
+
+   I have set up mailinglists adns-announce and adns-discuss. The
+   announcements list is moderated and will contain only announcements of
+   important bugs, new versions, &c. The bug reports address mentioned
+   above is also a mailing list; feel free to subscribe to it.
+   
+   There are [4]archives and subscription web pages, or you can subscribe
+   by sending mail containing the word `subscribe' to
+   adns-announce-REQUEST@chiark.greenend.org.uk or
+   adns-discuss-REQUEST@chiark.greenend.org.uk.
+   
+Download
+
+   Available for download from [5]chiark.greenend.org.uk are:
+     * The [6]current pre-release version as a gzipped tarfile.
+     * [7]adns.h API header file with comments (currently there is no
+       manual, sorry).
+     * All versions released so far are also available via [8]anonymous
+       FTP.
+     * A mirror of my CVS repository is available via rsync from
+       rsync.chiark.greenend.org.uk::ftp/users/ian/cvs-pub/adns (use FTP
+       first to find your way around).
+       
+   adns is also available from the [9]GNU Project FTP servers and their
+   [10]mirrors.
+   
+Copyright and licensing
+
+   adns is Copyright 1997-1999 Ian Jackson.
+   
+   adns is free software; you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 2 of the License, or (at your
+   option) any later version.
+   
+   This program and documentation is distributed in the hope that it will
+   be useful, but without any warranty; without even the implied warranty
+   of merchantability or fitness for a particular purpose. See the
+   [11]GNU General Public License for more details.
+   
+   You should have received a copy of the GNU General Public License
+   along with adns, or one should be available above; if not, write to
+   the [12]Free Software Foundation, 59 Temple Place - Suite 330, Boston,
+   MA 02111-1307, USA, or email adns-maint@chiark.greenend.org.uk.
+     _________________________________________________________________
+   
+   [13]Ian Jackson / [14]adns-maint@chiark.greenend.org.uk; more [15]free
+   software by me.
+   
+   [16]GNU home page; [17]chiark home page; [18]site or mirror home page
+   
+   This web page is Copyright (C)1996-1999 Ian Jackson. See the
+   [19]Copyright/acknowledgements.
+   
+   Use any browser - [20]Campaign for a non-browser-specific WWW
+
+References
+
+   1. http://www.isc.org/view.cgi?/products/BIND/index.phtml
+   2. http://www.dents.org/
+   3. http://www.chiark.greenend.org.uk/~ian/adns/adns.h.0.4.txt
+   4. http://www.chiark.greenend.org.uk/mailman/listinfo
+   5. http://www.chiark.greenend.org.uk/~ian/adns/
+   6. http://www.chiark.greenend.org.uk/~ian/adns/adns.tar.gz
+   7. http://www.chiark.greenend.org.uk/~ian/adns/adns.h.0.5.txt
+   8. ftp://ftp.chiark.greenend.org.uk/users/ian/adns/
+   9. http://www.gnu.org/
+  10. http://www.gnu.org/order/ftp.html
+  11. http://www.chiark.greenend.org.uk/~ian/COPYING.txt
+  12. http://www.fsf.org/
+  13. http://www.chiark.greenend.org.uk/
+  14. mailto:adns-maint@chiark.greenend.org.uk
+  15. http://www.chiark.greenend.org.uk/~ian/software/
+  16. http://www.gnu.org/
+  17. http://www.chiark.greenend.org.uk/
+  18. http://www.chiark.greenend.org.uk/
+  19. http://www.chiark.greenend.org.uk/~ian/sw-www-copy.html
+  20. http://www.anybrowser.org/campaign/

@@ -1,0 +1,5 @@
+adns debug: using nameserver 172.18.45.6
+chiark.greenend.org.uk flags 0 type 1 A(-) submitted
+chiark.greenend.org.uk flags 0 type A(-) ownflags=aaaaaaaaa: ok; nrrs=1; cname=$; owner=$; ttl=86400
+ 195.224.76.132
+rc=0

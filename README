@@ -1,0 +1,99 @@
+ This is tinyproxy-adns, tinyproxy with support for GNU adns asynchronous
+ resolver library.
+
+ DESCRIPTION
+ -----------
+
+ tinyproxy is a small, efficient HTTP proxy daemon.  tinyproxy is very 
+ useful in a small network setting, where a larger proxy like Squid
+ would either be too resource intensive, or a security risk.  One of
+ the key features of tinyproxy is the buffering connection concept.
+ In effect, tinyproxy will buffer a high speed response from a server, 
+ and then relay it to a client at the highest speed the client will
+ accept.  This feature greatly reduces the problems with sluggishness
+ on the Internet.  If you are sharing an Internet connection with a
+ small network, and you only want to allow HTTP requests to be
+ allowed, then tinyproxy is a great tool for the network
+ administrator.
+
+ This version of tinyproxy must be compiled with GNU adns, available from
+ http://www.chiark.greenend.org.uk/~ian/adns/.
+
+ INSTALLATION
+ ------------
+
+ To install this package under a Unix derivative, read the INSTALL
+ file.  tinyproxy uses a standard GNU configure script.  There are
+ additional command line arguments you can supply to configure.  They
+ include:
+
+	--enable-debug		If you would like to turn on full
+				debugging support
+	--enable-socks		This turns on SOCKS support for using
+				tinyproxy across a fire wall.
+	--enable-xtinyproxy	Compile in support for the XTinyproxy
+				header, which is sent to any web
+				server in your domain.
+
+    Options for GNU adns
+        --with-adns-include=DIR Set the directory in which adns.h has
+                                been installed. Required if this is in
+                                a non-standard location.
+        --with-adns-lib=DIR     Set the directory in which libadns.* have
+                                been installed. Required if this is in
+                                a non-standard location.
+
+     Options for file locations etc.
+        --with-port=PORT        Set the port on which tinyproxy listens,
+                                by default 8080.
+        --with-log-file=FILE    Set the default logfile location.
+        --with-user=USER        Set the default user to which tinyproxy
+                                will setuid() upon startup.
+
+ Once you have completed your installation, if you would like to
+ report your success please execute the report.sh script in the doc
+ directory.  This will send an email to the authors reporting your
+ version, and a few bits of information concerning the memory usage of 
+ tinyproxy.  Alternatively, you could just send an email stating the
+ version.  Which ever you prefer.
+
+ SUPPORT
+ -------
+
+ If you are having problems with tinyproxy, please report the problem
+ to:
+
+	Steven Young		<sdyoung@well.com>
+	Robert James Kaes	<rjkaes@flarenet.com>
+
+ If the problem seems to be to do with GNU adns support (or if I've done
+ something obviously wrong), please email
+
+        Chris Lightfoot         <chris@ex-parrot.com>
+
+ Please recompile tinyproxy with full debug support (--enable-debug)
+ and include a copy of the log file, and any assert errors reported by 
+ tinyproxy.  Also, if you feel up to it, try running tinyproxy under
+ your debugger and report the error your received and a context
+ listing of the location.  Under gdb you would run tinyproxy like so:
+
+	 gdb tinyproxy
+
+	 (gdb) set args -p port_num -l log_file -d
+	 (gdb) run
+
+ Now access the port tinyproxy is on until you receive a break in the
+ gdb. You can now type:
+
+	 (gbd) l
+
+ to produce a context listing of the location of the error.  Send a
+ copy to the authors.
+
+ HOW TO CONTRIBUTE TO tinyproxy
+ ------------------------------
+
+ If you would like to contribute a feature, or a bug fix to the
+ tinyproxy source, please send a diff (preferable a unified
+ diff. i.e. "diff -u") against the latest release of tinyproxy.  Also, 
+ if you could include a brief description of what your patch does.
