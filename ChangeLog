@@ -1,5 +1,7 @@
 2001-06-02  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* doc/tinyproxy.conf: Clarified the LogLevel directive.
+
 	* configure.in: Fixed up the tests for libsocket, libnsl, and
 	libresolv. Also improved the test for the yacc program since I
 	used bison 1.25 to originally write it. Updated the list of
