@@ -1,4 +1,4 @@
-dnl $Id: configure.in,v 1.35 2001-11-21 19:35:51 rjkaes Exp $
+dnl $Id: configure.in,v 1.36 2001-11-23 01:15:01 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -27,60 +27,77 @@ dnl Command line options
 dnl
 
 dnl Set the URL name for find the statistics of tinyproxy
-AC_ARG_WITH(stathost, [  --with-stathost=HOST    Default status host],
+AC_ARG_WITH(stathost,
+            AC_HELP_STRING([--with-stathost=HOST],
+                           [Default status host]),
             AC_DEFINE_UNQUOTED(DEFAULT_STATHOST, "$withval"))
 
 dnl Set the default configuration file location
 AC_ARG_WITH(config,
-[  --with-config=FILE      Set the default location of the config file],
+            AC_HELP_STRING([--with-config=FILE],
+                           [Set the default location of the config file]),
 	    AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$withval"))
 
 dnl Add compiler-specific optimization flags
 AC_ARG_ENABLE(debug,
-[  --enable-debug          Disable aggressive optimizations [default=no]],
+              AC_HELP_STRING([--enable-debug],
+                             [Disable aggressive optimizations (default is NO)]),
               debug_enabled=yes, debug_enabled=no)
+
+dnl Add in profiling information
+AC_ARG_ENABLE(profiling,
+              AC_HELP_STRING([--enable-profiling],
+                             [Enable profiling information (default is NO)]),
+              profiling_enabled=yes, profiling_enabled=no)
 
 dnl Include SOCKS support
 AC_ARG_ENABLE(socks,
-[  --enable-socks          Enable SOCKS support [default=no]],
+              AC_HELP_STRING([--enable-socks],
+                             [Enable SOCKS support (default is NO)]),
               socks_enabled=yes, socks_enabled=no)
 
 dnl Check to see if the XTinyproxy header is to be included
 AC_ARG_ENABLE(xtinyproxy,
-[  --enable-xtinyproxy     Include X-Tinyproxy header [default=yes]],
+              AC_HELP_STRING([--enable-xtinyproxy],
+                             [Include X-Tinyproxy header (default is YES)]),
               xtinyproxy_enabled=yes, xtinyproxy_enabled=yes)
-if test "$xtinyproxy_enabled" = "yes"; then
+if test x"$xtinyproxy_enabled" = x"yes"; then
     AC_DEFINE(XTINYPROXY_ENABLE)
 fi
 
 dnl Include filtering for domain/URLs
 AC_ARG_ENABLE(filter,
-[  --enable-filter         Enable filtering of domains/URLs [default=yes]],
+              AC_HELP_STRING([--enable-filter],
+                             [Enable filtering of domains/URLs (default is YES)]),
               filter_enabled=yes, filter_enabled=yes)
-if test "$filter_enabled" = "yes"; then
+
+if test x"$filter_enabled" = x"yes"; then
     LIBOBJS="filter.o $LIBOBJS"
     AC_DEFINE(FILTER_ENABLE)
 fi
 
 dnl Include support for TCP tunneling
 AC_ARG_ENABLE(tunnel,
-[  --enable-tunnel         Enable support for TCP tunneling [default=yes]],
+              AC_HELP_STRING([--enable-tunnel],
+                             [Enable support for TCP tunneling (default is YES)]),
               tunnel_enabled=yes, tunnel_enabled=yes)
-if test "$tunnel_enabled" = "yes" ; then
+if test x"$tunnel_enabled" = x"yes" ; then
     AC_DEFINE(TUNNEL_SUPPORT)
 fi
 
 dnl Include support for upstream proxies?
 AC_ARG_ENABLE(upstream,
-[  --enable-upstream       Enable support for upstream proxies [default=yes]],
+              AC_HELP_STRING([--enable-upstream],
+                             [Enable support for upstream proxies (default is YES)]),
               upstream_enabled=yes, upstream_enabled=yes)
-if test "$upstream_enabled" = "yes"; then
+if test x"$upstream_enabled" = x"yes"; then
     AC_DEFINE(UPSTREAM_SUPPORT)
 fi
 
 dnl Include support for a statically compiled tinyproxy
 AC_ARG_ENABLE(static,
-[  --enable-static         Statically link tinyproxy [default=no]],
+              AC_HELP_STRING([--enable-static],
+                             [Statically link tinyproxy (default is NO)]),
 	[ LDFLAGS="-static $LDFLAGS" ])
 
 dnl
@@ -102,14 +119,14 @@ AC_PROG_YACC
 CFLAGS="$cflags_save"
 
 dnl Make sure YACC is actually bison
-if test "$YACC" != "bison -y"; then
+if test x"$YACC" != x"bison -y"; then
     AC_MSG_WARN(You will need bison if you want to regenerate the parser.)
 else
     AC_MSG_CHECKING(bison version)
     oldIFS=$IFS; IFS=.
     set `bison -V | sed -e 's/^GNU Bison version //'`
     IFS=$oldIFS
-    if test "$1" = "1" -a "$2" -lt "25"; then
+    if test x"$1" = x"1" -a x"$2" -lt x"25"; then
         AC_MSG_WARN(Bison 1.25 or newer needed to regenerate parsers (found $1.$2).)
     fi
     AC_MSG_RESULT($1.$2 (ok))
@@ -119,15 +136,15 @@ dnl
 dnl Checks for libraries
 dnl
 AC_CHECK_LIB(pthread, pthread_create)
-if test "$ac_cv_lib_pthread_pthread_create" = "yes"; then
+if test x"$ac_cv_lib_pthread_pthread_create" = x"yes"; then
     CFLAGS="-D_REENTRANT $CFLAGS"
 else
     AC_CHECK_LIB(pthreads, pthread_create)
-    if test "$ac_cv_lib_pthreads_pthread_create" = "yes"; then
+    if test x"$ac_cv_lib_pthreads_pthread_create" = x"yes"; then
         CFLAGS="-D_REENTRANT $CFLAGS"
     else
         AC_CHECK_LIB(c_r, pthread_create)
-        if test "$ac_cv_lib_c_r_pthread_create" = "yes"; then
+        if test x"$ac_cv_lib_c_r_pthread_create" = x"yes"; then
             CFLAGS="-pthread -D_REENTRANT $CFLAGS"
         else
 	    AC_MSG_ERROR(You must have a POSIX compliant threading library installed)
@@ -145,7 +162,7 @@ unset ac_cv_func_yp_get_default_domain
 AC_CHECK_FUNC(yp_get_default_domain, [ tinyproxy_no_nsl_checks=yes ], [ ])
 unset ac_cv_func_yp_get_default_domain
 
-if test "$tinyproxy_no_nsl_checks" != "yes"; then
+if test x"$tinyproxy_no_nsl_checks" != x"yes"; then
     AC_CHECK_LIB(nsl, gethostname, , AC_CHECK_LIB(nsl, gethostbyaddr))
 fi
 
@@ -240,7 +257,7 @@ vsyslog \
 )
 AC_CHECK_FUNCS(strlcpy strlcat)
 
-if test "$ac_cv_func_vprintf" != "yes"; then
+if test x"$ac_cv_func_vprintf" != x"yes"; then
     AC_CHECK_FUNC(_doprnt, AC_DEFINE(HAVE_DOPRNT))
 fi
 
@@ -248,12 +265,20 @@ dnl
 dnl Compiler characteristics
 dnl
 
+dnl If profiling is enabled, then enable the debugging code
+if test x"$profiling_enabled" = x"yes" ; then
+    AC_MSG_NOTICE([profiling is enabled, therefore enabling debugging code.])
+    debug_enabled="yes"
+fi
+
 dnl Enable the debugging flags (by checking for the GCC compiler)
 CFLAGS="-O2 $CFLAGS"
-if test "$enable_debug" = "yes" ; then
+if test x"$debug_enabled" = x"yes" ; then
     dnl Add the warnings if we have the GCC compiler
-    if test "$ac_cv_prog_gcc" = "yes" ; then
-	CFLAGS="-pg -fprofile-arcs $CFLAGS"
+    if test x"$ac_cv_prog_gcc" = x"yes" ; then
+        if test x"$profiling_enabled" = x"yes" ; then
+	    CFLAGS="-pg -fprofile-arcs $CFLAGS"
+        fi
         CFLAGS="-Wshadow -Wcast-qual -Wcast-align -Wstrict-prototypes $CFLAGS"
         CFLAGS="-Wmissing-prototypes -Wmissing-declarations $CFLAGS"
         CFLAGS="-Wpointer-arith -Waggregate-return -Wnested-externs $CFLAGS"
@@ -271,8 +296,8 @@ dnl Make sure we can actually handle the "--with-*" and "--enable-*" stuff.
 dnl
 
 dnl Handle the SOCKS support
-if test "$socks_enabled" = "yes"; then
-    if test "$socks_header" = "yes" -a "$socks_library" = "yes"; then
+if test x"$socks_enabled" = x"yes"; then
+    if test x"$socks_header" = x"yes" -a x"$socks_library" = x"yes"; then
         CFLAGS="-I/usr/include/sock.h -DSOCKS $CFLAGS"
         LIBS="-lsocks $LIBS"
     else
@@ -281,7 +306,7 @@ if test "$socks_enabled" = "yes"; then
 fi
 
 dnl Handle the REGEX library
-if test "$ac_cv_func_regexec" != "yes"; then
+if test x"$ac_cv_func_regexec" != x"yes"; then
     dnl We don't have a functioning REGEX so include our copy
     tinyproxy_use_our_regex=yes
 else
@@ -302,13 +327,13 @@ int main(void)
 
     AC_MSG_RESULT($tinyproxy_cv_regex_broken)
 
-    if test "$tinyproxy_cv_regex_broken" = "yes" ; then
+    if test x"$tinyproxy_cv_regex_broken" = x"yes" ; then
         echo "Using the included GNU regex instead." >&AC_FD_MSG
         tinyproxy_use_our_regex=yes
     fi
 fi
 
-if test "$tinyproxy_use_our_regex" = "yes" ; then
+if test x"$tinyproxy_use_our_regex" = x"yes" ; then
     AC_DEFINE(USE_GNU_REGEX)
     LIBOBJS="gnuregex.o $LIBOBJS"
 fi
