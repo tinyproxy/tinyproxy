@@ -1,3 +1,20 @@
+2004-01-26  Robert James Kaes  <rjkaes@flarenet.com>
+
+	Released tinyproxy 1.7.0 (2004-01-26)
+
+	* configure.ac, doc/tinyproxy.conf, src/conns.c, src/conns.h, src/grammar.y, src/reqs.c, src/reqs.h, src/scanner.l, src/tinyproxy.c, src/tinyproxy.h:
+	Added reverse proxy support from Kim Holviala.
+
+2003-11-19  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (upstream_add): Fixed a spelling mistake with "Nonsence"
+
+2003-10-17  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/filter.c, ChangeLog, Makefile.am, configure.ac:
+	Merged in changes from the 1.6.2 release. (Fixes for the filtering code
+	and the HTML installation script.)
+
 2003-10-17  Robert James Kaes  <rjkaes@flarenet.com>
 
 	Released tinyproxy 1.6.2 (2003-10-17)
