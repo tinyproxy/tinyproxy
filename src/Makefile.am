@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.6 2001-10-25 16:58:50 rjkaes Exp $
+# $Id: Makefile.am,v 1.7 2001-11-05 15:24:01 rjkaes Exp $
 #
 # 
 #
@@ -46,3 +46,7 @@ EXTRA_tinyproxy_SOURCES = grammar.h
 
 scanner.c: scanner.l grammar.h
 	$(LEX) $(AM_LFLAGS) $(LFLAGS) -i $< && mv $(LEX_OUTPUT_ROOT).c $@
+
+clean:
+	rm -f *.da
+	rm -f gmon.out
