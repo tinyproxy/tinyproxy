@@ -4,10 +4,13 @@
  */
 #undef XTINYPROXY
 
-/* chris - undef'd here so that they can be set up in the configure script */
-#undef DEFAULT_LOG
-#undef DEFAULT_PORT
-#undef DEFAULT_USER
+/*
+ * These are the defaults, but they can be changed by configure at compile
+ * time, or on the command line at runtime.
+ */
+#define DEFAULT_LOG "/var/log/tinyproxy"
+#define DEFAULT_PORT 8888
+#define DEFAULT_USER ""
 
 /*
  * Define if you would like to include filtering code.
@@ -18,3 +21,8 @@
  * Define if you want to use the included GNU regex routine
  */
 #undef USE_GNU_REGEX
+
+/*
+ * Define if you want to include upstream proxy support
+ */
+#undef UPSTREAM_PROXY
