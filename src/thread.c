@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.7 2001-08-27 17:45:50 rjkaes Exp $
+/* $Id: thread.c,v 1.8 2001-08-28 04:33:21 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -22,6 +22,12 @@
 #include "reqs.h"
 #include "sock.h"
 #include "thread.h"
+
+/*
+ * This is the stack frame size used by all the threads. We'll start by
+ * setting it to 128 KB.
+ */
+#define THREAD_STACK_SIZE (1024 * 128)
 
 static int listenfd;
 static socklen_t addrlen;
@@ -154,7 +160,7 @@ int thread_pool_create(void)
 	 * because the default on some OS's is too small.
 	 */
 	pthread_attr_init(&thread_attr);
-	pthread_attr_setstacksize(&thread_attr, (1024 * 1024));
+	pthread_attr_setstacksize(&thread_attr, THREAD_STACK_SIZE);
 
 	if (thread_config.maxclients == 0) {
 		log_message(LOG_ERR, "You must set MaxClients to a value greater than 0");
