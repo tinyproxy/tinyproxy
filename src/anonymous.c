@@ -1,9 +1,8 @@
-/* $Id: anonymous.c,v 1.9 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: anonymous.c,v 1.10 2001-12-15 20:02:59 rjkaes Exp $
  *
  * Handles insertion and searches for headers which should be let through when
- * the anonymous feature is turned on. The headers are stored in a Ternary
- * Search Tree. The initial code came from Dr. Dobb's Journal, April 1998
- * "Ternary Search Trees", Jon Bentley and Bob Sedgewick, pg 20-25.
+ * the anonymous feature is turned on. The headers are stored in a linked
+ * list.
  *
  * Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
  *
@@ -22,50 +21,90 @@
 
 #include "anonymous.h"
 #include "log.h"
-#include "ternary.h"
-#include "tinyproxy.h"
+#include "utils.h"
 
-static TERNARY anonymous_tree = 0;
 /*
- * Keep track of whether the Anonymous filtering is enabled. Off by
- * default.
+ * Structure holding the various anonymous headers.
  */
-static short int anonymous_is_enabled = 0;
+struct anonymous_header_s {
+	char *header;
+	struct anonymous_header_s *next;
+};
+struct anonymous_header_s *anonymous_root = NULL;
 
 inline short int
 is_anonymous_enabled(void)
 {
-	return anonymous_is_enabled;
+	return (anonymous_root) ? 1 : 0;
 }
 
+/*
+ * Search through the linked list for the header. If it's found return 0
+ * else return -1.
+ */
 int
 anonymous_search(char *s)
 {
-	assert(s != NULL);
-	assert(anonymous_is_enabled == 1);
-	assert(anonymous_tree > 0);
+	struct anonymous_header_s *ptr = anonymous_root;
 
-	return ternary_search(anonymous_tree, s, NULL);
+	assert(s != NULL);
+	assert(anonymous_root != NULL);
+
+	while (ptr) {
+		if (ptr->header) {
+			if (strcasecmp(ptr->header, s) == 0)
+				return 0;
+		} else
+			return -1;
+
+		ptr = ptr->next;
+	}
+
+	return -1;
 }
 
+/*
+ * Insert a new header into the linked list.
+ *
+ * Return -1 if there is an error, 0 if the string already exists, and 1 if
+ * it's been inserted.
+ */
 int
 anonymous_insert(char *s)
 {
+	struct anonymous_header_s *ptr;
+	struct anonymous_header_s **prev_ptr;
+
 	assert(s != NULL);
 
-	/*
-	 * If this is the first time we're inserting a word, create the
-	 * search tree.
-	 */
-	if (!anonymous_is_enabled) {
-		anonymous_tree = ternary_new();
-		if (anonymous_tree < 0)
+	if (!anonymous_root) {
+		anonymous_root = safemalloc(sizeof(struct anonymous_header_s));
+		if (!anonymous_root)
 			return -1;
 
-		anonymous_is_enabled = 1;
+		anonymous_root->header = strdup(s);
+		anonymous_root->next = NULL;
+	} else {
+		ptr = anonymous_root;
 
-		DEBUG1("Starting the Anonymous header subsytem.");
+		while (ptr) {
+			if (ptr->header) {
+				if (strcasecmp(ptr->header, s) == 0)
+					return 0;
+			}
+
+			prev_ptr = &ptr;
+			ptr = ptr->next;
+		}
+
+		ptr = (*prev_ptr)->next
+			= safemalloc(sizeof(struct anonymous_header_s));
+		if (!ptr)
+			return -1;
+
+		ptr->header = strdup(s);
+		ptr->next = NULL;
 	}
-
-	return ternary_insert(anonymous_tree, s, NULL);
+		
+	return 1;
 }
