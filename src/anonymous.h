@@ -1,4 +1,4 @@
-/* $Id: anonymous.h,v 1.1 2000-03-31 19:56:55 rjkaes Exp $
+/* $Id: anonymous.h,v 1.2 2000-09-11 23:38:36 rjkaes Exp $
  *
  * See 'anonymous.c' for a detailed description.
  *
@@ -15,8 +15,8 @@
  * General Public License for more details.
  */
 
-#ifndef ANONYMOUS_C
-#define ANONYMOUS_C
+#ifndef _TINYPROXY_ANONYMOUS_H_
+#define _TINYPROXY_ANONYMOUS_H_
 
 extern int anon_search(char *s);
 extern void anon_insert(char *s);

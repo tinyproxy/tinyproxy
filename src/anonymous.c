@@ -1,4 +1,4 @@
-/* $Id: anonymous.c,v 1.1 2000-03-31 19:56:55 rjkaes Exp $
+/* $Id: anonymous.c,v 1.2 2000-09-11 23:38:36 rjkaes Exp $
  *
  * Handles insertion and searches for headers which should be let through when
  * the anonymous feature is turned on. The headers are stored in a Ternary
@@ -19,60 +19,30 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include <defines.h>
+#  include <config.h>
 #endif
 
-#include <stdlib.h>
+#include <sys/types.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include "anonymous.h"
+#include "ternary.h"
 
-typedef struct tnode *Tptr;
-typedef struct tnode {
-	char splitchar;
-	Tptr lokid, eqkid, hikid;
-} Tnode;
-
-static Tptr anon_root = NULL;
-
-static Tptr intern_insert(Tptr p, char *s)
-{
-	if (p == NULL) {
-		p = (Tptr) malloc(sizeof(Tnode));
-		p->splitchar = tolower(*s);
-		p->lokid = p->eqkid = p->hikid = NULL;
-	}
-
-	if (tolower(*s) < p->splitchar)
-		p->lokid = intern_insert(p->lokid, s);
-	else if (tolower(*s) == p->splitchar) {
-		if (tolower(*s) != 0)
-			p->eqkid = intern_insert(p->eqkid, ++s);
-	} else
-		p->hikid = intern_insert(p->hikid, s);
-
-	return p;
-}
+static TERNARY anonymous_tree;
 
 int anon_search(char *s)
 {
-	Tptr p = anon_root;
-	
-	while (p) {
-		if (tolower(*s) < p->splitchar)
-			p = p->lokid;
-		else if (tolower(*s) == p->splitchar) {
-			if (*s++ == 0)
-				return 1;
-			p = p->eqkid;
-		} else
-			p = p->hikid;
-	}
-
-	return 0;
+	return ternary_search(anonymous_tree, s, NULL);
 }
 
 void anon_insert(char *s)
 {
-	anon_root = intern_insert(anon_root, s);
+	if (anonymous_tree == 0) {
+		if (TE_ISERROR(anonymous_tree = ternary_new()))
+			return;
+	}
+
+	ternary_insert(anonymous_tree, s, NULL);
 }
