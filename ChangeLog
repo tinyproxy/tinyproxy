@@ -1,3 +1,9 @@
+2001-09-04  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/log.c (log_message): Thanks to NeilK for finding and fixing
+	a problem with the syslog code which can lead to a format string
+	attack.
+
 2001-08-30  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/dnscache.c: Removed the insert_data() function and replaced
