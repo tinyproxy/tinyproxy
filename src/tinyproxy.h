@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.32 2002-05-27 01:59:28 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.33 2002-06-15 17:29:59 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -26,7 +26,6 @@
 #define MAX_IDLE_TIME 	(60 * 10)	/* 10 minutes of no activity */
 
 struct config_s {
-	FILE *logf;
 	char *logf_name;
 	bool_t syslog;
 	int port;
@@ -61,7 +60,7 @@ struct config_s {
 
 /* Global Structures used in the program */
 extern struct config_s config;
-extern bool_t log_rotation_request;
+extern bool_t received_sighup;
 extern bool_t processed_config_file;
 
 #endif
