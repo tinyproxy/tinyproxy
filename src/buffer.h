@@ -1,4 +1,4 @@
-/* $Id: buffer.h,v 1.6 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: buffer.h,v 1.7 2001-11-25 22:05:42 rjkaes Exp $
  *
  * See 'buffer.c' for a detailed description.
  *
@@ -36,7 +36,13 @@ struct buffer_s {
 extern struct buffer_s *new_buffer(void);
 extern void delete_buffer(struct buffer_s *buffptr);
 
-extern ssize_t readbuff(int fd, struct buffer_s *buffptr);
-extern ssize_t writebuff(int fd, struct buffer_s *buffptr);
+/*
+ * Add a new line to the given buffer. The data IS copied into the structure.
+ */
+extern int add_to_buffer(struct buffer_s *buffptr, unsigned char *data,
+			 size_t length);
+
+extern ssize_t read_buffer(int fd, struct buffer_s *buffptr);
+extern ssize_t write_buffer(int fd, struct buffer_s *buffptr);
 
 #endif				/* __BUFFER_H_ */

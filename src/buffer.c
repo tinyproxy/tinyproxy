@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.16 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: buffer.c,v 1.17 2001-11-25 22:05:42 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -8,7 +8,7 @@
  * functions act on each end (the names are taken from what Perl uses to act on
  * the ends of an array. :)
  *
- * Copyright (C) 1999  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 1999,2001  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -39,9 +39,8 @@ struct bufline_s {
 
 /*
  * Take a string of data and a length and make a new line which can be added
- * to the buffer. We don't make a copy of the data, but simply copy the
- * pointer into the structure. In other words, when you insert data into the
- * buffer, the buffer becomes responsible for freeing it.
+ * to the buffer. The data IS copied, so make sure if you allocated your
+ * data buffer on the heap, delete it because you now have TWO copies.
  */
 static struct bufline_s *
 makenewline(unsigned char *data, size_t length)
@@ -54,7 +53,13 @@ makenewline(unsigned char *data, size_t length)
 	if (!(newline = safemalloc(sizeof(struct bufline_s))))
 		return NULL;
 
-	newline->string = data;
+	if (!(newline->string = safemalloc(length))) {
+		safefree(newline);
+		return NULL;
+	}
+
+	memcpy(newline->string, data, length);
+
 	newline->next = NULL;
 	newline->length = length;
 
@@ -123,9 +128,9 @@ delete_buffer(struct buffer_s *buffptr)
 }
 
 /*
- * Push a new line on to the end of the buffer
+ * Push a new line on to the end of the buffer.
  */
-static int
+int
 add_to_buffer(struct buffer_s *buffptr, unsigned char *data, size_t length)
 {
 	struct bufline_s *newline;
@@ -184,11 +189,10 @@ remove_from_buffer(struct buffer_s *buffptr)
  */
 #define READ_BUFFER_SIZE (1024 * 2)
 ssize_t
-readbuff(int fd, struct buffer_s * buffptr)
+read_buffer(int fd, struct buffer_s * buffptr)
 {
 	ssize_t bytesin;
-	unsigned char *buffer;
-	unsigned char *newbuffer;
+	unsigned char buffer[READ_BUFFER_SIZE];
 
 	assert(fd >= 0);
 	assert(buffptr != NULL);
@@ -196,20 +200,10 @@ readbuff(int fd, struct buffer_s * buffptr)
 	if (BUFFER_SIZE(buffptr) >= READ_BUFFER_SIZE)
 		return 0;
 
-	buffer = safemalloc(READ_BUFFER_SIZE);
-	if (!buffer)
-		return 0;
-
 	bytesin = read(fd, buffer, READ_BUFFER_SIZE - BUFFER_SIZE(buffptr));
 
 	if (bytesin > 0) {
-		newbuffer = saferealloc(buffer, bytesin);
-		if (!newbuffer) {
-			safefree(buffer);
-			return 0;
-		}
-
-		if (add_to_buffer(buffptr, newbuffer, bytesin) < 0) {
+		if (add_to_buffer(buffptr, buffer, bytesin) < 0) {
 			log_message(LOG_ERR,
 				    "readbuff: add_to_buffer() error.");
 			return -1;
@@ -217,7 +211,6 @@ readbuff(int fd, struct buffer_s * buffptr)
 
 		return bytesin;
 	} else {
-		safefree(buffer);
 		if (bytesin == 0) {
 			/* connection was closed by client */
 			return -1;
@@ -247,7 +240,7 @@ readbuff(int fd, struct buffer_s * buffptr)
  * Takes a connection and returns the number of bytes written.
  */
 ssize_t
-writebuff(int fd, struct buffer_s * buffptr)
+write_buffer(int fd, struct buffer_s * buffptr)
 {
 	ssize_t bytessent;
 	struct bufline_s *line;
