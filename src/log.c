@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.21 2002-06-06 20:24:21 rjkaes Exp $
+/* $Id: log.c,v 1.22 2002-06-15 17:37:11 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -22,6 +22,7 @@
 #include "hashmap.h"
 #include "heap.h"
 #include "log.h"
+#include "utils.h"
 
 static char *syslog_level[] = {
 	NULL,
@@ -68,7 +69,6 @@ log_message(int level, char *fmt, ...)
 {
 	va_list args;
 	time_t nowtime;
-	FILE *cf;
 
 	char time_string[TIME_LENGTH];
 #if defined(HAVE_SYSLOG_H) && !defined(HAVE_VSYSLOG_H)
@@ -130,19 +130,23 @@ log_message(int level, char *fmt, ...)
 #  endif
 	} else {
 #endif
+		FILE* log_file;
+		int fd;
+
+		fd = create_file_safely(config.logf_name, FALSE);
+		log_file = fdopen(fd, "w+");
+
 		nowtime = time(NULL);
 		/* Format is month day hour:minute:second (24 time) */
 		strftime(time_string, TIME_LENGTH, "%b %d %H:%M:%S",
 			 localtime(&nowtime));
 
-		if (!(cf = config.logf))
-			cf = stderr;
-
-		fprintf(cf, "%-9s %s [%ld]: ", syslog_level[level],
+		fprintf(log_file, "%-9s %s [%ld]: ", syslog_level[level],
 			time_string, (long int) getpid());
-		vfprintf(cf, fmt, args);
-		fprintf(cf, "\n");
-		fflush(cf);
+		vfprintf(log_file, fmt, args);
+		fprintf(log_file, "\n");
+
+		fclose(log_file);
 #ifdef HAVE_SYSLOG_H
 	}
 #endif
