@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.24 2001-09-14 04:56:29 rjkaes Exp $
+/* $Id: reqs.c,v 1.25 2001-09-14 19:50:45 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -46,7 +46,7 @@
  * Write the buffer to the socket. If an EINTR occurs, pick up and try
  * again.
  */
-static ssize_t safe_write(int fd, void *buffer, size_t count)
+static ssize_t safe_write(int fd, const void *buffer, size_t count)
 {
 	ssize_t len;
 
@@ -210,42 +210,27 @@ static int establish_http_connection(struct conn_s *connptr,
 				     const char *protocol,
 				     struct request_s *request)
 {
-	char *request_line;
-	size_t request_len;
-
-	request_len = strlen(method) + strlen(protocol) + strlen(request->path) + 13;
-
-	request_line = safemalloc(request_len);
-	if (!request_line) {
-		log_message(LOG_ERR, "Could not allocate memory in 'process_request'");
-		httperr(connptr, 503, HTTP503ERROR);
-
+	/*
+	 * Send the request line
+	 */
+	if (safe_write(connptr->server_fd, method, strlen(method)) < 0)
 		return -1;
-	}
-
-	strlcpy(request_line, method, request_len);
-	strlcat(request_line, " ", request_len);
-	strlcat(request_line, request->path, request_len);
-	strlcat(request_line, " ", request_len);
-	strlcat(request_line, "HTTP/1.0", request_len);
-	strlcat(request_line, "\r\n", request_len);
-
-	if (safe_write(connptr->server_fd, request_line, strlen(request_line)) < 0) {
-		safefree(request_line);
-
+	if (safe_write(connptr->server_fd, " ", 1) < 0)
 		return -1;
-	}
-	safefree(request_line);
+	if (safe_write(connptr->server_fd, request->path, strlen(request->path)) < 0)
+		return -1;
+	if (safe_write(connptr->server_fd, " ", 1) < 0)
+		return -1;
+	if (safe_write(connptr->server_fd, "HTTP/1.0\r\n", 10) < 0)
+		return -1;
 
 	/*
 	 * Send headers
 	 */
-	if (safe_write(connptr->server_fd, "Host: ", 6) < 0) {
+	if (safe_write(connptr->server_fd, "Host: ", 6) < 0)
 		return -1;
-	}
-	if (safe_write(connptr->server_fd, request->host, strlen(request->host)) < 0) {
+	if (safe_write(connptr->server_fd, request->host, strlen(request->host)) < 0)
 		return -1;
-	}
 
 	if (safe_write(connptr->server_fd, "\r\n", 2) < 0)
 		return -1;
@@ -510,9 +495,8 @@ static int process_client_headers(struct conn_s *connptr)
 	char *header;
 	long content_length = -1;
 
-	char *skipheaders[] = {
+	static char *skipheaders[] = {
 		"proxy-connection",
-		"host",
 		"connection"
 	};
 	int i;
@@ -533,6 +517,9 @@ static int process_client_headers(struct conn_s *connptr)
 		}
 
 		if (connptr->output_message)
+			continue;
+
+		if (!connptr->ssl && strncasecmp(header, "host", 4) ==0)
 			continue;
 
 		/*
@@ -831,7 +818,7 @@ internal_proxy:
 	safefree(request_line);
 
 send_error:
-	if (!connptr->simple_req && !connptr->ssl) {
+	if (!connptr->simple_req) {
 		if (process_client_headers(connptr) < 0) {
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
