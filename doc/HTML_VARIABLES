@@ -1,0 +1,15 @@
+There are several standard HTML variables that are available in every .html
+file:
+
+  request - The full HTTP request line.
+  cause - The abbreviated cause of the error condition.
+  clientip - The IP address of the client making the request.
+  clienthost - The hostname of the client making the request.
+  version - The version of tinyproxy.
+  package - Presently, resolves to 'tinyproxy'.
+  date - The current date/time in HTTP format.
+
+In addition, almost all pages support:
+
+  detail - A detailed, plain English explanation of the error and possible
+  causes.  You might consider this the Microsoftian error message.
