@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.15 2001-09-15 21:29:22 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.16 2001-09-16 05:38:27 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -66,7 +66,8 @@ void takesig(int sig)
 
 		if (config.logf) {
 			char *rename_file;
-			int log_file_fd;
+			int log_file_des;
+			FILE *old_fd;
 
 			rename_file = safemalloc(strlen(config.logf_name) + 5);
 			if (!rename_file) {
@@ -79,17 +80,20 @@ void takesig(int sig)
 
 			rename(config.logf_name, rename_file);
 
-			log_file_fd = create_file_safely(config.logf_name);
-			if (log_file_fd < 0) {
+			log_file_des = create_file_safely(config.logf_name);
+			if (log_file_des < 0) {
 				fprintf(stderr, "Could not safely create new log file.\n");
 				exit(EX_OSERR);
 			}
+
+			old_fd = config.logf;
 			
-			fclose(config.logf);
-			if (!(config.logf = fdopen(log_file_fd, "w"))) {
+			if (!(config.logf = fdopen(log_file_des, "w"))) {
 				fprintf(stderr, "Could not create new log file.\n");
 				exit(EX_CANTCREAT);
 			}
+
+			fclose(old_fd);
 
 			log_message(LOG_NOTICE, "Log file rotated.");
 
