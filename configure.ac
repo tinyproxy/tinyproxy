@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.30 2002-05-09 17:36:31 rjkaes Exp $
+dnl $Id: configure.ac,v 2.31 2002-05-23 18:29:34 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -71,9 +71,6 @@ else
 	fi
         TINYPROXY_CONFIG_FILE="$tp_config_file"
 fi
-
-AC_SUBST(TINYPROXY_CONFIG_DIR)
-AC_SUBST(TINYPROXY_CONFIG_FILE)
 
 AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$TINYPROXY_CONFIG_DIR/$TINYPROXY_CONFIG_FILE")
 
@@ -154,6 +151,7 @@ AC_ARG_ENABLE(static,
               [AC_HELP_STRING([--enable-static],
                               [Statically link tinyproxy (default is NO)])],
 	      [LDFLAGS="-static $LDFLAGS"])
+
 
 dnl
 dnl Checks for programs
@@ -367,6 +365,8 @@ AC_SUBST(YFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(ADDITIONAL_OBJECTS)
+AC_SUBST(TINYPROXY_CONFIG_DIR)
+AC_SUBST(TINYPROXY_CONFIG_FILE)
 
 AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile])
 AC_OUTPUT
