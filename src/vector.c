@@ -1,4 +1,4 @@
-/* $Id: vector.c,v 1.2 2002-04-09 16:28:13 rjkaes Exp $
+/* $Id: vector.c,v 1.3 2002-04-18 17:57:19 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbritrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -21,17 +21,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#if defined(HAVE_CONFIG_H)
-#  include <config.h>
-#endif
-
-#include <sys/types.h>
-
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
+#include "tinyproxy.h"
 
 #include "vector.h"
+#include "utils.h"
 
 /*
  * These structures are the storage for the "vector".  Entries are
@@ -64,7 +57,7 @@ vector_create(void)
 {
 	vector_t vector;
 
-	vector = malloc(sizeof(struct vector_s));
+	vector = safemalloc(sizeof(struct vector_s));
 	if (!vector)
 		return NULL;
 
@@ -91,13 +84,13 @@ vector_delete(vector_t vector)
 	ptr = vector->vector;
 	while (ptr) {
 		next = ptr->next;
-		free(ptr->data);
-		free(ptr);
+		safefree(ptr->data);
+		safefree(ptr);
 
 		ptr = next;	
 	}
 
-	free(vector);
+	safefree(vector);
 
 	return 0;
 }
@@ -119,13 +112,13 @@ vector_insert(vector_t vector, void *data, ssize_t len)
 	if (!vector || !data || len <= 0)
 		return -EINVAL;
 
-	entry = malloc(sizeof(struct vectorentry_s));
+	entry = safemalloc(sizeof(struct vectorentry_s));
 	if (!entry)
 		return -ENOMEM;
 
-	entry->data = malloc(len);
+	entry->data = safemalloc(len);
 	if (!entry->data) {
-		free(entry);
+		safefree(entry);
 		return -ENOMEM;
 	}
 

@@ -1,4 +1,4 @@
-/* $Id: hashmap.c,v 1.3 2002-04-09 20:05:15 rjkaes Exp $
+/* $Id: hashmap.c,v 1.4 2002-04-18 17:57:20 rjkaes Exp $
  *
  * A hashmap implementation.  The keys are case-insensitive NULL terminated
  * strings, and the data is arbitrary lumps of data.  Copies of both the
@@ -25,27 +25,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#include <sys/types.h>
-#if defined(HAVE_STDINT_H)
-#  include <stdint.h>
-#endif
-#if defined(HAVE_INTTYPES_H)
-#  include <inttypes.h>
-#endif
-
-#if defined(HAVE_CTYPE_H)
-#  include <ctype.h>
-#endif
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
+#include "tinyproxy.h"
 
 #include "hashmap.h"
 #include "vector.h"
+#include "utils.h"
 
 /*
  * These structures are the storage for the hashmap.  Entries are stored in
@@ -112,14 +96,14 @@ hashmap_create(unsigned int nbuckets)
 	if (nbuckets == 0)
 		return NULL;
 
-	ptr = calloc(1, sizeof(struct hashmap_s));
+	ptr = safecalloc(1, sizeof(struct hashmap_s));
 	if (!ptr)
 		return NULL;
 
 	ptr->size = nbuckets;
-	ptr->maps = calloc(nbuckets, sizeof(struct hashentry_s *));
+	ptr->maps = safecalloc(nbuckets, sizeof(struct hashentry_s *));
 	if (!ptr->maps) {
-		free(ptr);
+		safefree(ptr);
 		return NULL;
 	}
 
@@ -146,9 +130,9 @@ delete_hashentries(struct hashentry_s* entry)
 	while (ptr) {
 		nextptr = ptr->next;
 		
-		free(ptr->key);
-		free(ptr->data);
-		free(ptr);
+		safefree(ptr->key);
+		safefree(ptr->data);
+		safefree(ptr);
 
 		ptr = nextptr;
 	}
@@ -175,7 +159,7 @@ hashmap_delete(hashmap_t map)
 			delete_hashentries(map->maps[i]);
 	}
 
-	free(map);
+	safefree(map);
 
 	return 0;
 }
@@ -214,14 +198,14 @@ hashmap_insert(hashmap_t map, const char *key,
 	 * First make copies of the key and data in case there is a memory
 	 * problem later.
 	 */
-	key_copy = strdup(key);
+	key_copy = safestrdup(key);
 	if (!key_copy)
 		return -ENOMEM;
 
 	if (data) {
-		data_copy = malloc(len);
+		data_copy = safemalloc(len);
 		if (!data_copy) {
-			free(key_copy);
+			safefree(key_copy);
 			return -ENOMEM;
 		}
 		memcpy(data_copy, data, len);
@@ -236,16 +220,16 @@ hashmap_insert(hashmap_t map, const char *key,
 			ptr = ptr->next;
 		}
 
-		ptr = calloc(1, sizeof(struct hashentry_s));
+		ptr = safecalloc(1, sizeof(struct hashentry_s));
 		ptr->prev = prevptr;
 		prevptr->next = ptr;
 	} else {
-		ptr = map->maps[hash] = calloc(1, sizeof(struct hashentry_s));
+		ptr = map->maps[hash] = safecalloc(1, sizeof(struct hashentry_s));
 	}
 
 	if (!ptr) {
-		free(key_copy);
-		free(data_copy);
+		safefree(key_copy);
+		safefree(data_copy);
 		return -ENOMEM;
 	}
 
@@ -380,9 +364,9 @@ hashmap_remove(hashmap_t map, const char *key)
 				ptr->prev = NULL;
 			}
 
-			free(ptr->key);
-			free(ptr->data);
-			free(ptr);
+			safefree(ptr->key);
+			safefree(ptr->data);
+			safefree(ptr);
 
 			return 1;
 		}
