@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.9 2003-04-16 16:39:23 rjkaes Exp $
+/* $Id: child.c,v 1.10 2003-04-16 18:04:58 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -179,12 +179,18 @@ child_main(struct child_s* ptr)
 
 		connfd = accept(listenfd, cliaddr, &clilen);
 
-/* Enable this when you want to use GDB */
-#if 0
-		/* Pause for 10 seconds to allow us to connect debugger */
-		fprintf(stderr, "Process has accepted connection: %u\n", ptr->tid);
-		sleep(10);
-		fprintf(stderr, "Continuing process: %u\n", ptr->tid);
+#ifndef NDEBUG
+		/*
+		 * Enable the TINYPROXY_DEBUG environment variable if you
+		 * want to use the GDB debugger.
+		 */
+		if (getenv("TINYPROXY_DEBUG")) {
+			/* Pause for 10 seconds to allow us to connect debugger */
+			fprintf(stderr,
+				"Process has accepted connection: %u\n", ptr->tid);
+			sleep(10);
+			fprintf(stderr, "Continuing process: %u\n", ptr->tid);
+		}
 #endif
 
 		/*
