@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.36 2002-06-06 20:28:02 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.37 2002-06-15 17:35:03 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -46,7 +46,7 @@ extern FILE *yyin;
  */
 struct config_s config;
 float load = 0.00;
-bool_t log_rotation_request = FALSE;
+bool_t received_sighup = FALSE;
 bool_t processed_config_file = FALSE;
 
 /*
@@ -60,7 +60,7 @@ takesig(int sig)
 
 	switch (sig) {
 	case SIGHUP:
-		log_rotation_request = TRUE;
+		received_sighup = TRUE;
 		break;
 
 	case SIGTERM:
@@ -211,7 +211,6 @@ main(int argc, char **argv)
 		exit(EX_SOFTWARE);
 	}
 	yyparse();
-	processed_config_file = TRUE;
 
 #if defined(TUNNEL_SUPPORT) && defined(UPSTREAM_SUPPORT)
 	if (config.tunnel_name && config.upstream_name) {
@@ -224,28 +223,11 @@ main(int argc, char **argv)
 
 	/* Open the log file if not using syslog */
 	if (config.syslog == FALSE) {
-		int log_file_fd;
-
 		if (!config.logf_name) {
 			fprintf(stderr,
 				"%s: You MUST set a LogFile in the configuration file.\n",
 				argv[0]);
 			exit(EX_SOFTWARE);
-		}
-
-		log_file_fd = create_file_safely(config.logf_name, FALSE);
-		if (log_file_fd < 0) {
-			fprintf(stderr,
-				"Could not safely create logfile \"%s\".\n",
-				config.logf_name);
-			exit(EX_CANTCREAT);
-		}
-
-		config.logf = fdopen(log_file_fd, "w+");
-		if (!config.logf) {
-			fprintf(stderr, "Could not write to log file \"%s\".\n",
-				config.logf_name);
-			exit(EX_CANTCREAT);
 		}
 	} else {
 		if (godaemon == TRUE)
@@ -254,6 +236,7 @@ main(int argc, char **argv)
 			openlog("tinyproxy", LOG_PID, LOG_USER);
 	}
 
+	processed_config_file = TRUE;
 	log_message(LOG_INFO, PACKAGE " " VERSION " starting...");
 
 	send_stored_logs();
@@ -422,9 +405,7 @@ main(int argc, char **argv)
 		filter_destroy();
 #endif				/* FILTER_ENABLE */
 
-	if (config.syslog == FALSE)
-		fclose(config.logf);
-	else
+	if (config.syslog)
 		closelog();
 
 	exit(EX_OK);
