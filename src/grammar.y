@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.16 2002-11-03 17:10:32 rjkaes Exp $
+/* $Id: grammar.y,v 1.17 2002-11-26 21:44:43 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -49,7 +49,7 @@ int yylex(void);
 %token KW_ANONYMOUS KW_XTINYPROXY
 %token KW_FILTER KW_FILTERURLS KW_FILTEREXTENDED KW_FILTER_DEFAULT_DENY
 %token KW_UPSTREAM
-%token KW_CONNECTPORT KW_BIND
+%token KW_CONNECTPORT KW_BIND KW_HTTP_VIA
 %token KW_ALLOW KW_DENY
 
 /* yes/no switches */
@@ -178,6 +178,15 @@ statement
 #else
 		  log_message(LOG_WARNING, "The 'Bind' directive can not be used with transparent proxy support.  Ignoring the directive.");
 #endif
+          }
+        | KW_HTTP_VIA yesno
+          {
+	          if ($2) {
+			  log_message(LOG_INFO, "Enabling HTTP Via header.");
+			  config.via_http_header = TRUE;
+		  } else {
+			  config.via_http_header = FALSE;
+		  }
           }
 	;
 

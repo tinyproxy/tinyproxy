@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.85 2002-11-13 17:48:48 rjkaes Exp $
+/* $Id: reqs.c,v 1.86 2002-11-26 21:44:43 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -791,7 +791,7 @@ process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 	int i;
 	hashmap_iter iter;
 	long content_length = -1;
-	int ret;
+	int ret = 0;
 
 	char *data, *header;
 
@@ -826,13 +826,15 @@ process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 	}
 
 	/* Send, or add the Via header */
-	ret = write_via_header(connptr->server_fd, hashofheaders,
-			       connptr->protocol.major,
-			       connptr->protocol.minor);
-	if (ret < 0) {
-		indicate_http_error(connptr, 503,
-				    "Could not send data to remote server.");
-		goto PULL_CLIENT_DATA;
+	if (config.via_http_header) {
+		ret = write_via_header(connptr->server_fd, hashofheaders,
+				       connptr->protocol.major,
+				       connptr->protocol.minor);
+		if (ret < 0) {
+			indicate_http_error(connptr, 503,
+					    "Could not send data to remote server.");
+			goto PULL_CLIENT_DATA;
+		}
 	}
 
 	/*
@@ -969,10 +971,13 @@ process_server_headers(struct conn_s *connptr)
 	}
 
 	/* Send, or add the Via header */
-        ret = write_via_header(connptr->client_fd, hashofheaders,
-			       connptr->protocol.major, connptr->protocol.minor);
-	if (ret < 0)
-		goto ERROR_EXIT;
+	if (config.via_http_header) {
+		ret = write_via_header(connptr->client_fd, hashofheaders,
+				       connptr->protocol.major,
+				       connptr->protocol.minor);
+		if (ret < 0)
+			goto ERROR_EXIT;
+	}
 
 	/*
 	 * All right, output all the remaining headers to the client.

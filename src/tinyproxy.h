@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.34 2002-11-03 17:10:32 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.35 2002-11-26 21:44:43 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -52,6 +52,8 @@ struct config_s {
 
 	char* dnsserver_location;
 	char* dnsserver_socket;
+
+	bool_t via_http_header;
 };
 
 /* Global Structures used in the program */
