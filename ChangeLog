@@ -1,3 +1,29 @@
+2003-03-09  Steven Young  <sdyoung@well.com>
+
+	* src/htmlerror.[ch]: Code to allow the use of substituted
+	variables in .html files for error reporting instead of
+	hard-coded HTML documents that use snprintf() for variable
+	substitution.
+
+	* src/stats.c: Changed showstats to use the HTML variable
+	functions when possible.  It still retains the hard-coded
+	page for when an HTML file is not available.
+
+	* src/reqs.c: Changed calls to indicate_http_error() to
+	use the new HTML variable mechanism.
+
+	* src/tinyproxy.h: Added variables to config structure
+	to keep track of the files to be displayed for various
+	HTTP errors and the stats page.
+
+	* src/conns.h: Added variables to keep track of the
+	variables to be substituted in .html files displayed
+	to that client.
+
+	* src/grammar.y, src/scanner.l: Added parser support
+	for the error file configuration keywords 
+	(ErrorFile, DefaultErrorFile, StatFile)
+
 2003-03-08  Robert James Kaes  <rjkaes@flarenet.com>
 
 	Released tinyproxy 1.5.3 (2003-03-10)
