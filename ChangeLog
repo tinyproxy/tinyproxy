@@ -1,5 +1,15 @@
 2002-04-18  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/utils.c (debugging_strdup): Added this function to be used
+	by the safestrdup() macro to replace all the calls to strdup().
+	This should allow better tracking of the memory usage.
+	Also, all the debugging_* functions have had asserts added to them
+	to hopefully improve the quality of the code.
+
+	* src/reqs.c (get_all_headers): Fixed a memory leak since I was
+	not freeing the header variable, even though the hashmap makes a
+	copy of it.  Thanks to Petr Lampa for finding this one.
+
 	* src/tinyproxy.c (takesig): Moved the filter_destroy() code out
 	of the signal handler and placed it inside of main().  Same
 	reasoning as the rotate_log_files() changes below.

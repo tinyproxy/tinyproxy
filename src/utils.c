@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.26 2002-04-18 16:57:06 rjkaes Exp $
+/* $Id: utils.c,v 1.27 2002-04-18 17:49:14 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -37,7 +37,12 @@ void *
 debugging_calloc(size_t nmemb, size_t size, const char *file,
 		 unsigned long line)
 {
-	void *ptr = calloc(nmemb, size);
+	void *ptr;
+
+	assert(nmemb > 0);
+	assert(size > 0);
+
+	ptr = calloc(nmemb, size);
 	fprintf(stderr, "{calloc: %p:%u x %u} %s:%lu\n", ptr, nmemb, size, file,
 		line);
 	return ptr;
@@ -46,7 +51,11 @@ debugging_calloc(size_t nmemb, size_t size, const char *file,
 void *
 debugging_malloc(size_t size, const char *file, unsigned long line)
 {
-	void *ptr = malloc(size);
+	void *ptr;
+
+	assert(size > 0);
+
+	ptr = malloc(size);
 	fprintf(stderr, "{malloc: %p:%u} %s:%lu\n", ptr, size, file, line);
 	return ptr;
 }
@@ -54,7 +63,12 @@ debugging_malloc(size_t size, const char *file, unsigned long line)
 void *
 debugging_realloc(void *ptr, size_t size, const char *file, unsigned long line)
 {
-	void *newptr = realloc(ptr, size);
+	void *newptr;
+	
+	assert(ptr != NULL);
+	assert(size > 0);
+	
+	newptr = realloc(ptr, size);
 	fprintf(stderr, "{realloc: %p -> %p:%u} %s:%lu\n", ptr, newptr, size,
 		file, line);
 	return newptr;
@@ -63,9 +77,29 @@ debugging_realloc(void *ptr, size_t size, const char *file, unsigned long line)
 void
 debugging_free(void *ptr, const char *file, unsigned long line)
 {
+	assert(ptr != NULL);
+
 	fprintf(stderr, "{free: %p} %s:%lu\n", ptr, file, line);
 	free(ptr);
 	return;
+}
+
+char*
+debugging_strdup(const char* s, const char* file, unsigned long line)
+{
+	char* ptr;
+	size_t len;
+
+	assert(s != NULL);
+
+	len = strlen(s) + 1;
+	ptr = malloc(len);
+	if (!ptr)
+		return NULL;
+	memcpy(ptr, s, len);
+
+	fprintf(stderr, "{strdup: %p:%u} %s:%lu\n", ptr, len, file, line);
+	return ptr;
 }
 
 #endif

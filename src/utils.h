@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.15 2002-04-18 16:57:06 rjkaes Exp $
+/* $Id: utils.h,v 1.16 2002-04-18 17:49:14 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -63,16 +63,20 @@ extern void *debugging_malloc(size_t size, const char *file,
 extern void debugging_free(void *ptr, const char *file, unsigned long line);
 extern void *debugging_realloc(void *ptr, size_t size, const char *file,
 			       unsigned long line);
+extern char *debugging_strdup(const char* s, const char* file,
+			      unsigned long line);
 
 #  define safecalloc(x, y) debugging_calloc(x, y, __FILE__, __LINE__)
 #  define safemalloc(x) debugging_malloc(x, __FILE__, __LINE__)
 #  define saferealloc(x, y) debugging_realloc(x, y, __FILE__, __LINE__)
 #  define safefree(x) debugging_free(x, __FILE__, __LINE__)
+#  define safestrdup(x) debugging_strdup(x, __FILE__, __LINE__)
 #else
 #  define safecalloc(x, y) calloc(x, y)
 #  define safemalloc(x) malloc(x)
 #  define saferealloc(x, y) realloc(x, y)
 #  define safefree(x) free(x)
+#  define safestrdup(x) strdup(x)
 #endif
 
 #endif
