@@ -14,7 +14,7 @@ PACKAGING = $(REDHAT)
 CONFIG_FILES = \
   config/config.guess config/config.sub \
   config/ltmain.sh config/install-sh config/missing config/mkinstalldirs \
-  config/typecheck.m4
+  config/typecheck.m4 config/argenable.m4
 
 EXTRA_DIST = $(CONFIG_FILES) TODO $(PACKAGING) bootstrap
 SUBDIRS = src doc
