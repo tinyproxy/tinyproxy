@@ -1,3 +1,16 @@
+2002-04-25  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (remove_connection_headers): Handle both the
+	Connection header _and_ the Proxy-Connection header.
+
+	* src/hashmap.c: The hashmap will now handle multiple keys with
+	the same value.  This change was need because some sites like
+	Yahoo will send out multiple "Set-Cookie" lines.  The
+	hashmap_keys() function has been removed and has been replaced
+	with the iterator concept.  Also, a few of the functions have had
+	either their arguments changed, or their return type.  Read the
+	comments in the header file for more information.
+
 2002-04-22  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/thread.c: Renamed the LOCKing macros and added debugging
