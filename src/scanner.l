@@ -1,4 +1,4 @@
-/* $Id: scanner.l,v 1.19 2003-03-13 21:42:45 rjkaes Exp $
+/* $Id: scanner.l,v 1.20 2003-06-20 17:02:13 rjkaes Exp $
  *
  * This builds the scanner for the tinyproxy configuration file. This
  * file needs to stay in sync with grammar.y. If someone knows lex and yacc
@@ -54,7 +54,7 @@ static struct keyword keywords[] = {
         { "deny",                KW_DENY },
         { "connectport",         KW_CONNECTPORT },
         { "bind",                KW_BIND },
-        { "viaheader",           KW_HTTP_VIA },
+        { "viaproxyname",        KW_VIA_PROXY_NAME },
         { "stathost",            KW_STATHOST },
 	{ "errorfile",	         KW_ERRORPAGE },
 	{ "defaulterrorfile",    KW_DEFAULT_ERRORPAGE },
@@ -81,7 +81,8 @@ static struct keyword keywords[] = {
 
 #define MAX_REGEXP_LEN	1024
 
-unsigned int yylineno = 1;
+unsigned int scanner_lineno = 1;
+
 char tiny_buf[MAX_REGEXP_LEN];
 char *tiny_str;
 
@@ -103,7 +104,7 @@ word		[^ \#'"\(\)\{\}\\;\n\t,|\.]
 %%
 
 \#.*$		        ;
-\n                      { yylineno++; return '\n'; }
+\n                      { ++scanner_lineno; return '\n'; }
 :                       { return ':'; }
 {white}+                ;
 0x{digit}+              { yylval.num = strtol(yytext, NULL, 16); return NUMBER; }

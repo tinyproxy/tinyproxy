@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.21 2003-05-29 19:43:58 rjkaes Exp $
+/* $Id: grammar.y,v 1.22 2003-06-20 17:02:13 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -51,11 +51,12 @@ int yylex(void);
 %token KW_FILTER KW_FILTERURLS KW_FILTEREXTENDED KW_FILTER_DEFAULT_DENY
 %token KW_FILTER_CASESENSITIVE
 %token KW_UPSTREAM
-%token KW_CONNECTPORT KW_BIND KW_HTTP_VIA
+%token KW_CONNECTPORT KW_BIND
 %token KW_STATHOST
 %token KW_ALLOW KW_DENY
 %token KW_ERRORPAGE KW_DEFAULT_ERRORPAGE
 %token KW_STATPAGE
+%token KW_VIA_PROXY_NAME
 
 /* yes/no switches */
 %token KW_YES KW_NO
@@ -210,14 +211,10 @@ statement
 		  log_message(LOG_WARNING, "The 'Bind' directive can not be used with transparent proxy support.  Ignoring the directive.");
 #endif
           }
-        | KW_HTTP_VIA yesno
+        | KW_VIA_PROXY_NAME string
           {
-	          if ($2) {
-			  log_message(LOG_INFO, "Enabling HTTP Via header.");
-			  config.via_http_header = TRUE;
-		  } else {
-			  config.via_http_header = FALSE;
-		  }
+		  log_message(LOG_INFO, "Setting \"Via\" proxy name to: %s", $2);
+		  config.via_proxy_name = $2;
           }
         | KW_STATHOST string
           {
@@ -258,7 +255,7 @@ string
 
 %%
 
-extern unsigned int yylineno;
+extern unsigned int scanner_lineno;
 
 void
 yyerror(char *s)
@@ -270,5 +267,6 @@ yyerror(char *s)
 		headerdisplayed = 1;
 	}
 
-	fprintf(stderr, "\t%s:%d: %s\n", config.config_file, yylineno, s);
+	fprintf(stderr, "\t%s:%d: %s\n", config.config_file, scanner_lineno, s);
+	exit(EXIT_FAILURE);
 }

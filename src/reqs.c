@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.103 2003-06-06 16:14:50 rjkaes Exp $
+/* $Id: reqs.c,v 1.104 2003-06-20 17:02:13 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -987,8 +987,8 @@ get_content_length(hashmap_t hashofheaders)
 }
 
 /*
- * Search for Via head in a hash of headers and either write a new Via header,
- * or append our information to the end of an existing Via header.
+ * Search for Via header in a hash of headers and either write a new Via
+ * header, or append our information to the end of an existing Via header.
  *
  * FIXME: Need to add code to "hide" our internal information for security
  * purposes.
@@ -998,11 +998,15 @@ write_via_header(int fd, hashmap_t hashofheaders,
 		 unsigned int major, unsigned int minor)
 {
 	ssize_t len;
-	char hostname[128];
+	char hostname[512];
 	char *data;
 	int ret;
 
-	gethostname(hostname, sizeof(hostname));
+	if (config.via_proxy_name) {
+		strlcpy(hostname, config.via_proxy_name, sizeof(hostname));
+	} else if (gethostname(hostname, sizeof(hostname)) < 0) {
+		strcpy(hostname, "unknown");
+	}
 
 	/*
 	 * See if there is a "Via" header.  If so, again we need to do a bit
@@ -1089,17 +1093,15 @@ process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 	}
 
 	/* Send, or add the Via header */
-	if (config.via_http_header) {
-		ret = write_via_header(connptr->server_fd, hashofheaders,
-				       connptr->protocol.major,
-				       connptr->protocol.minor);
-		if (ret < 0) {
-			indicate_http_error(connptr, 503,
-					    "Could not send data to remote server",
-					    "detail", "A network error occurred while trying to write data to the remote web server.",
-					    NULL);
-			goto PULL_CLIENT_DATA;
-		}
+	ret = write_via_header(connptr->server_fd, hashofheaders,
+			       connptr->protocol.major,
+			       connptr->protocol.minor);
+	if (ret < 0) {
+		indicate_http_error(connptr, 503,
+				    "Could not send data to remote server",
+				    "detail", "A network error occurred while trying to write data to the remote web server.",
+				    NULL);
+		goto PULL_CLIENT_DATA;
 	}
 
 	/*
@@ -1239,13 +1241,11 @@ process_server_headers(struct conn_s *connptr)
 	}
 
 	/* Send, or add the Via header */
-	if (config.via_http_header) {
-		ret = write_via_header(connptr->client_fd, hashofheaders,
-				       connptr->protocol.major,
-				       connptr->protocol.minor);
-		if (ret < 0)
-			goto ERROR_EXIT;
-	}
+	ret = write_via_header(connptr->client_fd, hashofheaders,
+			       connptr->protocol.major,
+			       connptr->protocol.minor);
+	if (ret < 0)
+		goto ERROR_EXIT;
 
 	/*
 	 * All right, output all the remaining headers to the client.

@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.40 2003-06-02 21:55:14 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.41 2003-06-20 17:02:12 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -61,7 +61,10 @@ struct config_s {
 	unsigned int idletimeout;
 	char* bind_address;
 
-	unsigned int via_http_header; /* boolean */
+	/*
+	 * The configured name to use in the HTTP "Via" header field.
+	 */
+	char* via_proxy_name;
 
 	/* 
 	 * Error page support.  This is an array of pointers to structures
