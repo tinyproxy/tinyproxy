@@ -1,4 +1,4 @@
-/* $Id: dnscache.h,v 1.1.1.1 2000-02-16 17:32:22 sdyoung Exp $
+/* $Id: dnscache.h,v 1.2 2000-09-11 23:42:43 rjkaes Exp $
  *
  * See 'dnscache.c' for a detailed description.
  *
@@ -15,24 +15,11 @@
  * General Public License for more details.
  */
 
-#ifndef _DNSCACHE_H_
-#define _DNSCACHE_H_	1
+#ifndef _TINYPROXY_DNSCACHE_H_
+#define _TINYPROXY_DNSCACHE_H_
 
-#ifdef HAVE_CONFIG_H
-#include <defines.h>
-#endif
-
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define DNS_GARBAGE_COL	100
-
 extern int dnscache(struct in_addr *addr, char *domain);
-extern void dnsclean(void);
-
-/* chris - Access these from reqs.c because of ADNS. Ugly. */
-extern int lookup(struct in_addr *addr, char *domain);
-extern int insert(struct in_addr *addr, char *domain);
 
 #endif
