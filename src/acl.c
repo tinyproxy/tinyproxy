@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.9 2001-10-25 17:27:39 rjkaes Exp $
+/* $Id: acl.c,v 1.10 2001-11-03 06:08:37 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -77,8 +77,11 @@ int insert_acl(char *location, acl_access_t access_type)
 	/*
 	 * First check to see if the location is a string or numeric.
 	 */
-	for (i = 0; i < strlen((char *)location); i++) {
-		if (isdigit((unsigned char)location[i]) != 0 && location[i] != '.') {
+	for (i = 0; location[i] != '\0'; i++) {
+		/*
+		 * Numeric strings can not contain letters, so test on it.
+		 */
+		if (isalpha((unsigned char)location[i])) {
 			break;
 		}
 	}
@@ -99,9 +102,11 @@ int insert_acl(char *location, acl_access_t access_type)
 	
 	new_acl_ptr->acl_access = access_type;
 	
-	if (i != strlen(location)) {
+	if (location[i] == '\0') {
+		DEBUG2("ACL \"%s\" is a number.", location);
+
 		/*
-		 * We did break early, so this a numeric location.
+		 * We did not break early, so this a numeric location.
 		 * Check for a netmask.
 		 */
 		new_acl_ptr->type = ACL_NUMERIC;
@@ -109,7 +114,7 @@ int insert_acl(char *location, acl_access_t access_type)
 		if (nptr) {
 			*nptr++ = '\0';
 
-			new_acl_ptr->netmask = atoi(nptr);
+			new_acl_ptr->netmask = strtol(nptr, NULL, 10);
 			if (new_acl_ptr->netmask < 0 || new_acl_ptr->netmask > 32) {
 				safefree(new_acl_ptr);
 				return -1;
@@ -118,6 +123,8 @@ int insert_acl(char *location, acl_access_t access_type)
 			new_acl_ptr->netmask = 32;
 		}
 	} else {
+		DEBUG2("ACL \"%s\" is a string.", location);
+
 		new_acl_ptr->type = ACL_STRING;
 		new_acl_ptr->netmask = 32;
 	}
