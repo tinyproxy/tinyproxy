@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.37 2002-06-15 17:35:03 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.38 2002-07-12 17:02:02 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -170,6 +170,8 @@ main(int argc, char **argv)
 	}
 #endif				/* HAVE_SETRLIMIT */
 
+	log_message(LOG_INFO, "Initializing " PACKAGE " ...");
+
 	/*
 	 * Process the various options
 	 */
@@ -235,11 +237,6 @@ main(int argc, char **argv)
 		else
 			openlog("tinyproxy", LOG_PID, LOG_USER);
 	}
-
-	processed_config_file = TRUE;
-	log_message(LOG_INFO, PACKAGE " " VERSION " starting...");
-
-	send_stored_logs();
 
 	/*
 	 * Set the default values if they were not set in the config file.
@@ -354,6 +351,9 @@ main(int argc, char **argv)
 			argv[0]);
 		exit(EX_SOFTWARE);
 	}
+
+	processed_config_file = TRUE;
+	send_stored_logs();
 
 	/*
 	 * These signals are only for the parent process.
