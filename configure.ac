@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.23 2002-04-29 16:32:20 rjkaes Exp $
+dnl $Id: configure.ac,v 2.24 2002-05-02 04:44:03 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -37,30 +37,29 @@ dnl Command line options
 dnl
 
 dnl Set the URL name for find the statistics of tinyproxy
-AH_VERBATIM([DEFAULT_STATHOST],
-[/*
- * This controls remote proxy stats deplay. For example, the default 
- * DEFAULT_STATHOST of "tinyproxy.stats" means that where you access
- * "http://tinyproxy.stats/" you will be shown the proxy stats. Use "" to
- * disable.
- */
-#ifndef DEFAULT_STATHOST
-# define DEFAULT_STATHOST "tinyproxy.stats"
-#endif])
+AH_TEMPLATE([DEFAULT_STATHOST],
+	[This controls remote proxy stats display.])
 AC_ARG_WITH(stathost,
             [AC_HELP_STRING([--with-stathost=HOST], [Default status host])],
-            [AC_DEFINE_UNQUOTED(DEFAULT_STATHOST, ["$withval"])])
+            [AC_DEFINE_UNQUOTED(DEFAULT_STATHOST, "$withval")],
+	    [AC_DEFINE_UNQUOTED(DEFAULT_STATHOST, "tinyproxy.stats")])
 
 dnl Set the default configuration file location
-AH_VERBATIM([DEFAULT_CONF_FILE],
-[/* This is the default location of the configuation file. */
-#ifndef DEFAULT_CONF_FILE
-# define DEFAULT_CONF_FILE "/etc/tinyproxy/tinyproxy.conf"
-#endif])
+test "$prefix" = "NONE" && prefix=/usr/local
+TINYPROXY_CONFIG_DIR=`eval echo $sysconfdir/tinyproxy`
+AC_SUBST(TINYPROXY_CONFIG_DIR)
+
+AH_TEMPLATE([DEFAULT_CONF_FILE],
+	[This is the default location of the configuration file.])
 AC_ARG_WITH(config,
             [AC_HELP_STRING([--with-config=FILE],
                             [Set the default location of the config file])],
-	    [AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, ["$withval"])])
+	    [TINYPROXY_CONFIG="$withval"],
+	    [TINYPROXY_CONFIG="$TINYPROXY_CONFIG_DIR/tinyproxy.conf"])
+AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$TINYPROXY_CONFIG")
+AC_SUBST(TINYPROXY_CONFIG)
+#	    [AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$withval")],
+#	    [AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "/etc/tinyproxy/tinyproxy.conf")])
 
 dnl Add compiler-specific optimization flags
 AC_ARG_ENABLE(debug,

@@ -1,3 +1,12 @@
+2002-05-02  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.ac: Added code to figure out exactly where to install
+	the configuration file.
+
+	* Makefile.am (install-data-local): Added a new install run to
+	install the configuration file to the location specified in
+	DEFAULT_CONF_FILE.
+
 2002-04-28  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (process_client_headers):
