@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.9 2001-09-06 19:00:47 rjkaes Exp $
+/* $Id: thread.c,v 1.10 2001-09-06 21:16:35 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -140,6 +140,16 @@ static void *thread_main(void *arg)
 			}
 		}
 
+		if (servers_waiting > thread_config.maxspareservers) {
+			/*
+			 * There are too many spare threads, kill ourselves
+			 * off.
+			 */
+			log_message(LOG_NOTICE, "Too many spare threads, killing ourself.");
+			ptr->status = T_EMPTY;
+			return NULL;
+		}
+
 		ptr->status = T_WAITING;
 		
 		SERVER_INC();
@@ -195,8 +205,8 @@ int thread_pool_create(void)
 }
 
 /*
- * Keep the proper number of servers running. This is the birth and death
- * of the servers. It monitors this at least once a second.
+ * Keep the proper number of servers running. This is the birth of the
+ * servers. It monitors this at least once a second.
  */
 int thread_main_loop(void)
 {
@@ -216,22 +226,6 @@ int thread_main_loop(void)
 				break;
 			}
 		}
-	} else if (servers_waiting > thread_config.maxspareservers) {
-		DEBUG2("servers_waiting: %d MaxSpareServers: %d", servers_waiting, thread_config.maxspareservers);
-		for (i = 0; i < thread_config.maxclients; i++) {
-			if (thread_ptr[i].status == T_WAITING) {
-				pthread_join(thread_ptr[i].tid, NULL);
-
-				SERVER_DEC();
-
-				thread_ptr[i].status = T_EMPTY;
-				thread_ptr[i].connects = 0;
-
-				log_message(LOG_NOTICE, "Killed off a thread.");
-				break;
-			}
-		}
-		DEBUG1("finished killing threads");
 	}
 	
 	return 0;
