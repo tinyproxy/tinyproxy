@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.12 2001-09-15 21:29:59 rjkaes Exp $
+/* $Id: utils.c,v 1.13 2001-09-16 20:13:52 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -84,7 +84,6 @@ int send_http_message(struct conn_s* connptr, int http_code,
 	char *header_buffer;
 	char timebuf[30];
 	time_t global_time;
-	int output_size;
 
 	header_buffer = safemalloc(HEADER_SIZE);
 	if (!header_buffer)
@@ -95,17 +94,12 @@ int send_http_message(struct conn_s* connptr, int http_code,
 
 	snprintf(header_buffer, HEADER_SIZE - 1, headers, http_code, error_title, PACKAGE, VERSION, timebuf, strlen(message));
 
-	output_size = strlen(message) + strlen(header_buffer);
-	connptr->output_message = safemalloc(output_size + 1);
-	if (!connptr->output_message) {
-		safefree(header_buffer);
-		return -1;
-	}
-
-	strlcpy(connptr->output_message, header_buffer, output_size);
-	strlcat(connptr->output_message, message, output_size);
+	safe_write(connptr->client_fd, header_buffer, strlen(header_buffer));
+	safe_write(connptr->client_fd, message, strlen(message));
 
 	safefree(header_buffer);
+
+	connptr->send_message = TRUE;
 
 	return 0;
 }
