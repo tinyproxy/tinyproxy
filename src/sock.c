@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.27 2002-04-16 03:21:46 rjkaes Exp $
+/* $Id: sock.c,v 1.28 2002-04-17 20:56:13 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -37,14 +37,6 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 #define UNLOCK() pthread_mutex_unlock(&mutex);
 
 /*
- * The mutex is used for locking around accesses to gethostbyname()
- * function.
- */
-static pthread_mutex_t gethostbyname_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define LOOKUP_LOCK()   pthread_mutex_lock(&gethostbyname_mutex);
-#define LOOKUP_UNLOCK() pthread_mutex_unlock(&gethostbyname_mutex);
-
-/*
  * Take a string host address and return a struct in_addr so we can connect
  * to the remote host.
  *
@@ -67,15 +59,15 @@ lookup_domain(struct in_addr *addr, const char *domain)
 	/*
 	 * Okay, it's an alpha-numeric domain, so look it up.
 	 */
-	LOOKUP_LOCK();
+	LOCK();
 	if (!(resolv = gethostbyname(domain))) {
-		LOOKUP_UNLOCK();
+		UNLOCK();
 		return -1;
 	}
 
 	memcpy(addr, resolv->h_addr_list[0], resolv->h_length);
 
-	LOOKUP_UNLOCK();
+	UNLOCK();
 
 	return 0;
 }
