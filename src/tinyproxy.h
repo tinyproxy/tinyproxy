@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.27 2002-04-09 22:02:05 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.28 2002-04-18 16:57:06 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -184,7 +184,7 @@
 /* Make a new type: bool_t */
 typedef enum {
 	FALSE = 0,
-	TRUE = (!FALSE)
+	TRUE = 1
 } bool_t;
 
 struct config_s {
@@ -218,5 +218,6 @@ struct config_s {
 
 /* Global Structures used in the program */
 extern struct config_s config;
+extern bool_t log_rotation_request;
 
 #endif

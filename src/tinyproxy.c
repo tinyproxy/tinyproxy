@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.24 2002-04-08 21:35:10 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.25 2002-04-18 16:57:06 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -44,6 +44,7 @@ extern FILE *yyin;
  */
 struct config_s config;
 float load = 0.00;
+bool_t log_rotation_request = FALSE;
 
 /*
  * Handle a signal
@@ -53,56 +54,9 @@ takesig(int sig)
 {
 	switch (sig) {
 	case SIGHUP:
-		log_message(LOG_NOTICE, "SIGHUP received, cleaning up.");
-
-		if (config.logf) {
-			char *rename_file;
-			int log_file_des;
-			FILE *old_fd;
-
-			rename_file = safemalloc(strlen(config.logf_name) + 5);
-			if (!rename_file) {
-				fprintf(stderr,
-					"Could not allocate memory in signal handler!\n");
-				exit(EX_OSERR);
-			}
-
-			strcpy(rename_file, config.logf_name);
-			strcat(rename_file, ".rot");
-
-			rename(config.logf_name, rename_file);
-
-			log_file_des = create_file_safely(config.logf_name);
-			if (log_file_des < 0) {
-				fprintf(stderr,
-					"Could not safely create new log file.\n");
-				exit(EX_OSERR);
-			}
-
-			old_fd = config.logf;
-
-			if (!(config.logf = fdopen(log_file_des, "w"))) {
-				fprintf(stderr,
-					"Could not create new log file.\n");
-				exit(EX_CANTCREAT);
-			}
-
-			fclose(old_fd);
-
-			log_message(LOG_NOTICE, "Log file rotated.");
-
-			safefree(rename_file);
-		}
-#ifdef FILTER_ENABLE
-		if (config.filter) {
-			filter_destroy();
-			filter_init();
-		}
-		log_message(LOG_NOTICE, "Re-reading filter file.");
-#endif				/* FILTER_ENABLE */
-		log_message(LOG_NOTICE,
-			    "Finished cleaning memory/connections.");
+		log_rotation_request = TRUE;
 		break;
+
 	case SIGTERM:
 #ifdef FILTER_ENABLE
 		if (config.filter)

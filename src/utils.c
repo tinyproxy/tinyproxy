@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.25 2002-04-16 03:22:16 rjkaes Exp $
+/* $Id: utils.c,v 1.26 2002-04-18 16:57:06 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -23,6 +23,7 @@
 
 #include "buffer.h"
 #include "conns.h"
+#include "filter.h"
 #include "log.h"
 #include "sock.h"
 #include "utils.h"
@@ -402,4 +403,72 @@ chomp(char *buffer, size_t length)
 	}
 
 	return chars;
+}
+
+/*
+ * Rotate the current log file.  This is performed whenever a SIGHUP is
+ * received.
+ */
+void
+rotate_log_files(void)
+{
+	char* rename_file;
+	int log_file_des;
+	FILE *old_fd;
+	FILE* new_fd;
+
+	log_message(LOG_NOTICE, "SIGHUP received, cleaning up.");
+
+#ifdef FILTER_ENABLE
+	if (config.filter) {
+		filter_destroy();
+		filter_init();
+	}
+	log_message(LOG_NOTICE, "Re-reading filter file.");
+#endif				/* FILTER_ENABLE */
+
+	if (config.logf) {
+		rename_file = safemalloc(strlen(config.logf_name) + 5);
+		if (!rename_file) {
+			log_message(LOG_CRIT,
+				    "Could not allocate memory when trying to rotate the log file; therefore, the log has not been rotated.");
+			return;
+		}
+
+		strcpy(rename_file, config.logf_name);
+		strcat(rename_file, ".rot");
+
+		rename(config.logf_name, rename_file);
+
+		log_file_des = create_file_safely(config.logf_name);
+		if (log_file_des < 0) {
+			log_message(LOG_CRIT,
+				    "Could not properly create the new log file; therefore the log has not been rotated.");
+
+			/* Switch the file name back */
+			rename(rename_file, config.logf_name);
+			safefree(rename_file);
+			return;
+		}
+
+		old_fd = config.logf;
+		if (!(new_fd = fdopen(log_file_des, "w"))) {
+			log_message(LOG_CRIT,
+				    "Could not create the new log file; therefore, the log has not been rotated.");
+			
+			/* Switch the file name back */
+			rename(rename_file, config.logf_name);
+			safefree(rename_file);
+		}
+
+		config.logf = new_fd;
+		fclose(old_fd);
+		
+		log_message(LOG_NOTICE, "Log file rotated.");
+
+		safefree(rename_file);
+	}
+
+	log_message(LOG_NOTICE,
+		    "Finished cleaning memory/connections.");
 }

@@ -1,3 +1,12 @@
+2002-04-18  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/utils.c (rotate_log_files): Moved the log rotation code out
+	of the signal handler and into it's own function.  Also improved
+	the robustness of the code.  Credit to Petr Lampa for suggesting
+	that system calls in a signal handler is bad magic.  Now the
+	signal handler sets a flag which is responded to inside of
+	thread_main_loop().
+
 2002-04-17  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* configure.ac: Added test for pthread_cancel() since it doesn't

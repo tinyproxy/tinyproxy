@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.14 2002-04-15 02:07:27 rjkaes Exp $
+/* $Id: utils.h,v 1.15 2002-04-18 16:57:06 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -49,6 +49,7 @@ extern size_t strlcpy(char *dst, const char *src, size_t size);
 #endif				/* HAVE_STRLCPY */
 
 extern size_t chomp(char *buffer, size_t length);
+extern void rotate_log_files(void);
 
 /*
  * The following is to allow for better memory checking.

@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.24 2002-04-17 20:54:26 rjkaes Exp $
+/* $Id: thread.c,v 1.25 2002-04-18 16:57:06 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -321,6 +321,12 @@ thread_main_loop(void)
 		SERVER_UNLOCK();
 
 		sleep(5);
+
+		/* Handle log rotation if it was requested */
+		if (log_rotation_request) {
+			rotate_log_files();
+			log_rotation_request = FALSE;
+		}
 	}
 }
 
