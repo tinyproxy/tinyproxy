@@ -1,5 +1,18 @@
 2001-09-11  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/utils.c (debugging_realloc): Added the debugging version of
+	realloc().
+
+	* src/thread.c (THREAD_STACK_SIZE): Changed a threads stack size
+	to 32KB from 128KB.
+
+	* src/reqs.c (process_method):
+	* src/reqs.c (pull_client_data):
+	* src/reqs.c (process_client_headers):
+	* src/reqs.c (process_server_headers):
+	* src/buffer.c (readbuff): Using heap allocated memory for the
+	buffer rather than stack memory.
+
 	* src/uri.c (explode_uri): Fixed a potential memory leak where the
 	regular expression structure might not be freed if there was an
 	error in the expression.
