@@ -1,8 +1,8 @@
-/* $Id: dnscache.h,v 1.4 2001-05-27 02:24:00 rjkaes Exp $
+/* $Id: dnscache.h,v 1.5 2001-08-29 03:58:39 rjkaes Exp $
  *
  * See 'dnscache.c' for a detailed description.
  *
- * Copyright (C) 1999  Robert James Kaes (rjkaes@flarenet.com
+ * Copyright (C) 1999  Robert James Kaes (rjkaes@flarenet.com)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,9 +19,7 @@
 #define _TINYPROXY_DNSCACHE_H_
 
 #include <arpa/inet.h>
-#include "ternary.h"
 
-extern TERNARY new_dnscache(void);
 extern int dnscache(struct in_addr *addr, char *domain);
 
 #endif
