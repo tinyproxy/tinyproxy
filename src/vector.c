@@ -1,4 +1,4 @@
-/* $Id: vector.c,v 1.6 2002-05-24 04:45:32 rjkaes Exp $
+/* $Id: vector.c,v 1.7 2003-05-29 20:47:52 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbitrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -97,7 +97,7 @@ vector_delete(vector_t vector)
 }
 
 /*
- * Inserts an entry into the vector.  The entry is an arbitrary
+ * Appends an entry into the vector.  The entry is an arbitrary
  * collection of bytes of _len_ octets.  The data is copied into the
  * vector, so the original data must be freed to avoid a memory leak.
  * The "data" must be non-NULL and the "len" must be greater than zero.
@@ -106,7 +106,7 @@ vector_delete(vector_t vector)
  *          negative number if there are errors
  */
 int
-vector_insert(vector_t vector, void *data, ssize_t len)
+vector_append(vector_t vector, void *data, ssize_t len)
 {
 	struct vectorentry_s *entry;
 
