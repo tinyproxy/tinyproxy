@@ -7,119 +7,12 @@
 
 2004-06-14  Robert James Kaes  <rjkaes@users.sourceforge.net>
 
-	* src/child.h: (child_configure): Change the "val" type to a
+	* src/child.h (child_configure): Change the "val" type to a
 	signed integer.
 
 	* src/child.c: Changed the fields in the child_config_s structure
 	to use regular signed integers since the servers_waiting variable
 	is signed and therefore, all the tests must use signed arithmetic.
-
-2004-04-27  Robert James Kaes  <rjkaes@users.sourceforge.net>
-
-	* doc/tinyproxy.conf, src/conns.c, src/conns.h, src/grammar.y, src/reqs.c, src/scanner.l, src/sock.c, src/sock.h, src/tinyproxy.h:
-	Added the "BindSame" configure directive from Oswald Buddenhagen.
-	This allows tinyproxy to respond to a request bound to the same
-	interface that the request came in on.  As Oswald explains:
-
-	  "attached is a patch that adds the BindSame option. it causes
-	  binding an outgoing connection to the ip address of the
-	  respective incoming connection. that way one can simulate an
-	  entire proxy farm with a single instance of tinyproxy on a
-	  multi-homed machine."
-
-	Cool.
-
-	* src/stats.c (init_stats): Fixed a memset bug, where the
-	structure was not cleared properly.  (The sizeof "struct stat" was
-	being used rather than the proper "struct stat_s".  On my system,
-	"struct stat" is 88 bytes long, while "struct stat_s" is 20 bytes
-	long.  Quite a difference!)
-
-	* .cvsignore, doc/.cvsignore, src/.cvsignore: These files list all
-	the other files that CVS should ignore.  It makes looking at the
-	CVS status information a little cleaner.
-
-2004-02-18  Robert James Kaes  <rjkaes@users.sourceforge.net>
-
-	* src/sock.c, src/sock.h: Converted the various socket functions
-	to work with both IPv4 and IPv6 addresses.
-
-	* src/network.c, src/network.h: Added two functions:
-	 - get_ip_string() converts a binary network address into either a
-	   dotted-decimal IPv4 address, or a IPv6 hex-string
-	 - full_inet_pton() converts a numeric character string into an IPv6
-	   network address (binary form).  It's like the system inet_pton()
-	   function, but it will work with bot IPv4 and IPv6 character
-	   strings.
-
-	These functions are required for the conversion to Internet
-	protocol independence.  (Or to put it more clearly: allow
-	tinyproxy to work in an IPv6 network.)
-
-2004-02-17  Robert James Kaes  <rjkaes@users.sourceforge.net>
-
-	* AUTHORS:
-	Rewrote the "early history" of the project, and added a section
-	for "major" addition authors.
-
-2004-02-13  Robert James Kaes  <rjkaes@users.sourceforge.net>
-
-	* src/acl.c, src/buffer.c, src/child.c, src/conns.c, src/filter.c, src/hashmap.c, src/heap.c, src/http_message.c, src/log.c, src/network.c, src/reqs.c, src/stats.c, src/vector.c:
-	Removed unnecessary casts (mostly dealing with memory allocation.)
-	I should never have added them in the first place.  They don't
-	really buy anything, and they can hide bugs.
-
-2004-02-04  Robert James Kaes  <rjkaes@users.sourceforge.net>
-
-	* src/reqs.c (strip_return_port): Patch from "alex" to strip the
-	port from the host string and return the port.  I cleaned up and
-	added error handling to the code, but it's basically "alex"'s fix.
-
-	(extract_http_url): Rewrote this function to remove all the
-	sscanf() calls.  It's much easier to just split on the path slash
-	(if it's present) and then strip the user name/password and port
-	from the host string.  Less code, handles more cases!
-
-2004-01-26  Robert James Kaes  <rjkaes@users.sourceforge.net>
-
-	* configure.ac, doc/tinyproxy.conf, src/conns.c, src/conns.h, src/grammar.y, src/reqs.c, src/reqs.h, src/scanner.l, src/tinyproxy.c, src/tinyproxy.h:
-	Added reverse proxy support from Kim Holviala.  His comments
-	regarding this addition follow:
-
-	  The patch implements a simple reverse proxy (with one funky
-	  extra feature). It has all the regular features: mapping remote
-	  servers to local namespace (ReversePath), disabling forward
-	  proxying (ReverseOnly) and HTTP redirect rewriting
-	  (ReverseBaseURL).
-
-	  The funky feature is this: You map Google to /google/ and the
-	  Google front page opens up fine. Type in stuff and click "Google
-	  Search" and you'll get an error from tinyproxy. Reason for this
-	  is that Google's form submits to "/search" which unfortunately
-	  bypasses our /google/ mapping (if they'd submit to "search"
-	  without the slash it would have worked ok). Turn on ReverseMagic
-	  and it starts working....
-
-	  ReverseMagic "hijacks" one cookie which it sends to the client
-	  browser.  This cookie contains the current reverse proxy path
-	  mapping (in the above case /google/) so that even if the site
-	  uses absolute links the reverse proxy still knows where to map
-	  the request.
-
-	  And yes, it works. No, I've never seen this done before - I
-	  couldn't find _any_ working OSS reverse proxies, and the
-	  commercial ones I've seen try to parse the page and fix all
-	  links (in the above case changing "/search" to
-	  "/google/search"). The problem with modifying the html is that
-	  it might not be parsable (very common) or it might be encoded so
-	  that the proxy can't read it (mod_gzip or likes).
-
-	  Hope you like that patch. One caveat - I haven't coded with C in
-	  like three years so my code might be a bit messy.... There
-	  shouldn't be any security problems thou, but you never know. I
-	  did all the stuff out of my memory without reading any RFC's,
-	  but I tested everything with Moz, Konq, IE6, Links and Lynx and
-	  they all worked fine.
 
 2003-11-19  Robert James Kaes  <rjkaes@users.sourceforge.net>
 
