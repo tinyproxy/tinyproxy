@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.22 2001-09-11 19:26:49 rjkaes Exp $
+/* $Id: reqs.c,v 1.23 2001-09-12 03:33:15 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -321,10 +321,10 @@ static int process_method(struct conn_s *connptr)
 	return 0;
 
 COMMON_EXIT:
-	safefree(inbuf);
 	free_uri(uri);
 	
 EARLY_EXIT:
+	safefree(inbuf);
 	safefree(request);
 	return -1;
 }
