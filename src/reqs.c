@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.64 2002-04-22 19:34:50 rjkaes Exp $
+/* $Id: reqs.c,v 1.65 2002-04-24 16:47:19 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -145,7 +145,7 @@ read_request_line(struct conn_s *connptr)
 		log_message(LOG_ERR,
 			    "read_request_line: Client (file descriptor: %d) closed socket before read.",
 			    connptr->client_fd);
-		safefree(connptr->request_line);
+
 		return -1;
 	}
 
@@ -227,8 +227,10 @@ extract_http_url(const char *url, struct request_s *request)
 	return 0;
 
   ERROR_EXIT:
-	safefree(request->host);
-	safefree(request->path);
+	if (request->host)
+		safefree(request->host);
+	if (request->path)
+		safefree(request->path);
 
 	return -1;
 }
@@ -799,6 +801,7 @@ process_server_headers(struct conn_s *connptr)
 		"keep-alive",
 		"proxy-authenticate",
 		"proxy-authorization",
+		"proxy-connection",
 		"transfer-encoding",
 	};
 
