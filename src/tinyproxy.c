@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.2 2000-03-11 20:37:44 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.3 2000-03-31 20:08:19 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -56,6 +56,7 @@ adns_state adns;
 #include "reqs.h"
 #include "buffer.h"
 #include "filter.h"
+#include "anonymous.h"
 
 void takesig(int sig);
 
@@ -89,7 +90,6 @@ struct config_s config = {
 
 struct stat_s stats;
 float load = 0.00;
-struct allowedhdr_s *allowedhdrs = NULL;
 
 /*
  * Dump info to the logfile
@@ -258,9 +258,6 @@ int main(int argc, char **argv)
 	char *upstream_ptr;
 #endif	/* UPSTREAM_PROXY */
 
-	struct allowedhdr_s **rpallowedptr = &allowedhdrs;
-	struct allowedhdr_s *allowedptr = allowedhdrs, *newallowed;
-
 	while ((optch = getopt(argc, argv, "vh?dp:l:Sa:w:s:u:n:i:rx:f:t:")) !=
 	       EOF) {
 		switch (optch) {
@@ -310,27 +307,7 @@ int main(int argc, char **argv)
 			break;
 		case 'a':
 			config.anonymous = TRUE;
-
-			while (allowedptr) {
-				rpallowedptr = &allowedptr->next;
-				allowedptr = allowedptr->next;
-			}
-
-			if (!
-			    (newallowed =
-			     xmalloc(sizeof(struct allowedhdr_s)))) {
-				log("tinyproxy: cannot allocate headers");
-				exit(EX_SOFTWARE);
-			}
-
-			if (!(newallowed->hdrname = xstrdup(optarg))) {
-				log("tinyproxy: cannot duplicate string");
-				exit(EX_SOFTWARE);
-			}
-
-			*rpallowedptr = newallowed;
-			newallowed->next = allowedptr;
-
+			anon_insert(optarg);
 			break;
 		case 'n':
 			if (!(config.subnet = xstrdup(optarg))) {
@@ -395,6 +372,18 @@ int main(int argc, char **argv)
 	if (usage == TRUE) {
 		usagedisp();
 		exit(EX_OK);
+	}
+
+	/*
+	 * If ANONYMOUS is turned on, make sure that Content-Length is
+	 * in the list of allowed headers, since it is required in a
+	 * HTTP/1.0 request. Also add the Content-Type header since it goes
+	 * hand in hand with Content-Length.
+	 *     - rjkaes
+	 */
+	if (config.anonymous) {
+		anon_insert("Content-Length:");
+		anon_insert("Content-Type:");
 	}
 
 	/* chris - Initialise asynchronous DNS */
@@ -498,15 +487,6 @@ int main(int argc, char **argv)
 		fclose(config.logf);
 	else
 		closelog();
-
-	allowedptr = allowedhdrs;
-	while (allowedptr) {
-		struct allowedhdr_s *delptr = NULL;
-		delptr = allowedptr;
-		safefree(delptr->hdrname);
-		allowedptr = delptr->next;
-		safefree(delptr);
-	}
 
 	/* finsih up ADNS */
 	adns_finish(adns);

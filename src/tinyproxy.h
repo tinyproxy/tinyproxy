@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.2 2000-03-11 20:37:44 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.3 2000-03-31 20:08:19 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -77,15 +77,9 @@ struct stat_s {
 	unsigned long int num_refused;
 };
 
-struct allowedhdr_s {
-	char *hdrname;
-	struct allowedhdr_s *next;
-};
-
 /* Global Structures used in the program */
 extern struct config_s config;
 extern struct stat_s stats;
-extern struct allowedhdr_s *allowedhdrs;
 extern float load;
 
 #endif
