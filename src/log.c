@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.3 2000-09-21 16:53:51 rjkaes Exp $
+/* $Id: log.c,v 1.4 2001-05-27 02:26:11 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -40,7 +40,7 @@ static char *syslog_level[] = {
 /*
  * This routine logs messages to either the log file or the syslog function.
  */
-void log(short int level, char *fmt, ...)
+void log_message(short int level, char *fmt, ...)
 {
 	va_list args;
 	time_t nowtime;

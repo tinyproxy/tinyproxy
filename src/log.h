@@ -1,4 +1,4 @@
-/* $Id: log.h,v 1.3 2000-09-21 16:53:51 rjkaes Exp $
+/* $Id: log.h,v 1.4 2001-05-27 02:26:11 rjkaes Exp $
  *
  * See 'log.c' for a detailed description.
  *
@@ -82,13 +82,13 @@
  *    DEBUG2("There was a big problem: %s in connptr %p", "hello", connptr);
  */
 #ifndef NDEBUG
-# define DEBUG1(x)       log(LOG_DEBUG, "[%s:%d] " x, __FILE__, __LINE__)
-# define DEBUG2(x, y...) log(LOG_DEBUG, "[%s:%d] " x, __FILE__, __LINE__, ## y)
+# define DEBUG1(x)       log_message(LOG_DEBUG, "[%s:%d] " x, __FILE__, __LINE__)
+# define DEBUG2(x, y...) log_message(LOG_DEBUG, "[%s:%d] " x, __FILE__, __LINE__, ## y)
 #else
 # define DEBUG1(x)       do { } while(0)
 # define DEBUG2(x, y...) do { } while(0)
 #endif
 
-extern void log(short int level, char *fmt, ...);
+extern void log_message(short int level, char *fmt, ...);
 
 #endif
