@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.8 2001-09-11 19:27:27 rjkaes Exp $
+/* $Id: utils.h,v 1.9 2001-09-15 21:29:59 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -21,10 +21,14 @@
 
 #include "tinyproxy.h"
 
+extern int send_http_message(struct conn_s* connptr, int http_code,
+			     const char *error_title, const char *message);
 extern int httperr(struct conn_s *connptr, int err, const char *msg);
 
 extern void makedaemon(void);
 extern void pidfile_create(const char *path);
+
+extern int create_file_safely(const char *filename);
 
 #ifndef HAVE_STRLCAT
 extern size_t strlcat(char *dst, const char *src, size_t size);
