@@ -1,3 +1,8 @@
+2001-12-23  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (process_client_headers): Cleaned up the code to send
+	the Via header by using the write_message() function.
+
 2001-12-22  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/tinyproxy.h: Add a test for the MSG_NOSIGNAL define, so it's

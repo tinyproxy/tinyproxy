@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.50 2001-12-20 04:48:32 rjkaes Exp $
+/* $Id: reqs.c,v 1.51 2001-12-23 21:55:08 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -9,7 +9,7 @@
  * this feature for a buffering NNTP tunnel.)
  *
  * Copyright (C) 1998	    Steven Young
- * Copyright (C) 1999,2000  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 1999-2001  Robert James Kaes (rjkaes@flarenet.com)
  * Copyright (C) 2000       Chris Lightfoot (chris@ex-parrot.com)
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -241,6 +241,8 @@ write_message(int fd, const char *fmt, ...)
 	}
 
 	if (safe_write(fd, buf, n) < 0) {
+		DEBUG2("Error in write_message(): %d", fd);
+
 		safefree(buf);
 		return -1;
 	}
@@ -594,28 +596,23 @@ process_client_headers(struct conn_s *connptr)
 		 * to the end of it.
 		 */
 		if (strncasecmp(header, "via", 3) == 0) {
-			char hostname[128];
-			char via_header_buffer[256];
-			char *new_header;
+			if (sent_via_header == 0) {
+				char hostname[128];
 
-			sent_via_header = 1;
+				chomp(header, len);
+				gethostname(hostname, sizeof(hostname));
+				write_message(connptr->server_fd,
+					      "%s, %hu.%hu %s (%s/%s)\r\n",
+					      header,
+					      connptr->protocol.major,
+					      connptr->protocol.minor,
+					      hostname, PACKAGE, VERSION);
 
-			gethostname(hostname, sizeof(hostname));
-			snprintf(via_header_buffer, sizeof(via_header_buffer),
-				 ", %hu.%hu %s (%s/%s)\r\n",
-				 connptr->protocol.major,
-				 connptr->protocol.minor, hostname, PACKAGE,
-				 VERSION);
-
-			chomp(header, strlen(header));
-
-			new_header = safemalloc(strlen(header) + strlen(via_header_buffer) + 1);
-			strcpy(new_header, header);
-			strcat(new_header, via_header_buffer);
-
+				sent_via_header = 1;
+			}
 			safefree(header);
 
-			header = new_header;
+			continue;
 		}
 
 		/*
@@ -665,16 +662,14 @@ process_client_headers(struct conn_s *connptr)
 			/*
 			 * We're the first proxy so send the first Via header.
 			 */
-			char via_header_buffer[256];
 			char hostname[128];
 
 			gethostname(hostname, sizeof(hostname));
-			snprintf(via_header_buffer, sizeof(via_header_buffer),
-				 "Via: %hu.%hu %s (%s/%s)\r\n", connptr->protocol.major,
-				 connptr->protocol.minor, hostname, PACKAGE, VERSION);
-
-			safe_write(connptr->server_fd, via_header_buffer,
-				   strlen(via_header_buffer));
+			write_message(connptr->server_fd,
+				      "Via: %hu.%hu %s (%s/%s)\r\n",
+				      connptr->protocol.major,
+				      connptr->protocol.minor,
+				      hostname, PACKAGE, VERSION);
 		}
 
 		if ((connptr->server_fd != -1)
