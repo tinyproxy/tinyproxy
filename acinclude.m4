@@ -13,10 +13,10 @@ dnl This macro should be invoked after all the header checks have been
 dnl performed, since we #include "confdefs.h" below, and then use the
 dnl HAVE_foo_H values that is can #define.
 dnl
-AC_DEFUN(AC_UNP_CHECK_TYPE,
-	[AC_MSG_CHECKING(if $1 defined)
-	AC_CACHE_VAL(ac_cv_type_$1,
-		AC_TRY_COMPILE(
+AC_DEFUN([AC_UNP_CHECK_TYPE],
+	 [AC_MSG_CHECKING(if $1 defined)
+	  AC_CACHE_VAL(ac_cv_type_$1,
+		[AC_TRY_COMPILE(
 [
 #include	"confdefs.h"	/* the header built by configure so far */
 #ifdef	HAVE_SYS_TYPES_H
@@ -93,10 +93,11 @@ AC_DEFUN(AC_UNP_CHECK_TYPE,
 #endif
 ],
 		[ $1 foo ],
-		ac_cv_type_$1=yes,
-		ac_cv_type_$1=no))
-	AC_MSG_RESULT($ac_cv_type_$1)
+		[ac_cv_type_$1=yes],
+		[ac_cv_type_$1=no])])
+	AC_MSG_RESULT([$ac_cv_type_$1])
 	if test $ac_cv_type_$1 = no ; then
+                AH_TEMPLATE([$1], [Defined with the proper type.])
 		AC_DEFINE($1, $2)
 	fi
 ])
