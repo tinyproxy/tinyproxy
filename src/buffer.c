@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.10 2001-09-14 19:49:10 rjkaes Exp $
+/* $Id: buffer.c,v 1.11 2001-09-15 21:24:18 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -195,17 +195,14 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 		return 0;
 
 	buffer = safemalloc(MAXBUFFSIZE);
-	if (!buffer) {
-		log_message(LOG_ERR, "Could not allocate memory in 'readbuff'");
+	if (!buffer)
 		return 0;
-	}
 
 	bytesin = read(fd, buffer, MAXBUFFSIZE - buffer_size(buffptr) - 1);
 
 	if (bytesin > 0) {
 		newbuffer = saferealloc(buffer, bytesin);
 		if (!newbuffer) {
-			log_message(LOG_ERR, "Could not reallocate memory in 'readbuff'");
 			safefree(buffer);
 			return 0;
 		}
