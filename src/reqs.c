@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.54 2002-04-09 20:06:24 rjkaes Exp $
+/* $Id: reqs.c,v 1.55 2002-04-11 20:44:15 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -520,9 +520,16 @@ get_all_headers(int fd, hashmap_t hashofheaders)
  * header sent via the client (which is stored in data right now.)
  */
 static int
-remove_connection_headers(hashmap_t hashofheaders, char* data, ssize_t len)
+remove_connection_headers(hashmap_t hashofheaders)
 {
+	char *data;
 	char* ptr;
+	ssize_t len;
+
+	/* Look for the connection header.  If it's not found, return. */
+	len = hashmap_search(hashofheaders, "connection", (void **)&data);
+	if (len <= 0)
+		return 0;
 
 	/*
 	 * Go through the data line and replace any special characters with
@@ -548,7 +555,29 @@ remove_connection_headers(hashmap_t hashofheaders, char* data, ssize_t len)
 			ptr++;
 	}
 
+	/* Now remove the connection header it self. */
+	hashmap_remove(hashofheaders, "connection");
+
 	return 0;
+}
+
+/*
+ * If there is a Content-Length header, then return the value; otherwise, return
+ * a negative number.
+ */
+static long
+get_content_length(hashmap_t hashofheaders)
+{
+	ssize_t len;
+	char *data;
+	long content_length = -1;
+
+	len = hashmap_search(hashofheaders, "content-length", (void **)&data);
+	if (len > 0) {
+		content_length = atol(data);
+	}
+
+	return content_length;
 }
 
 /*
@@ -610,27 +639,16 @@ process_client_headers(struct conn_s *connptr)
 	}
 
 	/*
-	 * See if there is a "Connection" header.  If so, we need to do a bit
-	 * of processing. :)
-	 */
-	len = hashmap_search(hashofheaders, "connection", (void **)&data);
-	if (len > 0) {
-		/*
-		 * Go through the tokens in the connection header and
-		 * remove the headers from the hash.
-		 */
-		remove_connection_headers(hashofheaders, data, len);
-		hashmap_remove(hashofheaders, "connection");
-	}
-
-	/*
 	 * See if there is a "Content-Length" header.  If so, again we need
 	 * to do a bit of processing.
 	 */
-	len = hashmap_search(hashofheaders, "content-length", (void **)&data);
-	if (len > 0) {
-		content_length = atol(data);
-	}
+	content_length = get_content_length(hashofheaders);
+
+	/*
+	 * See if there is a "Connection" header.  If so, we need to do a bit
+	 * of processing. :)
+	 */
+	remove_connection_headers(hashofheaders);
 
 	/*
 	 * See if there is a "Via" header.  If so, again we need to do a bit
@@ -712,28 +730,70 @@ process_client_headers(struct conn_s *connptr)
 static int
 process_server_headers(struct conn_s *connptr)
 {
-	char *header;
+	char *response_line;
+
+	hashmap_t hashofheaders;
+	vector_t listofheaders;
+	char *data, *header;
 	ssize_t len;
+	int i;
 
-	while (1) {
-		if ((len = readline(connptr->server_fd, &header)) <= 0) {
-			DEBUG2("Server (file descriptor %d) closed connection.",
-			       connptr->server_fd);
-			return -1;
-		}
+	/* FIXME: Remember to handle a "simple_req" type */
 
-		if (safe_write(connptr->client_fd, header, len) < 0) {
-			safefree(header);
-			return -1;
-		}
+	/* Get the response line from the remote server. */
+	if ((len = readline(connptr->server_fd, &response_line)) <= 0)
+		return -1;
 
-		if (CHECK_CRLF(header, len))
-			break;
-
-		safefree(header);
+	hashofheaders = hashmap_create(HEADER_BUCKETS);
+	if (!hashofheaders) {
+		safefree(response_line);
+		return -1;
 	}
 
-	safefree(header);
+	/*
+	 * Get all the headers from the remote server in a big hash
+	 */
+	if (get_all_headers(connptr->server_fd, hashofheaders) < 0) {
+		log_message(LOG_WARNING, "Could not retrieve all the headers from the remote server.");
+		hashmap_delete(hashofheaders);
+		safefree(response_line);
+		return -1;
+	}
+
+	/*
+	 * If there is a "Content-Length" header, retrieve the information
+	 * from it for later use.
+	 */
+	connptr->remote_content_length = get_content_length(hashofheaders);
+
+	/*
+	 * See if there is a connection header.  If so, we need to to a bit of
+	 * processing.
+	 */
+	remove_connection_headers(hashofheaders);
+
+	/* Send the saved response line first */
+	safe_write(connptr->client_fd, response_line, strlen(response_line));
+	safefree(response_line);
+
+	/*
+	 * Okay, output all the remaining headers to the client.
+	 */
+	listofheaders = hashmap_keys(hashofheaders);
+	for (i = 0; i < vector_length(listofheaders); ++i) {
+		len = vector_getentry(listofheaders, i, (void **)&data);
+		hashmap_search(hashofheaders, data, (void **)&header);
+
+		write_message(connptr->client_fd,
+			      "%s: %s\r\n",
+			      data, header);
+	}
+	vector_delete(listofheaders);
+	hashmap_delete(hashofheaders);
+
+	/* Write the final blank line to signify the end of the headers */
+	safe_write(connptr->client_fd, "\r\n", 2);
+
 	return 0;
 }
 
@@ -754,6 +814,7 @@ relay_connection(struct conn_s *connptr)
 	int ret;
 	double tdiff;
 	int maxfd = max(connptr->client_fd, connptr->server_fd) + 1;
+	ssize_t bytes_received;
 
 	socket_nonblocking(connptr->client_fd);
 	socket_nonblocking(connptr->server_fd);
@@ -802,9 +863,14 @@ relay_connection(struct conn_s *connptr)
 			last_access = time(NULL);
 		}
 
-		if (FD_ISSET(connptr->server_fd, &rset)
-		    && read_buffer(connptr->server_fd, connptr->sbuffer) < 0) {
-			break;
+		if (FD_ISSET(connptr->server_fd, &rset)) {
+			bytes_received = read_buffer(connptr->server_fd, connptr->sbuffer);
+			if (bytes_received < 0)
+				break;
+
+			connptr->remote_content_length -= bytes_received;
+			if (connptr->remote_content_length == 0)
+				break;
 		}
 		if (FD_ISSET(connptr->client_fd, &rset)
 		    && read_buffer(connptr->client_fd, connptr->cbuffer) < 0) {
@@ -1053,6 +1119,9 @@ handle_connection(int fd)
 
       relay_proxy:
 	relay_connection(connptr);
+
+	log_message(LOG_INFO, "Closed connection between local client (fd:%d) and remote client (fd:%d)",
+		    connptr->client_fd, connptr->server_fd);
 
 	/*
 	 * All done... close everything and go home... :)
