@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.7 2001-09-11 04:12:47 rjkaes Exp $
+/* $Id: acl.c,v 1.8 2001-09-15 21:21:01 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -177,7 +177,7 @@ int check_acl(int fd)
 
 			if (strcasecmp(string_address + (test_length - match_length), aclptr->location) == 0) {
 				if (aclptr->acl_access == ACL_DENY) {
-					log_message(LOG_NOTICE, "Unauthorized access from %s", string_address);
+					log_message(LOG_NOTICE, "Unauthorized access from \"%s\"", string_address);
 					return 0;
 				} else {
 					return 1;
