@@ -1,3 +1,7 @@
+2003-01-22  Robert James Kaes  <rjkaes@flarenet.com>
+
+	Released tinyproxy 1.5.2 (2003-01-22)
+
 2002-12-04  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (strip_username_password): New function to remove any
