@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.30 2002-04-18 21:53:33 rjkaes Exp $
+/* $Id: sock.c,v 1.31 2002-04-18 21:54:50 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -49,14 +49,6 @@ lookup_domain(struct in_addr *addr, const char *domain)
 
 	if (!addr || !domain)
 		return -1;
-
-#if 0
-	/*
-	 * First check to see if the domain is in dotted-decimal format.
-	 */
-	if (inet_aton(domain, (struct in_addr *)addr) != 0)
-		return 0;
-#endif
 
 	/*
 	 * Okay, it's an alpha-numeric domain, so look it up.
