@@ -1,4 +1,4 @@
-dnl $Id: configure.in,v 1.16 2001-08-26 21:22:09 rjkaes Exp $
+dnl $Id: configure.in,v 1.17 2001-08-26 23:36:48 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -212,6 +212,7 @@ if test "$enable_debug" = "yes" ; then
     YFLAGS="-v -d"
 else
     dnl No debugging information, include the optimizations
+    CFLAGS="-DNDEBUG $CFLAGS"
     YFLAGS="-d"
 fi
 
