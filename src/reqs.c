@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.41 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: reqs.c,v 1.42 2001-11-23 01:17:19 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -41,32 +41,6 @@
 #define HTTP500ERROR "Unable to connect to remote server."
 #define HTTP503ERROR "Internal server error."
 
-#define LINE_LENGTH (MAXBUFFSIZE / 3)
-
-/*
- * Remove any new lines or carriage returns from the end of a string.
- */
-static inline void
-trim(char *string, unsigned int len)
-{
-	char *ptr;
-
-	assert(string != NULL);
-	assert(len > 0);
-
-	ptr = string + len - 1;
-	while (*ptr == '\r' || *ptr == '\n') {
-		*ptr-- = '\0';
-
-		/*
-		 * Don't let the ptr back past the beginning of the
-		 * string.
-		 */
-		if (ptr < string)
-			return;
-	}
-}
-
 /*
  * Read in the first line from the client (the request line for HTTP
  * connections. The request line is allocated from the heap, but it must
@@ -90,7 +64,7 @@ read_request_line(struct conn_s *connptr)
 	/*
 	 * Strip the new line and character return from the string.
 	 */
-	trim(request_buffer, len);
+	chomp(request_buffer, len);
 
 	log_message(LOG_CONN, "Request (file descriptor %d): %s",
 		    connptr->client_fd, request_buffer);
@@ -144,8 +118,7 @@ extract_http_url(const char *url, struct request_s *request)
 	if (sscanf
 	    (url, "http://%[^:/]:%d%s", request->host, &request->port,
 	     request->path) == 3) ;
-	else if (sscanf(url, "http://%[^/]%s", request->host, request->path) ==
-		 2)
+	else if (sscanf(url, "http://%[^/]%s", request->host, request->path) == 2)
 		request->port = 80;
 	else if (sscanf(url, "http://%[^:/]:%d", request->host, &request->port)
 		 == 2)
@@ -202,8 +175,7 @@ establish_http_connection(struct conn_s *connptr, struct request_s *request)
 		return -1;
 	if (safe_write(connptr->server_fd, " ", 1) < 0)
 		return -1;
-	if (safe_write(connptr->server_fd, request->path, strlen(request->path))
-	    < 0)
+	if (safe_write(connptr->server_fd, request->path, strlen(request->path)) < 0)
 		return -1;
 	if (safe_write(connptr->server_fd, " ", 1) < 0)
 		return -1;
@@ -215,8 +187,7 @@ establish_http_connection(struct conn_s *connptr, struct request_s *request)
 	 */
 	if (safe_write(connptr->server_fd, "Host: ", 6) < 0)
 		return -1;
-	if (safe_write(connptr->server_fd, request->host, strlen(request->host))
-	    < 0)
+	if (safe_write(connptr->server_fd, request->host, strlen(request->host)) < 0)
 		return -1;
 
 	if (safe_write(connptr->server_fd, "\r\n", 2) < 0)
@@ -250,8 +221,7 @@ send_ssl_response(struct conn_s *connptr)
 	     strlen(SSL_CONNECTION_RESPONSE)) < 0)
 		return -1;
 
-	if (safe_write(connptr->client_fd, PROXY_AGENT, strlen(PROXY_AGENT)) <
-	    0)
+	if (safe_write(connptr->client_fd, PROXY_AGENT, strlen(PROXY_AGENT)) < 0)
 		return -1;
 
 	if (safe_write(connptr->client_fd, "\r\n", 2) < 0)
@@ -512,9 +482,7 @@ process_client_headers(struct conn_s *connptr)
 {
 	char *header;
 	long content_length = -1;
-#if 0
 	short int sent_via_header = 0;
-#endif
 
 	static char *skipheaders[] = {
 		"proxy-connection",
@@ -551,7 +519,7 @@ process_client_headers(struct conn_s *connptr)
 			safefree(header);
 			continue;
 		}
-#if 0
+
 		/*
 		 * If we find a Via header we need to append our information
 		 * to the end of it.
@@ -559,6 +527,7 @@ process_client_headers(struct conn_s *connptr)
 		if (strncasecmp(header, "via", 3) == 0) {
 			char hostname[128];
 			char via_header_buffer[256];
+			char *new_header;
 
 			sent_via_header = 1;
 
@@ -569,11 +538,16 @@ process_client_headers(struct conn_s *connptr)
 				 connptr->protocol.minor, hostname, PACKAGE,
 				 VERSION);
 
-			trim(header, strlen(header));
+			chomp(header, strlen(header));
 
-			strlcat(header, via_header_buffer, LINE_LENGTH);
+			new_header = safemalloc(strlen(header) + strlen(via_header_buffer) + 1);
+			strcpy(new_header, header);
+			strcat(new_header, via_header_buffer);
+
+			safefree(header);
+
+			header = new_header;
 		}
-#endif
 
 		/*
 		 * Don't send certain headers.
@@ -611,7 +585,6 @@ process_client_headers(struct conn_s *connptr)
 		safefree(header);
 	}
 
-#if 0
 	if (sent_via_header == 0) {
 		/*
 		 * We're the first proxy so send the first Via header.
@@ -627,7 +600,6 @@ process_client_headers(struct conn_s *connptr)
 		safe_write(connptr->server_fd, via_header_buffer,
 			   strlen(via_header_buffer));
 	}
-#endif
 
 	if (!connptr->send_message && (connptr->upstream || !connptr->ssl)) {
 #ifdef XTINYPROXY_ENABLE
