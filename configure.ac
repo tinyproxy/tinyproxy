@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.41 2002-06-27 16:30:38 rjkaes Exp $
+dnl $Id: configure.ac,v 2.42 2002-07-05 03:55:27 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -26,9 +26,6 @@ AC_DEFINE_UNQUOTED(TARGET_SYSTEM, ["$target"])
 
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
-
-dnl Set the default CFLAGS
-CFLAGS="-D_REENTRANT"
 
 dnl Check if we're compiling on a weird platform :)
 AC_AIX
