@@ -12,7 +12,7 @@
 
 2001-08-25  Robert James Kaes  <rjkaes@flarenet.com>
 
-	* src/thread.c (thread_main): Thanks to Hans-Georg Brok for
+	* src/thread.c (thread_main): Thanks to Hans-Georg Bork for
 	fixing a problem where the status of the threads was not
 	going back to T_WAITING if MaxRequestsPerChild was 0. Also, fixed
 	a problem with the looping system where the Debian

@@ -40,6 +40,6 @@ only the first person to report it is listed.
   Michael Pearson		- Reported connptr bug with patch.
   Raja Subramanian		- Reported fd leak bug, with patch.
   J.D. Bronson			- Helped make version 1.4.0 release ready
-  Hans-Georg Brok		- Fixed a problem with the thread_main()
+  Hans-Georg Bork		- Fixed a problem with the thread_main()
 				  function and added the LOG_CONN log level.
   numerous others               - Reported null requests bug.
