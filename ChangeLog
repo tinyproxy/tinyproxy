@@ -1,5 +1,8 @@
 2001-08-26  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* Makefile.am (EXTRA_DIST): Don't include ./reconf in the
+	tarball.
+
 	* src/log.c (log_message): Fixed a problem with the new LOG_CONN
 	log level.
 
