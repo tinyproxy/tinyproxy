@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.35 2002-05-31 18:24:36 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.36 2002-06-06 20:28:02 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -144,6 +144,9 @@ Options:\n\
 #ifdef TUNNEL_SUPPORT
 	printf("    TCP Tunnelling\n");
 #endif				/* TUNNEL_SUPPORT */
+#ifdef TRANSPARENT_PROXY
+	printf("    Transparent Proxy Support\n");
+#endif                          /* TRANSPARENT_PROXY */
 }
 
 int
