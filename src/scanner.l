@@ -1,4 +1,4 @@
-/* $Id: scanner.l,v 1.2 2001-01-02 19:30:40 rjkaes Exp $
+/* $Id: scanner.l,v 1.3 2001-06-02 03:10:09 rjkaes Exp $
  *
  * This builds the scanner for the tinyproxy configuration file. This
  * file needs to stay in sync with grammar.y. If someone knows lex and yacc
@@ -49,6 +49,14 @@ static struct keyword keywords[] = {
 	{ "tunnel",		 KW_TUNNEL },
 	{ "allow",		 KW_ALLOW },
         { "deny",                KW_DENY },
+
+        /* loglevel and the settings */
+        { "loglevel",            KW_LOGLEVEL },
+	{ "critical",		 KW_LOG_CRITICAL },
+	{ "error",		 KW_LOG_ERROR },
+	{ "warning",		 KW_LOG_WARNING },
+	{ "notice",		 KW_LOG_NOTICE },
+	{ "info",		 KW_LOG_INFO },
 
 	/* on/off switches */
 	{ "yes",		 KW_YES },

@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.2 2001-05-27 02:25:21 rjkaes Exp $
+/* $Id: grammar.y,v 1.3 2001-06-02 03:10:09 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -50,6 +50,10 @@ int yylex(void);
 /* yes/no switches */
 %token KW_YES KW_NO
 
+/* settings for loglevel */
+%token KW_LOGLEVEL
+%token KW_LOG_CRITICAL KW_LOG_ERROR KW_LOG_WARNING KW_LOG_NOTICE KW_LOG_INFO
+
 %token <cptr> IDENTIFIER
 %token <num>  NUMBER
 %token <cptr> STRING
@@ -61,6 +65,7 @@ int yylex(void);
 %type <cptr> string
 %type <cptr> network_address
 %type <cptr> unique_address
+%type <num> loglevels
 
 %%
 
@@ -122,7 +127,16 @@ statement
 	| KW_LISTEN NUMERIC_ADDRESS	{ config.ipAddr = $2; }
 	| KW_ALLOW network_address	{ insert_acl($2, ACL_ALLOW); }
 	| KW_DENY network_address	{ insert_acl($2, ACL_DENY); }
+        | KW_LOGLEVEL loglevels         { set_log_level($2); }
 	;
+
+loglevels
+        : KW_LOG_CRITICAL               { $$ = LOG_CRIT; }
+        | KW_LOG_ERROR                  { $$ = LOG_ERR; }
+        | KW_LOG_WARNING                { $$ = LOG_WARNING; }
+        | KW_LOG_NOTICE                 { $$ = LOG_NOTICE; }
+        | KW_LOG_INFO                   { $$ = LOG_INFO; }
+        ;
 
 network_address
 	: unique_address
