@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.49 2001-12-19 20:40:23 rjkaes Exp $
+/* $Id: reqs.c,v 1.50 2001-12-20 04:48:32 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -64,6 +64,11 @@
 #else
 #  define TUNNEL_CONFIGURED() (0)
 #endif
+
+/*
+ * Codify the test for the carriage return and new line characters.
+ */
+#define CHECK_CRLF(header, len) ((len == 1 && header[0] == '\n') || (len == 2 && header[0] == '\r' && header[1] == '\n'))
 
 /*
  * Read in the first line from the client (the request line for HTTP
@@ -570,10 +575,8 @@ process_client_headers(struct conn_s *connptr)
 		 * If we receive a CR LF (or just a LF) on a line by itself,
 		 * the headers are finished.
 		 */
-		if ((len == 1 && header[0] == '\n')
-		    || (len == 2 && header[0] == '\r' && header[1] == '\n')) {
+		if (CHECK_CRLF(header, len))
 			break;
-		}
 
 		/*
 		 * Don't send headers if there's already an error, or if
@@ -716,8 +719,7 @@ process_server_headers(struct conn_s *connptr)
 			return -1;
 		}
 
-		if (header[0] == '\n'
-		    || (header[0] == '\r' && header[1] == '\n'))
+		if (CHECK_CRLF(header, len))
 			break;
 
 		safefree(header);
