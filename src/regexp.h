@@ -1,4 +1,4 @@
-/* $Id: regexp.h,v 1.2 2000-09-11 23:50:07 rjkaes Exp $
+/* $Id: regexp.h,v 1.3 2001-11-25 22:06:54 rjkaes Exp $
  *
  * We need this little header to help distinguish whether to use the REGEX
  * library installed in the system, or to include our own version (the GNU
@@ -27,7 +27,9 @@
 #ifdef USE_GNU_REGEX
 #  include "gnuregex.h"
 #else
-#  include <regex.h>
+#  ifdef HAVE_REGEX_H
+#    include <regex.h>
+#  endif
 #endif
 
 #endif
