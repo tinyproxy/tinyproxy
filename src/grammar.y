@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.1 2000-09-12 00:12:52 rjkaes Exp $
+/* $Id: grammar.y,v 1.2 2001-05-27 02:25:21 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -82,7 +82,7 @@ statement
 #ifdef HAVE_SYSLOG_H
 	          config.syslog = $2;
 #else
-		  log(LOG_WARNING, "Syslog support was not compiled in.");
+		  log_message(LOG_WARNING, "Syslog support was not compiled in.");
 #endif
 	  }
 	| KW_MAXCLIENTS NUMBER		{ thread_configure(THREAD_MAXCLIENTS, $2); }
@@ -106,7 +106,7 @@ statement
 #ifdef FILTER_ENABLE
 		  config.filter = $2;
 #else
-	          log(LOG_WARNING, "Filter support was not compiled in.");
+	          log_message(LOG_WARNING, "Filter support was not compiled in.");
 #endif
 	  }
 	| KW_XTINYPROXY network_address	{ config.my_domain = $2; }
@@ -116,7 +116,7 @@ statement
 	          config.tunnel_name = $2;
 		  config.tunnel_port = $4;
 #else
-		  log(LOG_WARNING, "Tunnel support was not compiled in.");
+		  log_message(LOG_WARNING, "Tunnel support was not compiled in.");
 #endif
 	  }
 	| KW_LISTEN NUMERIC_ADDRESS	{ config.ipAddr = $2; }
