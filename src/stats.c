@@ -1,4 +1,4 @@
-/* $Id: stats.c,v 1.5 2001-09-08 18:58:37 rjkaes Exp $
+/* $Id: stats.c,v 1.6 2001-09-15 21:27:58 rjkaes Exp $
  *
  * This module handles the statistics for tinyproxy. There are only two
  * public API functions. The reason for the functions, rather than just a
@@ -60,8 +60,7 @@ void init_stats(void)
  */
 int showstats(struct conn_s *connptr)
 {
-	static char *msg = "HTTP/1.0 200 OK\r\n" \
-	    "Content-type: text/html\r\n\r\n" \
+	static char *msg = \
 	    "<html><head><title>%s (%s) stats</title></head>\r\n" \
 	    "<body>\r\n" \
 	    "<center><h2>%s (%s) run-time statistics</h2></center><hr>\r\n" \
@@ -73,14 +72,14 @@ int showstats(struct conn_s *connptr)
 	    "Number of refused connections due to high load: %lu\r\n" \
 	    "</blockquote>\r\n</body></html>\r\n";
 
-	connptr->output_message = safemalloc(MAXBUFFSIZE);
-	if (!connptr->output_message) {
-		log_message(LOG_CRIT, "Out of memory!");
+	char *message_buffer;
+
+	message_buffer = safemalloc(MAXBUFFSIZE);
+	if (!message_buffer)
 		return -1;
-	}
 
 	LOCK();
-	snprintf(connptr->output_message, MAXBUFFSIZE, msg,
+	snprintf(message_buffer, MAXBUFFSIZE, msg,
 		PACKAGE, VERSION, PACKAGE, VERSION,
 		stats.num_open,
 		stats.num_reqs,
@@ -89,6 +88,12 @@ int showstats(struct conn_s *connptr)
 		stats.num_refused);
 	UNLOCK();
 
+	if (send_http_message(connptr, 200, "OK", message_buffer) < 0) {
+		safefree(message_buffer);
+		return -1;
+	}
+
+	safefree(message_buffer);
 	return 0;
 }
 
