@@ -1,3 +1,9 @@
+2000-03-28  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (clientreq): Fixed a bug with the clientreq()
+	function which would cause a SEGV if the scheme was NULL. The
+	cause was the error logging code to report an invalid scheme.
+
 2000-03-12  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/tinyproxy.c: include the upstream command line option. Also,
