@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.2 2000-09-26 04:57:46 rjkaes Exp $
+/* $Id: acl.c,v 1.3 2001-05-23 17:57:22 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -41,7 +41,7 @@ static struct acl_s *access_list = NULL;
  */
 static in_addr_t make_netmask(int netmask_num)
 {
-	in_addr_t netmasks[] = {
+	static in_addr_t netmasks[] = {
 		0x00000000, 0x80000000, 0xc0000000, 0xe0000000,
 		0xf8000000, 0xfc000000, 0xfe000000, 0xff000000,
 		0xff800000, 0xffc00000, 0xffe00000, 0xfff00000,
@@ -52,6 +52,8 @@ static in_addr_t make_netmask(int netmask_num)
 		0xfffffff0, 0xfffffff8, 0xfffffffc, 0xfffffffe,
 		0xffffffff
 	};
+
+	assert(netmask_num >= 0 && netmask_num <= 32);
 
 	return htonl(netmasks[netmask_num]);
 }
@@ -70,6 +72,8 @@ int insert_acl(char *location, acl_access_t access_type)
 	unsigned int i;
 	struct acl_s **rev_acl_ptr, *acl_ptr, *new_acl_ptr;
 	char *nptr;
+
+	assert(location != NULL);
 
 	/*
 	 * First check to see if the location is a string or numeric.
@@ -143,6 +147,8 @@ int check_acl(int fd)
 	struct acl_s *aclptr;
 	char ip_address[PEER_IP_LENGTH];
 	char string_address[PEER_STRING_LENGTH];
+
+	assert(fd >= 0);
 
 	/*
 	 * If there is no access list allow everything.
