@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.10 2002-04-24 16:45:45 rjkaes Exp $
+/* $Id: grammar.y,v 1.11 2002-05-23 18:24:02 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -49,6 +49,7 @@ int yylex(void);
 %token KW_TUNNEL KW_UPSTREAM
 %token KW_CONNECTPORT KW_BIND
 %token KW_ALLOW KW_DENY
+%token KW_DNSSERVER_LOCATION KW_DNSSERVER_SOCKET
 
 /* yes/no switches */
 %token KW_YES KW_NO
@@ -157,6 +158,8 @@ statement
 		  log_message(LOG_INFO, "Binding outgoing connections to %s", $2);
 	          config.bind_address = $2;
           }
+        | KW_DNSSERVER_LOCATION string  { config.dnsserver_location = $2; }
+        | KW_DNSSERVER_SOCKET string    { config.dnsserver_socket = $2; }
 	;
 
 loglevels
