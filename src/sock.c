@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.2 2000-03-31 20:10:13 rjkaes Exp $
+/* $Id: sock.c,v 1.3 2000-09-11 23:56:32 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -21,52 +21,45 @@
  * General Public License for more details.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <defines.h>
-#endif
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <errno.h>
-#include <netdb.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <assert.h>
-
 #include "tinyproxy.h"
-#include "sock.h"
-#include "log.h"
-#include "utils.h"
+
 #include "dnscache.h"
+#include "log.h"
+#include "sock.h"
+#include "utils.h"
+
+#define SA struct sockaddr
+
+/*
+ * The mutex is used for locking around the calls to the dnscache since I
+ * don't want multiple threads accessing the linked list at the same time.
+ * This should be more fine grained, but it will do for now.
+ *	- rjkaes
+ */
+pthread_mutex_t sock_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+#define SOCK_LOCK()   pthread_mutex_lock(&sock_mutex);
+#define SOCK_UNLOCK() pthread_mutex_unlock(&sock_mutex);
+
 
 /* This routine is so old I can't even remember writing it.  But I do
  * remember that it was an .h file because I didn't know putting code in a
  * header was bad magic yet.  anyway, this routine opens a connection to a
  * system and returns the fd.
- */
-
-/*
+ *	- steve
+ *
  * Cleaned up some of the code to use memory routines which are now the
  * default. Also, the routine first checks to see if the address is in
- * dotted-decimal form before it does a name lookup. Finally, the newly
- * created socket is made non-blocking.
+ * dotted-decimal form before it does a name lookup.
  *      - rjkaes
  */
 int opensock(char *ip_addr, int port)
 {
-	int sock_fd, flags;
+	int sock_fd;
 	struct sockaddr_in port_info;
+	int ret;
 
-	assert(ip_addr);
-	assert(port > 0);
-
-	memset((struct sockaddr *) &port_info, 0, sizeof(port_info));
+	memset((SA *) &port_info, 0, sizeof(port_info));
 
 	port_info.sin_family = AF_INET;
 
@@ -74,145 +67,84 @@ int opensock(char *ip_addr, int port)
 	 * before a non-blocking DNS query happens for this address. Not
 	 * relevant in the code as it stands.
 	 */
-	if (dnscache(&port_info.sin_addr, ip_addr) < 0) {
-		log("ERROR opensock: Could not lookup address: %s", ip_addr);
+	SOCK_LOCK();
+	ret = dnscache(&port_info.sin_addr, ip_addr);
+	SOCK_UNLOCK();
+
+	if (ret < 0) {
+		log(LOG_ERR, "opensock: Could not lookup address: %s", ip_addr);
 		return -1;
 	}
 
 	port_info.sin_port = htons(port);
 
 	if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		log("ERROR opensock: socket (%s)", strerror(errno));
+		log(LOG_ERR, "opensock: socket (%s)", strerror(errno));
 		return -1;
 	}
 
-	flags = fcntl(sock_fd, F_GETFL, 0);
-	fcntl(sock_fd, F_SETFL, flags | O_NONBLOCK);
-
-	if (connect
-	    (sock_fd, (struct sockaddr *) &port_info, sizeof(port_info)) < 0) {
-		if (errno != EINPROGRESS) {
-			log("ERROR opensock: connect (%s)", strerror(errno));
-			return -1;
-		}
+	if (connect(sock_fd, (SA *) &port_info, sizeof(port_info)) < 0) {
+		log(LOG_ERR, "connecting socket");
+		return -1;
 	}
 
 	return sock_fd;
 }
-
-/* chris - added this to open a socket given a struct in_addr */
-int opensock_inaddr(struct in_addr *inaddr, int port)
-{
-	int sock_fd, flags;
-	struct sockaddr_in port_info;
-
-	assert(inaddr);
-	assert(port > 0);
-
-	memset((struct sockaddr *) &port_info, 0, sizeof(port_info));
-
-	port_info.sin_family = AF_INET;
-
-	memcpy(&port_info.sin_addr, inaddr, sizeof(struct in_addr));
-
-	port_info.sin_port = htons(port);
-
-	if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		log("ERROR opensock_inaddr: socket (%s)", strerror(errno));
-		return -1;
-	}
-
-	flags = fcntl(sock_fd, F_GETFL, 0);
-	fcntl(sock_fd, F_SETFL, flags | O_NONBLOCK);
-
-	if (connect
-	    (sock_fd, (struct sockaddr *) &port_info, sizeof(port_info)) < 0) {
-		if (errno != EINPROGRESS) {
-			log("ERROR opensock: connect (%s)", strerror(errno));
-			return -1;
-		}
-	}
-
-	return sock_fd;
-}
-
-int setup_fd;
-static struct sockaddr listen_sock_addr;
 
 /*
- * Start listening to a socket.
+ * Set the socket to non blocking -rjkaes
  */
-int init_listen_sock(int port)
+int socket_nonblocking(int sock)
 {
-	struct sockaddr_in laddr;
-	int i = 1;
+	int flags;
 
-	assert(port > 0);
+	flags = fcntl(sock, F_GETFL, 0);
+	return fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+}
 
-	if ((setup_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		log("ERROR init_listen_sock: socket (%s)", strerror(errno));
-		return -1;
-	}
+/*
+ * Set the socket to blocking -rjkaes
+ */
+int socket_blocking(int sock)
+{
+	int flags;
 
-	if (setsockopt(setup_fd, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i)) < 0) {
-		log("ERROR init_listen_sock: setsockopt (%s)",
-		    strerror(errno));
-		return -1;
-	}
+	flags = fcntl(sock, F_GETFL, 0);
+	return fcntl(sock, F_SETFL, flags & ~O_NONBLOCK);
+}
 
-	memset(&listen_sock_addr, 0, sizeof(listen_sock_addr));
-	memset(&laddr, 0, sizeof(laddr));
-	laddr.sin_family = AF_INET;
-	laddr.sin_port = htons(port);
+/*
+ * Start listening to a socket. Create a socket with the selected port.
+ * The size of the socket address will be returned to the caller through
+ * the pointer, while the socket is returned as a default return.
+ *	- rjkaes
+ */
+int listen_sock(unsigned int port, socklen_t *addrlen)
+{
+	int listenfd;
+	const int on = 1;
+	struct sockaddr_in addr;
+
+	listenfd = socket(AF_INET, SOCK_STREAM, 0);
+	setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(port);
 
 	if (config.ipAddr) {
-		laddr.sin_addr.s_addr = inet_addr(config.ipAddr);
+		addr.sin_addr.s_addr = inet_addr(config.ipAddr);
 	} else {
-		laddr.sin_addr.s_addr = inet_addr("0.0.0.0");
+		addr.sin_addr.s_addr = inet_addr("0.0.0.0");
 	}
-	if (bind(setup_fd, (struct sockaddr *) &laddr, sizeof(laddr)) < 0) {
-		log("ERROR init_listen_sock: bind (%s)", strerror(errno));
-		return -1;
-	}
-	if ((listen(setup_fd, MAXLISTEN)) != 0) {
-		log("ERROR init_listen_sock: listen (%s)", strerror(errno));
-		return -1;
-	}
+	
+	bind(listenfd, (struct sockaddr *) &addr, sizeof(addr));
 
-	return 0;
-}
+	listen(listenfd, MAXLISTEN);
 
-/*
- * Grab a pending connection
- */
-int listen_sock(void)
-{
-	static int sock;
-	int sz = sizeof(listen_sock_addr);
+	*addrlen = sizeof(addr);
 
-	if ((sock = accept(setup_fd, &listen_sock_addr, &sz)) < 0) {
-		if (errno != ECONNABORTED
-#ifdef EPROTO
-		    && errno != EPROTO
-#endif
-#ifdef EWOULDBLOCK
-		    && errno != EWOULDBLOCK
-#endif
-		    && errno != EINTR)
-			log("ERROR listen_sock: accept (%s)", strerror(errno));
-		return -1;
-	}
-	stats.num_listens++;
-
-	return sock;
-}
-
-/*
- * Stop listening on a socket.
- */
-void de_init_listen_sock(void)
-{
-	close(setup_fd);
+	return listenfd;
 }
 
 /*
@@ -224,17 +156,12 @@ char *getpeer_ip(int fd, char *ipaddr)
 	struct sockaddr_in name;
 	int namelen = sizeof(name);
 
-	assert(fd >= 0);
-	assert(ipaddr);
-
-	memset(ipaddr, '\0', PEER_IP_LENGTH);
-
 	if (getpeername(fd, (struct sockaddr *) &name, &namelen) != 0) {
-		log("ERROR Connect: 'could not get peer name'");
+		log(LOG_ERR, "Connect: 'could not get peer name'");
 	} else {
-		strncpy(ipaddr,
+		strlcpy(ipaddr,
 			inet_ntoa(*(struct in_addr *) &name.sin_addr.s_addr),
-			PEER_IP_LENGTH - 1);
+			PEER_IP_LENGTH);
 	}
 
 	return ipaddr;
@@ -250,153 +177,46 @@ char *getpeer_string(int fd, char *string)
 	int namelen = sizeof(name);
 	struct hostent *peername;
 
-	assert(fd >= 0);
-	assert(string);
-
-	memset(string, '\0', PEER_STRING_LENGTH);
-
 	if (getpeername(fd, (struct sockaddr *) &name, &namelen) != 0) {
-		log("ERROR Connect: 'could not get peer name'");
+		log(LOG_ERR, "Connect: 'could not get peer name'");
 	} else {
-		if (
-		    (peername =
-		     gethostbyaddr((char *) &name.sin_addr.s_addr,
-				   sizeof(name.sin_addr.s_addr),
-				   AF_INET)) != NULL) {
-			strncpy(string, peername->h_name,
-				PEER_STRING_LENGTH - 1);
+		SOCK_LOCK();
+		peername = gethostbyaddr((char *)&name.sin_addr.s_addr,
+					 sizeof(name.sin_addr.s_addr),
+					 AF_INET);
+		if (peername) {
+			strlcpy(string, peername->h_name, PEER_STRING_LENGTH);
 		}
+		SOCK_UNLOCK();
 	}
 
 	return string;
 }
 
-
-/*
- * Okay, this is a wacked out function. The basic gist is that we read in one
- * line from the socket and return it in "line". However, if we can't pull in
- * one complete line (up to an including the '\n') then we need to store it in
- * the buffer's "working_string". Fun. :)
- *	-- rjkaes
- */
-int readline(int fd, struct buffer_s *buffer, char **line)
+ssize_t readline(int fd, void *vptr, size_t maxlen)
 {
-	char inbuf[BUFFER];
-	int bytesin;
-	char *endline = NULL;
-	char *newline;
-	unsigned long length;
+	ssize_t n, rc;
+	char c, *ptr;
 
-	assert(fd >= 0);
-	assert(buffer);
-	assert(line);
-
-	*line = NULL;
-
-	/* Inspect the queue. */
-	if ((bytesin = recv(fd, inbuf, BUFFER - 1, MSG_PEEK)) <= 0) {
-		goto CONN_ERROR;
-	}
-
-	if (buffer->working_length == 0) {
-		/* There is no working line, so read in a line of text. */
-
-		/* Okay, check to see if there is a '\n' in this. */
-		endline = xstrstr(inbuf, "\n", bytesin, FALSE);
-		
-		if (endline) {
-			/* Yes, we have a complete line. */
-			*(++endline) = '\0';
-			length = strlen(inbuf);
-			
-			/* Actually pull the data off the queue */
-			if ((bytesin = recv(fd, inbuf, length, 0) <= 0)) {
-				goto CONN_ERROR;
-			}
-
-			*line = xstrdup(inbuf);
-			return strlen(*line);
-		}
-
-		/*
-		 * Well, we don't have a complete line, so add it to the
-		 * working_string.
-		 */
-		if (!(buffer->working_string = xmalloc(bytesin))) {
+	ptr = vptr;
+	for (n = 1; n < maxlen; n++) {
+	again:
+		if ((rc = read(fd, &c, 1)) == 1) {
+			*ptr++ = c;
+			if (c == '\n')
+				break;
+		} else if (rc == 0) {
+			if (n == 1)
+				return 0;
+			else
+				break;
+		} else {
+			if (errno == EINTR)
+				goto again;
 			return -1;
 		}
-
-		if ((bytesin = recv(fd, inbuf, bytesin, 0)) <= 0) {
-			safefree(buffer->working_string);
-			goto CONN_ERROR;
-		}
-
-		memcpy(buffer->working_string, inbuf, bytesin);
-		buffer->working_length = bytesin;
-
-		return 0;
 	}
 
-	/* 
-	 * Alright, we do have a working line, so read in more data and see
-	 * if there is a '\n' in it.
-	 */
-	endline = xstrstr(inbuf, "\n", bytesin, FALSE);
-
-	if (endline) {
-		/* 
-		 * Great, there was a "\n" found, so combine with
-		 * working_string.
-		 */
-		*(++endline) = '\0';
-		length = strlen(inbuf);
-
-		if (!(*line = xmalloc(bytesin + buffer->working_length + 1))) {
-			return -1;
-		}
-
-		/* Pull the data off */
-		if ((bytesin = recv(fd, inbuf, bytesin, 0)) <= 0) {
-			goto CONN_ERROR;
-		}
-
-		/* Copy all the data into a new line */
-		memcpy(*line, buffer->working_string, buffer->working_length);
-		memcpy(*line + buffer->working_length, inbuf, bytesin);
-
-		*(*line + buffer->working_length + bytesin + 1) = '\0';
-		
-		safefree(buffer->working_string);
-		buffer->working_length = 0;
-
-		return strlen(*line);
-	}
-
-	/*
-	 * Well, we have a working line and still don't have a complete line.
-	 * Add the new data to the working line and return.
-	 */
-	if (!(newline = xmalloc(buffer->working_length + bytesin))) {
-		return -1;
-	}
-
-	if ((bytesin = recv(fd, inbuf, bytesin, 0)) <= 0) {
-		goto CONN_ERROR;
-	}
-	
-	memcpy(newline, buffer->working_string, buffer->working_length);
-	memcpy(newline + buffer->working_length, inbuf, bytesin);
-
-	safefree(buffer->working_string);
-	buffer->working_string = newline;
-	buffer->working_length += bytesin;
-
-	return 0;
-
-	/* Handle all the errors a socket could produce. */
-      CONN_ERROR:
-	if (bytesin == 0 || (errno != EAGAIN && errno != EINTR)) {
-		return -1;
-	}
-	return 0;
+	*ptr = 0;
+	return n;
 }

@@ -1,4 +1,4 @@
-/* $Id: sock.h,v 1.1.1.1 2000-02-16 17:32:23 sdyoung Exp $
+/* $Id: sock.h,v 1.2 2000-09-11 23:56:32 rjkaes Exp $
  *
  * See 'sock.c' for a detailed description.
  *
@@ -16,25 +16,23 @@
  * General Public License for more details.
  */
 
-#ifndef _SOCK_H_
-#define _SOCK_H_	1
-
-#include "buffer.h"
+#ifndef _TINYPROXY_SOCK_H_
+#define _TINYPROXY_SOCK_H_
 
 #define PEER_IP_LENGTH		16
 #define PEER_STRING_LENGTH	256
 
-extern int setup_fd;
+#define MAXLINE (1024 * 4)
 
 extern int opensock(char *ip_addr, int port);
-extern int opensock_inaddr(struct in_addr *inaddr, int port);
-extern int init_listen_sock(int port);
-extern int listen_sock(void);
-extern void de_init_listen_sock(void);
-extern int setsocketopt(int *sock_fd, int options, int flip);
+extern int listen_sock(unsigned int port, socklen_t *addrlen);
+
+extern int socket_nonblocking(int sock);
+extern int socket_blocking(int sock);
 
 extern char *getpeer_ip(int fd, char *ipaddr);
 extern char *getpeer_string(int fd, char *string);
-extern int readline(int fd, struct buffer_s *buffer, char **line);
+
+extern ssize_t readline(int fd, void *vptr, size_t maxlen);
 
 #endif
