@@ -1,4 +1,4 @@
-/* $Id: htmlerror.c,v 1.3 2003-03-14 22:49:03 rjkaes Exp $
+/* $Id: htmlerror.c,v 1.4 2003-04-01 16:41:33 rjkaes Exp $
  * 
  * This file contains source code for the handling and display of
  * HTML error pages with variable substitution.
@@ -201,7 +201,11 @@ add_error_variable(struct conn_s *connptr, char *key, char *val)
 	connptr->error_variable_count++;
 
 	/* Add space for a new pointer to the error_variables structure. */
-	connptr->error_variables = saferealloc(connptr->error_variables, sizeof(struct error_variable_s *) * connptr->error_variable_count);
+	if (!connptr->error_variables)
+		connptr->error_variables = safemalloc(sizeof(struct error_variables_s *) * connptr->error_variable_count);
+	else
+		connptr->error_variables = saferealloc(connptr->error_variables, sizeof(struct error_variable_s *) * connptr->error_variable_count);
+
 	if(!connptr->error_variables)
 		return(-1);
 	
