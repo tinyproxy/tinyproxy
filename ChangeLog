@@ -1,5 +1,13 @@
 2001-10-25  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* Moved all the system header included into the tinyproxy.h header
+	and changed all the other files to include it. The should
+	centralise the header dependency issue into one file.
+
+	* src/conns.c: Brought back the conns.{c,h} files which contain
+	the connection structure definition plus the creation/destruction
+	routines.
+
 	* src/reqs.c (process_client_headers): Selectively send headers
 	based on whether we're using an upstream with a CONNECT
 	request. The short answer: all methods work correctly with
