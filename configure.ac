@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.58 2003-06-26 18:23:01 rjkaes Exp $
+dnl $Id: configure.ac,v 2.59 2003-06-26 18:31:16 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -14,7 +14,7 @@ dnl 8. System services
 dnl
 dnl Read the Autoconf manual for details.
 
-AC_INIT([tinyproxy], [1.6.0rc2], [rjkaes@users.sourceforge.net])
+AC_INIT([tinyproxy], [1.6.0rc3], [rjkaes@users.sourceforge.net])
 AC_CONFIG_SRCDIR([src/tinyproxy.c])
 AC_PREREQ(2.52)
 
@@ -265,7 +265,10 @@ if test x"$debug_enabled" = x"yes" ; then
     fi
     CFLAGS="-Wall -g -DYYDEBUG $CFLAGS"
     YFLAGS="-v -d"
-    LEX_FLAGS="--warn"
+
+    if test x"$ac_cv_prog_LEX" = x"flex" ; then
+        LEX_FLAGS="--warn --debug"
+    fi
 else
     dnl No debugging information, include the optimizations
     CFLAGS="-O2 -DNDEBUG $CFLAGS"
