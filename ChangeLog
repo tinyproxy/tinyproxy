@@ -21,6 +21,10 @@
 
 2002-04-26  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/thread.c: servers_waiting needs to be signed, since it can
+	go below 0 without causing a problem, but if it wraps around all
+	hell can break loose.
+
 	* src/reqs.c (connect_to_tunnel): Changed the len type to an
 	signed integer so that we can detect error conditions.  Thanks to
 	Tom Cross for pointing out this problem.
