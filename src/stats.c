@@ -1,4 +1,4 @@
-/* $Id: stats.c,v 1.3 2001-05-23 17:59:08 rjkaes Exp $
+/* $Id: stats.c,v 1.4 2001-05-27 02:26:53 rjkaes Exp $
  *
  * This module handles the statistics for tinyproxy. There are only two
  * public API functions. The reason for the functions, rather than just a
@@ -74,7 +74,7 @@ int showstats(struct conn_s *connptr)
 
 	connptr->output_message = malloc(MAXBUFFSIZE);
 	if (!connptr->output_message) {
-		log(LOG_CRIT, "Out of memory!");
+		log_message(LOG_CRIT, "Out of memory!");
 		return -1;
 	}
 
