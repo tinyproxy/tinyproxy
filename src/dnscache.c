@@ -1,4 +1,4 @@
-/* $Id: dnscache.c,v 1.10 2001-08-29 03:57:51 rjkaes Exp $
+/* $Id: dnscache.c,v 1.11 2001-08-30 16:50:42 rjkaes Exp $
  *
  * This is a caching DNS system. When a host name is needed we look it up here
  * and see if there is already an answer for it. The domains are placed in a
@@ -51,20 +51,6 @@ struct dnscache_s {
 
 static TERNARY dns_tree = -1;
 
-/*
- * Insert the data into the DNS tree.
- */
-static int insert_data(char *domain, struct dnscache_s *newptr)
-{
-	int ret;
-	
-	LOCK();
-	ret = ternary_insert(dns_tree, domain, newptr);
-	UNLOCK();
-
-	return ret;
-}
-
 static int dns_lookup(struct in_addr *addr, char *domain)
 {
 	int ret;
@@ -73,17 +59,14 @@ static int dns_lookup(struct in_addr *addr, char *domain)
 	assert(addr != NULL);
 	assert(domain != NULL);
 
-	LOCK();
 	ret = ternary_search(dns_tree, domain, (void *)&ptr);
 
 	if (TE_ISERROR(ret)
 	    || difftime(time(NULL), ptr->expire) > DNSEXPIRE) {
-		UNLOCK();
 		return -1;
 	}
 
 	memcpy(addr, &ptr->ipaddr, sizeof(struct in_addr));
-	UNLOCK();
 
 	return 0;
 }
@@ -91,7 +74,6 @@ static int dns_lookup(struct in_addr *addr, char *domain)
 static int dns_insert(struct in_addr *addr, char *domain)
 {
 	struct dnscache_s *newptr;
-	int ret;
 
 	assert(addr != NULL);
 	assert(domain != NULL);
@@ -105,37 +87,9 @@ static int dns_insert(struct in_addr *addr, char *domain)
 	memcpy(&newptr->ipaddr, addr, sizeof(struct in_addr));
 	newptr->expire = time(NULL);
 
-	ret = insert_data(domain, newptr);
-
-	if (TE_ISERROR(ret)) {
-		if (ret == TE_EXISTS) {
-			/*
-			 * The value already exists. First search for the
-			 * value and then delete the data before inserting
-			 * the new value.
-			 */
-			struct dnscache_s *existing;
-
-			DEBUG2("[%s] already exists in DNS cache", domain);
-
-			LOCK();
-			ret = ternary_search(dns_tree, domain, (void *)&existing);
-			UNLOCK();
-
-			if (TE_ISERROR(ret))
-				goto INSERT_ERROR;
-
-			safefree(existing);
-
-			ret = insert_data(domain, newptr);
-
-			if (TE_ISERROR(ret))
-				goto INSERT_ERROR;
-		} else {
-		INSERT_ERROR:
-			safefree(newptr);
-			return -1;
-		}
+	if (TE_ISERROR(ternary_replace(dns_tree, domain, newptr))) {
+		safefree(newptr);
+		return -1;
 	}
 
 	return 0;
@@ -148,30 +102,34 @@ int dnscache(struct in_addr *addr, char *domain)
 	assert(addr != NULL);
 	assert(domain != NULL);
 
-	/* If the DNS tree doesn't exist, build a new one */
 	LOCK();
+	
+	/* If the DNS tree doesn't exist, build a new one */
 	if (dns_tree < 0)
 		dns_tree = ternary_new();
-	UNLOCK();
 
-	if (inet_aton(domain, (struct in_addr *)addr) != 0)
+	if (inet_aton(domain, (struct in_addr *)addr) != 0) {
+		UNLOCK();
 		return 0;
+	}
 
 	/* Well, we're not dotted-decimal so we need to look it up */
-	if (dns_lookup(addr, domain) == 0)
+	if (dns_lookup(addr, domain) == 0) {
+		UNLOCK();
 		return 0;
+	}
 
 	/* Okay, so not in the list... need to actually look it up. */
-	LOCK();
 	if (!(resolv = gethostbyname(domain))) {
 		UNLOCK();
 		return -1;
 	}
 
 	memcpy(addr, resolv->h_addr_list[0], (size_t)resolv->h_length);
-	UNLOCK();
 
 	dns_insert(addr, domain);
+
+	UNLOCK();
 
 	return 0;
 }
