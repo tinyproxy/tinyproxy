@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.18 2001-11-25 02:21:46 rjkaes Exp $
+/* $Id: sock.c,v 1.19 2001-12-15 05:58:30 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -23,7 +23,6 @@
 
 #include "tinyproxy.h"
 
-#include "dnscache.h"
 #include "log.h"
 #include "sock.h"
 #include "utils.h"
@@ -37,6 +36,50 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 #define LOCK()   pthread_mutex_lock(&mutex);
 #define UNLOCK() pthread_mutex_unlock(&mutex);
+
+/*
+ * The mutex is used for locking around accesses to gethostbyname()
+ * function.
+ */
+static pthread_mutex_t gethostbyname_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define LOOKUP_LOCK()   pthread_mutex_lock(&gethostbyname_mutex);
+#define LOOKUP_UNLOCK() pthread_mutex_unlock(&gethostbyname_mutex);
+
+/*
+ * Take a string host address and return a struct in_addr so we can connect
+ * to the remote host.
+ *
+ * Return a negative if there is a problem.
+ */
+static int
+lookup_domain(struct in_addr *addr, char *domain)
+{
+	struct hostent *resolv;
+
+	if (!addr || !domain)
+		return -1;
+
+	/*
+	 * First check to see if the domain is in dotted-decimal format.
+	 */
+	if (inet_aton(domain, (struct in_addr *)addr) != 0)
+		return 0;
+
+	/*
+	 * Okay, it's an alpha-numeric domain, so look it up.
+	 */
+	LOOKUP_LOCK();
+	if (!(resolv = gethostbyname(domain))) {
+		LOOKUP_UNLOCK();
+		return -1;
+	}
+
+	memcpy(addr, resolv->h_addr_list[0], resolv->h_length);
+
+	LOOKUP_UNLOCK();
+
+	return 0;
+}
 
 /* This routine is so old I can't even remember writing it.  But I do
  * remember that it was an .h file because I didn't know putting code in a
@@ -64,7 +107,7 @@ opensock(char *ip_addr, uint16_t port)
 	port_info.sin_family = AF_INET;
 
 	/* Lookup and return the address if possible */
-	ret = dnscache(&port_info.sin_addr, ip_addr);
+	ret = lookup_domain(&port_info.sin_addr, ip_addr);
 
 	if (ret < 0) {
 		log_message(LOG_ERR,
