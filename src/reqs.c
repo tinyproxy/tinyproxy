@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.76 2002-05-26 18:54:56 rjkaes Exp $
+/* $Id: reqs.c,v 1.77 2002-05-27 02:00:22 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -408,28 +408,39 @@ process_request(struct conn_s *connptr)
 		return NULL;
 	}
 
-	safefree(url);
-
 #ifdef FILTER_ENABLE
 	/*
-	 * Filter restricted domains
+	 * Filter restricted domains/urls
 	 */
 	if (config.filter) {
-		if (filter_url(request->host)) {
+		if (config.filter_url)
+			ret = filter_url(url);
+		else
+			ret = filter_domain(request->host);
+
+		if (ret) {
 			update_stats(STAT_DENIED);
 
-			log_message(LOG_NOTICE,
-				    "Proxying refused on filtered domain \"%s\"",
-				    request->host);
-			indicate_http_error(connptr, 404,
-				"Connection to filtered domain is not allowed.");
+			if (config.filter_url)
+				log_message(LOG_NOTICE,
+					    "Proxying refused on filtered url \"%s\"",
+					    url);
+			else
+				log_message(LOG_NOTICE,
+					    "Proxying refused on filtered domain \"%s\"",
+					    request->host);
 
+			indicate_http_error(connptr, 403, "Filtered.");
+
+			safefree(url);
 			free_request_struct(request);
 
 			return NULL;
 		}
 	}
 #endif
+
+	safefree(url);
 
 	/*
 	 * Check to see if they're requesting the stat host
