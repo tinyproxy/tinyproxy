@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.47 2001-12-19 05:19:03 rjkaes Exp $
+/* $Id: reqs.c,v 1.48 2001-12-19 05:20:01 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -215,8 +215,6 @@ write_message(int fd, const char *fmt, ...)
 		va_start(ap, fmt);
 		n = vsnprintf(buf, size, fmt, ap);
 		va_end(ap);
-
-		DEBUG2("n = %d", n);
 
 		/* If that worked, break out so we can send the buffer */
 		if (n > -1 && n < size)
