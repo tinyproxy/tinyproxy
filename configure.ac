@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.0 2001-11-25 02:18:47 rjkaes Exp $
+dnl $Id: configure.ac,v 2.1 2001-11-26 01:38:28 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -22,7 +22,7 @@ AC_CANONICAL_TARGET
 
 AH_TEMPLATE([TARGET_SYSTEM],
 	    [A string containing the target system for which tinyproxy was built.])
-AC_DEFINE_UNQUOTED(TARGET_SYSTEM, "$target")
+AC_DEFINE_UNQUOTED(TARGET_SYSTEM, ["$target"])
 
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -49,7 +49,7 @@ AH_VERBATIM([DEFAULT_STATHOST],
 #endif])
 AC_ARG_WITH(stathost,
             [AC_HELP_STRING([--with-stathost=HOST], [Default status host])],
-            [AC_DEFINE_UNQUOTED(DEFAULT_STATHOST, "$withval")])
+            [AC_DEFINE_UNQUOTED(DEFAULT_STATHOST, ["$withval"])])
 
 dnl Set the default configuration file location
 AH_VERBATIM([DEFAULT_CONF_FILE],
@@ -60,7 +60,7 @@ AH_VERBATIM([DEFAULT_CONF_FILE],
 AC_ARG_WITH(config,
             [AC_HELP_STRING([--with-config=FILE],
                             [Set the default location of the config file])],
-	    [AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$withval")])
+	    [AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, ["$withval"])])
 
 dnl Add compiler-specific optimization flags
 AC_ARG_ENABLE(debug,
