@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.12 2002-04-09 19:11:09 rjkaes Exp $
+/* $Id: acl.c,v 1.13 2002-04-17 20:52:45 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -133,7 +133,7 @@ insert_acl(char *location, acl_access_t access_type)
 }
 
 /*
- * Checks where file descriptor is allowed.
+ * Checks whether  file descriptor is allowed.
  *
  * Returns:
  *     1 if allowed
@@ -141,13 +141,13 @@ insert_acl(char *location, acl_access_t access_type)
  *    -1 if error
  */
 int
-check_acl(int fd)
+check_acl(int fd, const char* ip_address, const char* string_address)
 {
 	struct acl_s *aclptr;
-	char ip_address[PEER_IP_LENGTH];
-	char string_address[PEER_STRING_LENGTH];
 
 	assert(fd >= 0);
+	assert(ip_address != NULL);
+	assert(string_address != NULL);
 
 	/*
 	 * If there is no access list allow everything.
@@ -155,12 +155,6 @@ check_acl(int fd)
 	aclptr = access_list;
 	if (!aclptr)
 		return 1;
-
-	/*
-	 * Get the IP address and the string domain.
-	 */
-	getpeer_ip(fd, ip_address);
-	getpeer_string(fd, string_address);
 
 	while (aclptr) {
 		if (aclptr->type == ACL_STRING) {

@@ -1,4 +1,4 @@
-/* $Id: acl.h,v 1.2 2001-06-02 02:07:34 rjkaes Exp $
+/* $Id: acl.h,v 1.3 2002-04-17 20:52:45 rjkaes Exp $
  *
  * See 'acl.c' for detailed information.
  *
@@ -21,6 +21,6 @@
 typedef enum { ACL_ALLOW, ACL_DENY } acl_access_t;
 
 extern int insert_acl(char *location, acl_access_t access_type);
-extern int check_acl(int fd);
+extern int check_acl(int fd, const char* ip_address, const char* string_address);
 
 #endif
