@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.5 2001-06-02 03:09:27 rjkaes Exp $
+/* $Id: log.c,v 1.6 2001-06-02 03:38:02 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -90,7 +90,7 @@ void log_message(short int level, char *fmt, ...)
 		if (!(cf = config.logf))
 			cf = stderr;
 
-		fprintf(cf, "%-9s %s [%d]: ", syslog_level[level],
+		fprintf(cf, "%-9s %s [%u]: ", syslog_level[level],
 			time_string, getpid());
 		vfprintf(cf, fmt, args);
 		fprintf(cf, "\n");
