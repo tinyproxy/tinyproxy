@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.99 2003-05-29 20:48:25 rjkaes Exp $
+/* $Id: reqs.c,v 1.100 2003-05-30 16:22:30 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -128,7 +128,8 @@ check_allowed_connect_ports(int port)
 		return 1;
 
 	for (i = 0; i < vector_length(ports_allowed_by_connect); ++i) {
-		if (vector_getentry(ports_allowed_by_connect, i, (void **)&data) < 0)
+		data = vector_getentry(ports_allowed_by_connect, i, NULL);
+		if (!data)
 			return -1;
 
 		if (*data == port)
