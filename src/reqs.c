@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.39 2001-11-21 19:19:46 rjkaes Exp $
+/* $Id: reqs.c,v 1.40 2001-11-22 00:19:45 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -76,11 +76,7 @@ static char *read_request_line(struct conn_s *connptr)
 	char *request_buffer;
 	size_t len;
 
-	request_buffer = safemalloc(LINE_LENGTH);
-	if (!request_buffer)
-		return NULL;
-
-	len = readline(connptr->client_fd, request_buffer, LINE_LENGTH);
+	len = readline(connptr->client_fd, &request_buffer);
 	if (len <= 0) {
 		log_message(LOG_ERR, "read_request_line: Client (file descriptor: %d) closed socket before read.", connptr->client_fd);
 		safefree(request_buffer);
@@ -494,14 +490,9 @@ static int process_client_headers(struct conn_s *connptr)
 	};
 	int i;
 
-	header = safemalloc(LINE_LENGTH);
-	if (!header)
-		return -1;
-
 	for ( ; ; ) {
-		if (readline(connptr->client_fd, header, LINE_LENGTH) <= 0) {
+		if (readline(connptr->client_fd, &header) <= 0) {
 			DEBUG2("Client (file descriptor %d) closed connection.", connptr->client_fd);
-			safefree(header);
 			return -1;
 		}
 
@@ -510,15 +501,19 @@ static int process_client_headers(struct conn_s *connptr)
 			break;
 		}
 
-		if (connptr->send_message)
+		if (connptr->send_message) {
+			safefree(header);
 			continue;
+		}
 
 		/*
 		 * Don't send any of the headers if we're in SSL mode and
 		 * NOT using an upstream proxy.
 		 */
-		if (connptr->ssl && !connptr->upstream)
+		if (connptr->ssl && !connptr->upstream) {
+			safefree(header);
 			continue;
+		}
 
 #if 0
 		/*
@@ -548,11 +543,15 @@ static int process_client_headers(struct conn_s *connptr)
 				break;
 			}
 		}
-		if (i != (sizeof(skipheaders) / sizeof(char *)))
+		if (i != (sizeof(skipheaders) / sizeof(char *))) {
+			safefree(header);
 			continue;
+		}
 
-		if (is_anonymous_enabled() && compare_header(header) < 0)
+		if (is_anonymous_enabled() && compare_header(header) < 0) {
+			safefree(header);
 			continue;
+		}
 
 		if (content_length == -1
 		    && strncasecmp(header, "content-length", 14) == 0) {
@@ -564,6 +563,8 @@ static int process_client_headers(struct conn_s *connptr)
 			safefree(header);
 			return -1;
 		}
+
+		safefree(header);
 	}
 
 #if 0
@@ -615,14 +616,9 @@ static int process_server_headers(struct conn_s *connptr)
 {
 	char *header;
 
-	header = safemalloc(LINE_LENGTH);
-	if (!header)
-		return -1;
-
 	for ( ; ; ) {
-		if (readline(connptr->server_fd, header, LINE_LENGTH) <= 0) {
+		if (readline(connptr->server_fd, &header) <= 0) {
 			DEBUG2("Server (file descriptor %d) closed connection.", connptr->server_fd);
-			safefree(header);
 			return -1;
 		}
 
