@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.115 2004-08-12 19:57:15 rjkaes Exp $
+/* $Id: reqs.c,v 1.116 2004-08-12 20:15:04 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -111,7 +111,6 @@ add_connect_port_allowed(int port)
  *
  * Returns: 1 if allowed
  *          0 if denied
- *          negative upon error
  */
 static int
 check_allowed_connect_ports(int port)
@@ -119,20 +118,17 @@ check_allowed_connect_ports(int port)
 	ssize_t i;
 	int *data;
 
-	/*
-	 * If the port list doesn't exist, allow everything.  This might need
-	 * to be changed in the future.
-	 */
+        /*
+         * A port list is REQUIRED for a CONNECT request to function
+         * properly.  This closes a potential security hole.
+         */
 	if (!ports_allowed_by_connect)
-		return 1;
+		return 0;
 
 	for (i = 0; i != vector_length(ports_allowed_by_connect); ++i) {
 		data = vector_getentry(ports_allowed_by_connect, i, NULL);
-		if (!data)
-			return -1;
-
-		if (*data == port)
-			return 1;
+                if (data && *data == port)
+                    return 1;
 	}
 
 	return 0;
@@ -762,7 +758,7 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 		}
 
 		/* Verify that the port in the CONNECT method is allowed */
-		if (check_allowed_connect_ports(request->port) <= 0) {
+		if (!check_allowed_connect_ports(request->port)) {
 			indicate_http_error(connptr, 403, "Access violation",
 					    "detail", "The CONNECT method not allowed " \
 					              "with the port you tried to use.",
