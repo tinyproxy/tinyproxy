@@ -1,4 +1,4 @@
-/* $Id: sock.h,v 1.7 2001-11-22 00:19:18 rjkaes Exp $
+/* $Id: sock.h,v 1.8 2001-12-15 20:04:04 rjkaes Exp $
  *
  * See 'sock.c' for a detailed description.
  *
@@ -35,8 +35,8 @@ extern int socket_blocking(int sock);
 extern char *getpeer_ip(int fd, char *ipaddr);
 extern char *getpeer_string(int fd, char *string);
 
-extern ssize_t safe_write(int fd, const void *buffer, size_t count);
-extern ssize_t safe_read(int fd, void *buffer, size_t count);
+extern ssize_t safe_write(int fd, const char *buffer, size_t count);
+extern ssize_t safe_read(int fd, char *buffer, size_t count);
 
 extern ssize_t readline(int fd, char **whole_buffer);
 
