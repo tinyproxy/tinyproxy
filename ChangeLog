@@ -10,9 +10,14 @@
 	(process_server_headers): Rewrote this function to handle the
 	headers in a more consistent manner.  The connection header is
 	handled correctly, and the content-length header is stored for
-	later use.
+	later use.  Also, include a list of headers to not send.
 	(relay_connection): Added a test to use the
 	connptr->remote_content_length value if it's present.
+	(write_via_header): Moved the creation/modification of the Via
+	header into it's own function since it's used by both
+	process_client_headers() and process_server_headers().  I still
+	need to add code to allow you to "hide" the host information if
+	you so choose.
 
 	* src/conns.c: Added the remote_content_length variable to hold
 	the number of bytes the remove server is _supposed_ to send to

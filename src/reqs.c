@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.55 2002-04-11 20:44:15 rjkaes Exp $
+/* $Id: reqs.c,v 1.56 2002-04-12 03:09:04 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -497,9 +497,8 @@ get_all_headers(int fd, hashmap_t hashofheaders)
 	ssize_t len;
 
 	for (;;) {
-		if ((len = readline(fd, &header)) <= 0) {
+		if ((len = readline(fd, &header)) <= 0)
 			return -1;
-		}
 
 		/*
 		 * If we received just a CR LF on a line, the headers are
@@ -536,9 +535,8 @@ remove_connection_headers(hashmap_t hashofheaders)
 	 * a NULL.
 	 */
 	ptr = data;
-	while ((ptr = strpbrk(ptr, "()<>@,;:\\\"/[]?={} \t"))) {
+	while ((ptr = strpbrk(ptr, "()<>@,;:\\\"/[]?={} \t")))
 		*ptr++ = '\0';
-	}
 
 	/*
 	 * All the tokens are separated by NULLs.  Now go through the tokens
@@ -546,7 +544,6 @@ remove_connection_headers(hashmap_t hashofheaders)
 	 */
 	ptr = data;
 	while (ptr < data + len) {
-		DEBUG2("Removing header [%s]", ptr);
 		hashmap_remove(hashofheaders, ptr);
 
 		/* Advance ptr to the next token */
@@ -573,11 +570,48 @@ get_content_length(hashmap_t hashofheaders)
 	long content_length = -1;
 
 	len = hashmap_search(hashofheaders, "content-length", (void **)&data);
-	if (len > 0) {
+	if (len > 0)
 		content_length = atol(data);
-	}
 
 	return content_length;
+}
+
+/*
+ * Search for Via head in a hash of headers and either write a new Via header,
+ * or append our information to the end of an existing Via header.
+ *
+ * FIXME: Need to add code to "hide" our internal information for security
+ * purposes.
+ */
+static void
+write_via_header(int fd, hashmap_t hashofheaders,
+		 unsigned int major, unsigned int minor)
+{
+	ssize_t len;
+	char hostname[128];
+	char *data;
+
+	gethostname(hostname, sizeof(hostname));
+
+	/*
+	 * See if there is a "Via" header.  If so, again we need to do a bit
+	 * of processing.
+	 */
+	len = hashmap_search(hashofheaders, "via", (void **)&data);
+	if (len > 0) {
+		write_message(fd,
+			      "Via: %s, %hu.%hu %s (%s/%s)\r\n",
+			      data,
+			      major, minor,
+			      hostname, PACKAGE, VERSION);
+
+		hashmap_remove(hashofheaders, "via");
+	} else {
+		write_message(fd,
+			      "Via: %hu.%hu %s (%s/%s)\r\n",
+			      major, minor,
+			      hostname, PACKAGE, VERSION);
+	}
 }
 
 /*
@@ -596,7 +630,6 @@ process_client_headers(struct conn_s *connptr)
 {
 	static char *skipheaders[] = {
 		"host",
-		"connection",
 		"keep-alive",
 		"proxy-authenticate",
 		"proxy-authorization",
@@ -651,39 +684,15 @@ process_client_headers(struct conn_s *connptr)
 	remove_connection_headers(hashofheaders);
 
 	/*
-	 * See if there is a "Via" header.  If so, again we need to do a bit
-	 * of processing.
-	 */
-	len = hashmap_search(hashofheaders, "via", (void **)&data);
-	if (len > 0) {
-		/* Take on our information */
-		char hostname[128];
-		gethostname(hostname, sizeof(hostname));
-
-		write_message(connptr->server_fd,
-			      "Via: %s, %hu.%hu %s (%s/%s)\r\n",
-			      data,
-			      connptr->protocol.major, connptr->protocol.minor,
-			      hostname, PACKAGE, VERSION);
-
-		hashmap_remove(hashofheaders, "via");
-	} else {
-		/* There is no header, so we need to create it. */
-		char hostname[128];
-		gethostname(hostname, sizeof(hostname));
-
-		write_message(connptr->server_fd,
-			      "Via: %hu.%hu %s (%s/%s)\r\n",
-			      connptr->protocol.major, connptr->protocol.minor,
-			      hostname, PACKAGE, VERSION);
-	}
-
-	/*
 	 * Delete the headers listed in the skipheaders list
 	 */
 	for (i = 0; i < (sizeof(skipheaders) / sizeof(char *)); i++) {
 		hashmap_remove(hashofheaders, skipheaders[i]);
 	}
+
+	/* Send, or add the Via header */
+	write_via_header(connptr->server_fd, hashofheaders,
+			 connptr->protocol.major, connptr->protocol.minor);
 
 	/*
 	 * Output all the remaining headers to the remote machine.
@@ -730,6 +739,13 @@ process_client_headers(struct conn_s *connptr)
 static int
 process_server_headers(struct conn_s *connptr)
 {
+	static char *skipheaders[] = {
+		"keep-alive",
+		"proxy-authenticate",
+		"proxy-authorization",
+		"transfer-encoding",
+	};
+
 	char *response_line;
 
 	hashmap_t hashofheaders;
@@ -760,6 +776,10 @@ process_server_headers(struct conn_s *connptr)
 		return -1;
 	}
 
+	/* Send the saved response line first */
+	safe_write(connptr->client_fd, response_line, strlen(response_line));
+	safefree(response_line);
+
 	/*
 	 * If there is a "Content-Length" header, retrieve the information
 	 * from it for later use.
@@ -772,9 +792,16 @@ process_server_headers(struct conn_s *connptr)
 	 */
 	remove_connection_headers(hashofheaders);
 
-	/* Send the saved response line first */
-	safe_write(connptr->client_fd, response_line, strlen(response_line));
-	safefree(response_line);
+	/*
+	 * Delete the headers listed in the skipheaders list
+	 */
+	for (i = 0; i < (sizeof(skipheaders) / sizeof(char *)); i++) {
+		hashmap_remove(hashofheaders, skipheaders[i]);
+	}
+
+	/* Send, or add the Via header */
+	write_via_header(connptr->client_fd, hashofheaders,
+			 connptr->protocol.major, connptr->protocol.minor);
 
 	/*
 	 * Okay, output all the remaining headers to the client.
