@@ -22,6 +22,11 @@
 /*
  * Define if you want to include upstream proxy support
  */
+#undef UPSTREAM_SUPPORT
+
+/*
+ * Define if you want to include TCP tunnelling
+ */
 #undef TUNNEL_SUPPORT
 
 /*
