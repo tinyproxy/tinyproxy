@@ -1,3 +1,0 @@
-nameserver 172.31.80.9
-sortlist 127.0.0.1/32 172.18.45.0/24 172.31.80.0/28
-search davenant.greenend.org.uk greenend.org.uk
