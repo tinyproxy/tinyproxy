@@ -19,7 +19,6 @@ against the current tree and I'll integrate it if possible.
     external filtering program. I kind of like this idea, but I don't
     really have a good way of doing it yet.
     Suggested: Ed Avis
-  - Handle Secure Socket Layer (SSL) connections (usually port 443).
   - Include the ability to rewrite both incoming and outgoing headers.
-  - Log requests for tunnelled connections
-  - Allow HTTP header filtering through tunnelled connections
+  - Have a configuration option to build a statically linked program
+  - Enable an option for chroot() jailing tinyproxy.
