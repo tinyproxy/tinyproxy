@@ -1,38 +1,25 @@
+Wednesday, August 29, 2001
+--------------------------
 
-  NEWS
-  ====
+There has been a tonne of work done on tinyproxy since the beginning
+of last week. I have been releasing minor-minor-minor point releases,
+but the changes in this release constitute a minor-minor point
+release. Please see the ChangeLog for detail descriptions of all the
+changes, but here is a brief list.
 
-Well so much for the 1.4.0 version being the best tinyproxy---there
-were bugs. The most serious was a segmentation fault problem when an
-invalid request was received. Also, anonymous filtering was not
-actually working. Another bug fix is that on Debian systems (and maybe
-others) child threads would not be closed if they had been created
-after tinyproxy had been started. Finally, if MaxClientRequests was
-set to 0, the status of the thread was not going back to T_WAITING.
+The most serious fix is to the DNS caching system. There was a memory
+leak in the system whenever a domain was already in the database, but
+had expired. The new domain information was placed in the database,
+but the old information wasn't freed.
 
-Okay, now on to the new features. There is a new Connect log
-level. This is basically "Info" without info's noise. Also, the error
-reporting function sends back more HTTP headers, which should lead to
-a more standards compliant proxy.
+The second change is in regard to the regular expression library. For
+a while now tinyproxy has included it's own library (the GNU version)
+in case the system did not have a working copy. Due to a bug in the
+configure.in script the included REGEX library was being used even if
+a working copy was detected. This was making tinyproxy larger than it
+needed.
 
-There are a couple of features which I'm working on for the next
-release. There has been requests for logging on tunnelled
-connections. Also, some people would like HTTP filtering on tunnelled
-connections. Finally, I do have the information to include SSL
-connections, so I will be including it in the next release.
+I would suggest that everyone upgrade to this version; especially
+anyone who is still running 1.4.0 or below.
 
-So, the above bugs are fixed, hopefully there are no other ones. The
-new features will be worked into the next few releases.
-
-Update
-------
-2001-08-28 - The log levels _now_ finally work correctly. I have
-tested all the levels in the configuration file and the logging
-function now outputs the correct information.
-
-2001-08-27 - Fix one bug and two more crop up. The MIME type was
-incorrect in the httperr() function; this has been fixed.
-Jeffrey D. Wheelhouse included a patch to increase the stack size on
-some machine (notably FreeBSD) and also included a patch to allow
-tinyproxy to compile on FreeBSD. I really hope that _this_ is that
-last minor-minor version for a while.
+       -- Robert
