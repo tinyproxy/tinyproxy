@@ -1,4 +1,4 @@
-/* $Id: reqs.h,v 1.2 2000-09-12 00:04:42 rjkaes Exp $
+/* $Id: reqs.h,v 1.3 2002-04-12 17:00:42 rjkaes Exp $
  *
  * See 'reqs.c' for a detailed description.
  *
@@ -20,5 +20,6 @@
 #define _TINYPROXY_REQS_H_
 
 extern void handle_connection(int fd);
+extern void add_connect_port_allowed(int port);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.56 2002-04-12 03:09:04 rjkaes Exp $
+/* $Id: reqs.c,v 1.57 2002-04-12 17:00:42 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -70,6 +70,64 @@
  * Codify the test for the carriage return and new line characters.
  */
 #define CHECK_CRLF(header, len) ((len == 1 && header[0] == '\n') || (len == 2 && header[0] == '\r' && header[1] == '\n'))
+
+/*
+ * This is a global variable which stores which ports are allowed by
+ * the CONNECT method.  It's a security thing.
+ */
+static vector_t ports_allowed_by_connect = NULL;
+
+/*
+ * Now, this routine adds a "port" to the list.  It also creates the list if
+ * it hasn't already by done.
+ */
+void
+add_connect_port_allowed(int port)
+{
+	if (!ports_allowed_by_connect) {
+		ports_allowed_by_connect = vector_create();
+		if (!ports_allowed_by_connect) {
+			log_message(LOG_WARNING, "Could not create a list of allowed CONNECT ports");
+			return;
+		}
+	}
+
+	log_message(LOG_INFO, "Adding Port [%d] to the list allowed by CONNECT", port);
+	vector_insert(ports_allowed_by_connect, (void **)&port, sizeof(port));
+}
+
+/*
+ * This routine checks to see if a port is allowed in the CONNECT method.
+ *
+ * Returns: 1 if allowed
+ *          0 if denied
+ *          negative upon error
+ */
+static int
+check_allowed_connect_ports(int port)
+{
+	ssize_t i;
+	ssize_t ret;
+	int *data;
+
+	/*
+	 * If the port list doesn't exist, allow everything.  This might need
+	 * to be changed in the future.
+	 */
+	if (!ports_allowed_by_connect)
+		return 1;
+
+	for (i = 0; i < vector_length(ports_allowed_by_connect); ++i) {
+		ret = vector_getentry(ports_allowed_by_connect, i, (void **)&data);
+		if (ret < 0)
+			return -1;
+
+		if (*data == port)
+			return 1;
+	}
+
+	return 0;
+}
 
 /*
  * Read in the first line from the client (the request line for HTTP
@@ -331,6 +389,19 @@ process_request(struct conn_s *connptr)
 		if (extract_ssl_url(url, request) < 0) {
 			httperr(connptr, 400,
 				"Bad Request. Could not parse URL.");
+
+			safefree(url);
+			free_request_struct(request);
+
+			return NULL;
+		}
+
+		/* Verify that the port in the CONNECT method is allowed */
+		if (check_allowed_connect_ports(request->port) <= 0) {
+			httperr(connptr, 403,
+				"CONNECT method not allowed with selected port.");
+			log_message(LOG_INFO, "Refused CONNECT method on port %d",
+				    request->port);
 
 			safefree(url);
 			free_request_struct(request);
