@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.5 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: conns.c,v 1.6 2001-11-25 22:06:20 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connnection related tasks put here, but for now the header
@@ -32,11 +32,8 @@ initialize_conn(struct conn_s *connptr)
 	connptr->cbuffer = new_buffer();
 	connptr->sbuffer = new_buffer();
 
-	connptr->send_message = FALSE;
-	connptr->simple_req = FALSE;
-
-	connptr->ssl = FALSE;
-	connptr->upstream = FALSE;
+	connptr->send_response_message = FALSE;
+	connptr->connect_method = FALSE;
 
 	connptr->protocol.major = connptr->protocol.minor = 0;
 

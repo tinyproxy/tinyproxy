@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.4 2001-11-21 01:00:09 rjkaes Exp $
+/* $Id: conns.h,v 1.5 2001-11-25 22:06:20 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -18,21 +18,27 @@
 #ifndef TINYPROXY_CONNS_H
 #define TINYPROXY_CONNS_H
 
+#include "tinyproxy.h"
+
 /*
  * Connection Definition
  */
 struct conn_s {
 	int client_fd;
 	int server_fd;
+
 	struct buffer_s *cbuffer;
 	struct buffer_s *sbuffer;
-	bool_t simple_req;
-	bool_t ssl;
-	bool_t upstream;
-	bool_t send_message;
+
+	bool_t connect_method;
+	bool_t send_response_message;
+
+	/*
+	 * Store the incoming request's HTTP protocol.
+	 */
 	struct {
-		unsigned short int major;
-		unsigned short int minor;
+		unsigned int major;
+		unsigned int minor;
 	} protocol;
 };
 
