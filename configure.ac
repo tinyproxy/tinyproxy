@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.5 2001-12-28 22:31:12 rjkaes Exp $
+dnl $Id: configure.ac,v 2.6 2002-04-02 16:58:36 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -66,25 +66,25 @@ dnl Add compiler-specific optimization flags
 AC_ARG_ENABLE(debug,
               [AC_HELP_STRING([--enable-debug],
                               [Disable aggressive optimizations (default is NO)])],
-              debug_enabled=yes, debug_enabled=no)
+              debug_enabled=$enableval, debug_enabled=no)
 
 dnl Add in profiling information
 AC_ARG_ENABLE(profiling,
               [AC_HELP_STRING([--enable-profiling],
                               [Enable profiling information (default is NO)])],
-              profiling_enabled=yes, profiling_enabled=no)
+              profiling_enabled=$enableval, profiling_enabled=no)
 
 dnl Include SOCKS support
 AC_ARG_ENABLE(socks,
               [AC_HELP_STRING([--enable-socks],
                               [Enable SOCKS support (default is NO)])],
-              socks_enabled=yes, socks_enabled=no)
+              socks_enabled=$enableval, socks_enabled=no)
 
 dnl Check to see if the XTinyproxy header is to be included
 AC_ARG_ENABLE(xtinyproxy,
               [AC_HELP_STRING([--enable-xtinyproxy],
                               [Include X-Tinyproxy header (default is YES)])],
-              xtinyproxy_enabled=yes, xtinyproxy_enabled=yes)
+              xtinyproxy_enabled=$enableval, xtinyproxy_enabled=yes)
 
 if test x"$xtinyproxy_enabled" = x"yes"; then
     AH_TEMPLATE([XTINYPROXY_ENABLE],
@@ -97,7 +97,7 @@ dnl Include filtering for domain/URLs
 AC_ARG_ENABLE(filter,
               [AC_HELP_STRING([--enable-filter],
                               [Enable filtering of domains/URLs (default is YES)])],
-              filter_enabled=yes, filter_enabled=yes)
+              filter_enabled=$enableval, filter_enabled=yes)
 
 if test x"$filter_enabled" = x"yes"; then
     LIBOBJS="filter.o $LIBOBJS"
@@ -112,7 +112,7 @@ dnl Include support for TCP tunneling
 AC_ARG_ENABLE(tunnel,
               [AC_HELP_STRING([--enable-tunnel],
                               [Enable support for TCP tunneling (default is YES)])],
-              tunnel_enabled=yes, tunnel_enabled=yes)
+              tunnel_enabled=$enableval, tunnel_enabled=yes)
 if test x"$tunnel_enabled" = x"yes" ; then
     AH_TEMPLATE([TUNNEL_SUPPORT],
 		[Include TCP tunnelling support?])
@@ -124,7 +124,7 @@ dnl Include support for upstream proxies?
 AC_ARG_ENABLE(upstream,
               [AC_HELP_STRING([--enable-upstream],
                               [Enable support for upstream proxies (default is YES)])],
-              upstream_enabled=yes, upstream_enabled=yes)
+              upstream_enabled=$enableval, upstream_enabled=yes)
 if test x"$upstream_enabled" = x"yes"; then
     AH_TEMPLATE([UPSTREAM_SUPPORT],
 		[Include support for connecting to an upstream proxy.])
@@ -173,12 +173,20 @@ else
     if test x"$ac_cv_lib_pthreads_pthread_create" = x"yes"; then
         CFLAGS="-D_REENTRANT $CFLAGS"
     else
-        AC_CHECK_LIB(c_r, pthread_create)
+        AC_CHECK_LIB(c_r, pthread_create,
+		  USE_PTHREAD=1 PTHREAD_LDFLAGS="-lc_r")
         if test x"$ac_cv_lib_c_r_pthread_create" = x"yes"; then
             CFLAGS="-pthread -D_REENTRANT $CFLAGS"
         else
 	    AC_MSG_ERROR([You must have a POSIX compliant threading library installed])
         fi
+		case "$target" in
+		*-freebsd*)
+			;;
+		*)
+			LIBS = "$LIBS -lc_r"
+			;;
+		esac
     fi
 fi
 
