@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.14 2001-10-25 05:10:32 rjkaes Exp $
+/* $Id: sock.c,v 1.15 2001-11-12 21:10:51 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -219,7 +219,7 @@ char *getpeer_string(int fd, char *string)
 ssize_t safe_write(int fd, const void *buffer, size_t count)
 {
 	ssize_t len;
-
+	
 	do {
 		len = write(fd, buffer, count);
 	} while (len < 0 && errno == EINTR);
@@ -259,18 +259,22 @@ ssize_t readline(int fd, char *ptr, size_t maxlen)
 
 	for (n = 1; n < maxlen; n++) {
 	again:
-		if ((rc = read(fd, &c, 1)) == 1) {
+		if ((rc = recv(fd, &c, 1, MSG_NOSIGNAL)) == 1) {
 			*ptr++ = c;
 			if (c == '\n')
 				break;
 		} else if (rc == 0) {
-			if (n == 1)
+			if (n == 1) {
+				DEBUG2("File_Desc: %d Closed.", fd);
 				return 0;
-			else
+			} else
 				break;
 		} else {
 			if (errno == EINTR)
 				goto again;
+
+			DEBUG2("File_Desc: %d \"%s\" (%d)", fd, strerror(errno), errno);
+
 			return -1;
 		}
 	}
