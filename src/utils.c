@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.10 2001-09-08 18:55:58 rjkaes Exp $
+/* $Id: utils.c,v 1.11 2001-09-11 19:27:27 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -47,6 +47,13 @@ void *debugging_malloc(size_t size, const char *file, unsigned long line)
 	void *ptr = malloc(size);
 	fprintf(stderr, "{malloc: %p:%u} %s:%lu\n", ptr, size, file, line);
 	return ptr;
+}
+
+void *debugging_realloc(void *ptr, size_t size, const char *file, unsigned long line)
+{
+	void *newptr = realloc(ptr, size);
+	fprintf(stderr, "{realloc: %p -> %p:%u} %s:%lu\n", ptr, newptr, size, file, line);
+	return newptr;
 }
 
 void debugging_free(void *ptr, const char *file, unsigned long line)
