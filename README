@@ -57,8 +57,8 @@
  If you are having problems with tinyproxy, please report the problem
  to:
 
-	Steven Young		<sdyoung@well.com>
 	Robert James Kaes	<rjkaes@flarenet.com>
+	Steven Young		<sdyoung@users.sourceforge.net>
 
  Please recompile tinyproxy with full debug support (--enable-debug)
  and include a copy of the log file, and any assert errors reported by 
