@@ -51,3 +51,8 @@
 #undef size_t
 #undef ssize_t
 #undef socklen_t
+
+/*
+ * A string containing the name of the system tinyproxy was built towards.
+ */
+#undef TARGET_SYSTEM
