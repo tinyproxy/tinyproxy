@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.33 2002-06-15 17:28:19 rjkaes Exp $
+/* $Id: utils.c,v 1.34 2002-07-09 19:02:57 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -154,10 +154,10 @@ create_file_safely(const char *filename, bool_t truncate_file)
 		 * existing", exit.
 		 */
 		if (errno != ENOENT) {
-			log_message(LOG_ERR,
-				    "create_file_safely: Error checking file %s: %s.",
-				    filename, strerror(errno));
-			return -1;
+			fprintf(stderr,
+				"%s: Error checking file %s: %s\n",
+				PACKAGE, filename, strerror(errno));
+			exit(EX_IOERR);
 		}
 
 		/*
@@ -167,10 +167,10 @@ create_file_safely(const char *filename, bool_t truncate_file)
 		 */
 		if ((fildes =
 		     open(filename, O_RDWR | O_CREAT | O_EXCL, 0600)) < 0) {
-			log_message(LOG_ERR,
-				    "create_file_safely: Could not create file %s: %s.",
-				    filename, strerror(errno));
-			return -1;
+			fprintf(stderr,
+				"%s: Could not create file %s: %s\n",
+				PACKAGE, filename, strerror(errno));
+			exit(EX_CANTCREAT);
 		}
 	} else {
 		struct stat fstatinfo;
@@ -184,10 +184,10 @@ create_file_safely(const char *filename, bool_t truncate_file)
 		 * Open an existing file.
 		 */
 		if ((fildes = open(filename, flags)) < 0) {
-			log_message(LOG_ERR,
-				    "create_file_safely: Could not open file %s: %s.",
-				    filename, strerror(errno));
-			return -1;
+			fprintf(stderr,
+				"%s: Could not open file %s: %s\n",
+				PACKAGE, filename, strerror(errno));
+			exit(EX_IOERR);
 		}
 
 		/*
@@ -198,11 +198,11 @@ create_file_safely(const char *filename, bool_t truncate_file)
 		    || lstatinfo.st_mode != fstatinfo.st_mode
 		    || lstatinfo.st_ino != fstatinfo.st_ino
 		    || lstatinfo.st_dev != fstatinfo.st_dev) {
-			log_message(LOG_ERR,
-				    "create_file_safely: The file %s has been changed before it could be opened.",
-				    filename);
+			fprintf(stderr,
+				"%s: The file %s has been changed before it could be opened\n",
+				PACKAGE, filename);
 			close(fildes);
-			return -1;
+			exit(EX_IOERR);
 		}
 
 		/*
@@ -213,11 +213,11 @@ create_file_safely(const char *filename, bool_t truncate_file)
 		 * st_mode check would also find this)
 		 */
 		if (fstatinfo.st_nlink > 1 || !S_ISREG(lstatinfo.st_mode)) {
-			log_message(LOG_ERR,
-				    "create_file_safely: The file %s has too many links, or is not a regular file: %s.",
-				    filename, strerror(errno));
+			fprintf(stderr,
+				"%s: The file %s has too many links, or is not a regular file: %s\n",
+				PACKAGE, filename, strerror(errno));
 			close(fildes);
-			return -1;
+			exit(EX_IOERR);
 		}
 
 		/*
@@ -241,10 +241,10 @@ create_file_safely(const char *filename, bool_t truncate_file)
 		close(fildes);
 		if ((fildes =
 		     open(filename, O_RDWR | O_CREAT | O_TRUNC, 0600)) < 0) {
-			log_message(LOG_ERR,
-				    "create_file_safely: Could not open file %s: %s.",
-				    filename, strerror(errno));
-			return -1;
+			fprintf(stderr,
+				"%s: Could not open file %s: %s.",
+				PACKAGE, filename, strerror(errno));
+			exit(EX_IOERR);
 		}
 #endif				/* HAVE_FTRUNCATE */
 	}
@@ -271,12 +271,12 @@ pidfile_create(const char *filename)
 	 * Open a stdio file over the low-level one.
 	 */
 	if ((fd = fdopen(fildes, "w")) == NULL) {
-		log_message(LOG_ERR,
-			    "pidfile_create: fdopen() error on PID file %s: %s.",
-			    filename, strerror(errno));
+		fprintf(stderr,
+			"%s: Could not write PID file %s: %s.",
+			PACKAGE, filename, strerror(errno));
 		close(fildes);
 		unlink(filename);
-		exit(1);
+		exit(EX_IOERR);
 	}
 
 	fprintf(fd, "%ld\n", (long) getpid());
