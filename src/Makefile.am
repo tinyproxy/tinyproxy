@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.11 2002-04-10 21:51:01 rjkaes Exp $
+# $Id: Makefile.am,v 1.12 2002-05-02 17:34:58 rjkaes Exp $
 #
 # 
 #
@@ -18,7 +18,7 @@
 YFLAGS = @YFLAGS@
 LDFLAGS = @LDFLAGS@
 
-bin_PROGRAMS = tinyproxy
+sbin_PROGRAMS = tinyproxy
 
 tinyproxy_SOURCES = \
 	acl.c acl.h \
