@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.28 2001-09-16 20:10:19 rjkaes Exp $
+/* $Id: reqs.c,v 1.29 2001-10-17 04:15:35 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -635,6 +635,7 @@ static void relay_connection(struct conn_s *connptr)
 				continue;
 			}
 		} else if (ret < 0) {
+			log_message(LOG_ERR, "Received an error in select() [\"%s\", %d], so closing connection (client_fd:%d, server_fd:%d)", strerror(errno), errno, connptr->client_fd, connptr->server_fd);
 			return;
 		} else {
 			/*
@@ -801,29 +802,43 @@ internal_proxy:
 				goto send_error;
 			}
 
-			/*
-			 * Send a new request line, plus the Host and
-			 * Connection headers. The reason for the new request
-			 * line is that we need to specify the HTTP/1.0
-			 * protocol.
-			 */
-			safe_write(connptr->server_fd, request->method, strlen(request->method));
-			safe_write(connptr->server_fd, " http://", 8);
-			safe_write(connptr->server_fd, request->host, strlen(request->host));
-			if (request->port != 80) {
+			if (!connptr->ssl) {
+				/*
+				 * Send a new request line, plus the Host and
+				 * Connection headers. The reason for the new
+				 * request line is that we need to specify
+				 * the HTTP/1.0 protocol.
+				 */
+				safe_write(connptr->server_fd, request->method, strlen(request->method));
+				safe_write(connptr->server_fd, " http://", 8);
+				safe_write(connptr->server_fd, request->host, strlen(request->host));
+				if (request->port != 80) {
+					char port_string[16];
+					sprintf(port_string, ":%d", request->port);
+				
+					safe_write(connptr->server_fd, port_string, strlen(port_string));
+			}
+
+				safe_write(connptr->server_fd, request->path, strlen(request->path));
+				safe_write(connptr->server_fd, " HTTP/1.0\r\n", 11);
+			
+				safe_write(connptr->server_fd, "Host: ", 6);
+				safe_write(connptr->server_fd, request->host, strlen(request->host));
+				safe_write(connptr->server_fd, "\r\nConnection: close\r\n", 21);
+			} else {
+				/*
+				 * This is a CONNECT request, so send that.
+				 */
 				char port_string[16];
 				sprintf(port_string, ":%d", request->port);
 
+				safe_write(connptr->server_fd, request->method, strlen(request->method));
+				safe_write(connptr->server_fd, " ", 1);
+				safe_write(connptr->server_fd, request->host, strlen(request->host));
 				safe_write(connptr->server_fd, port_string, strlen(port_string));
+				safe_write(connptr->server_fd, " HTTP/1.0\r\n", 11);
 			}
 
-			safe_write(connptr->server_fd, request->path, strlen(request->path));
-			safe_write(connptr->server_fd, " HTTP/1.0\r\n", 11);
-
-			safe_write(connptr->server_fd, "Host: ", 6);
-			safe_write(connptr->server_fd, request->host, strlen(request->host));
-			safe_write(connptr->server_fd, "\r\nConnection: close\r\n", 21);
-		
 			free_request_struct(request);
 		} else {
 #endif
