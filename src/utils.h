@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.2 2000-09-12 00:01:29 rjkaes Exp $
+/* $Id: utils.h,v 1.3 2000-09-26 04:58:35 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -20,8 +20,6 @@
 #define _TINYPROXY_UTILS_H_
 
 #include "tinyproxy.h"
-
-#define safefree(x) free(x); x = NULL
 
 extern char *xstrstr(char *haystack, char *needle, size_t length,
 		     bool_t case_sensitive);
