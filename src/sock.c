@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.37 2002-05-27 01:57:48 rjkaes Exp $
+/* $Id: sock.c,v 1.38 2002-05-31 18:08:01 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -221,10 +221,11 @@ getpeer_information(int fd, char* ipaddr, char* string_addr)
 			PEER_IP_LENGTH);
 	}
 
-	result = gethostbyaddr(ipaddr, strlen(ipaddr), AF_INET);
+	result = gethostbyaddr((char *)&name.sin_addr.s_addr, 4, AF_INET);
 	if (result) {
 		strlcpy(string_addr, result->h_name, PEER_STRING_LENGTH);
 		return 0;
-	} else
+	} else {
 		return -1;
+	}
 }
