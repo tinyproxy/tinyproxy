@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.52 2001-12-24 00:01:02 rjkaes Exp $
+/* $Id: reqs.c,v 1.53 2002-04-07 21:35:59 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -30,6 +30,7 @@
 #include "buffer.h"
 #include "conns.h"
 #include "filter.h"
+#include "hashmap.h"
 #include "log.h"
 #include "regexp.h"
 #include "reqs.h"
@@ -75,39 +76,38 @@
  * connections. The request line is allocated from the heap, but it must
  * be freed in another function.
  */
-static char *
+static int
 read_request_line(struct conn_s *connptr)
 {
-	char *request_buffer;
 	size_t len;
 
       retry:
-	len = readline(connptr->client_fd, &request_buffer);
+	len = readline(connptr->client_fd, &connptr->request_line);
 	if (len <= 0) {
 		log_message(LOG_ERR,
 			    "read_request_line: Client (file descriptor: %d) closed socket before read.",
 			    connptr->client_fd);
-		safefree(request_buffer);
-		return NULL;
+		safefree(connptr->request_line);
+		return -1;
 	}
 
 	/*
 	 * Strip the new line and character return from the string.
 	 */
-	if (chomp(request_buffer, len) == len) {
+	if (chomp(connptr->request_line, len) == len) {
 		/*
 		 * If the number of characters removed is the same as the
 		 * length then it was a blank line. Free the buffer and
 		 * try again (since we're looking for a request line.)
 		 */
-		safefree(request_buffer);
+		safefree(connptr->request_line);
 		goto retry;
 	}
 
 	log_message(LOG_CONN, "Request (file descriptor %d): %s",
-		    connptr->client_fd, request_buffer);
+		    connptr->client_fd, connptr->request_line);
 
-	return request_buffer;
+	return 0;
 }
 
 /*
@@ -118,8 +118,9 @@ struct request_s {
 	char *protocol;
 
 	char *host;
+	uint16_t port;
+
 	char *path;
-	int port;
 };
 
 static void
@@ -154,11 +155,11 @@ extract_http_url(const char *url, struct request_s *request)
 	}
 
 	if (sscanf
-	    (url, "http://%[^:/]:%d%s", request->host, &request->port,
+	    (url, "http://%[^:/]:%hu%s", request->host, &request->port,
 	     request->path) == 3) ;
 	else if (sscanf(url, "http://%[^/]%s", request->host, request->path) == 2)
 		request->port = 80;
-	else if (sscanf(url, "http://%[^:/]:%d", request->host, &request->port)
+	else if (sscanf(url, "http://%[^:/]:%hu", request->host, &request->port)
 		 == 2)
 		strcpy(request->path, "/");
 	else if (sscanf(url, "http://%[^/]", request->host) == 1) {
@@ -186,7 +187,7 @@ extract_ssl_url(const char *url, struct request_s *request)
 	if (!request->host)
 		return -1;
 
-	if (sscanf(url, "%[^:]:%d", request->host, &request->port) == 2) ;
+	if (sscanf(url, "%[^:]:%hu", request->host, &request->port) == 2) ;
 	else if (sscanf(url, "%s", request->host) == 1)
 		request->port = 443;
 	else {
@@ -255,7 +256,7 @@ send_ssl_response(struct conn_s *connptr)
  * build a new request line. Finally connect to the remote server.
  */
 static struct request_s *
-process_request(struct conn_s *connptr, char *request_line)
+process_request(struct conn_s *connptr)
 {
 	char *url;
 	struct request_s *request;
@@ -269,7 +270,7 @@ process_request(struct conn_s *connptr, char *request_line)
 	if (!request)
 		return NULL;
 
-	request_len = strlen(request_line) + 1;
+	request_len = strlen(connptr->request_line) + 1;
 
 	request->method = safemalloc(request_len);
 	url = safemalloc(request_len);
@@ -283,8 +284,8 @@ process_request(struct conn_s *connptr, char *request_line)
 	}
 
 	ret =
-	    sscanf(request_line, "%[^ ] %[^ ] %[^ ]", request->method, url,
-		   request->protocol);
+	    sscanf(connptr->request_line, "%[^ ] %[^ ] %[^ ]",
+		   request->method, url, request->protocol);
 	if (ret < 2) {
 		log_message(LOG_ERR,
 			    "process_request: Bad Request on file descriptor %d",
@@ -398,33 +399,6 @@ process_request(struct conn_s *connptr, char *request_line)
 }
 
 /*
- * Check to see if the line is allowed or not depending on the anonymous
- * headers which are to be allowed. If the header is found in the
- * anonymous list return 0, otherwise return -1.
- */
-static int
-compare_header(char *line)
-{
-	char *buffer;
-	char *ptr;
-	int ret;
-
-	if ((ptr = strstr(line, ":")) == NULL)
-		return -1;
-
-	if ((buffer = safemalloc(ptr - line + 1)) == NULL)
-		return -1;
-
-	memcpy(buffer, line, (size_t) (ptr - line));
-	buffer[ptr - line] = '\0';
-
-	ret = anonymous_search(buffer);
-	safefree(buffer);
-
-	return ret;
-}
-
-/*
  * pull_client_data is used to pull across any client data (like in a
  * POST) which needs to be handled before an error can be reported, or
  * server headers can be processed.
@@ -450,7 +424,7 @@ pull_client_data(struct conn_s *connptr, unsigned long int length)
 			return -1;
 		}
 
-		if (!connptr->send_response_message) {
+		if (!connptr->response_message_sent) {
 			if (safe_write(connptr->server_fd, buffer, len) < 0) {
 				safefree(buffer);
 				return -1;
@@ -488,6 +462,112 @@ add_xtinyproxy_header(struct conn_s *connptr)
 #endif				/* XTINYPROXY */
 
 /*
+ * Check to see if the header is allowed or not depending on the anonymous
+ * headers which are to be allowed. If the header is found in the
+ * anonymous list return 0, otherwise return -1.
+ */
+static inline int
+compare_header(char *header)
+{
+	return anonymous_search(header);
+}
+
+/*
+ * Take a complete header line and break it apart (into a key and the data.)
+ * Now insert this information into the hashmap for the connection so it
+ * can be retrieved and manipulated later.
+ */
+static inline int
+add_header_to_connection(hashmap_t hashofheaders, char *header, size_t len)
+{
+	char *sep;
+	size_t data_len;
+
+	/* Get rid of the new line and return at the end */
+	chomp(header, len);
+
+	sep = strchr(header, ':');
+	if (!sep)
+		return -1;
+
+	/* Blank out colons, spaces, and tabs. */
+	while (*sep == ':' || *sep == ' ' || *sep == '\t')
+		*sep++ = '\0';
+	
+	data_len = strlen(sep) + 1; /* need to add the null to the length */
+	return hashmap_insert(hashofheaders, header, sep, data_len);
+}
+
+/*
+ * Read all the headers from the stream
+ */
+static int
+get_all_headers(int fd, hashmap_t hashofheaders)
+{
+	char *header;
+	ssize_t len;
+
+	for (;;) {
+		if ((len = readline(fd, &header)) <= 0) {
+			return -1;
+		}
+
+		/*
+		 * If we received just a CR LF on a line, the headers are
+		 * finished.
+		 */
+		if (CHECK_CRLF(header, len))
+			break;
+
+		if (add_header_to_connection(hashofheaders, header, len) < 0)
+			return -1;
+	}
+
+	return 0;
+}
+
+/*
+ * Extract the headers to remove.  These headers were listed in the Connection
+ * header sent via the client (which is stored in data right now.)
+ */
+static int
+remove_connection_headers(hashmap_t hashofheaders, char* data, ssize_t len)
+{
+	char* ptr;
+
+	/*
+	 * Go through the data line and replace any special characters with
+	 * a NULL.
+	 */
+	ptr = data;
+	while ((ptr = strpbrk(ptr, "()<>@,;:\\\"/[]?={} \t"))) {
+		*ptr++ = '\0';
+	}
+
+	/*
+	 * All the tokens are separated by NULLs.  Now go through the tokens
+	 * and remove them from the hashofheaders.
+	 */
+	ptr = data;
+	while (ptr < data + len) {
+		DEBUG2("Removing header [%s]", ptr);
+		hashmap_remove(hashofheaders, ptr);
+
+		/* Advance ptr to the next token */
+		ptr += strlen(ptr) + 1;
+		while (*ptr == '\0')
+			ptr++;
+	}
+
+	return 0;
+}
+
+/*
+ * Number of buckets to use internally in the hashmap.
+ */
+#define HEADER_BUCKETS 32
+
+/*
  * Here we loop through all the headers the client is sending. If we
  * are running in anonymous mode, we will _only_ send the headers listed
  * (plus a few which are required for various methods).
@@ -496,11 +576,6 @@ add_xtinyproxy_header(struct conn_s *connptr)
 static int
 process_client_headers(struct conn_s *connptr)
 {
-	char *header;
-	long content_length = -1;
-	short int sent_via_header = 0;
-	ssize_t len;
-
 	static char *skipheaders[] = {
 		"host",
 		"connection",
@@ -513,122 +588,120 @@ process_client_headers(struct conn_s *connptr)
 		"upgrade"
 	};
 	int i;
+	hashmap_t hashofheaders;
+	vector_t listofheaders;
+	long content_length = -1;
 
-	for (;;) {
-		if ((len = readline(connptr->client_fd, &header)) <= 0) {
-			DEBUG2("Client (file descriptor %d) closed connection.",
-			       connptr->client_fd);
-			return -1;
-		}
+	char *data, *header;
+	size_t len;
 
-		/*
-		 * If we receive a CR LF (or just a LF) on a line by itself,
-		 * the headers are finished.
-		 */
-		if (CHECK_CRLF(header, len))
-			break;
+	hashofheaders = hashmap_create(HEADER_BUCKETS);
+	if (!hashofheaders)
+		return -1;
 
-		/*
-		 * Don't send headers if there's already an error, or if
-		 * this was a CONNECT method (unless upstream proxy is in
-		 * use.)
-		 */
-		if (connptr->server_fd == -1
-		    || (connptr->connect_method && !UPSTREAM_CONFIGURED())) {
-			safefree(header);
-			continue;
-		}
-
-		/*
-		 * If we find a Via header we need to append our information
-		 * to the end of it.
-		 */
-		if (strncasecmp(header, "via", 3) == 0) {
-			if (sent_via_header == 0) {
-				char hostname[128];
-
-				chomp(header, len);
-				gethostname(hostname, sizeof(hostname));
-				write_message(connptr->server_fd,
-					      "%s, %hu.%hu %s (%s/%s)\r\n",
-					      header,
-					      connptr->protocol.major,
-					      connptr->protocol.minor,
-					      hostname, PACKAGE, VERSION);
-
-				sent_via_header = 1;
-			}
-			safefree(header);
-
-			continue;
-		}
-
-		/*
-		 * Don't send certain headers.
-		 */
-		for (i = 0; i < (sizeof(skipheaders) / sizeof(char *)); i++) {
-			if (strncasecmp
-			    (header, skipheaders[i],
-			     strlen(skipheaders[i])) == 0) {
-				break;
-			}
-		}
-		if (i != (sizeof(skipheaders) / sizeof(char *))) {
-			safefree(header);
-			continue;
-		}
-
-		if (is_anonymous_enabled() && compare_header(header) < 0) {
-			safefree(header);
-			continue;
-		}
-
-		if (content_length == -1
-		    && strncasecmp(header, "content-length", 14) == 0) {
-			char *content_ptr = strchr(header, ':') + 1;
-			content_length = atol(content_ptr);
-		}
-
-		if (safe_write(connptr->server_fd, header, strlen(header)) < 0) {
-			safefree(header);
-			return -1;
-		}
-
-		safefree(header);
+	/*
+	 * Get all the headers from the client in a big hash.
+	 */
+	if (get_all_headers(connptr->client_fd, hashofheaders) < 0) {
+		hashmap_delete(hashofheaders);
+		return -1;
 	}
 
-	if (!connptr->send_response_message
-	    && (!connptr->connect_method || UPSTREAM_CONFIGURED())) {
-#ifdef XTINYPROXY_ENABLE
-		if (config.my_domain && add_xtinyproxy_header(connptr) < 0) {
-			safefree(header);
-			return -1;
-		}
-#endif				/* XTINYPROXY */
+	
+	/*
+	 * Don't send headers if there's already an error, or if this was
+	 * a CONNECT method (unless upstream proxy is in use.)
+	 */
+	if (connptr->server_fd == -1
+	    || (connptr->connect_method && !UPSTREAM_CONFIGURED())) {
+		hashmap_delete(hashofheaders);
+		return 0;
+	}
 
-		if (sent_via_header == 0) {
-			/*
-			 * We're the first proxy so send the first Via header.
-			 */
-			char hostname[128];
+	/*
+	 * See if there is a "Connection" header.  If so, we need to do a bit
+	 * of processing. :)
+	 */
+	len = hashmap_search(hashofheaders, "connection", (void **)&data);
+	if (len > 0) {
+		/*
+		 * Go through the tokens in the connection header and
+		 * remove the headers from the hash.
+		 */
+		remove_connection_headers(hashofheaders, data, len);
+		hashmap_remove(hashofheaders, "connection");
+	}
 
-			gethostname(hostname, sizeof(hostname));
+	/*
+	 * See if there is a "Content-Length" header.  If so, again we need
+	 * to do a bit of processing.
+	 */
+	len = hashmap_search(hashofheaders, "content-length", (void **)&data);
+	if (len > 0) {
+		content_length = atol(data);
+	}
+
+	/*
+	 * See if there is a "Via" header.  If so, again we need to do a bit
+	 * of processing.
+	 */
+	len = hashmap_search(hashofheaders, "via", (void **)&data);
+	if (len > 0) {
+		/* Take on our information */
+		char hostname[128];
+		gethostname(hostname, sizeof(hostname));
+
+		write_message(connptr->server_fd,
+			      "Via: %s, %hu.%hu %s (%s/%s)\r\n",
+			      data,
+			      connptr->protocol.major, connptr->protocol.minor,
+			      hostname, PACKAGE, VERSION);
+
+		hashmap_remove(hashofheaders, "via");
+	} else {
+		/* There is no header, so we need to create it. */
+		char hostname[128];
+		gethostname(hostname, sizeof(hostname));
+
+		write_message(connptr->server_fd,
+			      "Via: %hu.%hu %s (%s/%s)\r\n",
+			      connptr->protocol.major, connptr->protocol.minor,
+			      hostname, PACKAGE, VERSION);
+	}
+
+	/*
+	 * Delete the headers listed in the skipheaders list
+	 */
+	for (i = 0; i < (sizeof(skipheaders) / sizeof(char *)); i++) {
+		hashmap_remove(hashofheaders, skipheaders[i]);
+	}
+
+	/*
+	 * Output all the remaining headers to the remote machine.
+	 */
+	listofheaders = hashmap_keys(hashofheaders);
+	for (i = 0; i < vector_length(listofheaders); i++) {
+		len = vector_getentry(listofheaders, i, (void **)&data);
+
+		hashmap_search(hashofheaders, data, (void **)&header);
+
+		if (!is_anonymous_enabled() || compare_header(data) == 0) {
 			write_message(connptr->server_fd,
-				      "Via: %hu.%hu %s (%s/%s)\r\n",
-				      connptr->protocol.major,
-				      connptr->protocol.minor,
-				      hostname, PACKAGE, VERSION);
-		}
-
-		if ((connptr->server_fd != -1)
-		    && safe_write(connptr->server_fd, header,
-				  strlen(header)) < 0) {
-			safefree(header);
-			return -1;
+				      "%s: %s\r\n",
+				      data, header);
 		}
 	}
+	vector_delete(listofheaders);
 
-	safefree(header);
+	/* Free the hashofheaders since it's no longer needed */
+	hashmap_delete(hashofheaders);
+
+#if defined(XTINYPROXY_ENABLE)
+	add_xtinyproxy_header(connptr);
+#endif
+	
+	/* Write the final "blank" line to signify the end of the headers */
+	safe_write(connptr->server_fd, "\r\n", 2);
 
 	/*
 	 * Spin here pulling the data from the client.
@@ -896,19 +969,14 @@ handle_connection(int fd)
 	char peer_ipaddr[PEER_IP_LENGTH];
 	char peer_string[PEER_STRING_LENGTH];
 
-	char *request_line = NULL;
-
 	log_message(LOG_CONN, "Connect (file descriptor %d): %s [%s]",
 		    fd,
 		    getpeer_string(fd, peer_string),
 		    getpeer_ip(fd, peer_ipaddr));
 
-	connptr = safemalloc(sizeof(struct conn_s));
+	connptr = initialize_conn(fd);
 	if (!connptr)
 		return;
-
-	initialize_conn(connptr);
-	connptr->client_fd = fd;
 
 	if (check_acl(fd) <= 0) {
 		update_stats(STAT_DENIED);
@@ -925,18 +993,15 @@ handle_connection(int fd)
 	}
 
       internal_proxy:
-	request_line = read_request_line(connptr);
-	if (!request_line) {
+	if (read_request_line(connptr) < 0) {
 		update_stats(STAT_BADCONN);
 		destroy_conn(connptr);
 		return;
 	}
 
-	request = process_request(connptr, request_line);
-	safefree(request_line);
-
+	request = process_request(connptr);
 	if (!request) {
-		if (!connptr->send_response_message) {
+		if (!connptr->response_message_sent) {
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
 			return;
@@ -967,13 +1032,13 @@ handle_connection(int fd)
 
 	if (process_client_headers(connptr) < 0) {
 		update_stats(STAT_BADCONN);
-		if (!connptr->send_response_message) {
+		if (!connptr->response_message_sent) {
 			destroy_conn(connptr);
 			return;
 		}
 	}
 
-	if (connptr->send_response_message) {
+	if (connptr->response_message_sent) {
 		destroy_conn(connptr);
 		return;
 	}
