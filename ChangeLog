@@ -1,5 +1,9 @@
 2002-04-18  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/sock.c (getpeer_string): Removed the hstrerror() call since
+	it's not supported on all machines, and it's not really needed
+	anyway.
+
 	* src/vector.c:
 	* src/hashmap.c: Changed all calls to malloc, calloc, free, and
 	strdup to the appropriate safe variety.

@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.28 2002-04-17 20:56:13 rjkaes Exp $
+/* $Id: sock.c,v 1.29 2002-04-18 18:48:22 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -275,8 +275,7 @@ getpeer_string(int fd, char *string)
 			strlcpy(string, peername->h_name, PEER_STRING_LENGTH);
 		else
 			log_message(LOG_ERR,
-				    "getpeer_string: gethostbyaddr() error \"%s\".",
-				    hstrerror(h_errno));
+				    "getpeer_string: gethostbyaddr() error");
 
 		UNLOCK();
 	}
