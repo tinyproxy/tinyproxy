@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.28 2002-04-18 17:59:21 rjkaes Exp $
+/* $Id: utils.c,v 1.29 2002-04-28 20:03:53 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -129,10 +129,11 @@ send_http_message(struct conn_s *connptr, int http_code,
 	strftime(timebuf, sizeof(timebuf), "%a, %d %b %Y %H:%M:%S GMT",
 		 gmtime(&global_time));
 
-	write_message(connptr->client_fd,
-		      headers,
-		      http_code, error_title, PACKAGE, VERSION, timebuf,
-		      message_len);
+	if (write_message(connptr->client_fd,
+			  headers,
+			  http_code, error_title, PACKAGE, VERSION,
+			  timebuf, message_len) < 0)
+		return -1;
 
 	return safe_write(connptr->client_fd, message, message_len);
 }
