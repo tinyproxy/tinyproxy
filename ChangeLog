@@ -1358,3 +1358,10 @@
 	doc/HTTP_ERROR_CODES, doc/RFC_INFO, doc/report.sh, doc/tinyproxy.8:
 	Initial CVS checking of tinyproxy - version 1.3.2.
 
+1999-12-24 20:33  sdyoung
+
+	Released tinyproxy 1.3.1 (1999-12-24 unconfirmed)
+
+1999-12-03 23:21  sdyoung
+
+	Released tinyproxy 1.3.0 (1999-12-03 unconfirmed)
