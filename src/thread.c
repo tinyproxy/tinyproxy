@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.8 2001-08-28 04:33:21 rjkaes Exp $
+/* $Id: thread.c,v 1.9 2001-09-06 19:00:47 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -118,7 +118,7 @@ static void *thread_main(void *arg)
 		return NULL;
 	}
 	
-	while (!config.quit) { 
+	while (!config.quit) {
 		clilen = addrlen;
 		pthread_mutex_lock(&mlock);
 		connfd = accept(listenfd, cliaddr, &clilen);
@@ -182,9 +182,10 @@ int thread_pool_create(void)
 
 	for (i = 0; i < thread_config.startservers; i++) {
 		thread_ptr[i].status = T_WAITING;
-		servers_waiting++;
 		pthread_create(&thread_ptr[i].tid, &thread_attr, &thread_main, &thread_ptr[i]);
 	}
+	servers_waiting = thread_config.startservers;
+
 	for (i = thread_config.startservers; i < thread_config.maxclients; i++) {
 		thread_ptr[i].status = T_EMPTY;
 		thread_ptr[i].connects = 0;
@@ -216,6 +217,7 @@ int thread_main_loop(void)
 			}
 		}
 	} else if (servers_waiting > thread_config.maxspareservers) {
+		DEBUG2("servers_waiting: %d MaxSpareServers: %d", servers_waiting, thread_config.maxspareservers);
 		for (i = 0; i < thread_config.maxclients; i++) {
 			if (thread_ptr[i].status == T_WAITING) {
 				pthread_join(thread_ptr[i].tid, NULL);
@@ -223,10 +225,13 @@ int thread_main_loop(void)
 				SERVER_DEC();
 
 				thread_ptr[i].status = T_EMPTY;
+				thread_ptr[i].connects = 0;
+
 				log_message(LOG_NOTICE, "Killed off a thread.");
 				break;
 			}
 		}
+		DEBUG1("finished killing threads");
 	}
 	
 	return 0;
