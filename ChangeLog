@@ -1,3 +1,17 @@
+2002-04-12  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/scanner.l:
+	* src/grammar.y: Added code for the ConnectPort directive.
+
+	* src/reqs.c (add_connect_port_allowed):
+	(check_allowed_connect_ports): Added these two functions (breaking
+	by no new features rule) because they fix a security problem with
+	tinyproxy.  These functions are needed to support the ConnectPort
+	configuration directives, which allows the admin to specify which
+	ports are allowed by a CONNECT method.  This is needed to prevent
+	people from using tinyproxy to connect to mail servers (port 25)
+	to do "bad things."
+
 2002-04-11  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (remove_connection_headers): Moved all the code for
