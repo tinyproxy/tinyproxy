@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.62 2003-08-07 15:31:19 rjkaes Exp $
+dnl $Id: configure.ac,v 2.63 2003-08-07 16:32:12 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -291,8 +291,7 @@ fi
 
 dnl Handle the REGEX library
 if test x"$ac_cv_func_regexec" != x"yes"; then
-    dnl We don't have a functioning REGEX so include our copy
-    tinyproxy_use_our_regex=yes
+    AC_MSG_ERROR([Could not locate the regexec() function])
 else
     AC_MSG_CHECKING([whether the system's regex library is broken])
     AC_CACHE_VAL(tinyproxy_cv_regex_broken,
@@ -326,16 +325,8 @@ int main(void)
     AC_MSG_RESULT([$tinyproxy_cv_regex_broken])
 
     if test x"$tinyproxy_cv_regex_broken" = x"yes" ; then
-        AC_MSG_NOTICE([Using the included GNU regex instead.])
-        tinyproxy_use_our_regex=yes
+        AC_MSG_ERROR([Your system's regexec() function is broken.])
     fi
-fi
-
-AH_TEMPLATE([USE_GNU_REGEX],
-            [Defined if you want to use the included regex routines.])
-if test x"$tinyproxy_use_our_regex" = x"yes" ; then
-    AC_DEFINE(USE_GNU_REGEX)
-    ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS gnuregex.o"
 fi
 
 dnl

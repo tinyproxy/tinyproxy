@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.17 2003-07-31 23:38:28 rjkaes Exp $
+/* $Id: filter.c,v 1.18 2003-08-07 16:32:12 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  * Copyright (c) 2002  James E. Flemer (jflemer@acm.jhu.edu)
@@ -23,7 +23,6 @@
 #include "filter.h"
 #include "heap.h"
 #include "log.h"
-#include "regexp.h"
 #include "reqs.h"
 
 #define FILTER_BUFFER_LEN (512)

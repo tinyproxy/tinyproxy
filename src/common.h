@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.6 2003-06-25 18:20:22 rjkaes Exp $
+/* $Id: common.h,v 1.7 2003-08-07 16:32:12 rjkaes Exp $
  *
  * This file groups all the headers required throughout the tinyproxy
  * system.  All this information use to be in the "tinyproxy.h" header,
@@ -110,6 +110,9 @@
 #endif
 #ifdef HAVE_PWD_H
 #  include     	<pwd.h>
+#endif
+#ifdef HAVE_REGEX_H
+#  include      <regex.h>
 #endif
 #ifdef HAVE_SIGNAL_H
 #  include      <signal.h>

@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.107 2003-08-05 16:11:59 rjkaes Exp $
+/* $Id: reqs.c,v 1.108 2003-08-07 16:32:12 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -33,7 +33,6 @@
 #include "htmlerror.h"
 #include "log.h"
 #include "network.h"
-#include "regexp.h"
 #include "reqs.h"
 #include "sock.h"
 #include "stats.h"
