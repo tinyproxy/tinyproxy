@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.22 2003-06-20 17:02:13 rjkaes Exp $
+/* $Id: grammar.y,v 1.23 2003-06-26 18:17:09 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -37,7 +37,6 @@ int yylex(void);
 %union {
 	unsigned int num;
 	char *cptr;
-	void *ptr;
 }
 
 /* statements */
@@ -69,7 +68,6 @@ int yylex(void);
 %token <num>  NUMBER
 %token <cptr> STRING
 %token <cptr> NUMERIC_ADDRESS
-%token <cptr> STRING_ADDRESS
 %token <cptr> NETMASK_ADDRESS
 
 %type <num> yesno
@@ -238,7 +236,7 @@ network_address
 	;
 
 unique_address
-	: STRING_ADDRESS
+	: IDENTIFIER
 	| NUMERIC_ADDRESS
 	;
 
@@ -255,7 +253,7 @@ string
 
 %%
 
-extern unsigned int scanner_lineno;
+extern int yylineno;
 
 void
 yyerror(char *s)
@@ -267,6 +265,6 @@ yyerror(char *s)
 		headerdisplayed = 1;
 	}
 
-	fprintf(stderr, "\t%s:%d: %s\n", config.config_file, scanner_lineno, s);
+	fprintf(stderr, "\t%s:%d: %s\n", config.config_file, yylineno, s);
 	exit(EXIT_FAILURE);
 }
