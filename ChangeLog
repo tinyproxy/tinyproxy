@@ -1,3 +1,29 @@
+2000-03-12  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/tinyproxy.c: include the upstream command line option. Also,
+	re-organized the help to have the options in be in alphabetical
+	order.
+
+	* src/reqs.c: include the code for handling the upstream proxy.
+
+	* src/dnscache.c: removed an assert from lookup so that it can be
+	used as method to simply verify if a domain name is already in the
+	cache.
+
+	* src/config.h: removed the defines dealing with DEFAULT_* and
+	UPSTREAM declarations.
+
+	* doc/tinyproxy.8: expanded the manual to include all the
+	command line options. Also, organized the options in alphabetical
+	order.
+
+	* acconfig.h: fixed the defines for DEFAULT_LOG, DEFAULT_PORT,
+	and DEFAULT_USER to have real default values.
+
+	* configure.in: include support for upstream proxies with
+	the --enable-upstream option. Also, fixed the AC_MSG_CHECKING
+	functions to include better wording.
+
 1.3.2   2000/02/15
 	- Fixed null requests bug.
 	- Fixed fd leak bug.
