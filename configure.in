@@ -1,4 +1,4 @@
-dnl $Id: configure.in,v 1.3 2000-09-12 00:18:17 rjkaes Exp $
+dnl $Id: configure.in,v 1.4 2000-09-14 16:41:20 rjkaes Exp $
 
 AC_INIT()
 AM_INIT_AUTOMAKE(tinyproxy,1.3.4pre20)
@@ -17,7 +17,7 @@ AM_C_PROTOTYPES
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(sys/types.h sys/socket.h sys/time.h time.h netinet/in.h arpa/inet.h error.h fcntl.h netdb.h signal.h stdio.h stdint.h stdlib.h string.h sys/stat.h sys/uio.h unistd.h sys/wait.h sys/un.h sys/select.h strings.h sys/ioctl.h pthread.h sys/sysctl.h syslog.h)
+AC_CHECK_HEADERS(sys/types.h sys/socket.h sys/time.h time.h netinet/in.h arpa/inet.h error.h fcntl.h netdb.h signal.h stdio.h stdint.h stdlib.h string.h sys/stat.h sys/uio.h unistd.h sys/wait.h sys/un.h sys/select.h strings.h sys/ioctl.h pthread.h sys/sysctl.h syslog.h stdint.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
