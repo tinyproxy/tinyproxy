@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.3 2000-09-11 23:37:01 rjkaes Exp $
+# $Id: Makefile.am,v 1.4 2001-09-14 04:55:06 rjkaes Exp $
 #
 # 
 #
@@ -26,7 +26,6 @@ tinyproxy_SOURCES = \
 	reqs.c reqs.h \
 	sock.c sock.h \
 	tinyproxy.c tinyproxy.h \
-	uri.c uri.h \
 	utils.c utils.h \
 	anonymous.c anonymous.h \
 	stats.c stats.h \
