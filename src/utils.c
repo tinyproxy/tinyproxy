@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.17 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: utils.c,v 1.18 2001-11-23 01:19:15 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -345,3 +345,28 @@ strlcat(char *dst, const char *src, size_t size)
 	return ret;
 }
 #endif
+
+/*
+ * Removes any new-line or carriage-return characters from the end of the
+ * string. This function is named afrer the same function in Perl.
+ * "length" should be the number of characters in the buffer, not including
+ * the trailing NULL.
+ *
+ * Returns the number of characters removed from the end of the string.
+ */
+size_t
+chomp(char *buffer, size_t length)
+{
+	size_t chars = 0;
+
+	--length;
+	while (buffer[length] == '\r' || buffer[length] == '\n') {
+		buffer[length--] = '\0';
+		chars++;
+
+		if (length < 0)
+			break;
+	}
+
+	return chars;
+}

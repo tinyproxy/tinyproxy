@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.11 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: utils.h,v 1.12 2001-11-23 01:19:15 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -23,6 +23,12 @@
 
 #include "conns.h"
 
+/*
+ * Error codes used within the utility functions.
+ */
+#define EERROR		1	/* Generic error */
+#define ENOMEMORY	2	/* Out of memory (or allocation error) */
+
 extern int send_http_message(struct conn_s *connptr, int http_code,
 			     const char *error_title, const char *message);
 extern int httperr(struct conn_s *connptr, int err, const char *msg);
@@ -39,6 +45,8 @@ extern size_t strlcat(char *dst, const char *src, size_t size);
 #ifndef HAVE_STRLCPY
 extern size_t strlcpy(char *dst, const char *src, size_t size);
 #endif				/* HAVE_STRLCPY */
+
+extern size_t chomp(char *buffer, size_t length);
 
 /*
  * The following is to allow for better memory checking.
