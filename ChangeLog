@@ -1,3 +1,24 @@
+2001-09-16  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/tinyproxy.c (main): Don't allow Tunnel and Upstream
+	directives to be both set in the configuration file.
+
+	* src/reqs.c (handle_connection): Added support for an upstream
+	proxy. What we used to use for our upstream proxy has now become a
+	TCP tunnel. The difference is that the upstream proxy will do
+	domain filtering, anonymous headers, etc. while the TCP tunnel
+	just sends the data without any processing. You can not have both
+	at the same time.
+
+	* src/utils.c (send_http_message): Instead of creating a block of
+	memory with the output message, just send it to the client. We
+	still need to process the various headers from the client, but it
+	will pick up the error when it's done talking to the proxy. Uses
+	less memory.
+
+	* src/sock.c: Moved safe_write() and safe_read() into sock.c since
+	I'm using them in more than just reqs.c.
+
 2001-09-15  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* Removed all the log_message()s which reported that memory could
