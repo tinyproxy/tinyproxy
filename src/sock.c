@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.15 2001-11-12 21:10:51 rjkaes Exp $
+/* $Id: sock.c,v 1.16 2001-11-22 00:19:18 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -49,7 +49,8 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
  * dotted-decimal form before it does a name lookup.
  *      - rjkaes
  */
-int opensock(char *ip_addr, uint16_t port)
+int
+opensock(char *ip_addr, uint16_t port)
 {
 	int sock_fd;
 	struct sockaddr_in port_info;
@@ -58,7 +59,7 @@ int opensock(char *ip_addr, uint16_t port)
 	assert(ip_addr != NULL);
 	assert(port > 0);
 
-	memset((struct sockaddr*)&port_info, 0, sizeof(port_info));
+	memset((struct sockaddr *) &port_info, 0, sizeof(port_info));
 
 	port_info.sin_family = AF_INET;
 
@@ -66,19 +67,24 @@ int opensock(char *ip_addr, uint16_t port)
 	ret = dnscache(&port_info.sin_addr, ip_addr);
 
 	if (ret < 0) {
-		log_message(LOG_ERR, "opensock: Could not lookup address \"%s\".", ip_addr);
+		log_message(LOG_ERR,
+			    "opensock: Could not lookup address \"%s\".",
+			    ip_addr);
 		return -1;
 	}
 
 	port_info.sin_port = htons(port);
 
 	if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		log_message(LOG_ERR, "opensock: socket() error \"%s\".", strerror(errno));
+		log_message(LOG_ERR, "opensock: socket() error \"%s\".",
+			    strerror(errno));
 		return -1;
 	}
 
-	if (connect(sock_fd, (struct sockaddr*)&port_info, sizeof(port_info)) < 0) {
-		log_message(LOG_ERR, "opensock: connect() error \"%s\".", strerror(errno));
+	if (connect(sock_fd, (struct sockaddr *) &port_info, sizeof(port_info))
+	    < 0) {
+		log_message(LOG_ERR, "opensock: connect() error \"%s\".",
+			    strerror(errno));
 		return -1;
 	}
 
@@ -88,7 +94,8 @@ int opensock(char *ip_addr, uint16_t port)
 /*
  * Set the socket to non blocking -rjkaes
  */
-int socket_nonblocking(int sock)
+int
+socket_nonblocking(int sock)
 {
 	int flags;
 
@@ -101,7 +108,8 @@ int socket_nonblocking(int sock)
 /*
  * Set the socket to blocking -rjkaes
  */
-int socket_blocking(int sock)
+int
+socket_blocking(int sock)
 {
 	int flags;
 
@@ -117,7 +125,8 @@ int socket_blocking(int sock)
  * the pointer, while the socket is returned as a default return.
  *	- rjkaes
  */
-int listen_sock(uint16_t port, socklen_t *addrlen)
+int
+listen_sock(uint16_t port, socklen_t * addrlen)
 {
 	int listenfd;
 	const int on = 1;
@@ -138,8 +147,8 @@ int listen_sock(uint16_t port, socklen_t *addrlen)
 	} else {
 		addr.sin_addr.s_addr = inet_addr("0.0.0.0");
 	}
-	
-	bind(listenfd, (struct sockaddr *)&addr, sizeof(addr));
+
+	bind(listenfd, (struct sockaddr *) &addr, sizeof(addr));
 
 	listen(listenfd, MAXLISTEN);
 
@@ -152,7 +161,8 @@ int listen_sock(uint16_t port, socklen_t *addrlen)
  * Takes a socket descriptor and returns the string contain the peer's
  * IP address.
  */
-char *getpeer_ip(int fd, char *ipaddr)
+char *
+getpeer_ip(int fd, char *ipaddr)
 {
 	struct sockaddr_in name;
 	size_t namelen = sizeof(name);
@@ -165,11 +175,12 @@ char *getpeer_ip(int fd, char *ipaddr)
 	 */
 	*ipaddr = '\0';
 
-	if (getpeername(fd, (struct sockaddr*)&name, &namelen) != 0) {
-		log_message(LOG_ERR, "getpeer_ip: getpeername() error \"%s\".", strerror(errno));
+	if (getpeername(fd, (struct sockaddr *) &name, &namelen) != 0) {
+		log_message(LOG_ERR, "getpeer_ip: getpeername() error \"%s\".",
+			    strerror(errno));
 	} else {
 		strlcpy(ipaddr,
-			inet_ntoa(*(struct in_addr*)&name.sin_addr.s_addr),
+			inet_ntoa(*(struct in_addr *) &name.sin_addr.s_addr),
 			PEER_IP_LENGTH);
 	}
 
@@ -180,7 +191,8 @@ char *getpeer_ip(int fd, char *ipaddr)
  * Takes a socket descriptor and returns the string containing the peer's
  * address.
  */
-char *getpeer_string(int fd, char *string)
+char *
+getpeer_string(int fd, char *string)
 {
 	struct sockaddr_in name;
 	size_t namelen = sizeof(name);
@@ -194,17 +206,20 @@ char *getpeer_string(int fd, char *string)
 	 */
 	*string = '\0';
 
-	if (getpeername(fd, (struct sockaddr *)&name, &namelen) != 0) {
-		log_message(LOG_ERR, "getpeer_string: getpeername() error \"%s\".", strerror(errno));
+	if (getpeername(fd, (struct sockaddr *) &name, &namelen) != 0) {
+		log_message(LOG_ERR,
+			    "getpeer_string: getpeername() error \"%s\".",
+			    strerror(errno));
 	} else {
 		LOCK();
-		peername = gethostbyaddr((char *)&name.sin_addr.s_addr,
-					 sizeof(name.sin_addr.s_addr),
-					 AF_INET);
+		peername = gethostbyaddr((char *) &name.sin_addr.s_addr,
+					 sizeof(name.sin_addr.s_addr), AF_INET);
 		if (peername)
 			strlcpy(string, peername->h_name, PEER_STRING_LENGTH);
 		else
-			log_message(LOG_ERR, "getpeer_string: gethostbyaddr() error \"%s\".", hstrerror(h_errno));
+			log_message(LOG_ERR,
+				    "getpeer_string: gethostbyaddr() error \"%s\".",
+				    hstrerror(h_errno));
 
 		UNLOCK();
 	}
@@ -216,10 +231,11 @@ char *getpeer_string(int fd, char *string)
  * Write the buffer to the socket. If an EINTR occurs, pick up and try
  * again.
  */
-ssize_t safe_write(int fd, const void *buffer, size_t count)
+ssize_t
+safe_write(int fd, const void *buffer, size_t count)
 {
 	ssize_t len;
-	
+
 	do {
 		len = write(fd, buffer, count);
 	} while (len < 0 && errno == EINTR);
@@ -231,7 +247,8 @@ ssize_t safe_write(int fd, const void *buffer, size_t count)
  * Matched pair for safe_write(). If an EINTR occurs, pick up and try
  * again.
  */
-ssize_t safe_read(int fd, void *buffer, size_t count)
+ssize_t
+safe_read(int fd, void *buffer, size_t count)
 {
 	ssize_t len;
 
@@ -242,45 +259,103 @@ ssize_t safe_read(int fd, void *buffer, size_t count)
 	return len;
 }
 
+#define EERROR		1	/* Generic error */
+#define ENOMEMORY	2	/* Out of memory (or allocation error) */
+
 /*
- * Reads in a line of text one character at a time. Finishes when either a
- * newline is detected, or maxlen characters have been read. The function
- * will actually copy one less than maxlen into the buffer. In other words,
- * the returned string will _always_ be '\0' terminated.
+ * Read in a "line" from the socket. It might take a few loops through
+ * the read sequence. The full string is allocate off the heap and stored
+ * at the whole_buffer pointer. The caller needs to free the memory when
+ * it is no longer in use. The returned line is NULL terminated.
+ *
+ * Returns the length of the buffer on success (not including the NULL
+ * termination), 0 if the socket was closed, and -1 on all other errors.
  */
-ssize_t readline(int fd, char *ptr, size_t maxlen)
+#define SEGMENT_LEN (512)
+ssize_t
+readline(int fd, char **whole_buffer)
 {
-	size_t n;
-	ssize_t rc;
-	char c;
+	ssize_t whole_buffer_len;
+	char buffer[SEGMENT_LEN];
+	char *ptr;
 
-	assert(fd >= 0);
-	assert(ptr != NULL);
+	ssize_t ret;
+	ssize_t diff;
 
-	for (n = 1; n < maxlen; n++) {
-	again:
-		if ((rc = recv(fd, &c, 1, MSG_NOSIGNAL)) == 1) {
-			*ptr++ = c;
-			if (c == '\n')
-				break;
-		} else if (rc == 0) {
-			if (n == 1) {
-				DEBUG2("File_Desc: %d Closed.", fd);
-				return 0;
-			} else
-				break;
-		} else {
-			if (errno == EINTR)
-				goto again;
+	struct read_lines_s {
+		char *data;
+		size_t len;
+		struct read_lines_s *next;
+	};
+	struct read_lines_s *first_line, *line_ptr;
 
-			DEBUG2("File_Desc: %d \"%s\" (%d)", fd, strerror(errno), errno);
+	first_line = calloc(sizeof(struct read_lines_s), 1);
+	if (!first_line)
+		return -ENOMEMORY;
 
-			return -1;
+	line_ptr = first_line;
+
+	whole_buffer_len = 0;
+	for (;;) {
+		ret = recv(fd, buffer, SEGMENT_LEN, MSG_PEEK);
+		if (ret <= 0)
+			goto CLEANUP;
+
+		ptr = memchr(buffer, '\n', ret);
+		if (ptr)
+			diff = ptr - buffer + 1;
+		else
+			diff = ret;
+
+		whole_buffer_len += diff;
+
+		line_ptr->data = malloc(diff);
+		if (!line_ptr->data) {
+			ret = -ENOMEMORY;
+			goto CLEANUP;
 		}
+
+		recv(fd, line_ptr->data, diff, 0);
+		line_ptr->len = diff;
+
+		if (ptr) {
+			line_ptr->next = NULL;
+			break;
+		}
+
+		line_ptr->next = calloc(sizeof(struct read_lines_s), 1);
+		if (!line_ptr->next) {
+			ret = -ENOMEMORY;
+			goto CLEANUP;
+		}
+		line_ptr = line_ptr->next;
 	}
 
-	/* Tack a NIL to the end to make is a standard "C" string */
-	*ptr = '\0';
+	*whole_buffer = malloc(whole_buffer_len + 1);
+	if (!*whole_buffer)
+		return -ENOMEMORY;
 
-	return (ssize_t)n;
+	*(*whole_buffer + whole_buffer_len) = '\0';
+
+	whole_buffer_len = 0;
+	line_ptr = first_line;
+	while (line_ptr) {
+		memcpy(*whole_buffer + whole_buffer_len, line_ptr->data,
+		       line_ptr->len);
+		whole_buffer_len += line_ptr->len;
+
+		line_ptr = line_ptr->next;
+	}
+
+	ret = whole_buffer_len;
+
+      CLEANUP:
+	do {
+		line_ptr = first_line->next;
+		free(first_line->data);
+		free(first_line);
+		first_line = line_ptr;
+	} while (first_line);
+
+	return ret;
 }

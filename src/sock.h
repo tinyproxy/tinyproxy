@@ -1,4 +1,4 @@
-/* $Id: sock.h,v 1.6 2001-10-25 17:02:50 rjkaes Exp $
+/* $Id: sock.h,v 1.7 2001-11-22 00:19:18 rjkaes Exp $
  *
  * See 'sock.c' for a detailed description.
  *
@@ -27,7 +27,7 @@
 #define MAXLINE (1024 * 4)
 
 extern int opensock(char *ip_addr, uint16_t port);
-extern int listen_sock(uint16_t port, socklen_t *addrlen);
+extern int listen_sock(uint16_t port, socklen_t * addrlen);
 
 extern int socket_nonblocking(int sock);
 extern int socket_blocking(int sock);
@@ -38,6 +38,6 @@ extern char *getpeer_string(int fd, char *string);
 extern ssize_t safe_write(int fd, const void *buffer, size_t count);
 extern ssize_t safe_read(int fd, void *buffer, size_t count);
 
-extern ssize_t readline(int fd, char *ptr, size_t maxlen);
+extern ssize_t readline(int fd, char **whole_buffer);
 
 #endif
