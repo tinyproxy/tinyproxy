@@ -1,3 +1,30 @@
+2002-06-05  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* doc/Makefile.am:
+	Added the "filter-howto.txt" file to the distribution.
+
+	* doc/filter-howto.txt:
+	Added a short filtering HOWTO document from Patrick L. McGillan.
+
+	* src/child.c (child_main):
+	Added a DEBUG call to let me know which process has accepted a
+	connection.  This is needed for debugging using "gdb".
+
+	* src/heap.c (malloc_shared_memory):
+	Removed the assert() call for shared_file since it's now a static
+	variable.
+
+	* src/acl.c (acl_string_processing):
+	Moved the string processing code out of check_acl() and into it's
+	own function because it now does two (2) tests.  If the ACL string
+	is a complete host name, in other words doesn't start with a
+	period, than a reverse DNS look-up is done on the host name and
+	compared to the IP address of the client; otherwise, the normal
+	text string comparison is done.
+	(check_acl): Moved the string text out of the function and removed
+	some logging code by jumping to the "Deny" code at the end of the
+	function.
+
 2002-05-31  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/utils.c (create_file_safely):
