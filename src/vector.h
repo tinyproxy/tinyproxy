@@ -1,4 +1,4 @@
-/* $Id: vector.h,v 1.3 2003-05-29 21:07:22 rjkaes Exp $
+/* $Id: vector.h,v 1.4 2003-05-30 16:21:47 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbritrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -55,8 +55,8 @@ extern int vector_append(vector_t vector, void *data, ssize_t len);
 extern int vector_prepend(vector_t vector, void *data, ssize_t len);
 
 /*
- * A pointer to the data at position "pos" (zero based) is returned in the
- * "data" pointer.  If the vector is out of bound, data is set to NULL.
+ * A pointer to the data at position "pos" (zero based) is returned and the
+ * size pointer contains the length of the data stored.
  *
  * The pointer points to the actual data in the vector, so you have
  * the power to modify the data, but do it responsibly since the
@@ -65,10 +65,12 @@ extern int vector_prepend(vector_t vector, void *data, ssize_t len);
  * likely mess up the "length" parameter of the data.)  However, DON'T
  * try to realloc or free the data; doing so will break the vector.
  *
- * Returns: negative upon an error
- *          length of data if position is valid
+ * If "size" is NULL the size of the data is not returned.
+ *
+ * Returns: NULL on error
+ *          valid pointer to data
  */
-extern ssize_t vector_getentry(vector_t vector, size_t pos, void **data);
+extern void* vector_getentry(vector_t vector, size_t pos, size_t* size);
 
 /*
  * Returns the number of enteries (or the length) of the vector.

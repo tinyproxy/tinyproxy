@@ -1,4 +1,4 @@
-/* $Id: vector.c,v 1.8 2003-05-29 21:07:22 rjkaes Exp $
+/* $Id: vector.c,v 1.9 2003-05-30 16:21:48 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbitrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -168,23 +168,20 @@ vector_prepend(vector_t vector, void *data, ssize_t len)
 }
 
 /*
- * A pointer to the data at position "pos" (zero based) is returned in the
- * "data" pointer.  If the vector is out of bound, data is set to NULL.
+ * A pointer to the data at position "pos" (zero based) is returned.
+ * If the vector is out of bound, data is set to NULL.
  *
  * Returns: negative upon an error
  *          length of data if position is valid
  */
-ssize_t
-vector_getentry(vector_t vector, size_t pos, void **data)
+void *
+vector_getentry(vector_t vector, size_t pos, size_t* size)
 {
 	struct vectorentry_s *ptr;
 	size_t loc;
 
-	if (!vector || !data)
-		return -EINVAL;
-
-	if (pos < 0 || pos >= vector->num_entries)
-		return -ERANGE;
+	if (!vector || pos < 0 || pos >= vector->num_entries)
+		return NULL;
 
 	loc = 0;
 	ptr = vector->head;
@@ -194,8 +191,10 @@ vector_getentry(vector_t vector, size_t pos, void **data)
 		loc++;
 	}
 
-	*data = ptr->data;
-	return ptr->len;
+	if (size)
+		*size = ptr->len;
+
+	return ptr->data;
 }
 
 /*
