@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.13 2001-09-08 06:29:04 rjkaes Exp $
+/* $Id: thread.c,v 1.14 2001-09-08 18:58:37 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -22,6 +22,7 @@
 #include "reqs.h"
 #include "sock.h"
 #include "thread.h"
+#include "utils.h"
 
 /*
  * This is the stack frame size used by all the threads. We'll start by
@@ -117,7 +118,7 @@ static void *thread_main(void *arg)
 
 	ptr = (struct thread_s *)arg;
 
-	cliaddr = malloc(addrlen);
+	cliaddr = safemalloc(addrlen);
 	if (!cliaddr) {
 		log_message(LOG_ERR, "Could not allocate memory in 'thread_main'.");
 		return NULL;
@@ -205,7 +206,7 @@ short int thread_pool_create(void)
 		return -1;
 	}
 
-	thread_ptr = calloc((size_t)thread_config.maxclients, sizeof(struct thread_s));
+	thread_ptr = safecalloc((size_t)thread_config.maxclients, sizeof(struct thread_s));
 	if (!thread_ptr)
 		return -1;
 

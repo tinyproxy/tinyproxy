@@ -1,4 +1,4 @@
-/* $Id: stats.c,v 1.4 2001-05-27 02:26:53 rjkaes Exp $
+/* $Id: stats.c,v 1.5 2001-09-08 18:58:37 rjkaes Exp $
  *
  * This module handles the statistics for tinyproxy. There are only two
  * public API functions. The reason for the functions, rather than just a
@@ -25,6 +25,7 @@
 
 #include "log.h"
 #include "stats.h"
+#include "utils.h"
 
 struct stat_s {
 	unsigned long int num_reqs;
@@ -72,7 +73,7 @@ int showstats(struct conn_s *connptr)
 	    "Number of refused connections due to high load: %lu\r\n" \
 	    "</blockquote>\r\n</body></html>\r\n";
 
-	connptr->output_message = malloc(MAXBUFFSIZE);
+	connptr->output_message = safemalloc(MAXBUFFSIZE);
 	if (!connptr->output_message) {
 		log_message(LOG_CRIT, "Out of memory!");
 		return -1;

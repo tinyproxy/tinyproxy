@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.6 2001-09-07 04:17:03 rjkaes Exp $
+/* $Id: buffer.c,v 1.7 2001-09-08 18:58:37 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -63,7 +63,7 @@ static struct bufline_s *makenewline(unsigned char *data, size_t length)
 
 	assert(data != NULL);
 
-	if (!(newline = malloc(sizeof(struct bufline_s))))
+	if (!(newline = safemalloc(sizeof(struct bufline_s))))
 		return NULL;
 
 	newline->string = data;
@@ -98,7 +98,7 @@ struct buffer_s *new_buffer(void)
 {
 	struct buffer_s *buffptr;
 
-	if (!(buffptr = malloc(sizeof(struct buffer_s))))
+	if (!(buffptr = safemalloc(sizeof(struct buffer_s))))
 		return NULL;
 
 	buffptr->head = buffptr->tail = NULL;
@@ -198,7 +198,7 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 	bytesin = read(fd, inbuf, MAXBUFFSIZE - buffer_size(buffptr));
 
 	if (bytesin > 0) {
-		if (!(buffer = malloc(bytesin))) {
+		if (!(buffer = safemalloc(bytesin))) {
 			log_message(LOG_ERR, "Could not allocate memory in 'readbuff'");
 			return 0;
 		}

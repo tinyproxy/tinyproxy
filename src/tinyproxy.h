@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.13 2001-08-29 04:04:01 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.14 2001-09-08 18:58:37 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -77,8 +77,6 @@
 /* Useful function macros */
 #define min(a,b)	((a) < (b) ? (a) : (b))
 #define max(a,b)	((a) > (b) ? (a) : (b))
-
-#define safefree(x) do { free(x); x = NULL; } while (0)
 
 /* Make a new type: bool_t */
 typedef enum {

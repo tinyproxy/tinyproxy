@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.20 2001-09-07 04:18:04 rjkaes Exp $
+/* $Id: reqs.c,v 1.21 2001-09-08 18:58:37 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -171,7 +171,7 @@ static int process_method(struct conn_s *connptr)
 	}
 
 	len = pmatch[URI_IND].rm_eo - pmatch[URI_IND].rm_so;
-	if (!(buffer = malloc(len + 1))) {
+	if (!(buffer = safemalloc(len + 1))) {
 		log_message(LOG_ERR,
 			    "Could not allocate memory for request from [%s].",
 			    peer_ipaddr);
@@ -193,7 +193,7 @@ static int process_method(struct conn_s *connptr)
 		char *error_string;
 		if (uri->scheme) {
 			size_t error_string_len = strlen(uri->scheme) + 64;
-			error_string = malloc(error_string_len);
+			error_string = safemalloc(error_string_len);
 			if (!error_string) {
 				log_message(LOG_ERR,
 					    "Could not allocate memory for request from [%s].",
@@ -256,7 +256,7 @@ static int process_method(struct conn_s *connptr)
 
 	/* Build a new request from the first line of the header */
 	request_len = strlen(inbuf) + 1;
-	if (!(request = malloc(request_len))) {
+	if (!(request = safemalloc(request_len))) {
 		log_message(LOG_ERR,
 			    "Could not allocate memory for request from [%s].",
 			    peer_ipaddr);
@@ -334,7 +334,7 @@ static int compare_header(char *line)
 	if ((ptr = strstr(line, ":")) == NULL)
 		return -1;
 
-	if ((buffer = malloc(ptr - line + 1)) == NULL)
+	if ((buffer = safemalloc(ptr - line + 1)) == NULL)
 		return -1;
 
 	memcpy(buffer, line, (size_t)(ptr - line));
@@ -645,7 +645,7 @@ void handle_connection(int fd)
 		    getpeer_string(fd, peer_string),
 		    getpeer_ip(fd, peer_ipaddr));
 
-	connptr = malloc(sizeof(struct conn_s));
+	connptr = safemalloc(sizeof(struct conn_s));
 	if (!connptr) {
 		log_message(LOG_ERR,
 			    "Could not allocate memory for request from [%s]",
