@@ -16,10 +16,6 @@ against the current tree and I'll integrate it if possible.
    proxies (ftp, www, etc) they'd like enabled in tinyproxy.h
    Suggested: Tarun Tuli.
 
- * Find a more elegant solution to embedding HTML documents in the
-   source than the current method.  (see httperr() and showstats() for
-   examples of how it's done right now).
-
  * Include a function to rewrite the incoming requests.  Should not be
    much of a problem.  Just need to modify the process_method() code
    to look up the URL and rewrite it.  If we want to go really fancy
@@ -38,3 +34,8 @@ against the current tree and I'll integrate it if possible.
    for the administrators.  Right now it's more a hodge-podge
    collections of error messages without a _real_ standard.  I would
    prefer a more uniform look.
+
+ * Include user authentication for accessing tinyproxy itself.
+   Administrators should be allowed to selectively allow certain users
+   access to tinyproxy via a user name/password pair.  Check the
+   HTTP/1.1 RFC for more information.  [Suggested: Tyrone Tranmer]
