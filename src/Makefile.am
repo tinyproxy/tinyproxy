@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.7 2001-11-05 15:24:01 rjkaes Exp $
+# $Id: Makefile.am,v 1.8 2001-12-15 05:57:40 rjkaes Exp $
 #
 # 
 #
@@ -23,7 +23,6 @@ bin_PROGRAMS = tinyproxy
 tinyproxy_SOURCES = \
 	conns.c conns.h \
 	buffer.c buffer.h \
-	dnscache.c dnscache.h \
 	log.c log.h \
 	reqs.c reqs.h \
 	sock.c sock.h \
