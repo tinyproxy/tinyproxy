@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.106 2003-07-31 23:38:28 rjkaes Exp $
+/* $Id: reqs.c,v 1.107 2003-08-05 16:11:59 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -160,7 +160,7 @@ read_request_line(struct conn_s *connptr)
 	}
 
 	/*
-	 * Strip the new line and character return from the string.
+	 * Strip the new line and carriage return from the string.
 	 */
 	if (chomp(connptr->request_line, len) == len) {
 		/*
