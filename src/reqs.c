@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.94 2003-03-14 06:13:04 rjkaes Exp $
+/* $Id: reqs.c,v 1.95 2003-03-26 16:47:30 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -283,9 +283,10 @@ establish_http_connection(struct conn_s *connptr, struct request_s *request)
 {
 	return write_message(connptr->server_fd,
 			     "%s %s HTTP/1.0\r\n" \
-			     "Host: %s\r\n" \
+			     "Host: %s:%u\r\n" \
 			     "Connection: close\r\n",
-			     request->method, request->path, request->host);
+			     request->method, request->path,
+			     request->host, request->port);
 }
 
 /*
