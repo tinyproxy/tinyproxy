@@ -1,3 +1,8 @@
+2001-06-04  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.in: Remove the --with-* for port, logfile, and user
+	since the configuration file handles this now.
+
 2001-06-02  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* doc/tinyproxy.conf: Clarified the LogLevel directive.
