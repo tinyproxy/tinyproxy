@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.2 2000-03-11 20:37:44 rjkaes Exp $
+/* $Id: reqs.c,v 1.3 2000-03-28 16:19:12 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections are added to the active list of connections and then the header
@@ -167,10 +167,17 @@ static int clientreq(struct conn_s *connptr)
 	}
 	safefree(buffer);
 
-	if (strcasecmp(uri->scheme, "http") != 0) {
-		char *error_string = xmalloc(strlen(uri->scheme) + 64);
-		sprintf(error_string, "Invalid scheme (%s). Only HTTP is allowed.",
-			uri->scheme);
+	if (!uri->scheme || strcasecmp(uri->scheme, "http") != 0) {
+		char *error_string;
+		if (uri->scheme) {
+			error_string = xmalloc(strlen(uri->scheme) + 64);
+			sprintf(error_string,
+				"Invalid scheme (%s). Only HTTP is allowed.",
+				uri->scheme);
+		} else {
+			error_string = strdup("Invalid scheme (NULL). Only HTTP is allowed.");
+		}
+
 		httperr(connptr, 400, error_string);
 		safefree(error_string);
 		goto COMMON_EXIT;
