@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.25 2002-04-18 16:57:06 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.26 2002-04-18 17:04:04 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -58,12 +58,7 @@ takesig(int sig)
 		break;
 
 	case SIGTERM:
-#ifdef FILTER_ENABLE
-		if (config.filter)
-			filter_destroy();
-#endif				/* FILTER_ENABLE */
 		config.quit = TRUE;
-		log_message(LOG_INFO, "SIGTERM received.");
 		break;
 	}
 
@@ -382,6 +377,11 @@ main(int argc, char **argv)
 	log_message(LOG_INFO, "Starting main loop. Accepting connections.");
 
 	thread_main_loop();
+
+#ifdef FILTER_ENABLE
+	if (config.filter)
+		filter_destroy();
+#endif
 
 	log_message(LOG_INFO, "Shutting down.");
 
