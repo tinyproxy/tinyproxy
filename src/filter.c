@@ -1,6 +1,7 @@
-/* $Id: filter.c,v 1.10 2002-05-23 18:20:27 rjkaes Exp $
+/* $Id: filter.c,v 1.11 2002-05-27 01:56:22 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
+ * Copyright (c) 2002  James E. Flemer (jflemer@acm.jhu.edu)
  *
  * A substring of the domain to be filtered goes into the file
  * pointed at by DEFAULT_FILTER.
@@ -21,6 +22,9 @@
 #include "filter.h"
 #include "heap.h"
 #include "regexp.h"
+#include "reqs.h"
+
+#define FILTER_BUFFER_LEN (512)
 
 static int err;
 
@@ -33,21 +37,28 @@ struct filter_list {
 static struct filter_list *fl = NULL;
 static int already_init = 0;
 
-/* initializes a linked list of strings containing hosts to be filtered */
+/*
+ * Initializes a linked list of strings containing hosts/urls to be filtered
+ */
 void
 filter_init(void)
 {
 	FILE *fd;
 	struct filter_list *p;
-	char buf[255];
-	char *s;
+	char buf[FILTER_BUFFER_LEN];
+	char *s, *t;
+	int cflags;
 
 	if (!fl && !already_init) {
 		fd = fopen(config.filter, "r");
 		if (fd) {
 			p = NULL;
 
-			while (fgets(buf, 255, fd)) {
+			cflags = REG_NEWLINE | REG_NOSUB;
+			if (config.filter_extended)
+				cflags |= REG_EXTENDED;
+
+			while (fgets(buf, FILTER_BUFFER_LEN, fd)) {
 				s = buf;
 				if (!p)	/* head of list */
 					fl = p =
@@ -62,23 +73,38 @@ filter_init(void)
 					p = p->next;
 				}
 
-				/* replace first whitespace with \0 */
-				while (*s++)
-					if (isspace((unsigned char) *s))
-						*s = '\0';
+				/* strip trailing whitespace & comments */
+				t = s;
+				while (*s && *s != '#') {
+					if (!isspace((unsigned char)*(s++)))
+						t = s;
+				}
+				*t = '\0';
 
-				p->pat = safestrdup(buf);
+				/* skip leading whitespace */
+				s = buf;
+				while (*s && isspace((unsigned char)*s))
+					s++;
+
+				/* skip blank lines and comments */
+				if (*s == '\0')
+					continue;
+
+				p->pat = safestrdup(s);
 				p->cpat = safemalloc(sizeof(regex_t));
-				if ((err =
-				     regcomp(p->cpat, p->pat,
-					     REG_NEWLINE | REG_NOSUB)) != 0) {
+				if ((err = regcomp(p->cpat, p->pat, cflags)) != 0) {
 					fprintf(stderr, "Bad regex in %s: %s\n",
 						config.filter, p->pat);
 					exit(EX_DATAERR);
 				}
 			}
-			already_init = 1;
+			if (ferror(fd)) {
+				perror("fgets");
+				exit(EX_DATAERR);
+			}
 			fclose(fd);
+
+			already_init = 1;
 		}
 	}
 }
@@ -104,7 +130,7 @@ filter_destroy(void)
 
 /* returns 0 if host is not an element of filter list, non-zero otherwise */
 int
-filter_url(char *host)
+filter_domain(const char *host)
 {
 	struct filter_list *p;
 	char *s, *port;
@@ -129,4 +155,21 @@ filter_url(char *host)
 	}
 	safefree(s);
 	return (result);
+}
+
+/* returns 0 if url is not an element of filter list, non-zero otherwise */
+int
+filter_url(const char *url)
+{
+	struct filter_list *p;
+
+	if (!fl || !already_init)
+		return (0);
+
+	for (p = fl; p; p = p->next) {
+		if (!regexec(p->cpat, url, (size_t) 0, (regmatch_t *) 0, 0)) {
+			return 1;
+		}
+	}
+	return 0;
 }
