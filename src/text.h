@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.1 2002-05-23 04:42:30 rjkaes Exp $
+/* $Id: text.h,v 1.2 2003-03-13 05:20:06 rjkaes Exp $
  *
  * See 'text.c' for a detailed description.
  *
@@ -26,6 +26,6 @@ extern size_t strlcat(char *dst, const char *src, size_t size);
 extern size_t strlcpy(char *dst, const char *src, size_t size);
 #endif				/* HAVE_STRLCPY */
 
-extern size_t chomp(char *buffer, size_t length);
+extern ssize_t chomp(char *buffer, size_t length);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: text.c,v 1.2 2002-05-24 04:45:32 rjkaes Exp $
+/* $Id: text.c,v 1.3 2003-03-13 05:20:06 rjkaes Exp $
  *
  * The functions included here are useful for text manipulation.  They
  * replace or augment the standard C string library.  These functions
@@ -75,24 +75,30 @@ strlcat(char *dst, const char *src, size_t size)
  * "length" should be the number of characters in the buffer, not including
  * the trailing NULL.
  *
- * Returns the number of characters removed from the end of the string.
+ * Returns the number of characters removed from the end of the string.  A
+ * negative return value indicates an error.
  */
-size_t
+ssize_t
 chomp(char *buffer, size_t length)
 {
 	size_t chars;
 
 	assert(buffer != NULL);
+	assert(length > 0);
+
+	/* Make sure the arguments are valid */
+	if (buffer == NULL) return -EFAULT;
+	if (length < 1) return -ERANGE;
 
 	chars = 0;
 
 	--length;
 	while (buffer[length] == '\r' || buffer[length] == '\n') {
-		buffer[length--] = '\0';
+		buffer[length] = '\0';
 		chars++;
 
-		if (length < 0)
-			break;
+		/* Stop once we get to zero to prevent wrap-around */
+		if (length-- == 0) break;
 	}
 
 	return chars;
