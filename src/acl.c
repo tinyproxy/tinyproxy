@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.16 2002-06-05 16:59:21 rjkaes Exp $
+/* $Id: acl.c,v 1.17 2003-07-31 23:38:28 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -24,9 +24,11 @@
 #include "log.h"
 #include "sock.h"
 
+enum acl_type { ACL_STRING, ACL_NUMERIC };
+
 struct acl_s {
 	acl_access_t acl_access;
-	enum { ACL_STRING, ACL_NUMERIC } type;
+	enum acl_type type;
 	char *location;
 	int netmask;
 	struct acl_s *next;
@@ -85,7 +87,7 @@ insert_acl(char *location, acl_access_t access_type)
 		rev_acl_ptr = &acl_ptr->next;
 		acl_ptr = acl_ptr->next;
 	}
-	new_acl_ptr = safemalloc(sizeof(struct acl_s));
+	new_acl_ptr = (struct acl_s*)safemalloc(sizeof(struct acl_s));
 	if (!new_acl_ptr) {
 		return -1;
 	}

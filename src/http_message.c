@@ -1,4 +1,4 @@
-/* $Id: http_message.c,v 1.2 2003-05-31 23:02:21 rjkaes Exp $
+/* $Id: http_message.c,v 1.3 2003-07-31 23:38:28 rjkaes Exp $
  *
  * See 'http_message.h' for a detailed description.
  *
@@ -81,11 +81,11 @@ http_message_create(int response_code, const char* response_string)
 	http_message_t msg;
 	int ret;
 
-	msg = safecalloc(1, sizeof(struct http_message_s));
+	msg = (http_message_t)safecalloc(1, sizeof(struct http_message_s));
 	if (msg == NULL)
 		return NULL;
 
-	msg->headers.strings = safecalloc(NUMBER_OF_HEADERS, sizeof(char*));
+	msg->headers.strings = (char**)safecalloc(NUMBER_OF_HEADERS, sizeof(char*));
 	if (msg->headers.strings == NULL) {
 		safefree(msg);
 		return NULL;
@@ -182,8 +182,8 @@ http_message_add_headers(http_message_t msg, char** headers,
 	 * available, reallocate the memory.
 	 */
 	if (msg->headers.used + num_headers > msg->headers.total) {
-		new_headers = safecalloc(msg->headers.total * 2,
-					 sizeof(char*));
+		new_headers = (char**)safecalloc(msg->headers.total * 2,
+						 sizeof(char*));
 		if (new_headers == NULL)
 			return -ENOMEM;
 
@@ -215,7 +215,7 @@ http_message_send(http_message_t msg, int fd)
 {
 	char timebuf[30];
 	time_t global_time;
-	int i;
+	unsigned int i;
 
 	assert(is_http_message_valid(msg));
 

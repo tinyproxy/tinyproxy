@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.26 2003-05-31 23:02:21 rjkaes Exp $
+/* $Id: log.c,v 1.27 2003-07-31 23:38:28 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -143,7 +143,7 @@ log_message(int level, char *fmt, ...)
 
 		vsnprintf(str, STRING_LENGTH, fmt, args);
 
-		entry_buffer = safemalloc(strlen(str) + 6);
+		entry_buffer = (char*)safemalloc(strlen(str) + 6);
 		if (!entry_buffer)
 			return;
 			
@@ -202,12 +202,12 @@ send_stored_logs(void)
 	int i;
 
 	for (i = 0; i != vector_length(log_message_storage); ++i) {
-		string = vector_getentry(log_message_storage, i, NULL);
+		string = (char*)vector_getentry(log_message_storage, i, NULL);
 
 		ptr = strchr(string, ' ') + 1;
 		level = atoi(string);
 
-#if NDEBUG
+#ifdef NDEBUG
 		if (log_level == LOG_CONN && level == LOG_INFO)
 			continue;
 		else if (log_level == LOG_INFO) {

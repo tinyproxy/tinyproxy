@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.16 2003-01-27 17:57:39 rjkaes Exp $
+/* $Id: filter.c,v 1.17 2003-07-31 23:38:28 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  * Copyright (c) 2002  James E. Flemer (jflemer@acm.jhu.edu)
@@ -67,14 +67,16 @@ filter_init(void)
 				s = buf;
 				if (!p)	/* head of list */
 					fl = p =
-					    safecalloc(1,
-						       sizeof(struct
-							      filter_list));
+					    (struct filter_list*)
+						safecalloc(1,
+							   sizeof(struct
+								  filter_list));
 				else {	/* next entry */
 					p->next =
-					    safecalloc(1,
-						       sizeof(struct
-							      filter_list));
+					    (struct filter_list*)
+						safecalloc(1,
+							   sizeof(struct
+								  filter_list));
 					p = p->next;
 				}
 
@@ -96,7 +98,7 @@ filter_init(void)
 					continue;
 
 				p->pat = safestrdup(s);
-				p->cpat = safemalloc(sizeof(regex_t));
+				p->cpat = (regex_t*)safemalloc(sizeof(regex_t));
 				if ((err = regcomp(p->cpat, p->pat, cflags)) != 0) {
 					fprintf(stderr, "Bad regex in %s: %s\n",
 						config.filter, p->pat);
