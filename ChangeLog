@@ -1,5 +1,16 @@
 2001-12-23  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/utils.c (send_http_message): Use the write_message()
+	function for creating and sending the headers to the client.
+	(httperr): Use similar code to write_message() to create the body
+	of the error message. I use this so that there is no limit to the
+	size of the error message (better coding. :) I'm still trying to
+	figure out how to combine this code with write_message() into a
+	common function.
+
+	* src/sock.c (write_message): Moved write_message() into sock.c
+	since it's now accessed by more than just the reqs.c file.
+
 	* src/tinyproxy.c (main): Made the error log for the idle time
 	setting more verbose so that it's explains the reasoning
 	better. Also, changed the level to WARNING.
@@ -19,7 +30,7 @@
 	* src/reqs.c (write_message): Encapsulate code to handle sending
 	snprintf() built lines to a file descriptor.
 	(process_server_headers): Removed duplicate code and used the
-	return value from readline() instead of recaculating it by
+	return value from readline() instead of recalculating it by
 	strlen().
 
 2001-12-18  Robert James Kaes  <rjkaes@flarenet.com>
