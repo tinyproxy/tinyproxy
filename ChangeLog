@@ -1,3 +1,38 @@
+2002-05-27  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (process_request):
+	Changed the filtering code around to handle both domains and URLs.
+
+	* src/tinyproxy.h:
+	Added into the config structure the filter_urls and
+	filter_extended flags.
+
+	* src/tinyproxy.c: Some spelling fixes.
+
+	* src/sock.c (opensock):
+	Changed a comment around to better state what the code is actually
+	doing.
+
+	* src/filter.c, src/filter.h:
+	Added a copyright for James E. Flemer since these are his changes.
+	(filter_init): Added code to handle both host and URLs.  Also
+	include code to use extended regular expressions.
+	(filter_domain): The old filter_url function has been renamed
+	filter_domain().
+	(filter_url): This function now actually filters complete URLs.
+
+	* doc/tinyproxy.conf, src/grammar.y, src/scanner.l:
+	Added support for the "FilterURLs" and "FilterExtended" directives.
+	These directives were submitted by James Flemer for use with the new
+	filtering code.
+
+	* configure.ac: Updated the version number (pre 1)
+
+	* src/tinyproxy.c (display_license): Updated the copyright dates
+	(main): Moved the signals around so that the appropriate signal is
+	assigned to either the children or just the parrent process.
+	Updated the copyright on the file.
+
 2002-05-26  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* doc/tinyproxy.conf: Removed the "DNSserver" directives since
