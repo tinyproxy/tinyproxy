@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.24 2001-12-23 03:28:03 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.25 2001-12-23 18:44:02 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -26,7 +26,9 @@
 /*
  * Include standard headers which are used through-out tinyproxy
  */
+#ifdef HAVE_SYS_TYPES_H
 #  include      <sys/types.h>
+#endif
 #ifdef HAVE_INTTYPES_H
 #  include	<inttypes.h>
 #endif
