@@ -26,6 +26,10 @@ new features will be worked into the next few releases.
 
 Update
 ------
+2001-08-28 - The log levels _now_ finally work correctly. I have
+tested all the levels in the configuration file and the logging
+function now outputs the correct information.
+
 2001-08-27 - Fix one bug and two more crop up. The MIME type was
 incorrect in the httperr() function; this has been fixed.
 Jeffrey D. Wheelhouse included a patch to increase the stack size on
