@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.105.2.1 2003-11-19 19:20:18 rjkaes Exp $
+/* $Id: reqs.c,v 1.105.2.2 2004-08-06 16:56:55 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -1072,7 +1072,7 @@ process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 	 * proxy is in use.)
 	 */
 	if (connptr->server_fd == -1 || connptr->show_stats
-	    || (connptr->connect_method && !UPSTREAM_CONFIGURED())) {
+	    || (connptr->connect_method && (connptr->upstream_proxy == NULL))) {
 		log_message(LOG_INFO, "Not sending client headers to remote machine");
 		return 0;
 	}
@@ -1410,7 +1410,7 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 	char *combined_string;
 	int len;
 
-	struct upstream *cur_upstream = upstream_get(request->host);
+	struct upstream *cur_upstream = connptr->upstream_proxy;
 	if(!cur_upstream) {
 		log_message(LOG_WARNING,
 			    "No upstream proxy defined for %s.",
@@ -1554,7 +1554,8 @@ handle_connection(int fd)
 		goto send_error;
 	}
 
-	if (UPSTREAM_CONFIGURED() && (UPSTREAM_HOST(request->host) != NULL)) {
+	connptr->upstream_proxy = UPSTREAM_HOST(request->host);
+	if (connptr->upstream_proxy != NULL) {
 		if (connect_to_upstream(connptr, request) < 0) {
 			goto send_error;
 		}
@@ -1599,7 +1600,7 @@ handle_connection(int fd)
 		return;
 	}
 
-	if (!connptr->connect_method || UPSTREAM_CONFIGURED()) {
+	if (!connptr->connect_method || (connptr->upstream_proxy != NULL)) {
 		if (process_server_headers(connptr) < 0) {
 			if (connptr->error_variables)
 				send_http_error_message(connptr);

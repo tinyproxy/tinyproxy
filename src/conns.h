@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.14 2003-05-04 04:35:10 rjkaes Exp $
+/* $Id: conns.h,v 1.14.2.1 2004-08-06 16:56:55 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -70,6 +70,10 @@ struct conn_s {
 		unsigned int major;
 		unsigned int minor;
 	} protocol;
+        /*
+         * Pointer to upstream proxy.
+         */
+        struct upstream *upstream_proxy;
 };
 
 /*
