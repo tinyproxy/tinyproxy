@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.7 2001-09-08 18:58:37 rjkaes Exp $
+/* $Id: buffer.c,v 1.8 2001-09-11 04:38:23 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -84,9 +84,8 @@ static void free_line(struct bufline_s *line)
 	if (!line)
 		return;
 
-	if (line->string) {
+	if (line->string)
 		safefree(line->string);
-	}
 
 	safefree(line);
 }
