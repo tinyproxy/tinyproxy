@@ -1,3 +1,34 @@
+2002-06-15  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/log.c (log_message):
+	Changed the code so that the log is opened, written, and closed
+	whenever a message is submitted.  This allows the log file to be
+	moved away, for example a rotating the log, and yet still have the
+	information written to the correct file name by all the children.
+
+	* src/tinyproxy.c:
+	Renamed the "log_rotation_request" boolean to "received_sighup".
+	(main): Removed the log file creation code because it has been
+	moved into the log.c file.  Also, removed the explicit fclose()
+	for the log file since it will be close when the program has
+	exited.
+
+	* src/child.c (child_main_loop):
+	Moved the filter re-initiation code into the loop.  This code is
+	activated whenever the SIGHUP signal is received.
+
+	* src/tinyproxy.h:
+	Removed the "logf" FILE structure from the config structure, and
+	also renamed the "log_rotation_request" boolean to
+	"received_sighup".
+
+	* src/utils.c, src/utils.h:
+	Removed the rotate_log_files() function since I'm moving to an
+	Apache style where the _user_ needs to move the log file
+	themselves, and tinyproxy will continue to write to the original
+	name.  This allows more flexibility for users to determine their
+	own log rotation scheme.
+
 2002-06-07  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/filter.c, src/filter.h:
