@@ -8,13 +8,6 @@ against the current tree and I'll integrate it if possible.
     the source tree.  Then people can simply choose which types of 
     proxies (ftp, www, etc) they'd like enabled in tinyproxy.h 
     Suggested: Tarun Tuli.
-  - Make the source tree autoconf-ed so people can avoid editing
-    tinyproxy.h and the like.
-  - Add some kind of access control mechanism - probably IP-based, 
-    so users can choose only to let people from certain networks/ISP
-    use the proxy.  This becomes more of an issue with FTP proxies
-    and the like. (Partially Done. It would be better if there was a
-    config file.)
   - Find a more elegant solution to embedding HTML documents in the 
     source than the current method.  (see httperr() and showstats() for 
     examples of how it's done right now).
