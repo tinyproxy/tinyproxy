@@ -1,3 +1,8 @@
+2001-06-01  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.in: Added a test for the resolv library for the
+	gethostby* functions. Also bumped up the preversion.
+
 2001-05-26  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/tinyproxy.c (main): Added code to stop the creation of core

@@ -1,7 +1,7 @@
-dnl $Id: configure.in,v 1.7 2001-05-27 02:40:23 rjkaes Exp $
+dnl $Id: configure.in,v 1.8 2001-06-02 02:12:47 rjkaes Exp $
 
 AC_INIT()
-AM_INIT_AUTOMAKE(tinyproxy,1.4.0pre3)
+AM_INIT_AUTOMAKE(tinyproxy,1.4.0pre4)
 AM_CONFIG_HEADER(config.h)
 
 AC_CANONICAL_HOST
@@ -48,6 +48,7 @@ fi
 
 AC_CHECK_LIB(nsl, t_open)
 AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(resolv, gethostbyname)
 
 dnl Checks for library functions.
 AC_TYPE_SIGNAL
