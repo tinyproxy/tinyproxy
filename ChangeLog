@@ -24,9 +24,12 @@
 	The stats structure has been moved into a shared memory block since it
 	needs to be shared by all the children.
 
-	* src/tinyproxy.c:
-	Removed all the code relating to the DNS API (dnsclient.h) as it's no
-	longer needed with the new pre-forked model.
+	* src/tinyproxy.c: Removed all the code relating to the DNS API as
+	it's no longer needed with the new pre-forked model.
+	Updated the copyright dates.
+	(main): Moved the signals around so that they are assigned to the
+	appropriate process level: either the parent only, or all
+	processes.
 
 	* src/sock.c:
 	Removed the DNS API calls and replaced them with the standard
