@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.82 2002-06-06 20:32:30 rjkaes Exp $
+/* $Id: reqs.c,v 1.83 2002-10-17 19:27:08 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -1121,7 +1121,7 @@ relay_connection(struct conn_s *connptr)
 	 */
 	socket_blocking(connptr->server_fd);
 	while (buffer_size(connptr->cbuffer) > 0) {
-		if (write_buffer(connptr->client_fd, connptr->cbuffer) < 0)
+		if (write_buffer(connptr->server_fd, connptr->cbuffer) < 0)
 			break;
 	}
 
