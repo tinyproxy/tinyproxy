@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.67 2004-08-20 16:01:31 rjkaes Exp $
+dnl $Id: configure.ac,v 2.68 2004-08-24 16:41:11 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -17,6 +17,7 @@ dnl Read the Autoconf manual for details.
 AC_INIT([tinyproxy], [1.7.1], [rjkaes@users.sourceforge.net])
 AC_CONFIG_SRCDIR([src/tinyproxy.c])
 AC_CONFIG_AUX_DIR(config)
+AC_CONFIG_MACRO_DIR(config)
 AC_PREREQ(2.52)
 
 AC_CANONICAL_TARGET
@@ -167,6 +168,7 @@ AC_ISC_POSIX
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_LIBTOOL
+AC_PROG_RANLIB
 
 dnl If a CFLAGS variable was passed during configure, set the initial
 dnl CFLAGS variable to it; otherwise, start with an empty CFLAGS
@@ -203,9 +205,10 @@ dnl Checks for headers
 dnl
 AC_HEADER_STDC
 AC_HEADER_TIME
+AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([sys/ioctl.h sys/mman.h sys/resource.h \
 		  sys/select.h sys/socket.h sys/time.h sys/uio.h \
-		  sys/un.h sys/wait.h arpa/inet.h netinet/in.h alloca.h \
+		  sys/un.h arpa/inet.h netinet/in.h \
 		  assert.h ctype.h errno.h fcntl.h grp.h io.h libintl.h \
 		  netdb.h pwd.h regex.h signal.h stdarg.h stddef.h stdio.h \
 		  sysexits.h syslog.h time.h wchar.h wctype.h])
@@ -242,9 +245,18 @@ AC_UNP_CHECK_TYPE(in_addr_t, uint32_t)
 dnl
 dnl Checks for libary functions
 dnl
-AC_FUNC_ALLOCA
+AC_FUNC_FORK
+AC_FUNC_LSTAT
+AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
+AC_FUNC_MALLOC
+AC_FUNC_MMAP
+AC_FUNC_REALLOC
+AC_FUNC_SELECT_ARGTYPES
+AC_FUNC_STRFTIME
 
-AC_CHECK_FUNCS([isascii memcpy setrlimit ftruncate regexec])
+AC_CHECK_FUNCS([gethostname inet_ntoa memchr memset select socket strcasecmp \
+                strchr strdup strerror strncasecmp strpbrk strstr strtol])
+AC_CHECK_FUNCS([isascii memcpy setrlimit ftruncate regcomp regexec])
 AC_CHECK_FUNCS([strlcpy strlcat])
 
 dnl
