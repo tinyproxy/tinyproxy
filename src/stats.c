@@ -1,9 +1,9 @@
-/* $Id: stats.c,v 1.9 2002-05-24 04:45:32 rjkaes Exp $
+/* $Id: stats.c,v 1.10 2002-05-26 18:53:14 rjkaes Exp $
  *
  * This module handles the statistics for tinyproxy. There are only two
  * public API functions. The reason for the functions, rather than just a
  * external structure is that tinyproxy is now multi-threaded and we can
- * not allow more than one thread to access the statistics at the same
+ * not allow more than one child to access the statistics at the same
  * time. This is prevented by a mutex. If there is a need for more
  * statistics in the future, just add to the structure, enum (in the header),
  * and the switch statement in update_stats().
@@ -36,15 +36,7 @@ struct stat_s {
 	unsigned long int num_denied;
 };
 
-static struct stat_s stats;
-
-/*
- * Locking when we're accessing the statistics, since I don't want multiple
- * threads changing the information at the same time.
- */
-pthread_mutex_t stats_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define LOCK()   pthread_mutex_lock(&stats_mutex)
-#define UNLOCK() pthread_mutex_unlock(&stats_mutex)
+static struct stat_s *stats;
 
 /*
  * Initialize the statistics information to zero.
@@ -52,9 +44,11 @@ pthread_mutex_t stats_mutex = PTHREAD_MUTEX_INITIALIZER;
 void
 init_stats(void)
 {
-	LOCK();
-	memset(&stats, 0, sizeof(stats));
-	UNLOCK();
+	stats = malloc_shared_memory(sizeof(struct stat));
+	if (!stats)
+		return;
+
+	memset(stats, 0, sizeof(struct stat));
 }
 
 /*
@@ -81,13 +75,11 @@ showstats(struct conn_s *connptr)
 	if (!message_buffer)
 		return -1;
 
-	LOCK();
 	snprintf(message_buffer, MAXBUFFSIZE, msg,
 		 PACKAGE, VERSION, PACKAGE, VERSION,
-		 stats.num_open,
-		 stats.num_reqs,
-		 stats.num_badcons, stats.num_denied, stats.num_refused);
-	UNLOCK();
+		 stats->num_open,
+		 stats->num_reqs,
+		 stats->num_badcons, stats->num_denied, stats->num_refused);
 
 	if (send_http_message(connptr, 200, "OK", message_buffer) < 0) {
 		safefree(message_buffer);
@@ -105,29 +97,26 @@ showstats(struct conn_s *connptr)
 int
 update_stats(status_t update_level)
 {
-	LOCK();
 	switch (update_level) {
 	case STAT_BADCONN:
-		stats.num_badcons++;
+		++stats->num_badcons;
 		break;
 	case STAT_OPEN:
-		stats.num_open++;
-		stats.num_reqs++;
+		++stats->num_open;
+		++stats->num_reqs;
 		break;
 	case STAT_CLOSE:
-		stats.num_open--;
+		--stats->num_open;
 		break;
 	case STAT_REFUSE:
-		stats.num_refused++;
+		++stats->num_refused;
 		break;
 	case STAT_DENIED:
-		stats.num_denied++;
+		++stats->num_denied;
 		break;
 	default:
-		UNLOCK();
 		return -1;
 	}
-	UNLOCK();
 
 	return 0;
 }
