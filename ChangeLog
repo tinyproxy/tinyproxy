@@ -1,5 +1,13 @@
 2002-04-09  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/anonymous.c: Changed this module to use the hashmap module
+	instead of it's own internal linked list.  Common code is good. :)
+
+	* src/reqs.c (process_client_headers): Fixed the XTINYPROXY_ENABLE
+	section to actually check if xtinyproxy has been configured.
+	(compare_headers): Removed this function since it's been replaced
+	by a call to anonymous_search().
+
 	* src/acl.c (make_netmask): James Flemer cleaned up the
 	make_netmask() function to remove the big static table.  Much
 	nicer now.
