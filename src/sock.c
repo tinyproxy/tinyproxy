@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.4 2001-05-23 18:01:23 rjkaes Exp $
+/* $Id: sock.c,v 1.5 2001-05-27 02:31:20 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -28,15 +28,13 @@
 #include "sock.h"
 #include "utils.h"
 
-#define SA struct sockaddr
-
 /*
  * The mutex is used for locking around the calls to the dnscache since I
  * don't want multiple threads accessing the linked list at the same time.
  * This should be more fine grained, but it will do for now.
  *	- rjkaes
  */
-pthread_mutex_t sock_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t sock_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 #define SOCK_LOCK()   pthread_mutex_lock(&sock_mutex);
 #define SOCK_UNLOCK() pthread_mutex_unlock(&sock_mutex);
@@ -53,7 +51,7 @@ pthread_mutex_t sock_mutex = PTHREAD_MUTEX_INITIALIZER;
  * dotted-decimal form before it does a name lookup.
  *      - rjkaes
  */
-int opensock(char *ip_addr, int port)
+int opensock(char *ip_addr, uint16_t port)
 {
 	int sock_fd;
 	struct sockaddr_in port_info;
@@ -62,7 +60,7 @@ int opensock(char *ip_addr, int port)
 	assert(ip_addr != NULL);
 	assert(port > 0);
 
-	memset((SA *) &port_info, 0, sizeof(port_info));
+	memset((struct sockaddr*)&port_info, 0, sizeof(port_info));
 
 	port_info.sin_family = AF_INET;
 
@@ -75,19 +73,19 @@ int opensock(char *ip_addr, int port)
 	SOCK_UNLOCK();
 
 	if (ret < 0) {
-		log(LOG_ERR, "opensock: Could not lookup address: %s", ip_addr);
+		log_message(LOG_ERR, "opensock: Could not lookup address: %s", ip_addr);
 		return -1;
 	}
 
 	port_info.sin_port = htons(port);
 
 	if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		log(LOG_ERR, "opensock: socket (%s)", strerror(errno));
+		log_message(LOG_ERR, "opensock: socket (%s)", strerror(errno));
 		return -1;
 	}
 
-	if (connect(sock_fd, (SA *) &port_info, sizeof(port_info)) < 0) {
-		log(LOG_ERR, "connecting socket");
+	if (connect(sock_fd, (struct sockaddr*)&port_info, sizeof(port_info)) < 0) {
+		log_message(LOG_ERR, "connecting socket");
 		return -1;
 	}
 
@@ -126,7 +124,7 @@ int socket_blocking(int sock)
  * the pointer, while the socket is returned as a default return.
  *	- rjkaes
  */
-int listen_sock(unsigned int port, socklen_t *addrlen)
+int listen_sock(uint16_t port, socklen_t *addrlen)
 {
 	int listenfd;
 	const int on = 1;
@@ -148,7 +146,7 @@ int listen_sock(unsigned int port, socklen_t *addrlen)
 		addr.sin_addr.s_addr = inet_addr("0.0.0.0");
 	}
 	
-	bind(listenfd, (struct sockaddr *) &addr, sizeof(addr));
+	bind(listenfd, (struct sockaddr *)&addr, sizeof(addr));
 
 	listen(listenfd, MAXLISTEN);
 
@@ -164,16 +162,16 @@ int listen_sock(unsigned int port, socklen_t *addrlen)
 char *getpeer_ip(int fd, char *ipaddr)
 {
 	struct sockaddr_in name;
-	int namelen = sizeof(name);
+	size_t namelen = sizeof(name);
 
 	assert(fd >= 0);
 	assert(ipaddr != NULL);
 
-	if (getpeername(fd, (struct sockaddr *) &name, &namelen) != 0) {
-		log(LOG_ERR, "Connect: 'could not get peer name'");
+	if (getpeername(fd, (struct sockaddr*)&name, &namelen) != 0) {
+		log_message(LOG_ERR, "Connect: 'could not get peer name'");
 	} else {
 		strlcpy(ipaddr,
-			inet_ntoa(*(struct in_addr *) &name.sin_addr.s_addr),
+			inet_ntoa(*(struct in_addr*)&name.sin_addr.s_addr),
 			PEER_IP_LENGTH);
 	}
 
@@ -187,14 +185,14 @@ char *getpeer_ip(int fd, char *ipaddr)
 char *getpeer_string(int fd, char *string)
 {
 	struct sockaddr_in name;
-	int namelen = sizeof(name);
+	size_t namelen = sizeof(name);
 	struct hostent *peername;
 
 	assert(fd >= 0);
 	assert(string != NULL);
 
-	if (getpeername(fd, (struct sockaddr *) &name, &namelen) != 0) {
-		log(LOG_ERR, "Connect: 'could not get peer name'");
+	if (getpeername(fd, (struct sockaddr *)&name, &namelen) != 0) {
+		log_message(LOG_ERR, "Connect: 'could not get peer name'");
 	} else {
 		SOCK_LOCK();
 		peername = gethostbyaddr((char *)&name.sin_addr.s_addr,
@@ -209,15 +207,21 @@ char *getpeer_string(int fd, char *string)
 	return string;
 }
 
-ssize_t readline(int fd, void *vptr, size_t maxlen)
+/*
+ * Reads in a line of text one character at a time. Finishes when either a
+ * newline is detected, or maxlen characters have been read. The function
+ * will actually copy one less than maxlen into the buffer. In other words,
+ * the returned string will _always_ be '\0' terminated.
+ */
+ssize_t readline(int fd, char *ptr, size_t maxlen)
 {
-	ssize_t n, rc;
-	char c, *ptr;
+	size_t n;
+	ssize_t rc;
+	char c;
 
 	assert(fd >= 0);
-	assert(vptr != NULL);
+	assert(ptr != NULL);
 
-	ptr = vptr;
 	for (n = 1; n < maxlen; n++) {
 	again:
 		if ((rc = read(fd, &c, 1)) == 1) {
@@ -236,6 +240,7 @@ ssize_t readline(int fd, void *vptr, size_t maxlen)
 		}
 	}
 
-	*ptr = 0;
-	return n;
+	/* Tack a NIL to the end to make is a standard "C" string */
+	*ptr = '\0';
+	return (ssize_t)n;
 }
