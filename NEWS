@@ -3,21 +3,23 @@
   ====
 
 Well so much for the 1.4.0 version being the best tinyproxy---there
-were bugs. The most serious was that anonymous filtering was not
-actually working. Another bug fix is that on Debian systems (and
-maybe others) child threads would not be closed if they had been
-created after tinyproxy had been started. Finally, if
-MaxClientRequests was set to 0, the status of the thread was not going
-back to T_WAITING.
+were bugs. The most serious was a segmentation fault problem when an
+invalid request was received. Also, anonymous filtering was not
+actually working. Another bug fix is that on Debian systems (and maybe
+others) child threads would not be closed if they had been created
+after tinyproxy had been started. Finally, if MaxClientRequests was
+set to 0, the status of the thread was not going back to T_WAITING.
 
-Okay, now on to the new features. There is only one feature which is
-the new Connect log level. This is basically "Info" without info's
-noise.
+Okay, now on to the new features. There is a new Connect log
+level. This is basically "Info" without info's noise. Also, the error
+reporting function sends back more HTTP headers, which should lead to
+a more standards compliant proxy.
 
 There are a couple of features which I'm working on for the next
 release. There has been requests for logging on tunnelled
 connections. Also, some people would like HTTP filtering on tunnelled
-connections.
+connections. Finally, I do have the information to include SSL
+connections, so I will be including it in the next release.
 
 So, the above bugs are fixed, hopefully there are no other ones. The
 new features will be worked into the next few releases.
