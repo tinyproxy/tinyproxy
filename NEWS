@@ -23,3 +23,12 @@ connections, so I will be including it in the next release.
 
 So, the above bugs are fixed, hopefully there are no other ones. The
 new features will be worked into the next few releases.
+
+Update
+------
+2001-08-27 - Fix one bug and two more crop up. The MIME type was
+incorrect in the httperr() function; this has been fixed.
+Jeffrey D. Wheelhouse included a patch to increase the stack size on
+some machine (notably FreeBSD) and also included a patch to allow
+tinyproxy to compile on FreeBSD. I really hope that _this_ is that
+last minor-minor version for a while.
