@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.34 2002-07-09 19:02:57 rjkaes Exp $
+/* $Id: utils.c,v 1.35 2002-11-21 21:51:34 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -157,7 +157,7 @@ create_file_safely(const char *filename, bool_t truncate_file)
 			fprintf(stderr,
 				"%s: Error checking file %s: %s\n",
 				PACKAGE, filename, strerror(errno));
-			exit(EX_IOERR);
+			return -EACCES;
 		}
 
 		/*
@@ -170,7 +170,7 @@ create_file_safely(const char *filename, bool_t truncate_file)
 			fprintf(stderr,
 				"%s: Could not create file %s: %s\n",
 				PACKAGE, filename, strerror(errno));
-			exit(EX_CANTCREAT);
+			return fildes;
 		}
 	} else {
 		struct stat fstatinfo;
@@ -187,7 +187,7 @@ create_file_safely(const char *filename, bool_t truncate_file)
 			fprintf(stderr,
 				"%s: Could not open file %s: %s\n",
 				PACKAGE, filename, strerror(errno));
-			exit(EX_IOERR);
+			return fildes;
 		}
 
 		/*
@@ -202,7 +202,7 @@ create_file_safely(const char *filename, bool_t truncate_file)
 				"%s: The file %s has been changed before it could be opened\n",
 				PACKAGE, filename);
 			close(fildes);
-			exit(EX_IOERR);
+			return -EIO;
 		}
 
 		/*
@@ -217,7 +217,7 @@ create_file_safely(const char *filename, bool_t truncate_file)
 				"%s: The file %s has too many links, or is not a regular file: %s\n",
 				PACKAGE, filename, strerror(errno));
 			close(fildes);
-			exit(EX_IOERR);
+			return -EMLINK;
 		}
 
 		/*
@@ -244,7 +244,7 @@ create_file_safely(const char *filename, bool_t truncate_file)
 			fprintf(stderr,
 				"%s: Could not open file %s: %s.",
 				PACKAGE, filename, strerror(errno));
-			exit(EX_IOERR);
+			return fildes;
 		}
 #endif				/* HAVE_FTRUNCATE */
 	}
@@ -255,7 +255,7 @@ create_file_safely(const char *filename, bool_t truncate_file)
 /*
  * Write the PID of the program to the specified file.
  */
-void
+int
 pidfile_create(const char *filename)
 {
 	int fildes;
@@ -265,7 +265,7 @@ pidfile_create(const char *filename)
 	 * Create a new file
 	 */
 	if ((fildes = create_file_safely(filename, TRUE)) < 0)
-		exit(1);
+		return fildes;
 
 	/*
 	 * Open a stdio file over the low-level one.
@@ -276,9 +276,10 @@ pidfile_create(const char *filename)
 			PACKAGE, filename, strerror(errno));
 		close(fildes);
 		unlink(filename);
-		exit(EX_IOERR);
+		return -EIO;
 	}
 
 	fprintf(fd, "%ld\n", (long) getpid());
 	fclose(fd);
+	return 0;
 }
