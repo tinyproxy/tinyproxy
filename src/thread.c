@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.23 2002-04-09 00:37:43 rjkaes Exp $
+/* $Id: thread.c,v 1.24 2002-04-17 20:54:26 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -118,8 +118,10 @@ thread_main(void *arg)
 	socklen_t clilen;
 	struct thread_s *ptr;
 
+#ifdef HAVE_PTHREAD_CANCEL
 	/* Set the cancelation type to immediate. */
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+#endif
 
 	ptr = (struct thread_s *) arg;
 
@@ -164,7 +166,6 @@ thread_main(void *arg)
 		SERVER_DEC();
 
 		handle_connection(connfd);
-		close(connfd);
 
 		if (thread_config.maxrequestsperchild != 0) {
 			ptr->connects++;
@@ -216,6 +217,7 @@ short int
 thread_pool_create(void)
 {
 	unsigned int i;
+	int pthread_ret;
 
 	/*
 	 * Initialize thread_attr to contain a non-default stack size
@@ -252,9 +254,15 @@ thread_pool_create(void)
 	}
 
 	for (i = 0; i < thread_config.startservers; i++) {
-		thread_ptr[i].status = T_WAITING;
-		pthread_create(&thread_ptr[i].tid, &thread_attr, &thread_main,
-			       &thread_ptr[i]);
+		pthread_ret = pthread_create(&thread_ptr[i].tid, &thread_attr,
+					     &thread_main, &thread_ptr[i]);
+		if (pthread_ret < 0) {
+			log_message(LOG_WARNING, "Could not create thread number %d of %d: %s",
+				    i, thread_config.startservers, strerror(errno));
+			return -1;
+		} else {
+			thread_ptr[i].status = T_WAITING;
+		}
 	}
 	servers_waiting = thread_config.startservers;
 
@@ -274,6 +282,7 @@ void
 thread_main_loop(void)
 {
 	int i;
+	int pthread_ret;
 
 	while (1) {
 		if (config.quit)
@@ -286,10 +295,17 @@ thread_main_loop(void)
 
 			for (i = 0; i < thread_config.maxclients; i++) {
 				if (thread_ptr[i].status == T_EMPTY) {
-					pthread_create(&thread_ptr[i].tid,
-						       &thread_attr,
-						       &thread_main,
-						       &thread_ptr[i]);
+					pthread_ret = pthread_create(&thread_ptr[i].tid,
+								     &thread_attr,
+								     &thread_main,
+								     &thread_ptr[i]);
+					if (pthread_ret < 0) {
+						log_message(LOG_NOTICE,
+							    "Could not create thread: %s",
+							    strerror(errno));
+						break;
+					}
+
 					thread_ptr[i].status = T_WAITING;
 					thread_ptr[i].connects = 0;
 
@@ -311,6 +327,7 @@ thread_main_loop(void)
 /*
  * Go through all the non-empty threads and cancel them.
  */
+#ifdef HAVE_PTHREAD_CANCEL
 void
 thread_kill_threads(void)
 {
@@ -321,6 +338,12 @@ thread_kill_threads(void)
 			pthread_cancel(thread_ptr[i].tid);
 	}
 }
+#else
+void
+thread_kill_threads(void)
+{
+}
+#endif
 
 int
 thread_listening_sock(uint16_t port)
