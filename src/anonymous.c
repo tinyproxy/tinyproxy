@@ -1,4 +1,4 @@
-/* $Id: anonymous.c,v 1.12 2002-04-16 03:19:19 rjkaes Exp $
+/* $Id: anonymous.c,v 1.13 2002-04-25 18:52:09 rjkaes Exp $
  *
  * Handles insertion and searches for headers which should be let through when
  * the anonymous feature is turned on.
@@ -41,7 +41,7 @@ anonymous_search(char *s)
 	assert(s != NULL);
 	assert(anonymous_map != NULL);
 
-	return hashmap_search(anonymous_map, s, NULL);
+	return hashmap_search(anonymous_map, s);
 }
 
 /*
@@ -63,7 +63,7 @@ anonymous_insert(char *s)
 			return -1;
 	}
 
-	if (hashmap_search(anonymous_map, s, NULL) > 0) {
+	if (hashmap_search(anonymous_map, s) > 0) {
 		/* The key was already found, so return a positive number. */
 		return 0;
 	}
