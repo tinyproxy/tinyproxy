@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.5 2001-08-27 03:45:34 rjkaes Exp $
+/* $Id: utils.h,v 1.6 2001-08-30 16:52:56 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -20,9 +20,6 @@
 #define _TINYPROXY_UTILS_H_
 
 #include "tinyproxy.h"
-
-extern char *xstrstr(char *haystack, char *needle, size_t length,
-		     bool_t case_sensitive);
 
 extern int httperr(struct conn_s *connptr, int err, const char *msg);
 

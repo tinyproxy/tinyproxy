@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.7 2001-08-28 04:33:54 rjkaes Exp $
+/* $Id: utils.c,v 1.8 2001-08-30 16:52:56 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -29,34 +29,6 @@
 #include "log.h"
 #include "sock.h"
 #include "utils.h"
-
-/*
- * Find the start of the needle in the haystack. Limits the search to less
- * than "length" characters. Returns NULL if the needle is not found.
- */
-char *xstrstr(char *haystack, char *needle, size_t length,
-	      bool_t case_sensitive)
-{
-	unsigned int i;
-	/* Used to specify which function to use... need the decl. */
-	int (*fn) (const char *s1, const char *s2, size_t n);
-
-	if (case_sensitive)
-		fn = strncmp;
-	else
-		fn = strncasecmp;
-
-	if (strlen(needle) > length)
-		return NULL;
-
-	for (i = 0; i <= length - strlen(needle); i++) {
-		if ((*fn) (haystack + i, needle, strlen(needle)) == 0)
-			return (haystack + i);
-
-	}
-
-	return NULL;
-}
 
 /*
  * Display an error to the client.
