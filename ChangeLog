@@ -1,3 +1,20 @@
+2002-04-22  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/log.c (send_stored_logs): Added this function since the
+	log_message() function will now stored the messages if the config
+	file has not been processed yet.  This function is called from
+	within main() to output the messages to the log file _after_ it's
+	been initialized.
+
+	* src/reqs.c (process_client_headers): Added the
+	"Proxy-Connection" header to the list of client headers we don't
+	forward to the remote machine.
+
+	Added the the "Bind" directive.  This is used to indicate which IP
+	address in a multi-homed machine you would like tinyproxy to bind
+	out-going connections to.  This complements the "Listen" directive
+	for incoming connections.
+
 2002-04-18  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/sock.c (lookup_domain): Removed the call to inet_aton()
