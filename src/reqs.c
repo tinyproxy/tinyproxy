@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.12 2001-05-23 17:58:19 rjkaes Exp $
+/* $Id: reqs.c,v 1.13 2001-05-27 02:29:06 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -6,7 +6,7 @@
  * and then relays the bytes between the two.
  * If the UPSTEAM_PROXY is enabled, then tinyproxy will actually work
  * as a simple buffering TCP tunnel. Very cool! (Robert actually uses
- * this feature for a buffering NNTP tunnel).
+ * this feature for a buffering NNTP tunnel.)
  *
  * Copyright (C) 1998	    Steven Young
  * Copyright (C) 1999,2000  Robert James Kaes (rjkaes@flarenet.com)
@@ -95,7 +95,7 @@ static int process_method(struct conn_s *connptr)
 	regmatch_t pmatch[NMATCH];
 
 	size_t request_len;
-	long len;
+	size_t len;
 	int fd, port_no = HTTP_PORT;
 
 	char peer_ipaddr[PEER_IP_LENGTH];
@@ -103,7 +103,7 @@ static int process_method(struct conn_s *connptr)
 	getpeer_ip(connptr->client_fd, peer_ipaddr);
 
 	if (readline(connptr->client_fd, inbuf, LINE_LENGTH) <= 0) {
-		log(LOG_ERR, "client closed before read");
+		log_message(LOG_ERR, "client closed before read");
 		update_stats(STAT_BADCONN);
 		return -2;
 	}
@@ -113,16 +113,16 @@ static int process_method(struct conn_s *connptr)
 	while (*inbuf_ptr == '\r' || *inbuf_ptr == '\n')
 		*inbuf_ptr-- = '\0';
 
-	log(LOG_INFO, "Request: %s", inbuf);
+	log_message(LOG_INFO, "Request: %s", inbuf);
 
 	if (regcomp(&preg, HTTPPATTERN, REG_EXTENDED | REG_ICASE) != 0) {
-		log(LOG_ERR, "clientreq: regcomp");
+		log_message(LOG_ERR, "clientreq: regcomp");
 		httperr(connptr, 503, HTTP503ERROR);
 		update_stats(STAT_BADCONN);
 		goto COMMON_EXIT;
 	}
 	if (regexec(&preg, inbuf, NMATCH, pmatch, 0) != 0) {
-		log(LOG_ERR, "clientreq: regexec");
+		log_message(LOG_ERR, "clientreq: regexec");
 		regfree(&preg);
 		httperr(connptr, 503, HTTP503ERROR);
 		update_stats(STAT_BADCONN);
@@ -140,7 +140,7 @@ static int process_method(struct conn_s *connptr)
 	
 
 	if (pmatch[METHOD_IND].rm_so == -1 || pmatch[URI_IND].rm_so == -1) {
-		log(LOG_ERR, "clientreq: Incomplete line from %s (%s)",
+		log_message(LOG_ERR, "clientreq: Incomplete line from %s (%s)",
 		    peer_ipaddr, inbuf);
 		httperr(connptr, 400, HTTP400ERROR);
 		update_stats(STAT_BADCONN);
@@ -149,7 +149,7 @@ static int process_method(struct conn_s *connptr)
 
 	len = pmatch[URI_IND].rm_eo - pmatch[URI_IND].rm_so;
 	if (!(buffer = malloc(len + 1))) {
-		log(LOG_ERR,
+		log_message(LOG_ERR,
 		    "clientreq: Cannot allocate buffer for request from %s",
 		    peer_ipaddr);
 		httperr(connptr, 503, HTTP503ERROR);
@@ -160,7 +160,7 @@ static int process_method(struct conn_s *connptr)
 	buffer[len] = '\0';
 	if (!(uri = explode_uri(buffer))) {
 		safefree(buffer);
-		log(LOG_ERR, "clientreq: Problem with explode_uri");
+		log_message(LOG_ERR, "clientreq: Problem with explode_uri");
 		httperr(connptr, 503, HTTP503ERROR);
 		update_stats(STAT_BADCONN);
 		goto COMMON_EXIT;
@@ -170,11 +170,11 @@ static int process_method(struct conn_s *connptr)
 	if (!uri->scheme || strcasecmp(uri->scheme, "http") != 0) {
 		char *error_string;
 		if (uri->scheme) {
-			int error_string_len = strlen(uri->scheme) + 64;
+			size_t error_string_len = strlen(uri->scheme) + 64;
 			error_string = malloc(error_string_len);
 			if (!error_string) {
-				log(LOG_CRIT, "Out of Memory!");
-				return -1;
+				log_message(LOG_CRIT, "Out of Memory!");
+				goto COMMON_EXIT;
 			}
 			snprintf(error_string, error_string_len,
 				"Invalid scheme (%s). Only HTTP is allowed.",
@@ -183,8 +183,8 @@ static int process_method(struct conn_s *connptr)
 			error_string =
 				strdup("Invalid scheme (NULL). Only HTTP is allowed.");
 			if (!error_string) {
-				log(LOG_CRIT, "Out of Memory!");
-				return -1;
+				log_message(LOG_CRIT, "Out of Memory!");
+				goto COMMON_EXIT;
 			}
 		}
 
@@ -216,7 +216,7 @@ static int process_method(struct conn_s *connptr)
 	/* Filter domains out */
 	if (config.filter) {
 		if (filter_url(uri->authority)) {
-			log(LOG_ERR, "clientreq: Filtered connection (%s)",
+			log_message(LOG_ERR, "clientreq: Filtered connection (%s)",
 			    peer_ipaddr);
 			httperr(connptr, 404,
 				"Unable to connect to filtered host.");
@@ -229,7 +229,7 @@ static int process_method(struct conn_s *connptr)
 	/* Build a new request from the first line of the header */
 	request_len = strlen(inbuf) + 1;
 	if (!(request = malloc(request_len))) {
-		log(LOG_ERR,
+		log_message(LOG_ERR,
 		    "clientreq: cannot allocate buffer for request from %s",
 		    peer_ipaddr);
 		httperr(connptr, 503, HTTP503ERROR);
@@ -307,7 +307,7 @@ static int compare_header(char *line)
 	if ((buffer = malloc(ptr - line + 1)) == NULL)
 		return -1;
 
-	memcpy(buffer, line, ptr - line);
+	memcpy(buffer, line, (size_t)(ptr - line));
 	buffer[ptr - line] = '\0';
 
 	ret = anon_search(buffer);
@@ -324,7 +324,7 @@ static int compare_header(char *line)
 static int pull_client_data(struct conn_s *connptr, unsigned long int length)
 {
 	char buffer[MAXBUFFSIZE];
-	int len;
+	ssize_t len;
 
 	do {
 		len = safe_read(connptr->client_fd, buffer, min(MAXBUFFSIZE, length));
@@ -438,7 +438,7 @@ static int process_client_headers(struct conn_s *connptr)
 	 * Spin here pulling the data from the client.
 	 */
 	if (content_length >= 0)
-		return pull_client_data(connptr, content_length);
+		return pull_client_data(connptr, (unsigned long int)content_length);
 	else
 		return 0;
 }
@@ -488,10 +488,8 @@ static void relay_connection(struct conn_s *connptr)
 	struct timeval tv;
 	time_t last_access;
 	int ret;
-	int len;
 	double tdiff;
-	int maxfd = (connptr->client_fd > connptr->server_fd)
-		? connptr->client_fd : connptr->server_fd;
+	int maxfd = max(connptr->client_fd, connptr->server_fd) + 1;
 
 	socket_nonblocking(connptr->client_fd);
 	socket_nonblocking(connptr->server_fd);
@@ -514,54 +512,42 @@ static void relay_connection(struct conn_s *connptr)
 		if (buffer_size(connptr->cbuffer) < MAXBUFFSIZE)
 			FD_SET(connptr->client_fd, &rset);
 
-		tdiff = difftime(time(NULL), last_access);
-		if (tdiff > config.idletimeout) {
-			log(LOG_INFO, "Idle Timeout (before select) %g > %u", tdiff, config.idletimeout);
-			return;
-		}
-
-		ret = select(maxfd + 1, &rset, &wset, NULL, &tv);
+		ret = select(maxfd, &rset, &wset, NULL, &tv);
 
 		if (ret == 0) {
 			tdiff = difftime(time(NULL), last_access);
 			if (tdiff > config.idletimeout) {
-				log(LOG_INFO, "Idle Timeout (after select) %g > %u", tdiff, config.idletimeout);
+				log_message(LOG_INFO, "Idle Timeout (after select) %g > %u", tdiff, config.idletimeout);
 				return;
 			} else {
 				continue;
 			}
-		} else if (ret < 0)
+		} else if (ret < 0) {
 			return;
+		} else {
+			/*
+			 * Okay, something was actually selected so mark it.
+			 */
+			last_access = time(NULL);
+		}
 
-		if (FD_ISSET(connptr->server_fd, &rset)) {
-			len = readbuff(connptr->server_fd, connptr->sbuffer);
-			if (len < 0) {
+		if (FD_ISSET(connptr->server_fd, &rset)
+		    && readbuff(connptr->server_fd, connptr->sbuffer) < 0) {
 				shutdown(connptr->server_fd, SHUT_WR);
 				break;
-			}
-			last_access = time(NULL);
 		}
-		if (FD_ISSET(connptr->client_fd, &rset)) {
-			len = readbuff(connptr->client_fd, connptr->cbuffer);
-			if (len < 0) {
+		if (FD_ISSET(connptr->client_fd, &rset)
+		    && readbuff(connptr->client_fd, connptr->cbuffer) < 0) {
 				return;
-			}
-			last_access = time(NULL);
 		}
-		if (FD_ISSET(connptr->server_fd, &wset)) {
-			len = writebuff(connptr->server_fd, connptr->cbuffer);
-			if (len < 0) {
+		if (FD_ISSET(connptr->server_fd, &wset)
+		    && writebuff(connptr->server_fd, connptr->cbuffer) < 0) {
 				shutdown(connptr->server_fd, SHUT_WR);
 				break;
-			}
-			last_access = time(NULL);
 		}
-		if (FD_ISSET(connptr->client_fd, &wset)) {
-			len = writebuff(connptr->client_fd, connptr->sbuffer);
-			if (len < 0) {
+		if (FD_ISSET(connptr->client_fd, &wset)
+		    && writebuff(connptr->client_fd, connptr->sbuffer) < 0) {
 				return;
-			}
-			last_access = time(NULL);
 		}
 	}
 
@@ -571,10 +557,8 @@ static void relay_connection(struct conn_s *connptr)
 	 */
 	socket_blocking(connptr->client_fd);
 	while (buffer_size(connptr->sbuffer) > 0) {
-		len = writebuff(connptr->client_fd, connptr->sbuffer);
-		if (len < 0) {
+		if (writebuff(connptr->client_fd, connptr->sbuffer) < 0)
 			return;
-		}
 	}
 
 	return;
@@ -624,12 +608,12 @@ void handle_connection(int fd)
 	char peer_ipaddr[PEER_IP_LENGTH];
 	char peer_string[PEER_STRING_LENGTH];
 
-	log(LOG_INFO, "Connect: %s [%s]", getpeer_string(fd, peer_string),
+	log_message(LOG_INFO, "Connect: %s [%s]", getpeer_string(fd, peer_string),
 	    getpeer_ip(fd, peer_ipaddr));
 
 	connptr = malloc(sizeof(struct conn_s));
 	if (!connptr) {
-		log(LOG_CRIT, "Out of memory!");
+		log_message(LOG_CRIT, "Out of memory!");
 		return;
 	}
 
@@ -647,16 +631,16 @@ void handle_connection(int fd)
 	 * If an upstream proxy has been configured then redirect any
 	 * connections to it. If we cannot connect to the upstream, see if
 	 * we can handle it ourselves. I know I used GOTOs, but it seems to
-	 * me to be the best way of handling this situations. Sue me. :)
+	 * me to be the best way of handling this situations. So sue me. :)
 	 *	- rjkaes
 	 */
 	if (config.tunnel_name && config.tunnel_port != -1) {
-		log(LOG_INFO, "Redirecting to %s:%d",
+		log_message(LOG_INFO, "Redirecting to %s:%d",
 		    config.tunnel_name, config.tunnel_port);
 
 		connptr->server_fd = opensock(config.tunnel_name, config.tunnel_port);
 		if (connptr->server_fd < 0) {
-			log(LOG_ERR, "Could not connect to tunnel's end, see if we can handle it ourselves.");
+			log_message(LOG_ERR, "Could not connect to tunnel's end, see if we can handle it ourselves.");
 			goto internal_proxy;
 		}
 
