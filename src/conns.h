@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.8 2002-04-15 02:07:27 rjkaes Exp $
+/* $Id: conns.h,v 1.9 2002-04-18 21:43:53 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -34,6 +34,7 @@ struct conn_s {
 	char *request_line;
 
 	bool_t connect_method;
+	bool_t show_stats;
 
 	/* Store the error response if there is one */
 	char *error_string;

@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.62 2002-04-18 17:58:52 rjkaes Exp $
+/* $Id: reqs.c,v 1.63 2002-04-18 21:43:53 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -430,10 +430,9 @@ process_request(struct conn_s *connptr)
 	 */
 	if (config.stathost && strcmp(config.stathost, request->host) == 0) {
 		log_message(LOG_NOTICE, "Request for the stathost.");
+		connptr->show_stats = TRUE;
 
 		free_request_struct(request);
-
-		showstats(connptr);
 		return NULL;
 	}
 
@@ -716,10 +715,11 @@ process_client_headers(struct conn_s *connptr)
 	}
 	
 	/*
-	 * Don't send headers if there's already an error, or if this was
-	 * a CONNECT method (unless upstream proxy is in use.)
+	 * Don't send headers if there's already an error, if the request was
+	 * a stats request, or if this was a CONNECT method (unless upstream
+	 * proxy is in use.)
 	 */
-	if (connptr->server_fd == -1
+	if (connptr->server_fd == -1 || connptr->show_stats
 	    || (connptr->connect_method && !UPSTREAM_CONFIGURED())) {
 		log_message(LOG_INFO, "Not sending client headers to remote machine");
 		hashmap_delete(hashofheaders);
@@ -1143,7 +1143,7 @@ handle_connection(int fd)
 
 	request = process_request(connptr);
 	if (!request) {
-		if (!connptr->error_string) {
+		if (!connptr->error_string && !connptr->show_stats) {
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
 			return;
@@ -1182,6 +1182,10 @@ handle_connection(int fd)
 
 	if (connptr->error_string) {
 		send_http_error_message(connptr);
+		destroy_conn(connptr);
+		return;
+	} else if (connptr->show_stats) {
+		showstats(connptr);
 		destroy_conn(connptr);
 		return;
 	}
