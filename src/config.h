@@ -1,4 +1,4 @@
-/* $Id: config.h,v 1.1.1.1 2000-02-16 17:32:22 sdyoung Exp $
+/* $Id: config.h,v 1.2 2000-03-13 00:56:21 rjkaes Exp $
  *
  * Contains all the tune-able variables which are used by tinyproxy.
  * Modifications made to these variables WILL change the default behaviour
@@ -21,35 +21,6 @@
 
 #ifndef _CONFIG_H_
 #define _CONFIG_H_	1
-
-/* Change these if you want */
-
-/* Default log file */
-#ifndef DEFAULT_LOG
-#define DEFAULT_LOG  "/usr/local/var/log/tinyproxy.log"
-#endif
-
-/* Default port tinyproxy listens on */
-#ifndef DEFAULT_PORT
-#define DEFAULT_PORT 8080
-#endif
-
-/* Default user to change to after */
-#ifndef DEFAULT_USER
-#define DEFAULT_USER "nobody"
-#endif
-
-/*
- * Define this if you want to have all requests sent to a particular machine.
- * This is useful if you have another proxy further upstream which you must
- * send your HTTP requests through.
- */
-#undef UPSTREAM
-
-#ifdef UPSTREAM
-#define UPSTREAM_PROXY_NAME "name.of.upstream.machine"
-#define UPSTREAM_PROXY_PORT 80
-#endif
 
 /*
  * Define this if you want tinyproxy to use /proc/loadavg to determine
