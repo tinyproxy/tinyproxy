@@ -1,5 +1,9 @@
 2002-04-18  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/sock.c (lookup_domain): Removed the call to inet_aton()
+	since the gethostbyname() will handle the dotted-decimal case
+	anyway.
+
 	* src/reqs.c: Added a new show_stats field in the conn_s structure
 	so that we will process the client's headers properly before
 	trying to send a HTTP response back.
