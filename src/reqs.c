@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.14 2001-05-30 15:45:14 rjkaes Exp $
+/* $Id: reqs.c,v 1.15 2001-08-26 21:11:55 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -102,18 +102,21 @@ static int process_method(struct conn_s *connptr)
 
 	getpeer_ip(connptr->client_fd, peer_ipaddr);
 
-	if (readline(connptr->client_fd, inbuf, LINE_LENGTH) <= 0) {
+	len = readline(connptr->client_fd, inbuf, LINE_LENGTH);
+	if (len <= 0) {
 		log_message(LOG_ERR, "client closed before read");
 		update_stats(STAT_BADCONN);
 		return -2;
 	}
-	len = strlen(inbuf);
 
+	/*
+	 * Strip the newline and character return from the string.
+	 */
 	inbuf_ptr = inbuf + len - 1;
 	while (*inbuf_ptr == '\r' || *inbuf_ptr == '\n')
 		*inbuf_ptr-- = '\0';
 
-	log_message(LOG_INFO, "Request: %s", inbuf);
+	log_message(LOG_CONN, "Request: %s", inbuf);
 
 	if (regcomp(&preg, HTTPPATTERN, REG_EXTENDED | REG_ICASE) != 0) {
 		log_message(LOG_ERR, "clientreq: regcomp");
@@ -292,17 +295,17 @@ static int process_method(struct conn_s *connptr)
 
 /*
  * Check to see if the line is allowed or not depending on the anonymous
- * headers which are to be allowed.
+ * headers which are to be allowed. If the header is found in the
+ * anonymous list return 0, otherwise return -1.
  */
 static int compare_header(char *line)
 {
-	char *buffer, *ptr;
+	char *buffer;
+	char *ptr;
 	int ret;
 
 	if ((ptr = xstrstr(line, ":", strlen(line), FALSE)) == NULL)
 		return -1;
-
-	ptr++;
 
 	if ((buffer = malloc(ptr - line + 1)) == NULL)
 		return -1;
@@ -310,9 +313,10 @@ static int compare_header(char *line)
 	memcpy(buffer, line, (size_t)(ptr - line));
 	buffer[ptr - line] = '\0';
 
-	ret = anon_search(buffer);
+	ret = anonymous_search(buffer);
 	safefree(buffer);
-	return ret ? 0 : -1;
+
+	return ret;
 }
 
 /*
@@ -386,7 +390,7 @@ static int process_client_headers(struct conn_s *connptr)
 	int i;
 
 	for ( ; ; ) {
-		if (readline(connptr->client_fd, header, LINE_LENGTH) <= 0) {
+		if (readline(connptr->client_fd, header, LINE_LENGTH) < 0) {
 			return -1;
 		}
 
@@ -398,7 +402,7 @@ static int process_client_headers(struct conn_s *connptr)
 		if (connptr->output_message)
 			continue;
 
-		if (config.anonymous && compare_header(header) < 0)
+		if (is_anonymous_enabled() && compare_header(header) < 0)
 			continue;
 
 		/*
@@ -412,7 +416,8 @@ static int process_client_headers(struct conn_s *connptr)
 		if (i != (sizeof(skipheaders) / sizeof(char *)))
 			continue;
 
-		if (strncasecmp(header, "content-length", 14) == 0) {
+		if (content_length == -1
+		    && strncasecmp(header, "content-length", 14) == 0) {
 			char *content_ptr = strchr(header, ':') + 1;
 			content_length = atol(content_ptr);
 		}
@@ -452,7 +457,7 @@ static int process_server_headers(struct conn_s *connptr)
 	char header[LINE_LENGTH];
 
 	for ( ; ; ) {
-		if (readline(connptr->server_fd, header, LINE_LENGTH) <= 0) {
+		if (readline(connptr->server_fd, header, LINE_LENGTH) < 0) {
 			return -1;
 		}
 
@@ -609,8 +614,9 @@ void handle_connection(int fd)
 	char peer_ipaddr[PEER_IP_LENGTH];
 	char peer_string[PEER_STRING_LENGTH];
 
-	log_message(LOG_INFO, "Connect: %s [%s]", getpeer_string(fd, peer_string),
-	    getpeer_ip(fd, peer_ipaddr));
+	log_message(LOG_CONN, "Connect: %s [%s]",
+		    getpeer_string(fd, peer_string),
+		    getpeer_ip(fd, peer_ipaddr));
 
 	connptr = malloc(sizeof(struct conn_s));
 	if (!connptr) {
