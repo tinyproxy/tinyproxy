@@ -1,3 +1,17 @@
+2001-11-24  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.ac: Changed the extension of the configure.in to match
+	the new standard for the autoconf program. Also, replaced all the
+	obsolete macros with the new standard. autoconf 2.52 is now the
+	minimum required to process this file.
+
+2001-11-23  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/sock.c (readline): Limit the maximum size of the buffer so
+	that we don't create a situation where tinyproxy could use all the
+	memory in a system. Right now we're limiting a line to a maximum
+	of 128KB.
+
 2001-11-21  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/utils.c (chomp): Replaced the "trim()" function in reqs.c
