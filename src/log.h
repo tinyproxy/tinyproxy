@@ -1,4 +1,4 @@
-/* $Id: log.h,v 1.4 2001-05-27 02:26:11 rjkaes Exp $
+/* $Id: log.h,v 1.5 2001-06-02 02:07:34 rjkaes Exp $
  *
  * See 'log.c' for a detailed description.
  *
@@ -16,11 +16,11 @@
  * General Public License for more details.
  */
 
-#ifndef _TINYPROXY_LOG_H_
-#define _TINYPROXY_LOG_H_	
+#ifndef TINYPROXY_LOG_H
+#define TINYPROXY_LOG_H
 
 #ifdef HAVE_CONFIG_H
-#  include "../config.h"
+#  include <config.h>
 #endif
 
 /*

@@ -1,4 +1,4 @@
-/* $Id: sock.h,v 1.3 2001-05-27 02:31:20 rjkaes Exp $
+/* $Id: sock.h,v 1.4 2001-06-02 02:07:34 rjkaes Exp $
  *
  * See 'sock.c' for a detailed description.
  *
@@ -16,8 +16,12 @@
  * General Public License for more details.
  */
 
-#ifndef _TINYPROXY_SOCK_H_
-#define _TINYPROXY_SOCK_H_
+#ifndef TINYPROXY_SOCK_H
+#define TINYPROXY_SOCK_H
+
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
 
 #define PEER_IP_LENGTH		16
 #define PEER_STRING_LENGTH	256

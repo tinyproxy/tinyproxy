@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.8 2001-05-27 02:36:22 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.9 2001-06-02 02:07:34 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -16,11 +16,11 @@
  * General Public License for more details.
  */
 
-#ifndef _TINYPROXY_TINYPROXY_H_
-#define _TINYPROXY_TINYPROXY_H_
+#ifndef TINYPROXY_TINYPROXY_H
+#define TINYPROXY_TINYPROXY_H
 
 #ifdef HAVE_CONFIG_H
-#  include "../config.h"
+#  include <config.h>
 #endif
 
 /*
