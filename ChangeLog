@@ -1,3 +1,15 @@
+2002-04-27  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/thread.c (thread_pool_create): Set the thread's status
+	_before_ the thread is created.  Thanks to Hans-Georg Bork for
+	solving this problem.  
+	(thread_main): Fixed up the status setting code.  Removed
+	duplicated code and explicitly set the status when needed.
+
+	Fixed up all the code checking the return value from the pthread
+	functions.  These functions return 0 if OK, but a _positive_ error
+	code.
+
 2002-04-26  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (connect_to_tunnel): Changed the len type to an

@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.26 2002-04-22 19:41:17 rjkaes Exp $
+/* $Id: thread.c,v 1.27 2002-04-28 02:37:01 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -66,7 +66,7 @@ static struct thread_config_s {
 	unsigned int maxspareservers, minspareservers, startservers;
 } thread_config;
 
-static unsigned int servers_waiting;	/* servers waiting for a connection */
+static int servers_waiting = 0;	/* servers waiting for a connection */
 static pthread_mutex_t servers_mutex;
 
 #define SERVER_COUNT_LOCK()   do { \
@@ -80,7 +80,7 @@ assert(servers_mutex_ret == 0); \
 
 #define SERVER_INC() do { \
     SERVER_COUNT_LOCK(); \
-    DEBUG2("INC: servers_waiting: %u", servers_waiting); \
+    DEBUG2("INC: servers_waiting: %d", servers_waiting); \
     ++servers_waiting; \
     SERVER_COUNT_UNLOCK(); \
 } while (0)
@@ -88,7 +88,7 @@ assert(servers_mutex_ret == 0); \
 #define SERVER_DEC() do { \
     SERVER_COUNT_LOCK(); \
     --servers_waiting; \
-    DEBUG2("DEC: servers_waiting: %u", servers_waiting); \
+    DEBUG2("DEC: servers_waiting: %d", servers_waiting); \
     SERVER_COUNT_UNLOCK(); \
 } while (0)
 
@@ -144,7 +144,11 @@ thread_main(void *arg)
 	if (!cliaddr)
 		return NULL;
 
+	ptr->connects = 0;
+
 	while (!config.quit) {
+		ptr->status = T_WAITING;
+
 		clilen = addrlen;
 
 		/*
@@ -190,8 +194,6 @@ thread_main(void *arg)
 					    ptr->connects,
 					    thread_config.maxrequestsperchild);
 
-				ptr->status = T_EMPTY;
-
 				break;
 			}
 		}
@@ -207,16 +209,14 @@ thread_main(void *arg)
 			log_message(LOG_NOTICE,
 				    "Waiting servers exceeds MaxSpareServers. Killing thread.");
 
-			ptr->status = T_EMPTY;
-
 			break;
 		}
 		SERVER_COUNT_UNLOCK();
 
-		ptr->status = T_WAITING;
-
 		SERVER_INC();
 	}
+
+	ptr->status = T_EMPTY;
 
 	safefree(cliaddr);
 	return NULL;
@@ -270,23 +270,29 @@ thread_pool_create(void)
 		thread_config.startservers = thread_config.maxclients;
 	}
 
-	for (i = 0; i < thread_config.startservers; i++) {
-		pthread_ret = pthread_create(&thread_ptr[i].tid, &thread_attr,
-					     &thread_main, &thread_ptr[i]);
-		if (pthread_ret < 0) {
-			log_message(LOG_WARNING, "Could not create thread number %d of %d: %s",
-				    i, thread_config.startservers, strerror(errno));
-			return -1;
-		} else {
-			thread_ptr[i].status = T_WAITING;
-		}
-	}
-	servers_waiting = thread_config.startservers;
-
 	for (i = thread_config.startservers; i < thread_config.maxclients; i++) {
 		thread_ptr[i].status = T_EMPTY;
 		thread_ptr[i].connects = 0;
 	}
+
+	for (i = 0; i < thread_config.startservers; i++) {
+		DEBUG2("Trying to create thread %d of %d", i + 1, thread_config.startservers);
+		thread_ptr[i].status = T_WAITING;
+		pthread_ret = pthread_create(&thread_ptr[i].tid, &thread_attr,
+					     &thread_main, &thread_ptr[i]);
+		if (pthread_ret != 0) {
+			log_message(LOG_WARNING,
+				    "Could not create thread number %d of %d: %s",
+				    i, thread_config.startservers,
+				    strerror(pthread_ret));
+			return -1;
+		} else {
+			log_message(LOG_INFO, "Creating thread number %d of %d ...", i + 1, thread_config.startservers);
+			servers_waiting++;
+		}
+	}
+
+	log_message(LOG_INFO, "Finished creating all threads.");
 
 	return 0;
 }
@@ -316,10 +322,10 @@ thread_main_loop(void)
 								     &thread_attr,
 								     &thread_main,
 								     &thread_ptr[i]);
-					if (pthread_ret < 0) {
+					if (pthread_ret != 0) {
 						log_message(LOG_NOTICE,
 							    "Could not create thread: %s",
-							    strerror(errno));
+							    strerror(pthread_ret));
 						break;
 					}
 
