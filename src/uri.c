@@ -1,4 +1,4 @@
-/* $Id: uri.c,v 1.3 2000-09-11 23:57:43 rjkaes Exp $
+/* $Id: uri.c,v 1.4 2001-05-27 02:37:18 rjkaes Exp $
  *
  * This borrows the REGEX from RFC2396 to split a URI string into the five
  * primary components. The components are:
@@ -43,7 +43,7 @@
 static int extract_uri(regmatch_t pmatch[], const char *buffer, char **section,
 		       int substring)
 {
-	int len = pmatch[substring].rm_eo - pmatch[substring].rm_so;
+	size_t len = pmatch[substring].rm_eo - pmatch[substring].rm_so;
 	if ((*section = malloc(len + 1)) == NULL)
 		return -1;
 
@@ -74,12 +74,12 @@ URI *explode_uri(const char *string)
 	memset(uri, 0, sizeof(URI));
 
 	if (regcomp(&preg, URIPATTERN, REG_EXTENDED) != 0) {
-		log(LOG_ERR, "explode_uri: regcomp");
+		log_message(LOG_ERR, "explode_uri: regcomp");
 		goto ERROR_EXIT;
 	}
 
 	if (regexec(&preg, string, NMATCH, pmatch, 0) != 0) {
-		log(LOG_ERR, "explode_uri: regexec");
+		log_message(LOG_ERR, "explode_uri: regexec");
 		goto ERROR_EXIT;
 	}
 
