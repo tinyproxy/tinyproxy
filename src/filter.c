@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.8 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: filter.c,v 1.9 2002-04-18 17:59:21 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  *
@@ -67,7 +67,7 @@ filter_init(void)
 					if (isspace((unsigned char) *s))
 						*s = '\0';
 
-				p->pat = strdup(buf);
+				p->pat = safestrdup(buf);
 				p->cpat = safemalloc(sizeof(regex_t));
 				if ((err =
 				     regcomp(p->cpat, p->pat,
@@ -114,7 +114,7 @@ filter_url(char *host)
 		return (0);
 
 	/* strip off the port number */
-	s = strdup(host);
+	s = safestrdup(host);
 	port = strchr(s, ':');
 	if (port)
 		*port = '\0';

@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.26 2002-04-18 17:04:04 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.27 2002-04-18 17:59:21 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -173,7 +173,7 @@ main(int argc, char **argv)
 			godaemon = FALSE;
 			break;
 		case 'c':
-			conf_file = strdup(optarg);
+			conf_file = safestrdup(optarg);
 			if (!conf_file) {
 				fprintf(stderr,
 					"%s: Could not allocate memory.\n",

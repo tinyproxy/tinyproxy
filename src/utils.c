@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.27 2002-04-18 17:49:14 rjkaes Exp $
+/* $Id: utils.c,v 1.28 2002-04-18 17:59:21 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -198,7 +198,7 @@ send_http_error_message(struct conn_s *connptr)
 int
 indicate_http_error(struct conn_s* connptr, int number, const char* string)
 {
-	connptr->error_string = strdup(string);
+	connptr->error_string = safestrdup(string);
 	if (!connptr->error_string)
 		return -1;
 	connptr->error_number = number;
