@@ -1,4 +1,4 @@
-/* $Id: anonymous.c,v 1.4 2001-05-23 18:01:23 rjkaes Exp $
+/* $Id: anonymous.c,v 1.5 2001-05-27 02:21:37 rjkaes Exp $
  *
  * Handles insertion and searches for headers which should be let through when
  * the anonymous feature is turned on. The headers are stored in a Ternary
@@ -33,7 +33,7 @@
 
 static TERNARY anonymous_tree;
 
-int new_anonymous(void)
+TERNARY new_anonymous(void)
 {
 	anonymous_tree = ternary_new();
 	return anonymous_tree;
