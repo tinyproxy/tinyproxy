@@ -1,4 +1,4 @@
-/* $Id: conffile.c,v 1.1 2004-08-13 20:19:50 rjkaes Exp $
+/* $Id: conffile.c,v 1.2 2004-08-13 21:03:58 rjkaes Exp $
  *
  * Parses the configuration file and sets up the config_s structure for
  * use by the application.  This file replaces the old grammar.y and
@@ -103,13 +103,11 @@ static HANDLE_FUNC(handle_defaulterrorfile);
 static HANDLE_FUNC(handle_deny);
 static HANDLE_FUNC(handle_errorfile);
 static HANDLE_FUNC(handle_errorfile);
-#ifdef FILTER_ENABLE
 static HANDLE_FUNC(handle_filter);
 static HANDLE_FUNC(handle_filtercasesensitive);
 static HANDLE_FUNC(handle_filterdefaultdeny);
 static HANDLE_FUNC(handle_filterextended);
 static HANDLE_FUNC(handle_filterurls);
-#endif
 static HANDLE_FUNC(handle_group);
 static HANDLE_FUNC(handle_listen);
 static HANDLE_FUNC(handle_logfile);
@@ -121,12 +119,10 @@ static HANDLE_FUNC(handle_maxspareservers);
 static HANDLE_FUNC(handle_minspareservers);
 static HANDLE_FUNC(handle_pidfile);
 static HANDLE_FUNC(handle_port);
-#ifdef REVERSE_SUPPORT
 static HANDLE_FUNC(handle_reversebaseurl);
 static HANDLE_FUNC(handle_reversemagic);
 static HANDLE_FUNC(handle_reverseonly);
 static HANDLE_FUNC(handle_reversepath);
-#endif
 static HANDLE_FUNC(handle_startservers);
 static HANDLE_FUNC(handle_statfile);
 static HANDLE_FUNC(handle_stathost);
@@ -135,9 +131,7 @@ static HANDLE_FUNC(handle_timeout);
 //static HANDLE_FUNC(handle_upstream);
 static HANDLE_FUNC(handle_user);
 static HANDLE_FUNC(handle_viaproxyname);
-#ifdef XTINYPROXY_ENABLE
 static HANDLE_FUNC(handle_xtinyproxy);
-#endif
 
 
 /*
@@ -208,22 +202,18 @@ struct {
         /* error files */
         STDCONF("errorfile", INT WS STR, handle_errorfile),
 
-#ifdef FILTER_ENABLE
+        /* filtering */
         STDCONF("filter", STR, handle_filter),
         STDCONF("filterurls", BOOL, handle_filterurls),
         STDCONF("filterextended", BOOL, handle_filterextended),
         STDCONF("filterdefaultdeny", BOOL, handle_filterdefaultdeny),
         STDCONF("filtercasesensitive", BOOL, handle_filtercasesensitive),
-#endif
 
-
-#ifdef REVERSE_SUPPORT
         /* Reverse proxy arguments */
         STDCONF("reversebaseurl", STR, handle_reversebaseurl),
         STDCONF("reverseonly", BOOL, handle_reverseonly),
         STDCONF("reversemagic", BOOL, handle_reversemagic),
         STDCONF("reversepath", STR WS STR, handle_reversepath),
-#endif
 
         /* upstream is rather complicated */
 //        { BEGIN "(no[[:space:]]+)?upstream" WS, handle_upstream },
@@ -299,7 +289,7 @@ config_parse(struct config_s* conf, FILE* f)
 
         while (fgets(buffer, sizeof(buffer), f)) {
                 if (check_match(conf, buffer)) {
-                        printf("Problem with line %ld\n", lineno);
+                        printf("Syntax error near line %ld\n", lineno);
                         return 1;
                 }
                 ++lineno;
@@ -381,7 +371,13 @@ static HANDLE_FUNC(handle_stathost)
 }
 static HANDLE_FUNC(handle_xtinyproxy)
 {
+#ifdef XTINYPROXY_ENABLE        
         return set_string_arg(&conf->my_domain, line, &match[2]);
+#else
+        fprintf(stderr,
+                "XTinyproxy NOT Enabled! Recompile with --enable-xtinyproxy\n");
+        return 1;
+#endif
 }
 
 
@@ -417,7 +413,13 @@ set_bool_arg(unsigned int* var, const char* line, regmatch_t* match)
 
 static HANDLE_FUNC(handle_syslog)
 {
+#ifdef HAVE_SYSLOG_H        
         return set_bool_arg(&conf->syslog, line, &match[2]);
+#else
+        fprintf(stderr,
+                "Syslog support not compiled in executable.\n");
+        return 1;
+#endif
 }
 static HANDLE_FUNC(handle_bindsame)
 {
@@ -519,7 +521,13 @@ static HANDLE_FUNC(handle_deny)
 }
 static HANDLE_FUNC(handle_bind)
 {
+#ifndef TRANSPARENT_PROXY
         return set_string_arg(&conf->bind_address, line, &match[2]);
+#else
+        fprintf(stderr,
+                "\"Bind\" cannot be used with transparent support enabled.\n");
+        return 1;
+#endif
 }
 static HANDLE_FUNC(handle_listen)
 {
@@ -597,6 +605,20 @@ static HANDLE_FUNC(handle_filtercasesensitive)
 {
         return set_bool_arg(&conf->filter_casesensitive, line, &match[2]);
 }
+#else
+static int
+no_filter_support(void)
+{
+        fprintf(stderr, "Filter NOT Enabled! Recompile with --enable-filter\n");
+        return -1;
+}
+
+static HANDLE_FUNC(handle_filter) { return no_filter_support(); }
+static HANDLE_FUNC(handle_filtercasesensitive) { return no_filter_support(); }
+static HANDLE_FUNC(handle_filterdefaultdeny) { return no_filter_support(); }
+static HANDLE_FUNC(handle_filterextended) { return no_filter_support(); }
+static HANDLE_FUNC(handle_filterurls) { return no_filter_support(); }
+
 #endif
 
 
@@ -609,4 +631,18 @@ static HANDLE_FUNC(handle_reversemagic)
 {
         return set_bool_arg(&conf->reversemagic, line, &match[2]);
 }
+#else
+static int
+no_reverse_support(void)
+{
+        fprintf(stderr,
+                "Reverse Proxy NOT Enabled! Recompile with --enable-reverse\n");
+        return -1;
+}
+
+static HANDLE_FUNC(handle_reversebaseurl) { return no_reverse_support(); }
+static HANDLE_FUNC(handle_reversemagic) { return no_reverse_support(); }
+static HANDLE_FUNC(handle_reverseonly) { return no_reverse_support(); }
+static HANDLE_FUNC(handle_reversepath) { return no_reverse_support(); }
+
 #endif
