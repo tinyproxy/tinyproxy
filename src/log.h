@@ -1,4 +1,4 @@
-/* $Id: log.h,v 1.10 2002-05-26 18:55:19 rjkaes Exp $
+/* $Id: log.h,v 1.11 2002-10-03 20:49:57 rjkaes Exp $
  *
  * See 'log.c' for a detailed description.
  *
@@ -98,6 +98,10 @@
 # define DEBUG1(x)       do { } while(0)
 # define DEBUG2(x, y...) do { } while(0)
 #endif
+
+extern int open_log_file(const char* file);
+extern void close_log_file(void);
+extern void truncate_log_file(void);
 
 extern void log_message(int level, char *fmt, ...);
 extern void set_log_level(int level);

@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.22 2002-06-15 17:37:11 rjkaes Exp $
+/* $Id: log.c,v 1.23 2002-10-03 20:49:57 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -19,10 +19,10 @@
 
 #include "tinyproxy.h"
 
-#include "hashmap.h"
 #include "heap.h"
 #include "log.h"
 #include "utils.h"
+#include "vector.h"
 
 static char *syslog_level[] = {
 	NULL,
@@ -40,6 +40,11 @@ static char *syslog_level[] = {
 #define STRING_LENGTH 800
 
 /*
+ * Global file descriptor for the log file
+ */
+int log_file_fd = -1;
+
+/*
  * Store the log level setting.
  */
 static int log_level = LOG_INFO;
@@ -50,7 +55,36 @@ static int log_level = LOG_INFO;
  * The key is the actual messages (already filled in full), and the value
  * is the log level.
  */
-static hashmap_t log_message_storage;
+static vector_t log_message_storage;
+
+/*
+ * Open the log file and store the file descriptor in a global location.
+ */
+int
+open_log_file(const char* log_file_name)
+{
+	log_file_fd = create_file_safely(log_file_name, FALSE);
+	return log_file_fd;
+}
+
+/*
+ * Close the log file
+ */
+void
+close_log_file(void)
+{
+	close(log_file_fd);
+}
+
+/*
+ * Truncate log file to a zero length.
+ */
+void
+truncate_log_file(void)
+{
+	lseek(log_file_fd, 0, SEEK_SET);
+	ftruncate(log_file_fd, 0);
+}
 
 /*
  * Set the log level for writing to the log file.
@@ -71,9 +105,7 @@ log_message(int level, char *fmt, ...)
 	time_t nowtime;
 
 	char time_string[TIME_LENGTH];
-#if defined(HAVE_SYSLOG_H) && !defined(HAVE_VSYSLOG_H)
 	char str[STRING_LENGTH];
-#endif
 
 #ifdef NDEBUG
 	/*
@@ -101,19 +133,23 @@ log_message(int level, char *fmt, ...)
 	 * the messages for later processing.
 	 */
 	if (!processed_config_file) {
-		char string_level[4];
+		char* entry_buffer;
 
 		if (!log_message_storage) {
-			log_message_storage = hashmap_create(1);
+			log_message_storage = vector_create();
 			if (!log_message_storage)
 				return;
 		}
 
 		vsnprintf(str, STRING_LENGTH, fmt, args);
-		snprintf(string_level, 4, "%d", level);
 
-		hashmap_insert(log_message_storage, str,
-			       string_level, strlen(string_level) + 1);
+		entry_buffer = safemalloc(strlen(str) + 6);
+		if (!entry_buffer)
+			return;
+			
+		sprintf(entry_buffer, "%d %s", level, str);
+		vector_insert(log_message_storage, entry_buffer,
+			      strlen(entry_buffer) + 1);
 
 		va_end(args);
 
@@ -130,23 +166,21 @@ log_message(int level, char *fmt, ...)
 #  endif
 	} else {
 #endif
-		FILE* log_file;
-		int fd;
-
-		fd = create_file_safely(config.logf_name, FALSE);
-		log_file = fdopen(fd, "w+");
-
 		nowtime = time(NULL);
 		/* Format is month day hour:minute:second (24 time) */
 		strftime(time_string, TIME_LENGTH, "%b %d %H:%M:%S",
 			 localtime(&nowtime));
 
-		fprintf(log_file, "%-9s %s [%ld]: ", syslog_level[level],
-			time_string, (long int) getpid());
-		vfprintf(log_file, fmt, args);
-		fprintf(log_file, "\n");
+		snprintf(str, STRING_LENGTH, "%-9s %s [%ld]: ", syslog_level[level],
+			 time_string, (long int) getpid());
 
-		fclose(log_file);
+		assert(log_file_fd >= 0);
+
+		write(log_file_fd, str, strlen(str));
+		vsnprintf(str, STRING_LENGTH, fmt, args);
+		write(log_file_fd, str, strlen(str));
+		write(log_file_fd, "\n", 1);
+
 #ifdef HAVE_SYSLOG_H
 	}
 #endif
@@ -160,35 +194,32 @@ log_message(int level, char *fmt, ...)
 void
 send_stored_logs(void)
 {
-	hashmap_iter iter;
-	char *level_string;
 	char *string;
+	char *ptr;
+
 	int level;
 
-	iter = hashmap_first(log_message_storage);
-	if (iter >= 0) {
-		for ( ; !hashmap_is_end(log_message_storage, iter); ++iter) {
-			hashmap_return_entry(log_message_storage,
-					     iter,
-					     &string,
-					     (void **)&level_string);
+	int i;
 
-			level = atoi(level_string);
+	for (i = 0; i < vector_length(log_message_storage); ++i) {
+		vector_getentry(log_message_storage, i, (void **)&string);
+
+		ptr = strchr(string, ' ') + 1;
+		level = atoi(string);
 
 #if NDEBUG
-			if (log_level == LOG_CONN && level == LOG_INFO)
+		if (log_level == LOG_CONN && level == LOG_INFO)
+			continue;
+		else if (log_level == LOG_INFO) {
+			if (level > LOG_INFO && level != LOG_CONN)
 				continue;
-			else if (log_level == LOG_INFO) {
-				if (level > LOG_INFO && level != LOG_CONN)
-					continue;
-			} else if (level > log_level)
-				continue;
+		} else if (level > log_level)
+			continue;
 #endif
 
-			log_message(level, string);
-		}
+		log_message(level, ptr);
 	}
 
-	hashmap_delete(log_message_storage);
+	vector_delete(log_message_storage);
 	log_message_storage = NULL;
 }
