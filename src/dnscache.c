@@ -1,4 +1,4 @@
-/* $Id: dnscache.c,v 1.12 2001-09-06 21:53:16 rjkaes Exp $
+/* $Id: dnscache.c,v 1.13 2001-09-07 00:40:34 rjkaes Exp $
  *
  * This is a caching DNS system. When a host name is needed we look it up here
  * and see if there is already an answer for it. The domains are placed in a
@@ -43,7 +43,7 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 #define UNLOCK() pthread_mutex_unlock(&mutex);
 
 #define DNSEXPIRE (5 * 60)
-#define DNS_INSERT_LIMIT 5
+#define DNS_INSERT_LIMIT 10000            /* free the memory after inserts */
 
 struct dnscache_s {
 	struct in_addr ipaddr;
@@ -80,8 +80,6 @@ static int dns_insert(struct in_addr *addr, char *domain)
 	assert(addr != NULL);
 	assert(domain != NULL);
 
-	DEBUG2("Inserting [%s] into DNS cache", domain);
-
 	if (!(newptr = malloc(sizeof(struct dnscache_s)))) {
 		return -1;
 	}
@@ -89,10 +87,14 @@ static int dns_insert(struct in_addr *addr, char *domain)
 	memcpy(&newptr->ipaddr, addr, sizeof(struct in_addr));
 	newptr->expire = time(NULL);
 
+	DEBUG2("Inserting [%s] into DNS cache", domain);
+
 	if (TE_ISERROR(ternary_replace(dns_tree, domain, newptr))) {
 		safefree(newptr);
 		return -1;
 	}
+
+	DEBUG2("Finished inserting [%s] into DNS cache", domain);
 
 	return 0;
 }
@@ -105,7 +107,7 @@ int dnscache(struct in_addr *addr, char *domain)
 	assert(domain != NULL);
 
 	LOCK();
-	
+
 	/* If the DNS tree doesn't exist, build a new one */
 	if (dns_tree < 0) {
 		dns_tree = ternary_new();
@@ -136,7 +138,7 @@ int dnscache(struct in_addr *addr, char *domain)
 	dns_insertions++;
 	if (dns_insertions > DNS_INSERT_LIMIT) {
 		log_message(LOG_NOTICE, "DNS Insertion limit, rebuilding cache.");
-		ternary_destroy(dns_tree, NULL);
+		ternary_destroy(dns_tree, free);
 		dns_tree = ternary_new();
 		dns_insertions = 0;
 	}
