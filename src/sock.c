@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.1.1.1 2000-02-16 17:32:23 sdyoung Exp $
+/* $Id: sock.c,v 1.2 2000-03-31 20:10:13 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -273,7 +273,11 @@ char *getpeer_string(int fd, char *string)
 
 
 /*
- * Read one line of the header
+ * Okay, this is a wacked out function. The basic gist is that we read in one
+ * line from the socket and return it in "line". However, if we can't pull in
+ * one complete line (up to an including the '\n') then we need to store it in
+ * the buffer's "working_string". Fun. :)
+ *	-- rjkaes
  */
 int readline(int fd, struct buffer_s *buffer, char **line)
 {
@@ -281,8 +285,7 @@ int readline(int fd, struct buffer_s *buffer, char **line)
 	int bytesin;
 	char *endline = NULL;
 	char *newline;
-	struct bufline_s *oldline;
-	unsigned long len = 0, length;
+	unsigned long length;
 
 	assert(fd >= 0);
 	assert(buffer);
@@ -290,70 +293,107 @@ int readline(int fd, struct buffer_s *buffer, char **line)
 
 	*line = NULL;
 
+	/* Inspect the queue. */
 	if ((bytesin = recv(fd, inbuf, BUFFER - 1, MSG_PEEK)) <= 0) {
 		goto CONN_ERROR;
 	}
 
-	endline = xstrstr(inbuf, "\n", bytesin, FALSE);
+	if (buffer->working_length == 0) {
+		/* There is no working line, so read in a line of text. */
 
-	if (endline) {
-		endline++;
-		*endline = '\0';
+		/* Okay, check to see if there is a '\n' in this. */
+		endline = xstrstr(inbuf, "\n", bytesin, FALSE);
+		
+		if (endline) {
+			/* Yes, we have a complete line. */
+			*(++endline) = '\0';
+			length = strlen(inbuf);
+			
+			/* Actually pull the data off the queue */
+			if ((bytesin = recv(fd, inbuf, length, 0) <= 0)) {
+				goto CONN_ERROR;
+			}
 
-		length = strlen(inbuf);
-		memset(inbuf, '\0', BUFFER);
+			*line = xstrdup(inbuf);
+			return strlen(*line);
+		}
 
-		/* Actually pull it off the queue */
-		if ((bytesin = recv(fd, inbuf, length, 0)) <= 0) {
+		/*
+		 * Well, we don't have a complete line, so add it to the
+		 * working_string.
+		 */
+		if (!(buffer->working_string = xmalloc(bytesin))) {
+			return -1;
+		}
+
+		if ((bytesin = recv(fd, inbuf, bytesin, 0)) <= 0) {
+			safefree(buffer->working_string);
 			goto CONN_ERROR;
 		}
 
-		*line = xstrdup(inbuf);
+		memcpy(buffer->working_string, inbuf, bytesin);
+		buffer->working_length = bytesin;
 
-		if (buffer_size(buffer) > 0) {
-			if (!(newline = xmalloc(buffer_size(buffer)
-						+ length + 1))) {
-				return -1;
-			}
+		return 0;
+	}
 
-			newline[0] = '\0';
+	/* 
+	 * Alright, we do have a working line, so read in more data and see
+	 * if there is a '\n' in it.
+	 */
+	endline = xstrstr(inbuf, "\n", bytesin, FALSE);
 
-			while ((oldline = shift_buffer(buffer))) {
-				memcpy(newline + len, oldline->string,
-				       oldline->length);
+	if (endline) {
+		/* 
+		 * Great, there was a "\n" found, so combine with
+		 * working_string.
+		 */
+		*(++endline) = '\0';
+		length = strlen(inbuf);
 
-				len += oldline->length;
-				free_line(oldline);
-			}
-
-			memcpy(newline + len, *line, strlen(*line) + 1);
-			safefree(*line);
-
-			*line = newline;
+		if (!(*line = xmalloc(bytesin + buffer->working_length + 1))) {
+			return -1;
 		}
+
+		/* Pull the data off */
+		if ((bytesin = recv(fd, inbuf, bytesin, 0)) <= 0) {
+			goto CONN_ERROR;
+		}
+
+		/* Copy all the data into a new line */
+		memcpy(*line, buffer->working_string, buffer->working_length);
+		memcpy(*line + buffer->working_length, inbuf, bytesin);
+
+		*(*line + buffer->working_length + bytesin + 1) = '\0';
+		
+		safefree(buffer->working_string);
+		buffer->working_length = 0;
 
 		return strlen(*line);
 	}
 
 	/*
-	 * We didn't find a '\r\n', but we've filled the buffer.. pull it off
-	 * and try again later...
+	 * Well, we have a working line and still don't have a complete line.
+	 * Add the new data to the working line and return.
 	 */
-	if ((bytesin = recv(fd, inbuf, bytesin, 0)) <= 0) {
-		goto CONN_ERROR;
-	}
-
-	if (!(*line = xmalloc(bytesin + 1))) {
+	if (!(newline = xmalloc(buffer->working_length + bytesin))) {
 		return -1;
 	}
 
-	memcpy(*line, inbuf, bytesin);
-	(*line)[bytesin] = '\0';
+	if ((bytesin = recv(fd, inbuf, bytesin, 0)) <= 0) {
+		goto CONN_ERROR;
+	}
+	
+	memcpy(newline, buffer->working_string, buffer->working_length);
+	memcpy(newline + buffer->working_length, inbuf, bytesin);
 
-	push_buffer(buffer, *line, strlen(*line));
+	safefree(buffer->working_string);
+	buffer->working_string = newline;
+	buffer->working_length += bytesin;
 
 	return 0;
 
+	/* Handle all the errors a socket could produce. */
       CONN_ERROR:
 	if (bytesin == 0 || (errno != EAGAIN && errno != EINTR)) {
 		return -1;
