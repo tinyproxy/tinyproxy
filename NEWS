@@ -1,3 +1,20 @@
+Thursday, October 25, 2001
+--------------------------
+
+This version (1.4.3pre7) should be the last release before I make a
+full 1.4.3 release of tinyproxy. So, assuming no one reports any
+problems with 1.4.3pre7 it will become 1.4.3 with no changes.
+
+For more information as what has been worked on, look at the
+ChangeLog. As you can tell, I don't keep this "NEWS" file very up to
+date. All the real logging of information happens in the ChangeLog
+file since I update it as I work on the code. Here on the other hand,
+I have to remember what I've done. Not near as seamless. (Maybe I
+should get somebody else to write the NEWS file...)
+
+	 -- Robert
+
+
 Tuesday, September 4, 2001
 --------------------------
 
@@ -7,20 +24,5 @@ of the HTTP headers could be different. It also helps with various
 spellings of domain names. There is also a security fix for a format
 string problem with the syslog feature. This problem doesn't affect
 you if you use the log file instead.
-
-        -- Robert
-
-
-Thursday, August 30, 2001
--------------------------
-
-Maybe I just shouldn't be working on the code base this week. The
-memory fix I added in the last release contained a serious bug which
-would cause a segmentation fault. I actually fixed this by removing
-the code I added and just fixing the problem in ternary_insert()
-instead. I don't know why I didn't do this in the first place. I also
-removed the xstrstr() function since strstr() will do what tinyproxy
-needs. Removing code is _always_ a good idea. Less code, less chance
-of bugs.
 
         -- Robert
