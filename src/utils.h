@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.9 2001-09-15 21:29:59 rjkaes Exp $
+/* $Id: utils.h,v 1.10 2001-10-25 16:58:50 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -20,6 +20,8 @@
 #define _TINYPROXY_UTILS_H_
 
 #include "tinyproxy.h"
+
+#include "conns.h"
 
 extern int send_http_message(struct conn_s* connptr, int http_code,
 			     const char *error_title, const char *message);

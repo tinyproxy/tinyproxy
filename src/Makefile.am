@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.5 2001-10-01 04:01:10 rjkaes Exp $
+# $Id: Makefile.am,v 1.6 2001-10-25 16:58:50 rjkaes Exp $
 #
 # 
 #
@@ -21,6 +21,7 @@ LDFLAGS = @LDFLAGS@
 bin_PROGRAMS = tinyproxy
 
 tinyproxy_SOURCES = \
+	conns.c conns.h \
 	buffer.c buffer.h \
 	dnscache.c dnscache.h \
 	log.c log.h \

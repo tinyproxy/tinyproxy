@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.17 2001-10-25 05:10:57 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.18 2001-10-25 16:58:50 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -111,15 +111,6 @@ struct config_s {
 	char *pidpath;
 	unsigned int idletimeout;
 
-};
-
-struct conn_s {
-	int client_fd, server_fd;
-	struct buffer_s *cbuffer, *sbuffer;
-	bool_t simple_req;
-	bool_t ssl;
-	bool_t upstream;
-	bool_t send_message;
 };
 
 /* Global Structures used in the program */

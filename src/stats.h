@@ -1,4 +1,4 @@
-/* $Id: stats.h,v 1.2 2001-09-16 20:11:24 rjkaes Exp $
+/* $Id: stats.h,v 1.3 2001-10-25 16:58:50 rjkaes Exp $
  *
  * See 'stats.h' for a detailed description.
  *
@@ -17,6 +17,8 @@
 
 #ifndef _TINYPROXY_STATS_H_
 #define _TINYPROXY_STATS_H_
+
+#include "conns.h"
 
 /*
  * Various logable statistics

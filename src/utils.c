@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.14 2001-10-24 00:37:23 rjkaes Exp $
+/* $Id: utils.c,v 1.15 2001-10-25 16:58:50 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -26,6 +26,7 @@
 #include <sysexits.h>
 
 #include "buffer.h"
+#include "conns.h"
 #include "log.h"
 #include "sock.h"
 #include "utils.h"

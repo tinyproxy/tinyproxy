@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.34 2001-10-25 05:12:46 rjkaes Exp $
+/* $Id: reqs.c,v 1.35 2001-10-25 16:58:50 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -28,6 +28,7 @@
 #include "acl.h"
 #include "anonymous.h"
 #include "buffer.h"
+#include "conns.h"
 #include "filter.h"
 #include "log.h"
 #include "regexp.h"
@@ -686,38 +687,6 @@ static void relay_connection(struct conn_s *connptr)
 	}
 
 	return;
-}
-
-static void initialize_conn(struct conn_s *connptr)
-{
-	connptr->client_fd = connptr->server_fd = -1;
-	connptr->cbuffer = new_buffer();
-	connptr->sbuffer = new_buffer();
-
-	connptr->send_message = FALSE;
-	connptr->simple_req = FALSE;
-
-	connptr->ssl = FALSE;
-	connptr->upstream = FALSE;
-
-	update_stats(STAT_OPEN);
-}
-
-static void destroy_conn(struct conn_s *connptr)
-{
-	if (connptr->client_fd != -1)
-		close(connptr->client_fd);
-	if (connptr->server_fd != -1)
-		close(connptr->server_fd);
-
-	if (connptr->cbuffer)
-		delete_buffer(connptr->cbuffer);
-	if (connptr->sbuffer)
-		delete_buffer(connptr->sbuffer);
-
-	safefree(connptr);
-
-	update_stats(STAT_CLOSE);
 }
 
 #ifdef UPSTREAM_SUPPORT
