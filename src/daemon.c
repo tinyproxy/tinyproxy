@@ -1,4 +1,4 @@
-/* $Id: daemon.c,v 1.2 2002-10-03 20:38:06 rjkaes Exp $
+/* $Id: daemon.c,v 1.2.2.1 2004-08-10 03:38:13 rjkaes Exp $
  *
  * This file contains functions which are useful when writing a
  * daemon process.  The functions include a "makedaemon" function and
@@ -40,7 +40,11 @@ makedaemon(void)
 	chdir("/");
 	umask(077);
 
-#if 0
+#if NDEBUG
+        /*
+         * When not in debugging mode, close the standard file
+         * descriptors.
+         */
 	close(0);
 	close(1);
 	close(2);
