@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.11.2.1 2003-08-06 20:23:06 rjkaes Exp $
+/* $Id: child.c,v 1.11.2.2 2004-06-14 20:08:12 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -46,8 +46,8 @@ struct child_s {
 static struct child_s *child_ptr;
 
 static struct child_config_s {
-	unsigned int maxclients, maxrequestsperchild;
-	unsigned int maxspareservers, minspareservers, startservers;
+	int maxclients, maxrequestsperchild;
+	int maxspareservers, minspareservers, startservers;
 } child_config;
 
 static int* servers_waiting;	/* servers waiting for a connection */
@@ -127,7 +127,7 @@ _child_lock_release(void)
  * Set the configuration values for the various child related settings.
  */
 short int
-child_configure(child_config_t type, unsigned int val)
+child_configure(child_config_t type, int val)
 {
 	switch (type) {
 	case CHILD_MAXCLIENTS:
