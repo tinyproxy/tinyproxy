@@ -1,4 +1,4 @@
-/* $Id: ternary.c,v 1.8 2001-09-06 21:52:31 rjkaes Exp $
+/* $Id: ternary.c,v 1.9 2001-09-07 00:38:03 rjkaes Exp $
  *
  * This module creates a Ternary Search Tree which can store both string
  * keys, and arbitrary data for each key. It works similar to a hash, and
@@ -41,7 +41,7 @@
 /*
  * Macros for the tree structures (limits)
  */
-#define MAXTREES	1024	/* max. number of trees */
+#define MAXTREES	128	/* max. number of trees */
 
 /*
  * The structure for each individual node of the ternary tree.
@@ -54,8 +54,8 @@ typedef struct tnode {
 /*
  * The structure for each root of a ternary tree.
  */
-#define BUFSIZE 1000
-#define BUFARRAY 10000
+#define BUFSIZE 1024
+#define BUFARRAY 1024
 typedef struct ttree {
 	TERNARY token;		/* contains unique ternary tree ID */
 	Tnode *tree_root;
@@ -257,6 +257,7 @@ int ternary_destroy(TERNARY tno, void (*freeptr)(void *))
 {
 	int cur;		/* index of current tree */
 	unsigned int i, j;
+	Tnode *ptr;
 
 	/*
 	 * Check that tno refers to an existing tree;
@@ -267,17 +268,18 @@ int ternary_destroy(TERNARY tno, void (*freeptr)(void *))
 
 	for (i = 0; i < trees[cur]->freen; i++) {
 		for (j = 0; j < BUFSIZE; j++) {
-			Tnode *ptr = (trees[cur]->freearr[i] + j);
+			DEBUG2("first: j = %d, i = %d", j, i);
+
+			ptr = (trees[cur]->freearr[i] + j);
 			if (ptr->splitchar == 0)
 				if (freeptr)
 					(*freeptr)(ptr->eqkid);
-			safefree(ptr);
 		}
+		safefree(trees[cur]->freearr[i]);
 	}
 
-	trees[cur]->token = 0;
-	trees[cur]->tree_root = trees[cur]->buf = NULL;
-	trees[cur]->bufn = trees[cur]->freen = 0;
+	/* Remove the tree and NULL it's position in the array */
+	safefree(trees[cur]);
 
 	return TE_NONE;
 }
