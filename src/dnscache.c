@@ -1,4 +1,4 @@
-/* $Id: dnscache.c,v 1.5 2000-09-11 23:42:43 rjkaes Exp $
+/* $Id: dnscache.c,v 1.6 2000-09-26 04:59:48 rjkaes Exp $
  *
  * This is a caching DNS system. When a host name is needed we look it up here
  * and see if there is already an answer for it. The domains are placed in a
@@ -74,7 +74,8 @@ static int dns_insert(struct in_addr *addr, char *domain)
 	newptr->ipaddr = *addr;
 	newptr->expire = time(NULL);
 
-	ternary_insert(dns_tree, domain, newptr);
+	if (TE_ISERROR(ternary_insert(dns_tree, domain, newptr)))
+		safefree(newptr);
 
 	return 0;
 }
