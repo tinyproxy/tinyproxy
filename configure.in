@@ -1,184 +1,186 @@
-AC_INIT()
-AM_INIT_AUTOMAKE(tinyproxy,1.3.1e)
-AM_CONFIG_HEADER(src/defines.h)
+dnl $Id: configure.in,v 1.3 2000-09-12 00:18:17 rjkaes Exp $
 
-dnl Grab any initial CFLAGS and LIBS so we can pick better defaults
-iCFLAGS="$CFLAGS"
-iLIBS="$LIBS"
+AC_INIT()
+AM_INIT_AUTOMAKE(tinyproxy,1.3.4pre20)
+AM_CONFIG_HEADER(config.h)
+
+AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
 
 dnl Checks for programs.
+AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PROG_INSTALL
+AM_PROG_LEX
+AC_PROG_YACC
+AM_C_PROTOTYPES
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h sys/time.h syslog.h unistd.h)
+AC_CHECK_HEADERS(sys/types.h sys/socket.h sys/time.h time.h netinet/in.h arpa/inet.h error.h fcntl.h netdb.h signal.h stdio.h stdint.h stdlib.h string.h sys/stat.h sys/uio.h unistd.h sys/wait.h sys/un.h sys/select.h strings.h sys/ioctl.h pthread.h sys/sysctl.h syslog.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
-AC_TYPE_SIZE_T
-AC_HEADER_TIME
 AC_C_INLINE
+AC_HEADER_TIME
+AC_UNP_CHECK_TYPE(uint8_t, unsigned char)
+AC_UNP_CHECK_TYPE(int16_t, short)
+AC_UNP_CHECK_TYPE(uint16_t, unsigned short)
+AC_UNP_CHECK_TYPE(int32_t, int)
+AC_UNP_CHECK_TYPE(uint32_t, unsigned int)
+AC_UNP_CHECK_TYPE(size_t, unsigned int)
+AC_UNP_CHECK_TYPE(ssize_t, int)
+AC_UNP_CHECK_TYPE(socklen_t, unsigned int)
+AC_UNP_CHECK_TYPE(in_addr_t, uint32_t)
 
-dnl chris - allow user to choose log file location, port and username
-AC_ARG_WITH(log-file, \
-  [--with-log-file=FILE    Default logfile name], \
-	[AC_DEFINE_UNQUOTED(DEFAULT_LOG, "$withval" )])
-
-AC_ARG_WITH(port, \
-  [--with-port=PORT        Default server port], \
-	[AC_DEFINE_UNQUOTED(DEFAULT_PORT, $withval)])       
-
-AC_ARG_WITH(user, \
-  [--with-user=USER        Default user to switch to on startup], \
-	[AC_DEFINE_UNQUOTED(DEFAULT_USER, "$withval")])
-
-dnl enable arguments for adns lib/include
-dnl there must be a nicer way to do this, but I sure don't know what it is
-AC_ARG_WITH(adns-include, \
-  [--with-adns-include=DIR Directory containing adns.h], \
-	[ADNS_INCLUDE=$withval ; CFLAGS="$CFLAGS -I$withval"])
-AC_ARG_WITH(adns-lib, \
-  [--with-adns-lib=DIR     Directory containing libadns.so], \
-	[CFLAGS="$CFLAGS -L$withval"])
-
-dnl check that adns is installed
-AC_CHECK_HEADER(adns.h, [], \
-	AC_CHECK_HEADER($ADNS_INCLUDE/adns.h, [], \
-		[AC_MSG_ERROR(You must have ADNS installed)]))
-AC_CHECK_LIB(adns, adns_init, [LIBS="$LIBS -ladns"],\
-	[AC_MSG_ERROR(You must have ADNS installed)])
-
-dnl Check for the regex library
-AC_ARG_WITH(regex, \
-  [--with-regex            Use the GNU regex libary ],
-  [tinyproxy_cv_regex=yes],
-  [AC_CHECK_FUNCS(regcomp, tinyproxy_cv_regex=no, tinyproxy_cv_regex=yes)])
-
-if test $tinyproxy_cv_regex = no ; then
-  AC_MSG_CHECKING(whether your system's regexp library is completely broken)
-  AC_TRY_RUN([
-#include <unistd.h>
-#include <regex.h>
-main() { regex_t blah ; return regcomp(&blah, "foo.*bar", REG_NOSUB) || regexec(&blah, "foobar", 0, NULL, 0); }],
-  tinyproxy_cv_regex_broken=no, tinyproxy_cv_regex_broken=yes, tinyproxy_cv_regex_broken=yes)
-
-  AC_MSG_RESULT([$tinyproxy_cv_regex_broken])
-  if test $tinyproxy_cv_regex_broken = yes ; then
-    echo "Using the included GNU regex instead." >&AC_FD_MSG
-    tinyproxy_cv_regex = yes
-  fi
+dnl Checks for libraries
+AC_CHECK_LIB(pthread, pthread_create)
+if test $ac_cv_lib_pthread_pthread_create = yes ; then
+    CFLAGS="$CFLAGS -D_REENTRANT"
+else
+    AC_CHECK_LIB(pthreads, pthread_create)
+    if test $ac_cv_lib_pthreads_pthread_create = yes ; then
+        CFLAGS="$CFLAGS -D_REENTRANT"
+    else
+	AC_MSG_ERROR(You must have a POSIX compliant threading library installed)
+    fi
 fi
 
-if test $tinyproxy_cv_regex = yes ; then
-  AC_DEFINE(USE_GNU_REGEX)
-  LIBOBJS="$LIBOBJS gnuregex.o"
-fi
+AC_CHECK_LIB(nsl, t_open)
+AC_CHECK_LIB(socket, socket)
 
 dnl Checks for library functions.
 AC_TYPE_SIGNAL
 AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(socket select strerror strdup vsyslog vsnprintf)
+AC_CHECK_FUNCS(strlcpy strlcat)
 
-dnl Add the warnings if we have the GCC compiler
-rm -f conftest*
+dnl chris - allow user to choose log file location, port and username
+AC_ARG_WITH(log-file, [  --with-log-file=FILE    Default logfile name],
+            AC_DEFINE_UNQUOTED(DEFAULT_LOG, "$withval"))
 
-case "$GCC" in
- yes)
-   CFLAGS="$CFLAGS -Wall"
-   CFLAGS="$CFLAGS -Wshadow"
-   CFLAGS="$CFLAGS -Wcast-qual"
-   CFLAGS="$CFLAGS -Wcast-align"
-   CFLAGS="$CFLAGS -Wstrict-prototypes"
-   CFLAGS="$CFLAGS -Wmissing-prototypes"
-   CFLAGS="$CFLAGS -Wmissing-declarations"
-   CFLAGS="$CFLAGS -Wredundant-decls"
-dnl   CFLAGS="$CFLAGS -Wpointer-arith"
-   CFLAGS="$CFLAGS -Waggregate-return"
-   CFLAGS="$CFLAGS -Wnested-externs"
+AC_ARG_WITH(port, [  --with-port=PORT        Default server port],
+            AC_DEFINE_UNQUOTED(DEFAULT_PORT, "$withval"))
 
-   AC_CACHE_CHECK(whether ${CC-cc} -pipe works, ac_cv_prog_cc_pipe,
-   [echo 'void f(){}' > conftest.c
-   if test -z "`${CC-cc} -pipe -c conftest.c 2>&1`" -a -s conftest.o; then
-     ac_cv_prog_cc_pipe=yes
-   else
-     ac_cv_prog_cc_pipe=no
-   fi
-   rm -f conftest*
-   ])
+AC_ARG_WITH(user, [  --with-user=USER        Default user],
+            AC_DEFINE_UNQUOTED(DEFAULT_USER, "$withval"))
 
-   case "$ac_cv_prog_cc_pipe" in
-    yes)
-      CFLAGS="$CFLAGS -pipe"
-      ;;
-   esac
-   ;;
-esac
+AC_ARG_WITH(stathost, [  --with-stathost=HOST    Default status host],
+            AC_DEFINE_UNQUOTED(DEFAULT_STATHOST, "$withval"))
 
-AC_CHECK_LIB(nsl, gethostname, [LIBS="$LIBS -lnsl"])
-AC_CHECK_LIB(socket, setsockopt, [LIBS="$LIBS -lsocket"])
+dnl Check for the regex library
+AC_ARG_WITH(regex, [  --with-regex            Use the GNU regex libary],
+            tinyproxy_cv_regex=yes,
+            AC_CHECK_FUNCS(regcomp, tinyproxy_cv_regex=no, tinyproxy_cv_regex=yes))
 
-dnl Check to see if the debuging code is turned on
-AC_MSG_CHECKING(whether to include debugging code)
-AC_ARG_ENABLE(debug, \
-  [--enable-debug          turn on additional debugging code],
-  [debug_enabled=yes], [debug_enabled=no])
-if test "$debug_enabled" = "no"; then
-  CFLAGS="$CFLAGS -DNDEBUG"
+if test $tinyproxy_cv_regex = no ; then
+    AC_MSG_CHECKING(whether your system's regexp library is completely broken)
+    AC_CACHE_VAL(tinyproxy_cv_regex_broken,
+                 AC_TRY_RUN([
+# include <unistd.h>
+# include <regex.h>
+int main(void)
+{
+	regex_t blah;
+	return regcomp(&blah, "foo.*bar", REG_NOSUB) || regexec(&blah, "foobar", 0, NULL, 0);
+}
+                            ],
+                            tinyproxy_cv_regex_broken=no,
+                            tinyproxy_cv_regex_broken=yes,
+                            tinyproxy_cv_regex_broken=yes))
+
+    AC_MSG_RESULT($tinyproxy_cv_regex_broken)
+    if test $tinyproxy_cv_regex_broken = yes ; then
+        echo "Using the included GNU regex instead." >&AC_FD_MSG
+        tinyproxy_cv_regex=yes
+    fi
 fi
-AC_MSG_RESULT($debug_enabled)
+
+if test $tinyproxy_cv_regex = yes ; then
+    AC_DEFINE(USE_GNU_REGEX)
+    LIBOBJS="$LIBOBJS gnuregex.o"
+fi
+
+dnl Add compiler-specific optimization flags
+AC_ARG_ENABLE(debug,
+[  --enable-debug          Disable aggressive optimizations [default=no]],
+              debug_enabled=yes)
+
+CFLAGS="$CFLAGS -Wall"
+if test x$enable_debug = xyes ; then
+    dnl Add the warnings if we have the GCC compiler
+    if test x$ac_cv_prog_gcc = xyes ; then
+        CFLAGS="$CFLAGS -Wshadow"
+        CFLAGS="$CFLAGS -Wcast-qual"
+        CFLAGS="$CFLAGS -Wcast-align"
+        CFLAGS="$CFLAGS -Wstrict-prototypes"
+        CFLAGS="$CFLAGS -Wmissing-prototypes"
+        CFLAGS="$CFLAGS -Wmissing-declarations"
+        CFLAGS="$CFLAGS -Wpointer-arith"
+        CFLAGS="$CFLAGS -Waggregate-return"
+        CFLAGS="$CFLAGS -Wnested-externs"
+    fi
+    CFLAGS="$CFLAGS -DYYDEBUG"
+    YFLAGS="-v -d"
+else
+    dnl No debugging information, include the optimizations
+    YFLAGS="-d"
+fi
 
 dnl Check for SOCKS support
-AC_MSG_CHECKING(whether to include support for SOCKS)
-AC_ARG_ENABLE(socks, \
-  [--enable-socks          enable SOCKS support],
-  [socks_enabled=yes], [socks_enabled=no])
-if test "$socks_enabled" = "$yes"; then
-  AC_CHECK_HEADER(socks.h, [socks_header="yes"], [socks_header="no"])
-  AC_CHECK_LIB(socks, main, [socks_library="yes"], [socks_library="no"])
-  if test "$socks_header" = "yes" && test "$socks_library" = "yes"; then
-    CFLAGS="$CFLAGS -I/usr/include/sock.h -DSOCKS"
-    LIBS="$LIBS -lsocks"
-  else
-    socks_enabled=no
-  fi
+AC_ARG_ENABLE(socks,
+[  --enable-socks          Enable SOCKS support [default=no]],
+              socks_enabled=yes)
+
+if test x$socks_enabled = xyes; then
+    AC_CHECK_HEADER(socks.h, socks_header=yes, socks_header=no)
+    AC_CHECK_LIB(socks, main, socks_library=yes, socks_library=no)
+    if test "$socks_header" = yes && test "$socks_library" = yes; then
+        CFLAGS="$CFLAGS -I/usr/include/sock.h -DSOCKS"
+        LIBS="$LIBS -lsocks"
+    else
+        AC_MSG_ERROR(could not find the SOCKS library or header)
+    fi
 fi
-AC_MSG_RESULT($socks_enabled)
 
 dnl Check to see if the XTinyproxy header is to be included
-AC_MSG_CHECKING(whether to include the XTinyproxy header code)
-AC_ARG_ENABLE(xtinyproxy, \
-  [--enable-xtinyproxy     enable the use of the XTinyproxy header],
-  [xtinyproxy_enabled=yes], [xtinyproxy_enabled=no])
-if test "$xtinyproxy_enabled" = "yes"; then
-  AC_DEFINE(XTINYPROXY)
+AC_ARG_ENABLE(xtinyproxy,
+[  --enable-xtinyproxy     Include X-Tinyproxy header [default=yes]],
+              xtinyproxy_enabled=yes)
+
+if test x$xtinyproxy_enabled != xno ; then
+    AC_DEFINE(XTINYPROXY_ENABLE)
 fi
-AC_MSG_RESULT($xtinyproxy_enabled)
 
 dnl Include filtering for domain/URLs
-AC_MSG_CHECKING(whether to include the filtering of domain/URL)
-AC_ARG_ENABLE(filter, \
-  [--enable-filter         enable filtering of domains/URLs],
-  [filter_enabled=yes], [filter_enabled=no])
-if test "$filter_enabled" = "yes"; then
-  LIBOBJS="$LIBOBJS filter.o"
-  AC_DEFINE(FILTER_ENABLE)
+AC_ARG_ENABLE(filter,
+[  --enable-filter         Enable filtering of domains/URLs [default=yes]],
+              filter_enabled=yes)
+
+if test x$filter_enabled != xno ; then
+    LIBOBJS="$LIBOBJS filter.o"
+    AC_DEFINE(FILTER_ENABLE)
 fi
-AC_MSG_RESULT($filter_enabled)
 
-dnl Include support for upstream proxies?
-AC_MSG_CHECKING(whether to include support for upstream proxies)
-AC_ARG_ENABLE(upstream, \
-  [--enable-upstream       enable support for upstream proxies],
-  [upstream_enabled=yes],[upstream_enabled=no])
-if test "$upstream_enabled" = "yes"; then
-  AC_DEFINE(UPSTREAM_PROXY)
+dnl Include support for upstream proxies? (TCP tunneling)
+AC_ARG_ENABLE(tunnel,
+[  --enable-tunnel         Enable support for TCP tunneling [default=yes]],
+              tunnel_enabled=yes)
+
+if test x$tunnel_enabled != xno ; then
+    AC_DEFINE(TUNNEL_SUPPORT)
 fi
-AC_MSG_RESULT($upstream_enabled)
 
-AC_SUBST(CFLAGS)dnl
-AC_SUBST(LIBS)dnl
-AC_SUBST(LIBOBJS)dnl
+dnl Substitute the variables into the various Makefiles
+AC_SUBST(CFLAGS)
+AC_SUBST(YFLAGS)
+AC_SUBST(CPPFLAGS)
+AC_SUBST(LIBS)
+AC_SUBST(LIBOBJS)
 
-AC_OUTPUT(Makefile src/Makefile doc/Makefile)
+AC_OUTPUT([
+Makefile
+src/Makefile
+doc/Makefile
+])
