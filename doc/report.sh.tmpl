@@ -1,5 +1,7 @@
 #!/bin/sh
 
+TINYPROXY_BIN=@TINYPROXY_LOCATION@/tinyproxy
+
 (echo "date: "
 date
 echo "uname: "
@@ -7,8 +9,8 @@ uname -a
 echo "ps: "
 ps -auxw | grep '[t]inyproxy' -
 echo "ver: "
-if [ -x /usr/local/bin/tinyproxy ]; then
-   /usr/local/bin/tinyproxy -v
+if [ -x $TINYPROXY_BIN ]; then
+   $TINYPROXY_BIN -v
 else
    echo no ver available.
 fi;) 2>&1 | mail -s 'tinyproxy install report' rjkaes@users.sourceforge.net
