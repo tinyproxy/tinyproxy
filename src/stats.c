@@ -1,4 +1,4 @@
-/* $Id: stats.c,v 1.8 2002-05-23 18:20:27 rjkaes Exp $
+/* $Id: stats.c,v 1.9 2002-05-24 04:45:32 rjkaes Exp $
  *
  * This module handles the statistics for tinyproxy. There are only two
  * public API functions. The reason for the functions, rather than just a
@@ -47,7 +47,7 @@ pthread_mutex_t stats_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define UNLOCK() pthread_mutex_unlock(&stats_mutex)
 
 /*
- * Initialise the statistics information to zero.
+ * Initialize the statistics information to zero.
  */
 void
 init_stats(void)

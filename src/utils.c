@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.30 2002-05-23 18:28:12 rjkaes Exp $
+/* $Id: utils.c,v 1.31 2002-05-24 04:45:32 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -216,7 +216,7 @@ create_file_safely(const char *filename)
 		}
 
 		/*
-		 * On systems whcih don't support ftruncate() the best we can
+		 * On systems which don't support ftruncate() the best we can
 		 * do is to close the file and reopen it in create mode, which
 		 * unfortunately leads to a race condition, however "systems
 		 * which don't support ftruncate()" is pretty much SCO only,

@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.74 2002-05-23 18:24:46 rjkaes Exp $
+/* $Id: reqs.c,v 1.75 2002-05-24 04:45:32 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -276,7 +276,7 @@ establish_http_connection(struct conn_s *connptr, struct request_s *request)
 }
 
 /*
- * These two defines are for the SSL tunnelling.
+ * These two defines are for the SSL tunneling.
  */
 #define SSL_CONNECTION_RESPONSE "HTTP/1.0 200 Connection established"
 #define PROXY_AGENT "Proxy-agent: " PACKAGE "/" VERSION
@@ -309,7 +309,7 @@ process_request(struct conn_s *connptr)
 
 	size_t request_len;
 
-	/* NULL out all the fields so free's don't cause segfaults. */
+	/* NULL out all the fields so frees don't cause segfaults. */
 	request = safecalloc(1, sizeof(struct request_s));
 	if (!request)
 		return NULL;
@@ -899,7 +899,7 @@ process_server_headers(struct conn_s *connptr)
 		goto ERROR_EXIT;
 
 	/*
-	 * Okay, output all the remaining headers to the client.
+	 * All right, output all the remaining headers to the client.
 	 */
 	iter = hashmap_first(hashofheaders);
 	if (iter >= 0) {
@@ -990,7 +990,7 @@ relay_connection(struct conn_s *connptr)
 			return;
 		} else {
 			/*
-			 * Okay, something was actually selected so mark it.
+			 * All right, something was actually selected so mark it.
 			 */
 			last_access = time(NULL);
 		}

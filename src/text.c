@@ -1,4 +1,4 @@
-/* $Id: text.c,v 1.1 2002-05-23 04:42:30 rjkaes Exp $
+/* $Id: text.c,v 1.2 2002-05-24 04:45:32 rjkaes Exp $
  *
  * The functions included here are useful for text manipulation.  They
  * replace or augment the standard C string library.  These functions
@@ -71,7 +71,7 @@ strlcat(char *dst, const char *src, size_t size)
 
 /*
  * Removes any new-line or carriage-return characters from the end of the
- * string. This function is named afrer the same function in Perl.
+ * string. This function is named after the same function in Perl.
  * "length" should be the number of characters in the buffer, not including
  * the trailing NULL.
  *

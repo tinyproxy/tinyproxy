@@ -1,4 +1,4 @@
-/* $Id: hashmap.c,v 1.10 2002-05-23 18:20:27 rjkaes Exp $
+/* $Id: hashmap.c,v 1.11 2002-05-24 04:45:32 rjkaes Exp $
  *
  * A hashmap implementation.  The keys are case-insensitive NULL terminated
  * strings, and the data is arbitrary lumps of data.  Copies of both the
@@ -310,7 +310,7 @@ hashmap_find(hashmap_t map, const char* key)
 		return -EINVAL;
 
 	/*
-	 * Loop through all the keys and look for the first occurance
+	 * Loop through all the keys and look for the first occurrence
 	 * of a particular key.
 	 */
 	for (i = 0; i < map->size; i++) {
@@ -372,7 +372,7 @@ hashmap_return_entry(hashmap_t map, hashmap_iter iter,
 }
 
 /*
- * Searches for _any_ occurrances of "key" within the hashmap.
+ * Searches for _any_ occurrences of "key" within the hashmap.
  * 
  * Returns: negative upon an error
  *          zero if no key is found
@@ -394,7 +394,7 @@ hashmap_search(hashmap_t map, const char *key)
 
 	ptr = map->buckets[hash];
 
-	/* Okay, there is an entry here, now see if it's the one we want */
+	/* All right, there is an entry here, now see if it's the one we want */
 	while (ptr) {
 		if (strcasecmp(ptr->key, key) == 0)
 			++count;

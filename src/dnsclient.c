@@ -1,4 +1,4 @@
-/* $Id: dnsclient.c,v 1.1 2002-05-23 04:40:06 rjkaes Exp $
+/* $Id: dnsclient.c,v 1.2 2002-05-24 04:45:32 rjkaes Exp $
  *
  * Create the dnsserver child process, and then include functions to
  * retrieve IP addresses or host names.  These functions are required
@@ -40,7 +40,7 @@ static char* unix_socket_loc;
 /*
  * Fork a copy of the "dnsserver" program.  Two arguments are used
  * by this function: 'dnsserver_location' is the complete path to the
- * dnsserver execuatable; 'path' is the absolute path used by the
+ * dnsserver executable; 'path' is the absolute path used by the
  * Unix socket.
  */
 int

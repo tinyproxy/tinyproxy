@@ -1,7 +1,7 @@
-/* $Id: conns.c,v 1.11 2002-05-23 18:23:29 rjkaes Exp $
+/* $Id: conns.c,v 1.12 2002-05-24 04:45:32 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
- * other connnection related tasks put here, but for now the header
+ * other connection related tasks put here, but for now the header
  * file and this file are only used for create/free functions and the
  * connection structure definition.
  *
@@ -34,7 +34,7 @@ initialize_conn(int client_fd, const char* ipaddr, const char* string_addr)
 	assert(client_fd >= 0);
 
 	/*
-	 * Allocate the memory for all the internal componets
+	 * Allocate the memory for all the internal components
 	 */
 	cbuffer = new_buffer();
 	sbuffer = new_buffer();

@@ -1,6 +1,6 @@
-/* $Id: tinyproxy.c,v 1.30 2002-05-23 18:27:01 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.31 2002-05-24 04:45:32 rjkaes Exp $
  *
- * The initialise routine. Basically sets up all the initial stuff (logfile,
+ * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
  * over the new connections until the daemon is closed. Also has additional
  * functions to handle the "user friendly" aspects of a program (usage,

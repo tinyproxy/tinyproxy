@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.30 2002-05-23 18:20:27 rjkaes Exp $
+/* $Id: thread.c,v 1.31 2002-05-24 04:45:32 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -59,7 +59,7 @@ int accept_lock_ret = pthread_mutex_unlock(&mlock); \
 assert(accept_lock_ret == 0); \
 } while (0)
 
-/* Used to override the default statck size. */
+/* Used to override the default stack size. */
 static pthread_attr_t thread_attr;
 
 static struct thread_config_s {
@@ -135,7 +135,7 @@ thread_main(void *arg)
 	struct thread_s *ptr;
 
 #ifdef HAVE_PTHREAD_CANCEL
-	/* Set the cancelation type to immediate. */
+	/* Set the cancellation type to immediate. */
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 #endif
 

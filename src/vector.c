@@ -1,6 +1,6 @@
-/* $Id: vector.c,v 1.5 2002-05-23 18:20:27 rjkaes Exp $
+/* $Id: vector.c,v 1.6 2002-05-24 04:45:32 rjkaes Exp $
  *
- * A vector implementation.  The vector can be of an arbritrary length, and
+ * A vector implementation.  The vector can be of an arbitrary length, and
  * the data for each entry is an lump of data (the size is stored in the
  * vector.)
  *
@@ -31,7 +31,7 @@
  * stored in struct vectorentry_s (the data and the length), and the
  * "vector" structure is implemented as a linked-list.  The struct
  * vector_s stores a pointer to the first vector (vector[0]) and a
- * count of the number of enteries (or how long the vector is.)
+ * count of the number of entries (or how long the vector is.)
  */
 struct vectorentry_s {
 	void *data;
@@ -69,7 +69,7 @@ vector_create(void)
 }
 
 /*
- * Deletes an vector.  All the enteries when this function is run.
+ * Deletes an vector.  All the entries when this function is run.
  *
  * Returns: 0 on success
  *          negative if a NULL vector is supplied
@@ -173,7 +173,7 @@ vector_getentry(vector_t vector, size_t pos, void **data)
 }
 
 /*
- * Returns the number of enteries (or the length) of the vector.
+ * Returns the number of entries (or the length) of the vector.
  *
  * Returns: negative if vector is not valid
  *          positive length of vector otherwise

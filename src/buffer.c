@@ -1,8 +1,8 @@
-/* $Id: buffer.c,v 1.21 2002-05-23 18:22:48 rjkaes Exp $
+/* $Id: buffer.c,v 1.22 2002-05-24 04:45:32 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
- * by using this method we can increase the buffer size dynamicly. However,
+ * by using this method we can increase the buffer size dynamically. However,
  * we have a hard limit of 64 KB for the size of the buffer. The buffer can be
  * thought of as a queue were we act on both the head and tail. The various
  * functions act on each end (the names are taken from what Perl uses to act on
