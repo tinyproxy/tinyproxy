@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.90 2003-01-27 17:39:02 rjkaes Exp $
+/* $Id: reqs.c,v 1.91 2003-01-27 18:42:18 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -1149,13 +1149,20 @@ relay_connection(struct conn_s *connptr)
 	return;
 }
 
-#ifdef UPSTREAM_SUPPORT
 /*
  * Establish a connection to the upstream proxy server.
  */
 static int
 connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 {
+#ifndef UPSTREAM_SUPPORT
+	/*
+	 * This function does nothing if upstream support was not compiled
+	 * into tinyproxy.
+	 */
+	return -1;
+#endif
+
 	char *combined_string;
 	int len;
 
@@ -1204,7 +1211,6 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 
 	return establish_http_connection(connptr, request);
 }
-#endif
 
 /*
  * This is the main drive for each connection. As you can tell, for the
