@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.3 2000-09-11 23:56:32 rjkaes Exp $
+/* $Id: sock.c,v 1.4 2001-05-23 18:01:23 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -59,6 +59,9 @@ int opensock(char *ip_addr, int port)
 	struct sockaddr_in port_info;
 	int ret;
 
+	assert(ip_addr != NULL);
+	assert(port > 0);
+
 	memset((SA *) &port_info, 0, sizeof(port_info));
 
 	port_info.sin_family = AF_INET;
@@ -98,6 +101,8 @@ int socket_nonblocking(int sock)
 {
 	int flags;
 
+	assert(sock >= 0);
+
 	flags = fcntl(sock, F_GETFL, 0);
 	return fcntl(sock, F_SETFL, flags | O_NONBLOCK);
 }
@@ -108,6 +113,8 @@ int socket_nonblocking(int sock)
 int socket_blocking(int sock)
 {
 	int flags;
+
+	assert(sock >= 0);
 
 	flags = fcntl(sock, F_GETFL, 0);
 	return fcntl(sock, F_SETFL, flags & ~O_NONBLOCK);
@@ -124,6 +131,9 @@ int listen_sock(unsigned int port, socklen_t *addrlen)
 	int listenfd;
 	const int on = 1;
 	struct sockaddr_in addr;
+
+	assert(port > 0);
+	assert(addrlen != NULL);
 
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
@@ -156,6 +166,9 @@ char *getpeer_ip(int fd, char *ipaddr)
 	struct sockaddr_in name;
 	int namelen = sizeof(name);
 
+	assert(fd >= 0);
+	assert(ipaddr != NULL);
+
 	if (getpeername(fd, (struct sockaddr *) &name, &namelen) != 0) {
 		log(LOG_ERR, "Connect: 'could not get peer name'");
 	} else {
@@ -177,6 +190,9 @@ char *getpeer_string(int fd, char *string)
 	int namelen = sizeof(name);
 	struct hostent *peername;
 
+	assert(fd >= 0);
+	assert(string != NULL);
+
 	if (getpeername(fd, (struct sockaddr *) &name, &namelen) != 0) {
 		log(LOG_ERR, "Connect: 'could not get peer name'");
 	} else {
@@ -197,6 +213,9 @@ ssize_t readline(int fd, void *vptr, size_t maxlen)
 {
 	ssize_t n, rc;
 	char c, *ptr;
+
+	assert(fd >= 0);
+	assert(vptr != NULL);
 
 	ptr = vptr;
 	for (n = 1; n < maxlen; n++) {

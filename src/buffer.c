@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.3 2000-09-11 23:41:32 rjkaes Exp $
+/* $Id: buffer.c,v 1.4 2001-05-23 18:01:23 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -48,6 +48,8 @@ struct buffer_s {
  */
 unsigned int buffer_size(struct buffer_s *buffptr)
 {
+	assert(buffptr != NULL);
+
 	return buffptr->size;
 }
 
@@ -58,6 +60,8 @@ unsigned int buffer_size(struct buffer_s *buffptr)
 static struct bufline_s *makenewline(unsigned char *data, unsigned int length)
 {
 	struct bufline_s *newline;
+
+	assert(data != NULL);
 
 	if (!(newline = malloc(sizeof(struct bufline_s))))
 		return NULL;
@@ -75,6 +79,8 @@ static struct bufline_s *makenewline(unsigned char *data, unsigned int length)
  */
 static void free_line(struct bufline_s *line)
 {
+	assert(line != NULL);
+
 	if (!line)
 		return;
 
@@ -108,6 +114,8 @@ void delete_buffer(struct buffer_s *buffptr)
 {
 	struct bufline_s *next;
 
+	assert(buffptr != NULL);
+
 	while (BUFFER_HEAD(buffptr)) {
 		next = BUFFER_HEAD(buffptr)->next;
 		free_line(BUFFER_HEAD(buffptr));
@@ -126,6 +134,9 @@ static int add_to_buffer(struct buffer_s *buffptr, unsigned char *data,
 			 unsigned int length)
 {
 	struct bufline_s *newline;
+
+	assert(buffptr != NULL);
+	assert(data != NULL);
 
 	if (!(newline = makenewline(data, length)))
 		return -1;
@@ -147,6 +158,8 @@ static int add_to_buffer(struct buffer_s *buffptr, unsigned char *data,
 static struct bufline_s *remove_from_buffer(struct buffer_s *buffptr)
 {
 	struct bufline_s *line;
+
+	assert(buffptr != NULL);
 
 	if (!BUFFER_HEAD(buffptr) && !BUFFER_TAIL(buffptr)) {
 		line = BUFFER_HEAD(buffptr);
@@ -175,6 +188,9 @@ int readbuff(int fd, struct buffer_s *buffptr)
 	int bytesin;
 	unsigned char inbuf[MAXBUFFSIZE];
 	unsigned char *buffer;
+
+	assert(fd >= 0);
+	assert(buffptr != NULL);
 
 	if (buffer_size(buffptr) >= MAXBUFFSIZE)
 		return 0;
@@ -221,7 +237,12 @@ int readbuff(int fd, struct buffer_s *buffptr)
 int writebuff(int fd, struct buffer_s *buffptr)
 {
 	int bytessent;
-	struct bufline_s *line = BUFFER_HEAD(buffptr);
+	struct bufline_s *line;
+
+	assert(fd >= 0);
+	assert(buffptr != NULL);
+
+	line = BUFFER_HEAD(buffptr);
 
 	if (buffer_size(buffptr) <= 0)
 		return 0;

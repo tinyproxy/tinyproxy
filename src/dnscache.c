@@ -1,4 +1,4 @@
-/* $Id: dnscache.c,v 1.7 2000-10-23 21:42:31 rjkaes Exp $
+/* $Id: dnscache.c,v 1.8 2001-05-23 18:01:23 rjkaes Exp $
  *
  * This is a caching DNS system. When a host name is needed we look it up here
  * and see if there is already an answer for it. The domains are placed in a
@@ -25,6 +25,7 @@
 #endif
 
 #include <sys/types.h>
+#include <assert.h>
 #include <ctype.h>
 #include <unistd.h>
 
@@ -53,6 +54,9 @@ static int dns_lookup(struct in_addr *addr, char *domain)
 {
 	struct dnscache_s *ptr;
 
+	assert(addr != NULL);
+	assert(domain != NULL);
+
 	if (TE_ISERROR(ternary_search(dns_tree, domain, (void *)&ptr))) 
 		return -1;
 
@@ -67,6 +71,9 @@ static int dns_lookup(struct in_addr *addr, char *domain)
 static int dns_insert(struct in_addr *addr, char *domain)
 {
 	struct dnscache_s *newptr;
+
+	assert(addr != NULL);
+	assert(domain != NULL);
 
 	if (!(newptr = malloc(sizeof(struct dnscache_s)))) {
 		return -1;
@@ -84,6 +91,9 @@ static int dns_insert(struct in_addr *addr, char *domain)
 int dnscache(struct in_addr *addr, char *domain)
 {
 	struct hostent *resolv;
+
+	assert(addr != NULL);
+	assert(domain != NULL);
 
 	if (inet_aton(domain, (struct in_addr *) addr) != 0)
 		return 0;
