@@ -41,3 +41,5 @@ against the current tree and I'll integrate it if possible.
    for the administrators.  Right now it's more a hodge-podge
    collections of error messages without a _real_ standard.  I would
    prefer a more uniform look.
+
+ * All selective binding, rather than the default wildcard system.
