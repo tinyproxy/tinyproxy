@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.18 2004-02-13 21:27:42 rjkaes Exp $
+/* $Id: acl.c,v 1.19 2004-08-11 20:09:20 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -22,31 +22,36 @@
 #include "acl.h"
 #include "heap.h"
 #include "log.h"
+#include "network.h"
 #include "sock.h"
+#include "vector.h"
+
+/* Define how long an IPv6 address is in bytes (128 bits, 16 bytes) */
+#define IPV6_LEN 16
 
 enum acl_type { ACL_STRING, ACL_NUMERIC };
 
+/*
+ * Hold the information about a particular access control.  We store
+ * whether it's an ALLOW or DENY entry, and also whether it's a string
+ * entry (like a domain name) or an IP entry.
+ */
 struct acl_s {
-	acl_access_t acl_access;
+	acl_access_t access;
 	enum acl_type type;
-	char *location;
-	int netmask;
-	struct acl_s *next;
+	union {
+		char* addr;
+		struct {
+			unsigned char addr[IPV6_LEN];
+			unsigned char mask[IPV6_LEN];
+		} ip;
+	};
 };
 
-static struct acl_s *access_list = NULL;
-
 /*
- * Take a netmask number (between 0 and 32) and returns a network ordered
- * value for comparison.
+ * All the access lists are stored in a vector.
  */
-static in_addr_t
-make_netmask(int netmask_num)
-{
-	assert(netmask_num >= 0 && netmask_num <= 32);
-
-	return htonl(~((1 << (32 - netmask_num)) - 1));
-}
+static vector_t access_list = NULL;
 
 /*
  * Inserts a new access control into the list. The function will figure out
@@ -60,79 +65,79 @@ make_netmask(int netmask_num)
 int
 insert_acl(char *location, acl_access_t access_type)
 {
-	size_t i;
-	struct acl_s **rev_acl_ptr, *acl_ptr, *new_acl_ptr;
-	char *nptr;
+	struct acl_s acl;
+	int i, ret, mask;
+	char *p, ip_dst[IPV6_LEN];
 
 	assert(location != NULL);
 
-	/*
-	 * First check to see if the location is a string or numeric.
-	 */
-	for (i = 0; location[i] != '\0'; i++) {
-		/*
-		 * Numeric strings can not contain letters, so test on it.
-		 */
-		if (isalpha((unsigned char) location[i])) {
-			break;
-		}
-	}
+        /*
+         * If the access list has not been set up, create it.
+         */
+        if (!access_list) {
+                access_list = vector_create();
+                if (!access_list) {
+                        log_message(LOG_ERR,
+                                    "Unable to allocate memory for access list");
+                        return -1;
+                }
+        }
 
-	/*
-	 * Add a new ACL to the list.
-	 */
-	rev_acl_ptr = &access_list;
-	acl_ptr = access_list;
-	while (acl_ptr) {
-		rev_acl_ptr = &acl_ptr->next;
-		acl_ptr = acl_ptr->next;
-	}
-	new_acl_ptr = safemalloc(sizeof(struct acl_s));
-	if (!new_acl_ptr) {
-		return -1;
-	}
+        /*
+         * Start populating the access control structure.
+         */
+        memset(&acl, 0, sizeof(struct acl_s));
+        acl.access = access_type;
 
-	new_acl_ptr->acl_access = access_type;
+        /*
+         * Check for a valid IP address (the simplest case) first.
+         */
+        if (full_inet_pton(location, ip_dst) > 0) {
+                acl.type = ACL_NUMERIC;
+                memcpy(acl.ip.addr, ip_dst, IPV6_LEN);
+                memset(acl.ip.mask, 0xff, IPV6_LEN);
+        } else {
+                /*
+                 * At this point we're either a hostname or an
+                 * IP address with a slash.
+                 */
+                p = strchr(location, '/');
+                if (p != NULL) {
+                        /*
+                         * We have a slash, so it's intended to be an
+                         * IP address with mask
+                         */
+                        *p = '\0';
+                        if (full_inet_pton(location, ip_dst) <= 0)
+                                return -1;
+                        
+                        acl.type = ACL_NUMERIC;
+                        memcpy(acl.ip.addr, ip_dst, IPV6_LEN);
 
-	if (location[i] == '\0') {
-		DEBUG2("ACL \"%s\" is a number.", location);
+                        mask = strtol(p + 1, NULL, 10);
+                        for (i = 0; i != IPV6_LEN; ++i) {
+                                if (mask >= ((i + 1) * 8))
+                                        acl.ip.mask[i] = 0xff;
+                                else
+                                        acl.ip.mask[i] = 0xff << (8 - (mask - i * 8));
+                        }
+                } else {
+                        /* In all likelihood a string */
+                        acl.type = ACL_STRING;
+                        acl.addr = safestrdup(location);
+                        if (!acl.addr)
+                                return -1;
+                }
+        }
 
-		/*
-		 * We did not break early, so this a numeric location.
-		 * Check for a netmask.
-		 */
-		new_acl_ptr->type = ACL_NUMERIC;
-		nptr = strchr(location, '/');
-		if (nptr) {
-			*nptr++ = '\0';
-
-			new_acl_ptr->netmask = strtol(nptr, NULL, 10);
-			if (new_acl_ptr->netmask < 0
-			    || new_acl_ptr->netmask > 32) {
-				safefree(new_acl_ptr);
-				return -1;
-			}
-		} else {
-			new_acl_ptr->netmask = 32;
-		}
-	} else {
-		DEBUG2("ACL \"%s\" is a string.", location);
-
-		new_acl_ptr->type = ACL_STRING;
-		new_acl_ptr->netmask = 32;
-	}
-
-	new_acl_ptr->location = safestrdup(location);
-	if (!new_acl_ptr->location) {
-		safefree(new_acl_ptr);
-		return -1;
-	}
-
-	*rev_acl_ptr = new_acl_ptr;
-	new_acl_ptr->next = acl_ptr;
-
-	return 0;
+        /*
+         * Add the entry and then clean up.
+         */
+        ret = vector_append(access_list, &acl, sizeof(struct acl_s));
+        safefree(acl.addr);
+        return ret;
 }
+
 
 /*
  * This function is called whenever a "string" access control is found in
@@ -143,48 +148,56 @@ insert_acl(char *location, acl_access_t access_type)
  *         1 if host is allowed
  *        -1 if no tests match, so skip
  */
-static inline int
-acl_string_processing(struct acl_s* aclptr,
+static int
+acl_string_processing(struct acl_s* acl,
 		      const char* ip_address,
 		      const char* string_address)
 {
-	int i;
-	struct hostent* result;
+	int match;
+	struct addrinfo hints, *res, *ressave;
 	size_t test_length, match_length;
+	char ipbuf[512];
+
+        assert(acl && acl->type == ACL_STRING);
+        assert(ip_address && strlen(ip_address) > 0);
+        assert(string_address && strlen(string_address) > 0);
 
 	/*
 	 * If the first character of the ACL string is a period, we need to
 	 * do a string based test only; otherwise, we can do a reverse
 	 * lookup test as well.
 	 */
-	if (aclptr->location[0] != '.') {
-		/* It is not a partial domain, so do a reverse lookup. */
-		result = gethostbyname(aclptr->location);
-		if (!result)
+	if (acl->addr[0] != '.') {
+		memset(&hints, 0, sizeof(struct addrinfo));
+		hints.ai_family = AF_UNSPEC;
+		hints.ai_socktype = SOCK_STREAM;
+		if (getaddrinfo(acl->addr, NULL, &hints, &res) != 0)
 			goto STRING_TEST;
-				
-		for (i = 0; result->h_addr_list[i]; ++i) {
-			if (strcmp(ip_address,
-				   inet_ntoa(*((struct in_addr*)result->h_addr_list[i]))) == 0) {
-				/* We have a match */
-				if (aclptr->acl_access == ACL_DENY) {
-					return 0;
-				} else {
-					DEBUG2("Matched using reverse domain lookup: %s", ip_address);
-					return 1;
-				}
-			}
-		}
 
-		/*
-		 * If we got this far, the reverse didn't match, so drop down
-		 * to a standard string test.
-		 */
+		ressave = res;
+
+		match = FALSE;
+		do {
+			get_ip_string(res->ai_addr, ipbuf, sizeof(ipbuf));
+			if (strcmp(ip_address, ipbuf) == 0) {
+				match = TRUE;
+				break;
+			}
+		} while ((res = res->ai_next) != NULL);
+
+		freeaddrinfo(ressave);
+
+		if (match) {
+			if (acl->access == ACL_DENY)
+				return 0;
+			else
+				return 1;
+		}
 	}
 
 STRING_TEST:
 	test_length = strlen(string_address);
-	match_length = strlen(aclptr->location);
+	match_length = strlen(acl->addr);
 
 	/*
 	 * If the string length is shorter than AC string, return a -1 so
@@ -193,8 +206,8 @@ STRING_TEST:
 	if (test_length < match_length)
 		return -1;
 
-	if (strcasecmp(string_address + (test_length - match_length), aclptr->location) == 0) {
-		if (aclptr->acl_access == ACL_DENY)
+	if (strcasecmp(string_address + (test_length - match_length), acl->addr) == 0) {
+		if (acl->access == ACL_DENY)
 			return 0;
 		else
 			return 1;
@@ -205,6 +218,39 @@ STRING_TEST:
 }
 
 /*
+ * Compare the supplied numeric IP address with the supplied ACL structure.
+ *
+ * Return:
+ *   1  IP address is allowed
+ *   0  IP address is denied
+ *  -1  neither allowed nor denied.
+ */
+static int
+check_numeric_acl(const struct acl_s* acl, const char* ip)
+{
+	uint8_t addr[IPV6_LEN], x, y;
+	int i;
+
+        assert(acl && acl->type == ACL_NUMERIC);
+        assert(ip && strlen(ip) > 0);
+
+	if (full_inet_pton(ip, &addr) <= 0) return -1;
+
+	for (i = 0; i != IPV6_LEN; ++i) {
+                x = addr[i] & acl->ip.mask[i];
+                y = acl->ip.addr[i] & acl->ip.mask[i];
+
+                /* If x and y don't match, the IP addresses don't match */
+                if (x != y)
+                        return 0;
+	}
+
+	/* The addresses match, return the permission */
+	return (acl->access == ACL_ALLOW);
+}
+
+
+/*
  * Checks whether file descriptor is allowed.
  *
  * Returns:
@@ -212,68 +258,48 @@ STRING_TEST:
  *     0 if denied
  */
 int
-check_acl(int fd, const char* ip_address, const char* string_address)
+check_acl(int fd, const char* ip, const char* host)
 {
-	struct acl_s* aclptr;
-	int ret;
+	struct acl_s* acl;
+	int perm;
+        int i;
 
 	assert(fd >= 0);
-	assert(ip_address != NULL);
-	assert(string_address != NULL);
+	assert(ip != NULL);
+	assert(host != NULL);
 
 	/*
 	 * If there is no access list allow everything.
 	 */
-	aclptr = access_list;
-	if (!aclptr)
-		return 1;
+        if (!access_list) return 1;
 
-	while (aclptr) {
-		if (aclptr->type == ACL_STRING) {
-			ret = acl_string_processing(aclptr,
-						    ip_address,
-						    string_address);
-			if (ret == 0)
-				goto UNAUTHORIZED;
-			else if (ret == 1)
-				return 1;
+        for (i = 0; i != vector_length(access_list); ++i) {
+                acl = vector_getentry(access_list, i, NULL);
+                switch (acl->type) {
+		case ACL_STRING:
+			perm = acl_string_processing(acl, ip, host);
+			break;
 
-			aclptr = aclptr->next;
-			continue;
-		} else {
-			struct in_addr test_addr, match_addr;
-			in_addr_t netmask_addr;
-
-			if (ip_address[0] == 0) {
-				aclptr = aclptr->next;
-				continue;
-			}
-
-			inet_aton(ip_address, &test_addr);
-			inet_aton(aclptr->location, &match_addr);
-
-			netmask_addr = make_netmask(aclptr->netmask);
-
-			if ((test_addr.s_addr & netmask_addr) ==
-			    (match_addr.s_addr & netmask_addr)) {
-				if (aclptr->acl_access == ACL_DENY)
-					goto UNAUTHORIZED;
-				else
-					return 1;
-			}
+		case ACL_NUMERIC:
+			if (ip[0] == '\0') continue;
+			perm = check_numeric_acl(acl, ip);
+			break;
 		}
 
-		/*
-		 * Dropped through... go on to the next one.
+                /*
+                 * Check the return value too see if the IP address is
+		 * allowed or denied.
 		 */
-		aclptr = aclptr->next;
-	}
+		if (perm == 0)
+			break;
+		else if (perm == 1)
+			return perm;
+        }
 
 	/*
 	 * Deny all connections by default.
 	 */
-UNAUTHORIZED:
 	log_message(LOG_NOTICE, "Unauthorized connection from \"%s\" [%s].",
-		    string_address, ip_address);
+		    host, ip);
 	return 0;
 }
