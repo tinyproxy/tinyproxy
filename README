@@ -2,17 +2,18 @@
  DESCRIPTION
  -----------
 
- tinyproxy is a small, efficient HTTP proxy daemon released under the
- GNU General Public Licence (GPL).  tinyproxy is very useful in a small
- network setting, where a larger proxy like Squid would either be too
- resource intensive, or a security risk.  One of the key features of
- tinyproxy is the buffering connection concept.  In effect, tinyproxy
- will buffer a high speed response from a server, and then relay it to
- a client at the highest speed the client will accept.  This feature
- greatly reduces the problems with sluggishness on the Internet.  If you
- are sharing an Internet connection with a small network, and you only
- want to allow HTTP requests to be allowed, then tinyproxy is a great
- tool for the network administrator.
+ tinyproxy is a small, efficient HTTP/SSL proxy daemon released under
+ the GNU General Public Licence (GPL).  tinyproxy is very useful in a
+ small network setting, where a larger proxy like Squid would either
+ be too resource intensive, or a security risk.  One of the key
+ features of tinyproxy is the buffering connection concept.  In
+ effect, tinyproxy will buffer a high speed response from a server,
+ and then relay it to a client at the highest speed the client will
+ accept.  This feature greatly reduces the problems with sluggishness
+ on the Internet.  If you are sharing an Internet connection with a
+ small network, and you only want to allow HTTP requests to be
+ allowed, then tinyproxy is a great tool for the network
+ administrator.
 
 
  INSTALLATION
