@@ -1,3 +1,17 @@
+2002-12-04  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (strip_username_password): New function to remove any
+	username/password part from the host URI.
+
+	(extract_http_url), (extract_ssl_url): Use the new
+	strip_username_password function to remove any non-host
+	information from the URI.
+
+	* src/tinyproxy.c, src/tinyproxy.h, src/utils.c, src/utils.h,
+	* src/common.h, src/conns.h, src/reqs.c:
+	Removed the "bool_t" type since it conflicts with the newer C
+	standards.  The type was just replaced by "unsigned int" types.
+
 2002-11-29  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (extract_http_url):
