@@ -1,4 +1,4 @@
-/* $Id: thread.h,v 1.2 2001-05-27 02:33:35 rjkaes Exp $
+/* $Id: thread.h,v 1.3 2001-09-07 04:20:04 rjkaes Exp $
  *
  * See 'thread.c' for more information.
  *
@@ -26,11 +26,11 @@ typedef enum {
 	THREAD_MAXREQUESTSPERCHILD
 } thread_config_t;
 
-extern int thread_pool_create(void);
+extern short int thread_pool_create(void);
 extern int thread_listening_sock(uint16_t port);
 extern void thread_close_sock(void);
-extern int thread_main_loop(void);
+extern void thread_main_loop(void);
 
-extern int thread_configure(thread_config_t type, unsigned int val);
+extern short int thread_configure(thread_config_t type, unsigned int val);
 
 #endif
