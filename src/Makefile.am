@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.8 2001-12-15 05:57:40 rjkaes Exp $
+# $Id: Makefile.am,v 1.9 2001-12-15 20:02:26 rjkaes Exp $
 #
 # 
 #
@@ -33,7 +33,6 @@ tinyproxy_SOURCES = \
 	thread.c thread.h \
 	grammar.y scanner.l \
 	acl.c acl.h \
-	ternary.c ternary.h \
 	regexp.h
 
 tinyproxy_LDADD = @LIBOBJS@
