@@ -1,5 +1,7 @@
 2004-08-10  Robert James Kaes  <rjkaes@users.sourceforge.net>
 
+	Released tinyproxy 1.6.3 (2004-08-10)
+
 	* src/daemon.c (makedaemon): Close the standard file descriptors
 	when compiling a production executable.  I only need these left
 	open when doing debugging.
