@@ -1,3 +1,35 @@
+2003-01-27  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/tinyproxy.c (display_usage):
+	Removed the output line mentioning that regular expression support
+	was included.  It will be there always.
+
+	* src/reqs.c (connect_to_upstream):
+	Reorganized the preprocessor directives to make sure the
+	function's symbol name is stored, even if upstream was not
+	compiled it.  This should keep some compilers from reporting
+	errors.
+
+	* doc/tinyproxy.conf, src/filter.c, src/grammar.y, src/scanner.l,
+	* src/tinyproxy.h:
+	Added support for conditionally using case sensitive filtering
+	files.  Code changes from James E. Flemer.
+
+	* configure.ac:
+	Moved the AH_TEMPLATE() macro for the GNU regex library to out
+	from inside an if...fi test.  Thanks to James E. Flemer for
+	supplying a patch.
+
+	Bumped up the version number.
+
+	* doc/tinyproxy.8:
+	Changed the default manual section to section 8 (administrator
+	commands).
+
+	* src/reqs.c (process_client_headers):
+	Fixed inverted anonymous header logic.  Fix comes from the FreeBSD
+	port through James E. Flemer.
+
 2003-01-22  Robert James Kaes  <rjkaes@flarenet.com>
 
 	Released tinyproxy 1.5.2 (2003-01-22)
