@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.18 2001-11-26 01:39:07 rjkaes Exp $
+/* $Id: buffer.c,v 1.19 2001-12-19 20:41:28 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -259,7 +259,7 @@ write_buffer(int fd, struct buffer_s * buffptr)
 
 	line = BUFFER_HEAD(buffptr);
 	bytessent =
-	    write(fd, line->string + line->pos, line->length - line->pos);
+	    send(fd, line->string + line->pos, line->length - line->pos, MSG_NOSIGNAL);
 
 	if (bytessent >= 0) {
 		/* bytes sent, adjust buffer */

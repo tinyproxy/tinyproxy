@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.21 2001-12-17 00:00:24 rjkaes Exp $
+/* $Id: sock.c,v 1.22 2001-12-19 20:41:28 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -286,7 +286,7 @@ safe_write(int fd, const char *buffer, size_t count)
 	bytestosend = count;
 
 	while (1) {
-		len = write(fd, buffer, bytestosend);
+		len = send(fd, buffer, bytestosend, MSG_NOSIGNAL);
 
 		if (len < 0) {
 			if (errno == EINTR)
