@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.6 2000-09-26 04:58:35 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.7 2001-05-23 18:00:54 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -52,7 +52,8 @@
 #  include	<strings.h>
 #endif
 #include	<time.h>
-#include	<unistd.h>
+#include        <unistd.h>
+#include        <assert.h>
 
 #ifndef SHUT_RD			/* these three Posix.1g names are quite new */
 #  define SHUT_RD	0	/* shutdown for reading */
@@ -69,11 +70,7 @@
 #define min(a,b)	((a) < (b) ? (a) : (b))
 #define max(a,b)	((a) > (b) ? (a) : (b))
 
-#ifndef NDEBUG
-#  define safefree(x) do { free(x); x = NULL; } while (0)
-#else
-#  define safefree(x) free(x)
-#endif
+#define safefree(x) do { free(x); x = NULL; } while (0)
 
 /* Make a new type: bool_t */
 typedef enum {
