@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.95 2003-03-26 16:47:30 rjkaes Exp $
+/* $Id: reqs.c,v 1.96 2003-04-16 18:11:58 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -276,6 +276,27 @@ extract_ssl_url(const char *url, struct request_s *request)
 }
 
 /*
+ * Build a URL from parts.
+ */
+static int
+build_url(char **url, const char *host, int port, const char *path)
+{
+	int len;
+
+	assert(url != NULL);
+	assert(host != NULL);
+	assert(port > 0 && port < 32768);
+	assert(path != NULL);
+
+	len = strlen(host) + strlen(path) + 14;
+	*url = safemalloc(len);
+	if (*url == NULL)
+		return -1;
+
+	return snprintf(*url, len, "http://%s:%d%s", host, port, path);
+}
+
+/*
  * Create a connection for HTTP connections.
  */
 static int
@@ -358,6 +379,7 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 
 		return NULL;
 	}
+
 	/* 
 	 * FIXME: We need to add code for the simple HTTP/0.9 style GET
 	 * request.
@@ -456,9 +478,11 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 			request->port = ntohs(dest_addr.sin_port);
 			request->path = safemalloc(strlen(url) + 1);
 			strcpy(request->path, url);
+			safefree(url);
+			build_url(&url, request->host, request->port, request->path);
 			log_message(LOG_INFO,
-				    "process_request: trans IP %s http://%s:%d%s for %d",
-				    request->method, request->host, request->port, request->path, connptr->client_fd);
+				    "process_request: trans IP %s %s for %d",
+				    request->method, url, connptr->client_fd);
 		} else {
 			request->host = safemalloc(length+1);
 			if (sscanf(data, "%[^:]:%hu", request->host, &request->port) != 2) {
@@ -467,9 +491,11 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 			}
 			request->path = safemalloc(strlen(url) + 1);
 			strcpy(request->path, url);
+			safefree(url);
+			build_url(&url, request->host, request->port, request->path);
 			log_message(LOG_INFO,
-				    "process_request: trans Host %s http://%s:%d%s for %d",
-				    request->method, request->host, request->port, request->path, connptr->client_fd);
+				    "process_request: trans Host %s %s for %d",
+				    request->method, url, connptr->client_fd);
 		}
 		if (config.ipAddr &&
 		    strcmp(request->host, config.ipAddr) == 0) {
@@ -567,7 +593,7 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
  *	- rjkaes
  */
 static int
-pull_client_data(struct conn_s *connptr, unsigned long int length)
+pull_client_data(struct conn_s *connptr, long int length)
 {
 	char *buffer;
 	ssize_t len;
@@ -589,6 +615,21 @@ pull_client_data(struct conn_s *connptr, unsigned long int length)
 
 		length -= len;
 	} while (length > 0);
+
+	/*
+	 * BUG FIX: Internet Explorer will leave two bytes (carriage
+	 * return and line feed) at the end of a POST message.  These
+	 * need to be eaten for tinyproxy to work correctly.
+	 */
+	socket_nonblocking(connptr->client_fd);
+	len = recv(connptr->client_fd, buffer, 2, MSG_PEEK);
+	socket_blocking(connptr->client_fd);
+
+	if (len < 0 && errno != EAGAIN)
+		goto ERROR_EXIT;
+
+	if (len == 2 && CHECK_CRLF(buffer, len))
+		read(connptr->client_fd, buffer, 2);
 
 	safefree(buffer);
 	return 0;
@@ -840,7 +881,6 @@ process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 	};
 	int i;
 	hashmap_iter iter;
-	long content_length = -1;
 	int ret = 0;
 
 	char *data, *header;
@@ -860,7 +900,7 @@ process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 	 * See if there is a "Content-Length" header.  If so, again we need
 	 * to do a bit of processing.
 	 */
-	content_length = get_content_length(hashofheaders);
+	connptr->content_length.client = get_content_length(hashofheaders);
 
 	/*
 	 * See if there is a "Connection" header.  If so, we need to do a bit
@@ -928,9 +968,9 @@ process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 	 * Spin here pulling the data from the client.
 	 */
   PULL_CLIENT_DATA:
-	if (content_length > 0)
+	if (connptr->content_length.client > 0)
 		return pull_client_data(connptr,
-					(unsigned long int) content_length);
+					connptr->content_length.client);
 	else
 		return ret;
 }
@@ -1010,7 +1050,7 @@ process_server_headers(struct conn_s *connptr)
 	 * If there is a "Content-Length" header, retrieve the information
 	 * from it for later use.
 	 */
-	connptr->remote_content_length = get_content_length(hashofheaders);
+	connptr->content_length.server = get_content_length(hashofheaders);
 
 	/*
 	 * See if there is a connection header.  If so, we need to to a bit of
@@ -1136,8 +1176,8 @@ relay_connection(struct conn_s *connptr)
 			if (bytes_received < 0)
 				break;
 
-			connptr->remote_content_length -= bytes_received;
-			if (connptr->remote_content_length == 0)
+			connptr->content_length.server -= bytes_received;
+			if (connptr->content_length.server == 0)
 				break;
 		}
 		if (FD_ISSET(connptr->client_fd, &rset)
