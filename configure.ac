@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.31 2002-05-23 18:29:34 rjkaes Exp $
+dnl $Id: configure.ac,v 2.32 2002-05-26 18:58:19 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -178,16 +178,6 @@ fi
 dnl
 dnl Checks for libraries
 dnl
-AC_CHECK_LIB(pthread, pthread_create)
-if test x"$ac_cv_lib_pthread_pthread_create" != x"yes"; then
-    AC_CHECK_LIB(pthreads, pthread_create)
-    if test x"$ac_cv_lib_pthreads_pthread_create" != x"yes"; then
-        AC_CHECK_LIB(c_r, pthread_create,
-		     [CFLAGS="-pthread $CFLAGS"],
-		     [AC_MSG_ERROR([You must have a POSIX compliant threading library installed])])
-    fi
-fi
-
 AC_CHECK_LIB(socket, socket, , [AC_CHECK_LIB(socket, htonl)])
 
 dnl Some systems (OpenServer 5) dislike -lsocket -lnsl, so we try to
@@ -211,11 +201,11 @@ dnl
 dnl Checks for headers
 dnl
 AC_HEADER_STDC
-AC_CHECK_HEADERS([sys/types.h sys/ioctl.h sys/resource.h sys/select.h \
-		  sys/socket.h sys/stat.h sys/time.h sys/uio.h \
+AC_CHECK_HEADERS([sys/types.h sys/ioctl.h sys/mman.h sys/resource.h \
+		  sys/select.h sys/socket.h sys/stat.h sys/time.h sys/uio.h \
 		  sys/un.h sys/wait.h arpa/inet.h netinet/in.h alloca.h \
 		  assert.h ctype.h errno.h fcntl.h grp.h io.h libintl.h \
-		  memory.h netdb.h pthread.h pwd.h regex.h signal.h \
+		  memory.h netdb.h pwd.h regex.h signal.h \
 		  stdarg.h stddef.h stdint.h stdio.h stdlib.h string.h \
 		  strings.h sysexits.h syslog.h time.h unistd.h wchar.h \
 		  wctype.h])
@@ -257,7 +247,7 @@ AC_TYPE_SIGNAL
 AC_FUNC_STRERROR_R
 AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([btowc bzero ftruncate gethostbyaddr gethostbyname gethostname \
-		inet_ntoa memchr memset pthread_cancel re_comp regcomp \
+		inet_ntoa memchr memset re_comp regcomp \
 		regexec select setrlimit socket strncasecmp strchr strdup \
 		strerror strstr strtol vsyslog vsnprintf])
 
