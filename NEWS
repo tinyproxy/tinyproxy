@@ -2,25 +2,22 @@
   NEWS
   ====
 
-This is the long awaited 1.4.0 release of tinyproxy. Most of the
-tinyproxy source has been rewritten in one form or another. The old
-ADNS code has been removed, and the giant (ugly) state machine has
-been banished. These have been replaced by a threaded connection
-system. Not only did this make the source code cleaner, but it should
-improve performance on SMP machines.
+Well so much for the 1.4.0 version being the best tinyproxy---there
+were bugs. The most serious was that anonymous filtering was not
+actually working. Another bug fix is that on Debian systems (and
+maybe others) child threads would not be closed if they had been
+created after tinyproxy had been started. Finally, if
+MaxClientRequests was set to 0, the status of the thread was not going
+back to T_WAITING.
 
-Another change to tinyproxy is the new configuration file. Take a look
-at doc/tinyproxy.conf for an example of how to configure tinyproxy. If
-you have any experience configuring the Apache web server you will
-immediately see similarities between the tinyproxy and Apache
-configuration files. In other words, we liberally copied from the
-Apache style.
+Okay, now on to the new features. There is only one feature which is
+the new Connect log level. This is basically "Info" without info's
+noise.
 
-The access control list (ACL) feature of tinyproxy has been greatly
-expanded. tinyproxy now allows you to selectively allow or deny a much
-more specific set of IP addresses or subnets. In the same vein,
-tinyproxy can be configured to only bind to one address on a
-multi-homed machine.
+There are a couple of features which I'm working on for the next
+release. There has been requests for logging on tunnelled
+connections. Also, some people would like HTTP filtering on tunnelled
+connections.
 
-If this version is not the best tinyproxy released, than it's pretty
-darn close.
+So, the above bugs are fixed, hopefully there are no other ones. The
+new features will be worked into the next few releases.
