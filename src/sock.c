@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.38 2002-05-31 18:08:01 rjkaes Exp $
+/* $Id: sock.c,v 1.39 2002-10-03 20:50:59 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -152,7 +152,7 @@ socket_blocking(int sock)
  *	- rjkaes
  */
 int
-listen_sock(uint16_t port, socklen_t * addrlen)
+listen_sock(uint16_t port, socklen_t* addrlen)
 {
 	int listenfd;
 	const int on = 1;
