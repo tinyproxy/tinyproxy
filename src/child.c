@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.3 2002-06-05 17:02:15 rjkaes Exp $
+/* $Id: child.c,v 1.4 2002-06-15 17:31:31 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -19,6 +19,7 @@
 #include "tinyproxy.h"
 
 #include "child.h"
+#include "filter.h"
 #include "heap.h"
 #include "log.h"
 #include "reqs.h"
@@ -372,9 +373,16 @@ child_main_loop(void)
 		sleep(5);
 
 		/* Handle log rotation if it was requested */
-		if (log_rotation_request) {
-			rotate_log_files();
-			log_rotation_request = FALSE;
+		if (received_sighup) {
+#ifdef FILTER_ENABLE
+			if (config.filter) {
+				filter_destroy();
+				filter_init();
+			}
+	log_message(LOG_NOTICE, "Re-reading filter file.");
+#endif				/* FILTER_ENABLE */
+
+			received_sighup = FALSE;
 		}
 	}
 }
