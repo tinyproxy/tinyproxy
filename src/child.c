@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.11 2003-05-31 23:02:21 rjkaes Exp $
+/* $Id: child.c,v 1.11.2.1 2003-08-06 20:23:06 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -212,7 +212,7 @@ child_main(struct child_s* ptr)
 
 			DEBUG2("%u connections so far...", ptr->connects);
 
-			if (ptr->connects == child_config.maxrequestsperchild - 1) {
+			if (ptr->connects == child_config.maxrequestsperchild) {
 				log_message(LOG_NOTICE,
 					    "Child has reached MaxRequestsPerChild (%u). Killing child.",
 					    ptr->connects);
