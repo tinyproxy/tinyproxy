@@ -1,4 +1,4 @@
-/* $Id: log.h,v 1.8 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: log.h,v 1.9 2002-04-22 19:34:19 rjkaes Exp $
  *
  * See 'log.c' for a detailed description.
  *
@@ -99,7 +99,8 @@
 # define DEBUG2(x, y...) do { } while(0)
 #endif
 
-extern void log_message(short int level, char *fmt, ...);
-extern void set_log_level(short int level);
+extern void log_message(int level, char *fmt, ...);
+extern void set_log_level(int level);
+extern void send_stored_logs(void);
 
 #endif

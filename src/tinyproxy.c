@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.27 2002-04-18 17:59:21 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.28 2002-04-22 19:34:20 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -45,6 +45,8 @@ extern FILE *yyin;
 struct config_s config;
 float load = 0.00;
 bool_t log_rotation_request = FALSE;
+char* bind_address = NULL;
+bool_t processed_config_file = FALSE;
 
 /*
  * Handle a signal
@@ -199,6 +201,7 @@ main(int argc, char **argv)
 		exit(EX_SOFTWARE);
 	}
 	yyparse();
+	processed_config_file = TRUE;
 
 #if defined(TUNNEL_SUPPORT) && defined(UPSTREAM_SUPPORT)
 	if (config.tunnel_name && config.upstream_name) {
@@ -242,6 +245,8 @@ main(int argc, char **argv)
 	}
 
 	log_message(LOG_INFO, PACKAGE " " VERSION " starting...");
+
+	send_stored_logs();
 
 	/*
 	 * Set the default values if they were not set in the config file.

@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.28 2002-04-18 16:57:06 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.29 2002-04-22 19:34:20 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -219,5 +219,7 @@ struct config_s {
 /* Global Structures used in the program */
 extern struct config_s config;
 extern bool_t log_rotation_request;
+extern char* bind_address;
+extern bool_t processed_config_file;
 
 #endif

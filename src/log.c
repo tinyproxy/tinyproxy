@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.16 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: log.c,v 1.17 2002-04-22 19:34:19 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -19,6 +19,7 @@
 
 #include "tinyproxy.h"
 
+#include "hashmap.h"
 #include "log.h"
 
 static char *syslog_level[] = {
@@ -39,13 +40,21 @@ static char *syslog_level[] = {
 /*
  * Store the log level setting.
  */
-static short int log_level = LOG_ERR;
+static int log_level = LOG_INFO;
+
+/*
+ * Hold a listing of log messages which need to be sent once the log
+ * file has been established.
+ * The key is the actual messages (already filled in full), and the value
+ * is the log level.
+ */
+static hashmap_t log_message_storage;
 
 /*
  * Set the log level for writing to the log file.
  */
 void
-set_log_level(short int level)
+set_log_level(int level)
 {
 	log_level = level;
 }
@@ -54,7 +63,7 @@ set_log_level(short int level)
  * This routine logs messages to either the log file or the syslog function.
  */
 void
-log_message(short int level, char *fmt, ...)
+log_message(int level, char *fmt, ...)
 {
 	va_list args;
 	time_t nowtime;
@@ -86,6 +95,30 @@ log_message(short int level, char *fmt, ...)
 
 	va_start(args, fmt);
 
+	/*
+	 * If the config file hasn't been processed, then we need to store
+	 * the messages for later processing.
+	 */
+	if (!processed_config_file) {
+		char string_level[4];
+
+		if (!log_message_storage) {
+			log_message_storage = hashmap_create(1);
+			if (!log_message_storage)
+				return;
+		}
+
+		vsnprintf(str, STRING_LENGTH, fmt, args);
+		snprintf(string_level, 4, "%d", level);
+
+		hashmap_insert(log_message_storage, str,
+			       string_level, strlen(string_level) + 1);
+
+		va_end(args);
+
+		return;
+	}
+
 #ifdef HAVE_SYSLOG_H
 	if (config.syslog) {
 #  ifdef HAVE_VSYSLOG_H
@@ -114,4 +147,27 @@ log_message(short int level, char *fmt, ...)
 #endif
 
 	va_end(args);
+}
+
+/*
+ * This needs to send any stored log messages.
+ */
+void
+send_stored_logs(void)
+{
+	vector_t messages;
+	char *level;
+	char *string;
+	int i;
+
+	messages = hashmap_keys(log_message_storage);
+	for (i = 0; i < vector_length(messages); i++) {
+		vector_getentry(messages, i, (void **)&string);
+		hashmap_search(log_message_storage, string, (void **)&level);
+
+		log_message(atoi(level), string);
+	}
+	vector_delete(messages);
+	hashmap_delete(log_message_storage);
+	log_message_storage = NULL;
 }
