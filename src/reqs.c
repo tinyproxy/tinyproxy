@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.43 2001-12-17 00:11:32 rjkaes Exp $
+/* $Id: reqs.c,v 1.44 2001-12-17 19:10:56 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -40,6 +40,11 @@
 #define HTTP400ERROR "Unrecognizable request. Only HTTP is allowed."
 #define HTTP500ERROR "Unable to connect to remote server."
 #define HTTP503ERROR "Internal server error."
+
+/*
+ * Maximum length of a HTTP line
+ */
+#define HTTP_LINE_LENGTH (1024 * 16)
 
 /*
  * Macro to help test if the Upstream proxy supported is compiled in and
@@ -183,7 +188,6 @@ extract_ssl_url(const char *url, struct request_s *request)
 /*
  * Create a connection for HTTP connections.
  */
-#define HTTP_LINE_LENGTH (1024 * 16)
 static int
 establish_http_connection(struct conn_s *connptr, struct request_s *request)
 {
@@ -886,6 +890,7 @@ handle_connection(int fd)
 			"You do not have authorization for using this service.");
 		goto send_error;
 	}
+
 #ifdef TUNNEL_SUPPORT
 	/*
 	 * If tunnel has been configured then redirect any connections to
@@ -894,6 +899,21 @@ handle_connection(int fd)
 	 *      - rjkaes
 	 */
 	if (config.tunnel_name && config.tunnel_port != -1) {
+		char *request_buf;
+		size_t len;
+		int pos;
+
+		request_buf = safemalloc(HTTP_LINE_LENGTH);
+		if (request_buf) {
+			len = recv(connptr->client_fd, request_buf, HTTP_LINE_LENGTH - 1, MSG_PEEK);
+			for (pos = 0; pos < len && request_buf[pos] != '\n'; pos++)
+				;
+			request_buf[pos] = '\0';
+	     
+			log_message(LOG_CONN, "Request: %s", request_buf);
+
+			safefree(request_buf);
+		}
 		log_message(LOG_INFO, "Redirecting to %s:%d",
 			    config.tunnel_name, config.tunnel_port);
 
