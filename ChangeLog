@@ -1,3 +1,42 @@
+2003-06-20  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* doc/tinyproxy.conf, src/grammar.y, src/reqs.c, src/scanner.l, src/tinyproxy.h:
+	Removed the "ViaHeader" directive and replaced it with the
+	"ViaProxyName" directive.  The "Via" HTTP header is _required_ by
+	the HTTP spec, so the code has been changed to always send the
+	header.  However, including the proxy's host name could be
+	considered a security threat, so the "ViaProxyName" directive is
+	used to set the token sent in the "Via" header.  If the directive
+	is not enabled the proxy's host name will be used.
+
+2003-06-06  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (connect_to_upstream):
+	Fixed an off-by-one error in the snprintf() call used to build the
+	URL for the upstream proxy. [Patch suggested by David T. Pierso]
+
+2003-06-02  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.ac:
+	Remove the -O2 optimization if debugging is enabled.  Also, remove
+	the -g option if the code does _not_ have debugging enabled.
+
+	* doc/tinyproxy.conf:
+	Included additional examples of how to configure the upstream
+	proxy support for more selective proxying.
+
+	* src/reqs.c, src/tinyproxy.h: (upstream_get):
+	(upstream_add): Added support to allow ip addresses and networks
+	to be used when matching an upstream proxy directive.
+	[Code by Peter da Silva]
+
+2003-05-31  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/heap.h:
+	Changed the safefree() macro to make it safe to use a conditional
+	statement, and also safe to use with a rvalue that has a side
+	effect.  [Bug fix recommended by Peter da Silva]
+
 2003-05-30  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/vector.c, src/vector.h (vector_getentry):
