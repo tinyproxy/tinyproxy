@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.12 2001-10-18 21:45:54 rjkaes Exp $
+/* $Id: buffer.c,v 1.13 2001-10-24 00:37:23 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -208,6 +208,7 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 		}
 
 		if (add_to_buffer(buffptr, newbuffer, bytesin) < 0) {
+			log_message(LOG_ERR, "readbuff: add_to_buffer() error.");
 			return -1;
 		}
 
@@ -229,8 +230,7 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 			safefree(buffer);
 			return 0;
 		default:
-			log_message(LOG_ERR, "recv error (fd %d: %s:%d) in 'readbuff'.",
-				    fd, strerror(errno), errno);
+			log_message(LOG_ERR, "readbuff: recv() error \"%s\" on file descriptor %d", strerror(errno), fd);
 			safefree(buffer);
 			return -1;
 		}
@@ -275,14 +275,10 @@ ssize_t writebuff(int fd, struct buffer_s *buffptr)
 			return 0;
 		case ENOBUFS:
 		case ENOMEM:
-			log_message(LOG_ERR,
-				    "write error [NOBUFS/NOMEM] (%s) in 'writebuff'.",
-				    strerror(errno));
+			log_message(LOG_ERR, "writebuff: write() error [NOBUFS/NOMEM] \"%s\" on file descriptor %d", strerror(errno), fd);
 			return 0;
 		default:
-			log_message(LOG_ERR,
-				    "write error (fd %d: %s:%d) in 'writebuff'.",
-				    fd, strerror(errno), errno);
+			log_message(LOG_ERR, "writebuff: write() error \"%s\" on file descriptor %d", strerror(errno), fd);
 			return -1;
 		}
 	}

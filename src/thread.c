@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.16 2001-09-15 21:28:25 rjkaes Exp $
+/* $Id: thread.c,v 1.17 2001-10-24 00:37:23 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -196,11 +196,11 @@ short int thread_pool_create(void)
 	pthread_attr_setstacksize(&thread_attr, THREAD_STACK_SIZE);
 
 	if (thread_config.maxclients == 0) {
-		log_message(LOG_ERR, "'MaxClients' must be greater than zero.");
+		log_message(LOG_ERR, "thread_pool_create: \"MaxClients\" must be greater than zero.");
 		return -1;
 	}
 	if (thread_config.startservers == 0) {
-		log_message(LOG_ERR, "'StartServers' must be greater than zero.");
+		log_message(LOG_ERR, "thread_pool_create: \"StartServers\" must be greater than zero.");
 		return -1;
 	}
 
@@ -209,7 +209,7 @@ short int thread_pool_create(void)
 		return -1;
 
 	if (thread_config.startservers > thread_config.maxclients) {
-		log_message(LOG_WARNING, "Can not start more than 'MaxClients' servers. Starting %u servers instead.", thread_config.maxclients);
+		log_message(LOG_WARNING, "Can not start more than \"MaxClients\" servers. Starting %u servers instead.", thread_config.maxclients);
 		thread_config.startservers = thread_config.maxclients;
 	}
 

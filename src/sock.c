@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.12 2001-10-23 16:43:08 rjkaes Exp $
+/* $Id: sock.c,v 1.13 2001-10-24 00:37:23 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -66,19 +66,19 @@ int opensock(char *ip_addr, uint16_t port)
 	ret = dnscache(&port_info.sin_addr, ip_addr);
 
 	if (ret < 0) {
-		log_message(LOG_ERR, "Could not lookup address [%s].", ip_addr);
+		log_message(LOG_ERR, "opensock: Could not lookup address \"%s\".", ip_addr);
 		return -1;
 	}
 
 	port_info.sin_port = htons(port);
 
 	if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		log_message(LOG_ERR, "Could not create socket because of '%s'.", strerror(errno));
+		log_message(LOG_ERR, "opensock: socket() error \"%s\".", strerror(errno));
 		return -1;
 	}
 
 	if (connect(sock_fd, (struct sockaddr*)&port_info, sizeof(port_info)) < 0) {
-		log_message(LOG_ERR, "Could not connect socket because of '%s'", strerror(errno));
+		log_message(LOG_ERR, "opensock: connect() error \"%s\".", strerror(errno));
 		return -1;
 	}
 
@@ -166,7 +166,7 @@ char *getpeer_ip(int fd, char *ipaddr)
 	*ipaddr = '\0';
 
 	if (getpeername(fd, (struct sockaddr*)&name, &namelen) != 0) {
-		log_message(LOG_ERR, "getpeer_ip: 'could not get peer's IP address' (\"%s\": %d)", strerror(errno), errno);
+		log_message(LOG_ERR, "getpeer_ip: getpeername() error \"%s\".", strerror(errno));
 	} else {
 		strlcpy(ipaddr,
 			inet_ntoa(*(struct in_addr*)&name.sin_addr.s_addr),
@@ -195,7 +195,7 @@ char *getpeer_string(int fd, char *string)
 	*string = '\0';
 
 	if (getpeername(fd, (struct sockaddr *)&name, &namelen) != 0) {
-		log_message(LOG_ERR, "getpeer_string: 'could not get peer name' (\"%s\": %d)", strerror(errno), errno);
+		log_message(LOG_ERR, "getpeer_string: getpeername() error \"%s\".", strerror(errno));
 	} else {
 		LOCK();
 		peername = gethostbyaddr((char *)&name.sin_addr.s_addr,
@@ -204,7 +204,7 @@ char *getpeer_string(int fd, char *string)
 		if (peername)
 			strlcpy(string, peername->h_name, PEER_STRING_LENGTH);
 		else
-			log_message(LOG_ERR, "getpeer_string: 'gethostbyaddr()' returned an error (\"%s\": %d).", hstrerror(h_errno), h_errno);
+			log_message(LOG_ERR, "getpeer_string: gethostbyaddr() error \"%s\".", hstrerror(h_errno));
 
 		UNLOCK();
 	}

@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.13 2001-09-16 20:13:52 rjkaes Exp $
+/* $Id: utils.c,v 1.14 2001-10-24 00:37:23 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -173,7 +173,7 @@ int create_file_safely(const char *filename)
 		 * existing", exit.
 		 */
 		if (errno != ENOENT) {
-			log_message(LOG_ERR, "Error checking PID file %s: %s.",
+			log_message(LOG_ERR, "create_file_safely: Error checking PID file %s: %s.",
 				    filename, strerror(errno));
 			return -1;
 		}
@@ -184,7 +184,7 @@ int create_file_safely(const char *filename)
 		 * and open()
 		 */
 		if ((fildes = open(filename, O_RDWR | O_CREAT | O_EXCL, 0600)) < 0) {
-			log_message(LOG_ERR, "Could not create PID file %s: %s.",
+			log_message(LOG_ERR, "create_file_safely: Could not create PID file %s: %s.",
 				    filename, strerror(errno));
 			return -1;
 		}
@@ -195,7 +195,7 @@ int create_file_safely(const char *filename)
 		 * Open an existing file.
 		 */
 		if ((fildes = open(filename, O_RDWR)) < 0) {
-			log_message(LOG_ERR, "Could not open PID file %s: %s.",
+			log_message(LOG_ERR, "create_file_safely: Could not open PID file %s: %s.",
 				    filename, strerror(errno));
 			return -1;
 		}
@@ -208,7 +208,7 @@ int create_file_safely(const char *filename)
 		    || lstatinfo.st_mode != fstatinfo.st_mode
 		    || lstatinfo.st_ino != fstatinfo.st_ino
 		    || lstatinfo.st_dev != fstatinfo.st_dev) {
-			log_message(LOG_ERR, "The PID file %s has been changed before it could be opened.",
+			log_message(LOG_ERR, "create_file_safely: The PID file %s has been changed before it could be opened.",
 				    filename);
 			close(fildes);
 			return -1;
@@ -222,7 +222,7 @@ int create_file_safely(const char *filename)
 		 * st_mode check would also find this)
 		 */
 		if (fstatinfo.st_nlink > 1 || !S_ISREG(lstatinfo.st_mode)) {
-			log_message(LOG_ERR, "The PID file %s has too many links, or is not a regular file: %s.",
+			log_message(LOG_ERR, "create_file_safely: The PID file %s has too many links, or is not a regular file: %s.",
 				    filename, strerror(errno));
 			close(fildes);
 			return -1;
@@ -241,7 +241,7 @@ int create_file_safely(const char *filename)
 #else
 		close(fildes);
 		if ((fildes = open(filename, O_RDWR | O_CREAT | O_TRUNC, 0600)) < 0) {
-			log_message(LOG_ERR, "Could not open PID file %s: %s.",
+			log_message(LOG_ERR, "create_file_safely: Could not open PID file %s: %s.",
 				    filename, strerror(errno));
 			return -1;
 		}
@@ -269,7 +269,7 @@ void pidfile_create(const char *filename)
 	 * Open a stdio file over the low-level one.
 	 */
 	if ((fd = fdopen(fildes, "w")) == NULL) {
-		log_message(LOG_ERR, "fdopen() error on PID file %s: %s.",
+		log_message(LOG_ERR, "pidfile_create: fdopen() error on PID file %s: %s.",
 			    filename, strerror(errno));
 		close(fildes);
 		unlink(filename);

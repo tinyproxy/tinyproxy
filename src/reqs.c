@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.31 2001-10-22 16:08:29 rjkaes Exp $
+/* $Id: reqs.c,v 1.32 2001-10-24 00:37:23 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -81,7 +81,7 @@ static char *read_request_line(struct conn_s *connptr)
 
 	len = readline(connptr->client_fd, request_buffer, LINE_LENGTH);
 	if (len <= 0) {
-		log_message(LOG_ERR, "Client (file descriptor: %d) closed socket before read.", connptr->client_fd);
+		log_message(LOG_ERR, "read_request_line: Client (file descriptor: %d) closed socket before read.", connptr->client_fd);
 		safefree(request_buffer);
 		return NULL;
 	}
@@ -148,7 +148,7 @@ static int extract_http_url(const char *url, struct request_s *request)
 		request->port = 80;
 		strcpy(request->path, "/");
 	} else {
-		log_message(LOG_ERR, "Can't parse URL.");
+		log_message(LOG_ERR, "extract_http_url: Can't parse URL.");
 
 		safefree(request->host);
 		safefree(request->path);
@@ -173,7 +173,7 @@ static int extract_ssl_url(const char *url, struct request_s *request)
 	else if (sscanf(url, "%s", request->host) == 1)
 		request->port = 443;
 	else {
-		log_message(LOG_ERR, "Can't parse URL.");
+		log_message(LOG_ERR, "extract_ssl_url: Can't parse URL.");
 
 		safefree(request->host);
 		return -1;
@@ -281,7 +281,7 @@ static struct request_s *process_request(struct conn_s *connptr,
 
 	ret = sscanf(request_line, "%[^ ] %[^ ] %[^ ]", request->method, url, request->protocol);
 	if (ret < 2) {
-		log_message(LOG_ERR, "Bad Request on file descriptor %d", connptr->client_fd);
+		log_message(LOG_ERR, "process_request: Bad Request on file descriptor %d", connptr->client_fd);
 		httperr(connptr, 400, "Bad Request. No request found.");
 
 		safefree(url);
@@ -293,7 +293,7 @@ static struct request_s *process_request(struct conn_s *connptr,
 	}
 
 	if (!url) {
-		log_message(LOG_ERR, "Null URL on file descriptor %d", connptr->client_fd);
+		log_message(LOG_ERR, "process_request: Null URL on file descriptor %d", connptr->client_fd);
 		httperr(connptr, 400, "Bad Request. Null URL.");
 
 		safefree(url);
@@ -326,7 +326,7 @@ static struct request_s *process_request(struct conn_s *connptr,
 		}
 		connptr->ssl = TRUE;
 	} else {
-		log_message(LOG_ERR, "Unknown URL type on file descriptor %d", connptr->client_fd);
+		log_message(LOG_ERR, "process_request: Unknown URL type on file descriptor %d", connptr->client_fd);
 		httperr(connptr, 400, "Bad Request. Unknown URL type.");
 
 		safefree(url);
@@ -345,7 +345,7 @@ static struct request_s *process_request(struct conn_s *connptr,
 		if (filter_url(request->host)) {
 			update_stats(STAT_DENIED);
 
-			log_message(LOG_ERR, "Proxying refused on filtered domain \"%s\"", request->host);
+			log_message(LOG_NOTICE, "Proxying refused on filtered domain \"%s\"", request->host);
 			httperr(connptr, 404, "Connection to filtered domain is now allowed.");
 
 			free_request_struct(request);
@@ -359,7 +359,7 @@ static struct request_s *process_request(struct conn_s *connptr,
 	 * Check to see if they're requesting the stat host
 	 */
 	if (config.stathost && strcmp(config.stathost, request->host) == 0) {
-		log_message(LOG_NOTICE, "tinyproxy stathost request.");
+		log_message(LOG_NOTICE, "Request for the stathost.");
 
 		free_request_struct(request);
 
@@ -638,7 +638,7 @@ static void relay_connection(struct conn_s *connptr)
 				continue;
 			}
 		} else if (ret < 0) {
-			log_message(LOG_ERR, "Received an error in select() [\"%s\", %d], so closing connection (client_fd:%d, server_fd:%d)", strerror(errno), errno, connptr->client_fd, connptr->server_fd);
+			log_message(LOG_ERR, "relay_connection: select() error \"%s\". Closing connection (client_fd:%d, server_fd:%d)", strerror(errno), connptr->client_fd, connptr->server_fd);
 			return;
 		} else {
 			/*
@@ -893,7 +893,7 @@ send_error:
 		}
 	} else {
 		if (send_ssl_response(connptr) < 0) {
-			log_message(LOG_ERR, "Could not send SSL greeting to client.");
+			log_message(LOG_ERR, "handle_connection: Could not send SSL greeting to client.");
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
 			return;
