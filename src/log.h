@@ -1,4 +1,4 @@
-/* $Id: log.h,v 1.9 2002-04-22 19:34:19 rjkaes Exp $
+/* $Id: log.h,v 1.10 2002-05-26 18:55:19 rjkaes Exp $
  *
  * See 'log.c' for a detailed description.
  *
@@ -36,10 +36,10 @@
  * Level	Description
  * -----	-----------
  * LOG_CRIT	This is catastrophic. Basically, tinyproxy can not recover
- *		from this and will either close the thread (if we're lucky),
+ *		from this and will either close the child (if we're lucky),
  *		or the entire daemon. I would relegate this to conditions
  *		like unable to create the listening socket, or unable to
- *		create a thread. If you're going to log at this level provide
+ *		create a child. If you're going to log at this level provide
  *		as much information as possible.
  *
  * LOG_ERR	Okay, something bad happened. We can recover from this, but
@@ -56,7 +56,7 @@
  *
  * LOG_NOTICE	This is for a special condition. Nothing has gone wrong, but
  *		it is more important than the common LOG_INFO level. Right
- *		now it is used for actions like creating/destroying threads,
+ *		now it is used for actions like creating/destroying children,
  *		unauthorized access, signal handling, etc.
  *
  * LOG_CONN	This additional level is for logging connections only, so 

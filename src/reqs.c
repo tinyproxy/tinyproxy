@@ -1,7 +1,7 @@
-/* $Id: reqs.c,v 1.75 2002-05-24 04:45:32 rjkaes Exp $
+/* $Id: reqs.c,v 1.76 2002-05-26 18:54:56 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
- * connections have a new thread created for them. The thread then
+ * connections have a new child created for them. The child then
  * processes the headers from the client, the response from the server,
  * and then relays the bytes between the two.
  * If TUNNEL_SUPPORT is enabled, then tinyproxy will actually work
