@@ -1,3 +1,43 @@
+2003-05-30  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/vector.c, src/vector.h (vector_getentry):
+	Changed the API to return the data pointer and have the length
+	returned in a argument variable pointer.  This should be a more
+	natural way of using the function.
+
+2003-05-29  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/vector.c, src/vector.h (vector_append):
+	Renamed the vector_insert() function to more accurately indicate
+	that entries are appended to the end of the vector.
+
+	* doc/tinyproxy.conf, src/grammar.y, src/reqs.c, src/reqs.h, src/tinyproxy.h:
+	Improved the upstream proxy support by making the upstream proxy
+	server configurable based on the destination host.  [Code written by
+	Peter da Silva]
+
+2003-05-10  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* Makefile.am:
+	Added support for installing the HTML error files used by tinyproxy.
+
+2003-05-05  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (establish_http_connection):
+	If the port being requested is not a standard HTTP port (80 or
+	443) append the port string to the host header; otherwise, leave
+	the host string with only the host's domain name.
+
+	Replaced all occurrences of constant 80 and 443 with defines
+	HTTP_PORT and HTTP_PORT_SSL.
+
+2003-05-04  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/conns.c, src/conns.h:
+	Fixed a bug that would kill a child process because of an invalid
+	safefree() call.  Basically, destroy_conn() was trying to free
+	memory not allocated by malloc.  [Fix by David T. Pierson]
+
 2003-04-16  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/reqs.c (build_url):
