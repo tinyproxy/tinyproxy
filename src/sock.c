@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.34 2002-05-23 18:25:55 rjkaes Exp $
+/* $Id: sock.c,v 1.35 2002-05-24 04:44:36 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -237,69 +237,3 @@ getpeer_information(int fd, char* ipaddr, char* string_addr)
        
 	return 0;
 }
-
-#if 0
-/*
- * Takes a socket descriptor and returns the string contain the peer's
- * IP address.
- */
-char *
-getpeer_ip(int fd, char *ipaddr)
-{
-	struct sockaddr_in name;
-	size_t namelen = sizeof(name);
-
-	assert(fd >= 0);
-	assert(ipaddr != NULL);
-
-	/*
-	 * Make sure the user's buffer is initialized to an empty string.
-	 */
-	*ipaddr = '\0';
-
-	if (getpeername(fd, (struct sockaddr *) &name, &namelen) != 0) {
-		log_message(LOG_ERR, "getpeer_ip: getpeername() error \"%s\".",
-			    strerror(errno));
-	} else {
-		strlcpy(ipaddr,
-			inet_ntoa(*(struct in_addr *) &name.sin_addr.s_addr),
-			PEER_IP_LENGTH);
-	}
-
-	return ipaddr;
-}
-
-/*
- * Takes a socket descriptor and returns the string containing the peer's
- * address.
- */
-char *
-getpeer_string(int fd, char *string)
-{
-	int dns;
-	char peer_ip_buffer[PEER_IP_LENGTH];
-
-
-	assert(fd >= 0);
-	assert(string != NULL);
-
-	/*
-	 * Make sure the user's buffer is initialized to an empty string.
-	 */
-	*string = '\0';
-
-	return string;
-
-	getpeer_ip(fd, peer_ip_buffer);
-
-	dns = connect_to_dns();
-	if (dns < 0) {
-		return string;
-	}
-	dns_gethostbyaddr(dns, peer_ip_buffer, &string, PEER_STRING_LENGTH);
-	shutdown_dns_connection(dns);
-
-	return string;
-}
-
-#endif
