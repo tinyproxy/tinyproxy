@@ -15,10 +15,11 @@ against the current tree and I'll integrate it if possible.
     much of a problem. Just need to modify the process_method() code
     to look up the URL and rewrite it. If we want to go really fancy
     with RegEx mapping this could get ugly. :)
-  - Ed Avis suggests having tinyproxy have the ability to send the data
-    from the connections through an external filtering program. I kind of
-    like this idea, but I don't really have a good way of doing it yet.
+  - Have the ability to send the data from the connections through an
+    external filtering program. I kind of like this idea, but I don't
+    really have a good way of doing it yet.
+    Suggested: Ed Avis
   - Handle Secure Socket Layer (SSL) connections (usually port 443).
-  - Allow selective logging. For example a person may only want to log
-    error messages.
   - Include the ability to rewrite both incoming and outgoing headers.
+  - Log requests for tunnelled connections
+  - Allow HTTP header filtering through tunnelled connections
