@@ -1,7 +1,9 @@
 2001-06-04  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* configure.in: Remove the --with-* for port, logfile, and user
-	since the configuration file handles this now.
+	since the configuration file handles this now. Fixed a problem
+	where we were testing for the libraries correctly, but not
+	actually including them in the linking.
 
 2001-06-02  Robert James Kaes  <rjkaes@flarenet.com>
 
