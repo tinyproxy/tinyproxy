@@ -1,3 +1,9 @@
+2002-06-27  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/child.c (child_make):
+	Reset the various signals to the default signal handler so that
+	the children can be properly destroyed.
+
 2002-06-15  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/log.c (log_message):
