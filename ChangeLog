@@ -1,5 +1,16 @@
 2001-06-01  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/tinyproxy.c (main): Change the logging level from LOG_EMERG
+	(which doesn't exist anymore) to LOG_CRIT.
+
+	* src/scanner.l: Added the strings in the data structure to handle
+	the LogLevel switch.
+
+	* src/log.c (set_log_level): Code for handling selective logging.
+
+	* src/grammar.y: Added the tokens and code for handling the
+	LogLevel switch in the configuration file.
+
 	* configure.in: Added a test for the resolv library for the
 	gethostby* functions. Also bumped up the preversion.
 
