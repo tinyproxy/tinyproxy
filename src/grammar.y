@@ -1,4 +1,4 @@
-/* $Id: grammar.y,v 1.11 2002-05-23 18:24:02 rjkaes Exp $
+/* $Id: grammar.y,v 1.12 2002-05-26 18:54:27 rjkaes Exp $
  *
  * This is the grammar for tinyproxy's configuration file. It needs to be
  * in sync with scanner.l. If you know more about yacc and lex than I do
@@ -23,9 +23,9 @@
 
 #include "acl.h"
 #include "anonymous.h"
+#include "child.h"
 #include "log.h"
 #include "reqs.h"
-#include "thread.h"
 
 void yyerror(char *s);
 int yylex(void);
@@ -49,7 +49,6 @@ int yylex(void);
 %token KW_TUNNEL KW_UPSTREAM
 %token KW_CONNECTPORT KW_BIND
 %token KW_ALLOW KW_DENY
-%token KW_DNSSERVER_LOCATION KW_DNSSERVER_SOCKET
 
 /* yes/no switches */
 %token KW_YES KW_NO
@@ -94,11 +93,11 @@ statement
 		  log_message(LOG_WARNING, "Syslog support was not compiled in.");
 #endif
 	  }
-	| KW_MAXCLIENTS NUMBER		{ thread_configure(THREAD_MAXCLIENTS, $2); }
-	| KW_MAXSPARESERVERS NUMBER	{ thread_configure(THREAD_MAXSPARESERVERS, $2); }
-	| KW_MINSPARESERVERS NUMBER	{ thread_configure(THREAD_MINSPARESERVERS, $2); }
-	| KW_STARTSERVERS NUMBER	{ thread_configure(THREAD_STARTSERVERS, $2); }
-	| KW_MAXREQUESTSPERCHILD NUMBER	{ thread_configure(THREAD_MAXREQUESTSPERCHILD, $2); }
+	| KW_MAXCLIENTS NUMBER		{ child_configure(CHILD_MAXCLIENTS, $2); }
+	| KW_MAXSPARESERVERS NUMBER	{ child_configure(CHILD_MAXSPARESERVERS, $2); }
+	| KW_MINSPARESERVERS NUMBER	{ child_configure(CHILD_MINSPARESERVERS, $2); }
+	| KW_STARTSERVERS NUMBER	{ child_configure(CHILD_STARTSERVERS, $2); }
+	| KW_MAXREQUESTSPERCHILD NUMBER	{ child_configure(CHILD_MAXREQUESTSPERCHILD, $2); }
         | KW_LOGFILE string
 	  {
 	          config.logf_name = $2;
@@ -158,8 +157,6 @@ statement
 		  log_message(LOG_INFO, "Binding outgoing connections to %s", $2);
 	          config.bind_address = $2;
           }
-        | KW_DNSSERVER_LOCATION string  { config.dnsserver_location = $2; }
-        | KW_DNSSERVER_SOCKET string    { config.dnsserver_socket = $2; }
 	;
 
 loglevels
