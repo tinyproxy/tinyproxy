@@ -1,4 +1,4 @@
-/* $Id: ternary.c,v 1.3 2000-10-23 21:46:38 rjkaes Exp $
+/* $Id: ternary.c,v 1.4 2000-11-23 04:49:26 rjkaes Exp $
  *
  * This module creates a Ternary Search Tree which can store both string
  * keys, and arbitrary data for each key. It works similar to a hash, and
@@ -314,7 +314,7 @@ int ternary_insert(TERNARY tno, const char *s, void *data)
 	while ((pp = *p)) {
 		if ((d = *s - pp->splitchar) == 0) {
 			if (*s++ == 0) {
-				DEBUG2("Key exists");
+				DEBUG1("Key exists");
 				return TE_EXISTS;
 			}
 			p = &(pp->eqkid);
