@@ -1,3 +1,9 @@
+2002-05-10  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* Makefile.am (install-data-local): Fixed up the tinyproxy.conf
+	test so that the file is only installed if it doesn't already
+	exist.
+
 2002-05-08  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* configure.ac: The --with-config option now supports absolute
