@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.4 2001-05-27 02:20:54 rjkaes Exp $
+/* $Id: acl.c,v 1.5 2001-09-07 04:16:33 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -197,7 +197,7 @@ int check_acl(int fd)
 
 			if ((test_addr.s_addr & netmask_addr) == (match_addr.s_addr & netmask_addr)) {
 				if (aclptr->acl_access == ACL_DENY) {
-					log_message(LOG_NOTICE, "Unauthorized access from %s", ip_address);
+					log_message(LOG_NOTICE, "Unauthorized access from [%s].", ip_address);
 					return 0;
 				} else {
 					return 1;
@@ -215,6 +215,6 @@ int check_acl(int fd)
 	/*
 	 * Deny all connections by default.
 	 */
-	log_message(LOG_NOTICE, "Unauthorized connection from %s [%s]", string_address, ip_address);
+	log_message(LOG_NOTICE, "Unauthorized connection from \"%s\" [%s].", string_address, ip_address);
 	return 0;
 }

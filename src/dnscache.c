@@ -1,4 +1,4 @@
-/* $Id: dnscache.c,v 1.13 2001-09-07 00:40:34 rjkaes Exp $
+/* $Id: dnscache.c,v 1.14 2001-09-07 04:17:26 rjkaes Exp $
  *
  * This is a caching DNS system. When a host name is needed we look it up here
  * and see if there is already an answer for it. The domains are placed in a
@@ -131,13 +131,13 @@ int dnscache(struct in_addr *addr, char *domain)
 		return -1;
 	}
 
-	memcpy(addr, resolv->h_addr_list[0], (size_t)resolv->h_length);
+	memcpy(addr, resolv->h_addr_list[0], resolv->h_length);
 
 	dns_insert(addr, domain);
 
 	dns_insertions++;
 	if (dns_insertions > DNS_INSERT_LIMIT) {
-		log_message(LOG_NOTICE, "DNS Insertion limit, rebuilding cache.");
+		log_message(LOG_INFO, "DNS Insertion limit reached (%u). Rebuilding cache.", dns_insertions);
 		ternary_destroy(dns_tree, free);
 		dns_tree = ternary_new();
 		dns_insertions = 0;

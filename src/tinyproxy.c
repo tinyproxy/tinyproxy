@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.13 2001-08-29 04:01:05 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.14 2001-09-07 04:20:26 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -65,7 +65,7 @@ void takesig(int sig)
 		if (config.logf)
 			ftruncate(fileno(config.logf), 0);
 
-		log_message(LOG_NOTICE, "SIGHUP received, cleaning up...");
+		log_message(LOG_NOTICE, "SIGHUP received, cleaning up.");
 
 #ifdef FILTER_ENABLE
 		if (config.filter) {
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
 #ifdef HAVE_SETRLIMIT
 	struct rlimit core_limit = {0, 0};
 	if (setrlimit(RLIMIT_CORE, &core_limit) < 0) {
-		log_message(LOG_CRIT, "tinyproxy: could not set the core limit to zero.");
+		fprintf(stderr, "%s: Could not set the core limit to zero.\n", argv[0]);
 		exit(EX_SOFTWARE);
 	}
 #endif /* HAVE_SETRLIMIT */
@@ -196,7 +196,7 @@ int main(int argc, char **argv)
 		case 'c':
 			conf_file = strdup(optarg);
 			if (!conf_file) {
-				log_message(LOG_EMERG, "tinyproxy: could not allocate memory");
+				fprintf(stderr, "%s: Could not allocate memory.\n", argv[0]);
 				exit(EX_SOFTWARE);
 			}
 			break;
@@ -212,7 +212,7 @@ int main(int argc, char **argv)
 	 */
 	yyin = fopen(conf_file, "r");
 	if (!yyin) {
-		log_message(LOG_ERR, "Could not open %s file", conf_file);
+		fprintf(stderr, "%s: Could not open configuration file \"%s\".\n", argv[0], conf_file);
 		exit(EX_SOFTWARE);
 	}
 	yyparse();
@@ -220,13 +220,13 @@ int main(int argc, char **argv)
 	/* Open the log file if not using syslog */
 	if (config.syslog == FALSE) {
 		if (!config.logf_name) {
-			fprintf(stderr, "You MUST set a LogFile in the configuration file.\n");
+			fprintf(stderr, "%s: You MUST set a LogFile in the configuration file.\n", argv[0]);
 			exit(EX_SOFTWARE);
 		}
 
 		if (!(config.logf = fopen(config.logf_name, "a"))) {
 			fprintf(stderr,
-				"Unable to open logfile %s for appending!\n",
+				"Could not append to log file \"%s\".\n",
 				config.logf_name);
 			exit(EX_CANTCREAT);
 		}
@@ -243,18 +243,18 @@ int main(int argc, char **argv)
 	 * Set the default values if they were not set in the config file.
 	 */
 	if (config.port == 0) {
-		fprintf(stderr, "You MUST set a Port in the configuration file\n");
+		fprintf(stderr, "%s: You MUST set a Port in the configuration file.\n", argv[0]);
 		exit(EX_SOFTWARE);
 	}
 	if (!config.stathost) {
-		log_message(LOG_INFO, "Setting stathost to \"%s\"", DEFAULT_STATHOST);
+		log_message(LOG_INFO, "Setting stathost to \"%s\".", DEFAULT_STATHOST);
 		config.stathost = DEFAULT_STATHOST;
 	}
 	if (!config.username) {
 		log_message(LOG_WARNING, "You SHOULD set a UserName in the configuration file. Using current user instead.");
 	}
 	if (config.idletimeout == 0) {
-		log_message(LOG_INFO, "Setting idle timeout to %u seconds", MAX_IDLE_TIME);
+		log_message(LOG_INFO, "Setting idle timeout to %u seconds.", MAX_IDLE_TIME);
 		config.idletimeout = MAX_IDLE_TIME;
 	}
 
@@ -280,7 +280,7 @@ int main(int argc, char **argv)
 	}
 
 	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
-		log_message(LOG_CRIT, "Could not set SIGPIPE\n");
+		fprintf(stderr, "%s: Could not set the \"SIGPIPE\" signal.\n", argv[0]);
 		exit(EX_OSERR);
 	}
 
@@ -293,7 +293,7 @@ int main(int argc, char **argv)
 	 * Start listening on the selected port.
 	 */
 	if (thread_listening_sock(config.port) < 0) {
-		log_message(LOG_CRIT, "Problem creating listening socket");
+		fprintf(stderr, "%s: Could not create listening socket.\n", argv[0]);
 		exit(EX_OSERR);
 	}
 
@@ -304,33 +304,33 @@ int main(int argc, char **argv)
 		if (config.group && strlen(config.group) > 0) {
 			thisgroup = getgrnam(config.group);
 			if (!thisgroup) {
-				log_message(LOG_ERR, "Unable to find group '%s'!", config.group);
+				fprintf(stderr, "%s: Unable to find group \"%s\".\n", argv[0], config.group);
 				exit(EX_NOUSER);
 			}
 			if (setgid(thisgroup->gr_gid) < 0) {
-				log_message(LOG_ERR, "Unable to change to group '%s'", config.group);
+				fprintf(stderr, "%s: Unable to change to group \"%s\".\n", argv[0], config.group);
 				exit(EX_CANTCREAT);
 			}
-			log_message(LOG_INFO, "Now running as group %s", config.group);
+			log_message(LOG_INFO, "Now running as group \"%s\".", config.group);
 		}
 		if (config.username && strlen(config.username) > 0) {
 			thisuser = getpwnam(config.username);
 			if (!thisuser) {
-				log_message(LOG_ERR, "Unable to find user '%s'!", config.username);
+				fprintf(stderr, "%s: Unable to find user \"%s\".", argv[0], config.username);
 				exit(EX_NOUSER);
 			}
 			if (setuid(thisuser->pw_uid) < 0) {
-				log_message(LOG_ERR, "Unable to change to user '%s'", config.username);
+				fprintf(stderr, "%s: Unable to change to user \"%s\".", argv[0], config.username);
 				exit(EX_CANTCREAT);
 			}
-			log_message(LOG_INFO, "Now running as user %s", config.username);
+			log_message(LOG_INFO, "Now running as user \"%s\".", config.username);
 		}
 	} else {
 		log_message(LOG_WARNING, "Not running as root, so not changing UID/GID.");
 	}
 
 	if (thread_pool_create() < 0) {
-		log_message(LOG_ERR, "Could not create the pool of threads");
+		fprintf(stderr, "%s: Could not create the pool of threads.", argv[0]);
 		exit(EX_SOFTWARE);
 	}
 
@@ -339,11 +339,11 @@ int main(int argc, char **argv)
 	 */
 	log_message(LOG_INFO, "Setting the various signals.");
 	if (signal(SIGTERM, takesig) == SIG_ERR) {
-		log_message(LOG_CRIT, "Could not set SIGTERM\n");
+		fprintf(stderr, "%s: Could not set the \"SIGTERM\" signal.\n", argv[0]);
 		exit(EX_OSERR);
 	}
 	if (signal(SIGHUP, takesig) == SIG_ERR) {
-		log_message(LOG_CRIT, "Could not set SIGHUP\n");
+		fprintf(stderr, "%s: Could not set the \"SIGHUP\" signal.\n", argv[0]);
 		exit(EX_OSERR);
 	}
 
@@ -363,7 +363,7 @@ int main(int argc, char **argv)
 	 * Remove the PID file.
 	 */
 	if (unlink(config.pidpath) < 0) {
-		log_message(LOG_WARNING, "Could not remove PID file %s: %s",
+		log_message(LOG_WARNING, "Could not remove PID file \"%s\": %s.",
 			    config.pidpath, strerror(errno));
 	}
 

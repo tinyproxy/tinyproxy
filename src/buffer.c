@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.5 2001-05-27 02:23:08 rjkaes Exp $
+/* $Id: buffer.c,v 1.6 2001-09-07 04:17:03 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -199,7 +199,7 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 
 	if (bytesin > 0) {
 		if (!(buffer = malloc(bytesin))) {
-			log_message(LOG_CRIT, "Could not allocate memory in readbuff() [%s:%d]", __FILE__, __LINE__);
+			log_message(LOG_ERR, "Could not allocate memory in 'readbuff'");
 			return 0;
 		}
 
@@ -224,7 +224,8 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 		case EINTR:
 			return 0;
 		default:
-			log_message(LOG_ERR, "readbuff: recv (%s)", strerror(errno));
+			log_message(LOG_ERR, "recv error (%s) in 'readbuff'.",
+				    strerror(errno));
 			return -1;
 		}
 	}
@@ -268,10 +269,14 @@ ssize_t writebuff(int fd, struct buffer_s *buffptr)
 			return 0;
 		case ENOBUFS:
 		case ENOMEM:
-			log_message(LOG_ERR, "writebuff: send [NOBUFS/NOMEM] %s", strerror(errno));
+			log_message(LOG_ERR,
+				    "send error [NOBUFS/NOMEM] (%s) in 'writebuff'.",
+				    strerror(errno));
 			return 0;
 		default:
-			log_message(LOG_ERR, "writebuff: send (%s)", strerror(errno));
+			log_message(LOG_ERR,
+				    "send error (%s) in 'writebuff'.",
+				    strerror(errno));
 			return -1;
 		}
 	}

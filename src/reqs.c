@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.19 2001-09-04 18:22:00 rjkaes Exp $
+/* $Id: reqs.c,v 1.20 2001-09-07 04:18:04 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -126,7 +126,7 @@ static int process_method(struct conn_s *connptr)
 
 	len = readline(connptr->client_fd, inbuf, LINE_LENGTH);
 	if (len <= 0) {
-		log_message(LOG_ERR, "client closed before read");
+		log_message(LOG_ERR, "Client [%s] closed socket before read.", peer_ipaddr);
 		update_stats(STAT_BADCONN);
 		return -2;
 	}
@@ -139,13 +139,13 @@ static int process_method(struct conn_s *connptr)
 	log_message(LOG_CONN, "Request: %s", inbuf);
 
 	if (regcomp(&preg, HTTPPATTERN, REG_EXTENDED | REG_ICASE) != 0) {
-		log_message(LOG_ERR, "clientreq: regcomp");
+		log_message(LOG_ERR, "Regular Expression compiling error.");
 		httperr(connptr, 503, HTTP503ERROR);
 		update_stats(STAT_BADCONN);
 		goto EARLY_EXIT;
 	}
 	if (regexec(&preg, inbuf, NMATCH, pmatch, 0) != 0) {
-		log_message(LOG_ERR, "clientreq: regexec");
+		log_message(LOG_ERR, "Regular Expression search error.");
 		regfree(&preg);
 		httperr(connptr, 503, HTTP503ERROR);
 		update_stats(STAT_BADCONN);
@@ -163,8 +163,8 @@ static int process_method(struct conn_s *connptr)
 	
 
 	if (pmatch[METHOD_IND].rm_so == -1 || pmatch[URI_IND].rm_so == -1) {
-		log_message(LOG_ERR, "clientreq: Incomplete line from %s (%s)",
-		    peer_ipaddr, inbuf);
+		log_message(LOG_ERR, "Incomplete request line from [%s].",
+			    peer_ipaddr);
 		httperr(connptr, 400, HTTP400ERROR);
 		update_stats(STAT_BADCONN);
 		goto EARLY_EXIT;
@@ -173,8 +173,8 @@ static int process_method(struct conn_s *connptr)
 	len = pmatch[URI_IND].rm_eo - pmatch[URI_IND].rm_so;
 	if (!(buffer = malloc(len + 1))) {
 		log_message(LOG_ERR,
-		    "clientreq: Cannot allocate buffer for request from %s",
-		    peer_ipaddr);
+			    "Could not allocate memory for request from [%s].",
+			    peer_ipaddr);
 		httperr(connptr, 503, HTTP503ERROR);
 		update_stats(STAT_BADCONN);
 		goto EARLY_EXIT;
@@ -183,7 +183,6 @@ static int process_method(struct conn_s *connptr)
 	buffer[len] = '\0';
 	if (!(uri = explode_uri(buffer))) {
 		safefree(buffer);
-		log_message(LOG_ERR, "clientreq: Problem with explode_uri");
 		httperr(connptr, 503, HTTP503ERROR);
 		update_stats(STAT_BADCONN);
 		goto EARLY_EXIT;
@@ -196,7 +195,9 @@ static int process_method(struct conn_s *connptr)
 			size_t error_string_len = strlen(uri->scheme) + 64;
 			error_string = malloc(error_string_len);
 			if (!error_string) {
-				log_message(LOG_CRIT, "Out of Memory!");
+				log_message(LOG_ERR,
+					    "Could not allocate memory for request from [%s].",
+					    peer_ipaddr);
 				goto COMMON_EXIT;
 			}
 			snprintf(error_string, error_string_len,
@@ -206,7 +207,9 @@ static int process_method(struct conn_s *connptr)
 			error_string =
 				strdup("Invalid scheme (NULL). Only HTTP is allowed.");
 			if (!error_string) {
-				log_message(LOG_CRIT, "Out of Memory!");
+				log_message(LOG_ERR,
+					    "Could not allocate memory for request from [%s].",
+					    peer_ipaddr);
 				goto COMMON_EXIT;
 			}
 		}
@@ -239,10 +242,12 @@ static int process_method(struct conn_s *connptr)
 	/* Filter domains out */
 	if (config.filter) {
 		if (filter_url(uri->authority)) {
-			log_message(LOG_ERR, "clientreq: Filtered connection (%s)",
-			    peer_ipaddr);
+			log_message(LOG_ERR,
+				    "Proxying refused on filtered domain \"%s\" from [%s].",
+				    uri->authority,
+				    peer_ipaddr);
 			httperr(connptr, 404,
-				"Unable to connect to filtered host.");
+				"Connection to filtered domain is not allowed.");
 			update_stats(STAT_DENIED);
 			goto COMMON_EXIT;
 		}
@@ -253,8 +258,8 @@ static int process_method(struct conn_s *connptr)
 	request_len = strlen(inbuf) + 1;
 	if (!(request = malloc(request_len))) {
 		log_message(LOG_ERR,
-		    "clientreq: cannot allocate buffer for request from %s",
-		    peer_ipaddr);
+			    "Could not allocate memory for request from [%s].",
+			    peer_ipaddr);
 		httperr(connptr, 503, HTTP503ERROR);
 		update_stats(STAT_BADCONN);
 		goto COMMON_EXIT;
@@ -544,7 +549,7 @@ static void relay_connection(struct conn_s *connptr)
 		if (ret == 0) {
 			tdiff = difftime(time(NULL), last_access);
 			if (tdiff > config.idletimeout) {
-				log_message(LOG_INFO, "Idle Timeout (after select) %g > %u", tdiff, config.idletimeout);
+				log_message(LOG_INFO, "Idle Timeout (after select) as %g > %u.", tdiff, config.idletimeout);
 				return;
 			} else {
 				continue;
@@ -642,7 +647,9 @@ void handle_connection(int fd)
 
 	connptr = malloc(sizeof(struct conn_s));
 	if (!connptr) {
-		log_message(LOG_CRIT, "Out of memory!");
+		log_message(LOG_ERR,
+			    "Could not allocate memory for request from [%s]",
+			    peer_ipaddr);
 		return;
 	}
 
@@ -669,7 +676,7 @@ void handle_connection(int fd)
 
 		connptr->server_fd = opensock(config.tunnel_name, config.tunnel_port);
 		if (connptr->server_fd < 0) {
-			log_message(LOG_ERR, "Could not connect to tunnel's end, see if we can handle it ourselves.");
+			log_message(LOG_WARNING, "Could not connect to tunnel's end, see if we can handle it ourselves.");
 			goto internal_proxy;
 		}
 

@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.6 2001-08-29 04:00:22 rjkaes Exp $
+/* $Id: sock.c,v 1.7 2001-09-07 04:18:26 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -66,19 +66,19 @@ int opensock(char *ip_addr, uint16_t port)
 	ret = dnscache(&port_info.sin_addr, ip_addr);
 
 	if (ret < 0) {
-		log_message(LOG_ERR, "opensock: Could not lookup address: %s", ip_addr);
+		log_message(LOG_ERR, "Could not lookup address [%s].", ip_addr);
 		return -1;
 	}
 
 	port_info.sin_port = htons(port);
 
 	if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		log_message(LOG_ERR, "opensock: socket (%s)", strerror(errno));
+		log_message(LOG_ERR, "Could not create socket because of '%s'.", strerror(errno));
 		return -1;
 	}
 
 	if (connect(sock_fd, (struct sockaddr*)&port_info, sizeof(port_info)) < 0) {
-		log_message(LOG_ERR, "connecting socket");
+		log_message(LOG_ERR, "Could not connect socket because of '%s'", strerror(errno));
 		return -1;
 	}
 
