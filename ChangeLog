@@ -1,3 +1,33 @@
+2002-04-17  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.ac: Added test for pthread_cancel() since it doesn't
+	seem to be available on every platform, even if the rest of
+	pthread is.  Thanks to Daniel Flemming and Petr Lampa for
+	reporting this problem.
+
+	* src/sock.c (lookup_domain): Removed the LOOKUP_LOCK() and
+	LOOKUP_UNLOCK() macros and replaced them with calls the LOCK() and
+	UNLOCK().  The reason for this change is that I can not be sure
+	that calls to gethostbyname() and gethostbyaddr() will not
+	over-write the same static block of memory.  Potential problem
+	pointed out by Petr Lampa.
+
+	* src/reqs.c (handle_connection): If the initialize_conn()
+	function fails, we need to close the socket.
+
+	* src/acl.c (check_acl): Changed the code to accept the peer IP
+	address and string address from the calling function (in this case
+	handle_connection.)
+
+	* src/thread.c (thread_main): Removed close(connfd) since it has
+	already been closed from within handle_connection(). Thanks to
+	Petr Lampa for spotting this.
+	(thread_pool_create): Added test to make sure pthread_create()
+	succeeds, and returns -1 if all the threads could not be created.
+	(thread_main_loop): Added test to determine if the
+	pthread_create() call succeeded.  Warns the admin if there was a
+	problem, but tinyproxy will continue to run.
+
 2002-04-15  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/anonymous.c (anonymous_insert): Now returns -1 upon error,
