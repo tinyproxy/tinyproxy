@@ -1,3 +1,57 @@
+2002-11-13  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (relay_connection):
+	Shutdown the client socket for writing once all the data has been
+	sent.
+
+	* src/conns.c (destroy_conn):
+	Added code to log any error messages when the sockets are closed.
+
+2002-11-05  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* doc/tinyproxy.conf:
+	Removed the example for the Tunnel directive since it's been removed.
+
+2002-11-03  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.ac, src/grammar.y, src/reqs.c, src/scanner.l,
+	src/tinyproxy.c, src/tinyproxy.h:
+	
+	Removed all the code supporting the TCP tunnelling feature of
+	tinyproxy.  There is really no need for this code, since there are
+	perfectly good programs out there (like rinetd) which are designed for
+	TCP tunnelling.  tinyproxy should be a good HTTP proxy, nothing more,
+	and nothing less; therefore, the tunnelling code is gone.
+
+2002-10-17  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/reqs.c (relay_connection):
+	Ivan pointed out a bug with the code to send any
+	remaining data to the server when the connections are being closed.
+	It was a one line fix.
+
+2002-10-03  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/tinyproxy.c:
+	Fixed up the storing and sending of the internal tinyproxy logs prior
+	to when the log file is created.  Also, the log file is created with
+	the proper owner permissions.
+
+	* src/log.c, src/log.h:
+	The internal log structure now uses a vector rather than a hash.  This
+	change was required to actually display all the logs in the correct
+	order.  Also, all log lines are stored internally while tinyproxy is
+	starting.  At the appropriate point all the logs are written to the
+	log file.
+
+	* src/filter.c: Filtering is now case insensitive.
+
+	* src/child.c (child_main):
+	Check to make sure memory could be allocated to handle
+	the child request.
+	(child_main_loop): Added a call to truncate_log_file() when the log
+	file is to be rotated.
+
 2002-08-09  Robert James Kaes  <rjkaes@flarenet.com>
 
 	Released tinyproxy 1.5.1 (2002-08-09)
