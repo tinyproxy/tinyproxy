@@ -3,10 +3,10 @@ SUBDIRS = src doc
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)@TINYPROXY_CONFIG_DIR@
-	$(INSTALL) -m 600 doc/tinyproxy.conf \
+	$(INSTALL) -m 600 $(srcdir)/doc/tinyproxy.conf \
 		$(DESTDIR)@TINYPROXY_CONFIG_DIR@/@TINYPROXY_CONFIG_FILE@-dist
 	test ! -f $(DESTDIR)@TINYPROXY_CONFIG_DIR@/@TINYPROXY_CONFIG_FILE@ \
-		&& $(INSTALL) -m 600 doc/tinyproxy.conf \
+		&& $(INSTALL) -m 600 $(srcdir)/doc/tinyproxy.conf \
 			$(DESTDIR)@TINYPROXY_CONFIG_DIR@/@TINYPROXY_CONFIG_FILE@
 	@echo ""
 	@echo "A configuration file has been copied to:"
