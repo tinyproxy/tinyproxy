@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.8 2000-12-08 03:35:07 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.9 2001-05-27 02:36:22 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -24,6 +24,9 @@
 
 #include "tinyproxy.h"
 
+#ifdef HAVE_SYS_RESOURCE_H
+#  include <sys/resource.h>
+#endif /* HAVE_SYS_RESOUCE_H */
 #include <grp.h>
 #include <pwd.h>
 #include <signal.h>
@@ -62,16 +65,16 @@ void takesig(int sig)
 		if (config.logf)
 			ftruncate(fileno(config.logf), 0);
 
-		log(LOG_NOTICE, "SIGHUP received, cleaning up...");
+		log_message(LOG_NOTICE, "SIGHUP received, cleaning up...");
 
 #ifdef FILTER_ENABLE
 		if (config.filter) {
 			filter_destroy();
 			filter_init();
 		}
-		log(LOG_NOTICE, "Re-reading filter file.");
+		log_message(LOG_NOTICE, "Re-reading filter file.");
 #endif				/* FILTER_ENABLE */
-		log(LOG_NOTICE, "Finished cleaning memory/connections.");		       
+		log_message(LOG_NOTICE, "Finished cleaning memory/connections.");		       
 		break;
 	case SIGTERM:
 #ifdef FILTER_ENABLE
@@ -79,7 +82,7 @@ void takesig(int sig)
 			filter_destroy();
 #endif				/* FILTER_ENABLE */
 		config.quit = TRUE;
-		log(LOG_INFO, "SIGTERM received.");
+		log_message(LOG_INFO, "SIGTERM received.");
 		break;
 	}
 
@@ -149,6 +152,20 @@ int main(int argc, char **argv)
 	struct group *thisgroup = NULL;
 	char *conf_file = DEFAULT_CONF_FILE;
 
+	/*
+	 * Disable the creation of CORE files right up front.
+	 */
+#ifdef HAVE_SETRLIMIT
+	struct rlimit core_limit = {0, 0};
+	if (setrlimit(RLIMIT_CORE, &core_limit) < 0) {
+		log_message(LOG_EMERG, "tinyproxy: could not set the core limit to zero.");
+		exit(EX_SOFTWARE);
+	}
+#endif /* HAVE_SETRLIMIT */
+
+	/*
+	 * Process the various options
+	 */
 	while ((optch = getopt(argc, argv, "c:vdh")) !=
 	       EOF) {
 		switch (optch) {
@@ -161,7 +178,7 @@ int main(int argc, char **argv)
 		case 'c':
 			conf_file = strdup(optarg);
 			if (!conf_file) {
-				log(LOG_EMERG, "tinyproxy: could not allocate memory");
+				log_message(LOG_EMERG, "tinyproxy: could not allocate memory");
 				exit(EX_SOFTWARE);
 			}
 			break;
@@ -177,7 +194,7 @@ int main(int argc, char **argv)
 	 */
 	yyin = fopen(conf_file, "r");
 	if (!yyin) {
-		log(LOG_ERR, "Could not open %s file", conf_file);
+		log_message(LOG_ERR, "Could not open %s file", conf_file);
 		exit(EX_SOFTWARE);
 	}
 	yyparse();
@@ -185,7 +202,7 @@ int main(int argc, char **argv)
 	/* Open the log file if not using syslog */
 	if (config.syslog == FALSE) {
 		if (!config.logf_name) {
-			log(LOG_INFO, "Setting Logfile to \"%s\"", DEFAULT_LOG);
+			log_message(LOG_INFO, "Setting Logfile to \"%s\"", DEFAULT_LOG);
 			config.logf_name = DEFAULT_LOG;
 		}
 
@@ -202,25 +219,25 @@ int main(int argc, char **argv)
 			openlog("tinyproxy", LOG_PID, LOG_USER);
 	}
 
-	log(LOG_INFO, PACKAGE " " VERSION " starting...");
+	log_message(LOG_INFO, PACKAGE " " VERSION " starting...");
 
 	/*
 	 * Set the default values if they were not set in the config file.
 	 */
 	if (config.port == 0) {
-		log(LOG_INFO, "Setting Port to %u", DEFAULT_PORT);
+		log_message(LOG_INFO, "Setting Port to %u", DEFAULT_PORT);
 		config.port = DEFAULT_PORT;
 	}
 	if (!config.stathost) {
-		log(LOG_INFO, "Setting stathost to \"%s\"", DEFAULT_STATHOST);
+		log_message(LOG_INFO, "Setting stathost to \"%s\"", DEFAULT_STATHOST);
 		config.stathost = DEFAULT_STATHOST;
 	}
 	if (!config.username) {
-		log(LOG_INFO, "Setting user to \"%s\"", DEFAULT_USER);
+		log_message(LOG_INFO, "Setting user to \"%s\"", DEFAULT_USER);
 		config.username = DEFAULT_USER;
 	}
 	if (config.idletimeout == 0) {
-		log(LOG_INFO, "Setting idle timeout to %u seconds", MAX_IDLE_TIME);
+		log_message(LOG_INFO, "Setting idle timeout to %u seconds", MAX_IDLE_TIME);
 		config.idletimeout = MAX_IDLE_TIME;
 	}
 
@@ -246,7 +263,7 @@ int main(int argc, char **argv)
 	}
 
 	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
-		log(LOG_CRIT, "Could not set SIGPIPE\n");
+		log_message(LOG_CRIT, "Could not set SIGPIPE\n");
 		exit(EX_OSERR);
 	}
 
@@ -259,7 +276,7 @@ int main(int argc, char **argv)
 	 * Start listening on the selected port.
 	 */
 	if (thread_listening_sock(config.port) < 0) {
-		log(LOG_CRIT, "Problem creating listening socket");
+		log_message(LOG_CRIT, "Problem creating listening socket");
 		exit(EX_OSERR);
 	}
 
@@ -270,76 +287,76 @@ int main(int argc, char **argv)
 		if (config.group && strlen(config.group) > 0) {
 			thisgroup = getgrnam(config.group);
 			if (!thisgroup) {
-				log(LOG_ERR, "Unable to find group '%s'!", config.group);
+				log_message(LOG_ERR, "Unable to find group '%s'!", config.group);
 				exit(EX_NOUSER);
 			}
 			if (setgid(thisgroup->gr_gid) < 0) {
-				log(LOG_ERR, "Unable to change to group '%s'", config.group);
+				log_message(LOG_ERR, "Unable to change to group '%s'", config.group);
 				exit(EX_CANTCREAT);
 			}
-			log(LOG_INFO, "Now running as group %s", config.group);
+			log_message(LOG_INFO, "Now running as group %s", config.group);
 		}
 		if (config.username && strlen(config.username) > 0) {
 			thisuser = getpwnam(config.username);
 			if (!thisuser) {
-				log(LOG_ERR, "Unable to find user '%s'!", config.username);
+				log_message(LOG_ERR, "Unable to find user '%s'!", config.username);
 				exit(EX_NOUSER);
 			}
 			if (setuid(thisuser->pw_uid) < 0) {
-				log(LOG_ERR, "Unable to change to user '%s'", config.username);
+				log_message(LOG_ERR, "Unable to change to user '%s'", config.username);
 				exit(EX_CANTCREAT);
 			}
-			log(LOG_INFO, "Now running as user %s", config.username);
+			log_message(LOG_INFO, "Now running as user %s", config.username);
 		}
 	} else {
-		log(LOG_WARNING, "Not running as root, so not changing UID/GID.");
+		log_message(LOG_WARNING, "Not running as root, so not changing UID/GID.");
 	}
 
 	if (thread_pool_create() < 0) {
-		log(LOG_ERR, "Could not create the pool of threads");
+		log_message(LOG_ERR, "Could not create the pool of threads");
 		exit(EX_SOFTWARE);
 	}
 
 	/*
 	 * These signals are only for the main thread.
 	 */
-	log(LOG_INFO, "Setting the various signals.");
+	log_message(LOG_INFO, "Setting the various signals.");
 	if (signal(SIGTERM, takesig) == SIG_ERR) {
-		log(LOG_CRIT, "Could not set SIGTERM\n");
+		log_message(LOG_CRIT, "Could not set SIGTERM\n");
 		exit(EX_OSERR);
 	}
 	if (signal(SIGHUP, takesig) == SIG_ERR) {
-		log(LOG_CRIT, "Could not set SIGHUP\n");
+		log_message(LOG_CRIT, "Could not set SIGHUP\n");
 		exit(EX_OSERR);
 	}
 
 	/*
 	 * Initialize the various subsystems...
 	 */
-	log(LOG_INFO, "Starting the DNS caching subsystem.");
+	log_message(LOG_INFO, "Starting the DNS caching subsystem.");
 	if (!new_dnscache())
 		exit(EX_SOFTWARE);
-	log(LOG_INFO, "Starting the Anonymous header subsystem.");
+	log_message(LOG_INFO, "Starting the Anonymous header subsystem.");
 	if (!new_anonymous())
 		exit(EX_SOFTWARE);
 
 	/*
 	 * Start the main loop.
 	 */
-	log(LOG_INFO, "Starting main loop. Accepting connections.");
+	log_message(LOG_INFO, "Starting main loop. Accepting connections.");
 	do {
 		thread_main_loop();
 		sleep(1);
 	} while (!config.quit);
 
-	log(LOG_INFO, "Shutting down.");
+	log_message(LOG_INFO, "Shutting down.");
 	thread_close_sock();
 
 	/*
 	 * Remove the PID file.
 	 */
 	if (unlink(config.pidpath) < 0) {
-		log(LOG_WARNING, "Could not remove PID file %s: %s",
+		log_message(LOG_WARNING, "Could not remove PID file %s: %s",
 		    config.pidpath, strerror(errno));
 	}
 
