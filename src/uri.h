@@ -1,4 +1,4 @@
-/* $Id: uri.h,v 1.1.1.1 2000-02-16 17:32:24 sdyoung Exp $
+/* $Id: uri.h,v 1.2 2000-09-11 23:57:43 rjkaes Exp $
  *
  * See 'uri.c' for a detailed description.
  *
@@ -15,8 +15,8 @@
  * General Public License for more details.
  */
 
-#ifndef __URI_H_
-#define __URI_H_
+#ifndef _TINYPROXY_URI_H_
+#define _TINYPROXY_URI_H_
 
 typedef struct {
 	char *scheme;
@@ -27,6 +27,6 @@ typedef struct {
 } URI;
 
 extern URI *explode_uri(const char *string);
-extern void free_uri(URI * uri);
+extern void free_uri(URI *uri);
 
 #endif

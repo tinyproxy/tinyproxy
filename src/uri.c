@@ -1,4 +1,4 @@
-/* $Id: uri.c,v 1.2 2000-04-26 16:31:29 rjkaes Exp $
+/* $Id: uri.c,v 1.3 2000-09-11 23:57:43 rjkaes Exp $
  *
  * This borrows the REGEX from RFC2396 to split a URI string into the five
  * primary components. The components are:
@@ -21,19 +21,12 @@
  * General Public License for more details.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <defines.h>
-#endif
+#include "tinyproxy.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <sys/types.h>
-
-#include "uri.h"
-#include "utils.h"
 #include "log.h"
 #include "regexp.h"
+#include "uri.h"
+#include "utils.h"
 
 #define NMATCH 10
 
@@ -51,7 +44,7 @@ static int extract_uri(regmatch_t pmatch[], const char *buffer, char **section,
 		       int substring)
 {
 	int len = pmatch[substring].rm_eo - pmatch[substring].rm_so;
-	if ((*section = xmalloc(len + 1)) == NULL)
+	if ((*section = malloc(len + 1)) == NULL)
 		return -1;
 
 	memset(*section, '\0', len + 1);
@@ -76,17 +69,17 @@ URI *explode_uri(const char *string)
 	regmatch_t pmatch[NMATCH];
 	regex_t preg;
 
-	if (!(uri = xmalloc(sizeof(URI))))
+	if (!(uri = malloc(sizeof(URI))))
 		return NULL;
 	memset(uri, 0, sizeof(URI));
 
 	if (regcomp(&preg, URIPATTERN, REG_EXTENDED) != 0) {
-		log("ERROR explode_uri: regcomp");
+		log(LOG_ERR, "explode_uri: regcomp");
 		goto ERROR_EXIT;
 	}
 
 	if (regexec(&preg, string, NMATCH, pmatch, 0) != 0) {
-		log("ERROR explode_uri: regexec");
+		log(LOG_ERR, "explode_uri: regexec");
 		goto ERROR_EXIT;
 	}
 
