@@ -1,3 +1,13 @@
+2001-11-25  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/buffer.c (makenewline): This function now copies the actual
+	data itself. This means any malloc() and free() functions are
+	closer together, instead of malloc()ing the data and then not
+	free()ing it.
+	(add_to_buffer): Add a new "line" to the buffer. I'm trying to
+	have more of the data go through the buffering code. Basically the
+	safe_read() function should only be called for special reasons.
+
 2001-11-24  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* configure.ac: Changed the extension of the configure.in to match
