@@ -1,4 +1,4 @@
-/* $Id: stats.c,v 1.12 2002-05-29 20:49:55 rjkaes Exp $
+/* $Id: stats.c,v 1.13 2003-03-13 21:31:03 rjkaes Exp $
  *
  * This module handles the statistics for tinyproxy. There are only two
  * public API functions. The reason for the functions, rather than just a
@@ -25,6 +25,7 @@
 
 #include "log.h"
 #include "heap.h"
+#include "htmlerror.h"
 #include "stats.h"
 #include "utils.h"
 
@@ -70,23 +71,45 @@ showstats(struct conn_s *connptr)
 	    "</blockquote>\r\n</body></html>\r\n";
 
 	char *message_buffer;
+	char opens[16], reqs[16], badconns[16], denied[16], refused[16];
+	FILE *statfile;
 
-	message_buffer = safemalloc(MAXBUFFSIZE);
-	if (!message_buffer)
-		return -1;
+	snprintf(opens, sizeof(opens), "%lu", stats->num_open);
+	snprintf(reqs, sizeof(reqs), "%lu", stats->num_reqs);
+	snprintf(badconns, sizeof(badconns), "%lu", stats->num_badcons);
+	snprintf(denied, sizeof(denied), "%lu", stats->num_denied);
+	snprintf(refused, sizeof(refused), "%lu", stats->num_refused);
 
-	snprintf(message_buffer, MAXBUFFSIZE, msg,
-		 PACKAGE, VERSION, PACKAGE, VERSION,
-		 stats->num_open,
-		 stats->num_reqs,
-		 stats->num_badcons, stats->num_denied, stats->num_refused);
+	if (!config.statpage || (!(statfile = fopen(config.statpage, "r")))) {
+		message_buffer = safemalloc(MAXBUFFSIZE);
+		if (!message_buffer)
+			return -1;
 
-	if (send_http_message(connptr, 200, "OK", message_buffer) < 0) {
+		snprintf(message_buffer, MAXBUFFSIZE, msg,
+			 PACKAGE, VERSION, PACKAGE, VERSION,
+			 stats->num_open,
+			 stats->num_reqs,
+			 stats->num_badcons, stats->num_denied, stats->num_refused);
+
+		if (send_http_message(connptr, 200, "OK", message_buffer) < 0) {
+			safefree(message_buffer);
+			return -1;
+		}
+
 		safefree(message_buffer);
-		return -1;
+		return 0;
 	}
 
-	safefree(message_buffer);
+	add_error_variable(connptr, "opens", opens);
+	add_error_variable(connptr, "reqs", reqs);
+	add_error_variable(connptr, "badconns", badconns);
+	add_error_variable(connptr, "denied", denied);
+	add_error_variable(connptr, "refused", refused);
+	add_standard_vars(connptr);
+	send_http_headers(connptr, 200, "Statistic requested");
+	send_html_file(statfile, connptr);
+	fclose(statfile);
+
 	return 0;
 }
 
