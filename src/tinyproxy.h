@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.11 2001-08-26 21:18:04 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.12 2001-08-27 17:46:20 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -26,6 +26,7 @@
 /*
  * Include standard headers which are used through-out tinyproxy
  */
+#include        <sys/types.h>
 #ifdef HAVE_SYS_SELECT_H
 #  include	<sys/select.h>
 #endif
@@ -41,10 +42,9 @@
 #    include	<time.h>
 #  endif
 #endif
-#include	<sys/types.h>
 #include	<sys/uio.h>
-#include	<arpa/inet.h>
 #include	<netinet/in.h>
+#include	<arpa/inet.h>
 #include	<errno.h>
 #include	<fcntl.h>
 #include	<netdb.h>
