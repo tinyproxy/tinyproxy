@@ -1,5 +1,14 @@
 2001-08-28  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/log.c (log_message): Handle a debug enabled compile better.
+
+	* src/dnscache.c (dns_insert): Fixed a memory leak if the same
+	information was inserted into the ternary tree twice.
+
+	* configure.in: Fixed the test regarding the REGEX library. Even
+	if a working REGEX was found on the system, the included REGEX was
+	being compiled in. Double Doh.
+
 	* src/log.c (log_message): Finally got the log levels worked out
 	properly. I've tested all the levels and they now produce the
 	correct output.
