@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.5 2000-03-29 16:17:37 rjkaes Exp $
+/* $Id: reqs.c,v 1.6 2000-03-31 20:13:36 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections are added to the active list of connections and then the header
@@ -54,6 +54,7 @@
 #include "filter.h"
 #include "uri.h"
 #include "regexp.h"
+#include "anonymous.h"
 
 /* chris - for asynchronous DNS */
 #include "dnscache.h"
@@ -281,16 +282,6 @@ static int clientreq(struct conn_s *connptr)
 	/* Add the rewritten request to the buffer */
 	unshift_buffer(connptr->cbuffer, request, strlen(request));
 
-	/*
-	 * HACK HACK HACK: When we're sending a POST there is no restriction
-	 * on the length of the header. If we don't let all the header lines
-	 * through, the POST will not work. This _definitely_ needs to be
-	 * fixed. - rjkaes
-	 */
-	if (xstrstr(inbuf, "POST ", 5, FALSE)) {
-		connptr->clientheader = TRUE;
-	}
-
       COMMON_EXIT:
 	safefree(inbuf);
 	free_uri(uri);
@@ -366,26 +357,25 @@ static int clientreq_finish(struct conn_s *connptr)
  */
 static int anonheader(char *line)
 {
-	struct allowedhdr_s *allowedptr = allowedhdrs;
+	char *buffer, *ptr;
+	int ret;
 
 	assert(line);
-	assert(allowedhdrs);
 
-	/*
-	if (!xstrstr(line, "GET ", 4, FALSE)
-	    || !xstrstr(line, "POST ", 5, FALSE)
-	    || !xstrstr(line, "HEAD ", 5, FALSE))
-		return 1;
-	*/
+	if ((ptr = xstrstr(line, ":", strlen(line), FALSE)) == NULL)
+		return 0;
 
-	for (allowedptr = allowedhdrs; allowedptr;
-	     allowedptr = allowedptr->next) {
-		if (!strncasecmp
-		    (line, allowedptr->hdrname, strlen(allowedptr->hdrname))) {
-			return 1;
-		}
-	}
-	return 0;
+	ptr++;
+
+	if ((buffer = xmalloc(ptr - line + 1)) == NULL)
+		return 0;
+
+	memcpy(buffer, line, ptr - line);
+	buffer[ptr - line] = '\0';
+
+	ret = anon_search(buffer);
+	free(buffer);
+	return ret;
 }
 
 /*
@@ -410,7 +400,7 @@ static int readanonconn(struct conn_s *connptr)
 		safefree(line);
 		return 0;
 	}
-
+	
 	push_buffer(connptr->cbuffer, line, strlen(line));
 	return 0;
 }
