@@ -1,4 +1,4 @@
-/* $Id: scanner.l,v 1.1 2000-09-12 00:12:52 rjkaes Exp $
+/* $Id: scanner.l,v 1.2 2001-01-02 19:30:40 rjkaes Exp $
  *
  * This builds the scanner for the tinyproxy configuration file. This
  * file needs to stay in sync with grammar.y. If someone knows lex and yacc
@@ -85,13 +85,12 @@ word		[^ \#'"\(\)\{\}\\;\n\t,|\.]
 
 \#.*$		        ;
 \n                      { yylineno++; return '\n'; }
+:                       { return ':'; }
 {white}+                ;
 0x{digit}+              { yylval.num = strtol(yytext, NULL, 16); return NUMBER; }
 0{digit}+               { yylval.num = strtol(yytext, NULL, 8); return NUMBER; }
 {digit}+                { yylval.num = atoi(yytext); return NUMBER; }
 {alpha}+	        { return check_reserved_words(yytext); }
-':'			{ return ':'; }
-'/'			{ return '/'; }
 \"			{
 			        tiny_str = tiny_buf;
 				BEGIN(string);
