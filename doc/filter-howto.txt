@@ -1,0 +1,52 @@
+Using tinyproxy with Your Home/Small Business Network
+
+Written: Patrick L. McGillan
+Edited:  Robert James Kaes (2002-06-04)
+-----------------------------------------------------
+
+Being as this will be the most common usage and there were no clear
+basic instructions for this scenario, I thought I would write up what
+I did for my home system.
+
+First the layout of the network.  A cable modem is connected through a
+Linksys Router to a small hub.  The computers hanging off the hub and
+have a clear shot to the Internet.
+
+So, the connection from the Internet to the hub looks like this:
+
+   Internet->Cable TV Line->Cable Modem->Linksys Router->Hub/Switch
+
+Restricting Internet web access on some of those computers (connected
+to the hub) is what using tinyproxy is all about.  Using the web
+interface to the Linksys router, turn off all Internet access to those
+computers that shouldn't have direct access to the Internet.  This is
+done by clicking on the advanced tab and entering the IP number in the
+filter range.  Now those computers have to go through a proxy, for
+their access, as they have no direct access.
+
+On one of the Linux computers which still has Internet access (I use
+an old 486) load up tinyproxy.  Now have the users configure their
+Internet Explorer/Netscape Navigator programs to use the proxy on the
+tinyproxy computer box, along with the port number declared in the
+tinyproxy configuration file.  By default, there is no blocking of web
+sites with this program, so I created a file, called "filter", to
+start blocking some sites.
+
+Example "filter" file entries:
+
+bannerads.zwire.com
+ad.doubleclick.net
+ads.fortunecity.com
+
+This filter file usually goes into the same folder, as your
+configuration file.  Be sure and uncomment the 'Filter' line in your
+configuration file and make sure it points at your newly created
+filter file.
+
+------------------------------------------------------------------------
+
+Copyright (c) 2002  Patrick L.  McGillan <pmcgillan@dwx.com>
+
+This document is released under the same copyright license as
+tinyproxy.  You should have found a COPYING file in the top level
+directory of this distribution which contains the current license.
