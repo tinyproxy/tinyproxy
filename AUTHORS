@@ -1,12 +1,19 @@
-  tinyproxy is a collaborative work between Steven Young
-  <sdyoung@well.com> and Robert James Kaes <rjkaes@flarenet.com>.
+Early History
+-------------
 
-  From versions 0-1.1, Steven Young was the primary maintainer.
-  From 1.2 to 1.3.0, Robert James Kaes was the primary maintainer.
-  As of 1.3.1, Steven Young was once again be the primary maintainer.
+ Steven Young is the original author and was the primary maintainer of
+ tinyproxy until version 1.1.  He also maintained the project from
+ version 1.3.1 until 1.4.0.
 
-  But, Robert James Kaes was again the maintainer starting with 1.4.0.
-  Place your bets as to when the maintainer will change again. :) Kidding!
+ Robert James Kaes is the current maintainer and lead programmer.  He
+ also maintained the project between versions 1.2 and 1.3.0, and again
+ starting with version 1.4.0.
 
-  Please see the ChangeLog for futher details as to who did what. :)
 
+Major Additions/Improvements
+----------------------------
+
+James E. Flemer <jflemer@acm.jhu.edu> - URL/domain filtering
+Kim Holviala <kim@holviala.com> - Reverse proxy support
+Petr Lampa <lampa@fit.vutbr.cz> - Transparent proxy support
+George Talusan <gstalusan@uwaterloo.ca> - URL/domain filtering
