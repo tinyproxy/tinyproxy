@@ -1,6 +1,4 @@
-# $Id: Makefile.am,v 1.15 2003-03-13 05:28:46 rjkaes Exp $
-#
-# 
+# $Id: Makefile.am,v 1.16 2003-03-13 21:23:01 rjkaes Exp $
 #
 # Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
 #
@@ -30,6 +28,7 @@ tinyproxy_SOURCES = \
 	daemon.c daemon.h \
 	hashmap.c hashmap.h \
 	heap.c heap.h \
+	htmlerror.c htmlerror.h \
 	http_message.c http_message.h \
 	log.c log.h \
 	network.c network.h \
