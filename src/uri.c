@@ -1,4 +1,4 @@
-/* $Id: uri.c,v 1.5 2001-09-07 04:20:45 rjkaes Exp $
+/* $Id: uri.c,v 1.6 2001-09-11 04:13:58 rjkaes Exp $
  *
  * This borrows the REGEX from RFC2396 to split a URI string into the five
  * primary components. The components are:
@@ -44,12 +44,11 @@ static int extract_uri(regmatch_t pmatch[], const char *buffer, char **section,
 		       int substring)
 {
 	size_t len = pmatch[substring].rm_eo - pmatch[substring].rm_so;
-	if ((*section = malloc(len + 1)) == NULL) {
+	if ((*section = safecalloc(sizeof(char), len + 1)) == NULL) {
 		log_message(LOG_ERR, "Could not allocate memory for extracting URI.");
 		return -1;
 	}
 
-	memset(*section, '\0', len + 1);
 	memcpy(*section, buffer + pmatch[substring].rm_so, len);
 
 	return 0;
@@ -71,21 +70,21 @@ URI *explode_uri(const char *string)
 	regmatch_t pmatch[NMATCH];
 	regex_t preg;
 
-	if (!(uri = malloc(sizeof(URI))))
-		return NULL;
-	memset(uri, 0, sizeof(URI));
-
 	if (regcomp(&preg, URIPATTERN, REG_EXTENDED) != 0) {
 		log_message(LOG_ERR, "Regular Expression compiler error.");
-		goto ERROR_EXIT;
+		return NULL;
 	}
 
 	if (regexec(&preg, string, NMATCH, pmatch, 0) != 0) {
 		log_message(LOG_ERR, "Regular Expression search error.");
-		goto ERROR_EXIT;
+		regfree(&preg);
+		return NULL;
 	}
 
 	regfree(&preg);
+
+	if (!(uri = safecalloc(1, sizeof(URI))))
+		return NULL;
 
 	if (pmatch[SCHEME].rm_so != -1) {
 		if (extract_uri(pmatch, string, &uri->scheme, SCHEME) < 0)
@@ -93,8 +92,8 @@ URI *explode_uri(const char *string)
 	}
 
 	if (pmatch[AUTHORITY].rm_so != -1) {
-		if (extract_uri(pmatch, string, &uri->authority, AUTHORITY) <
-		    0) goto ERROR_EXIT;
+		if (extract_uri(pmatch, string, &uri->authority, AUTHORITY) < 0)
+			goto ERROR_EXIT;
 	}
 
 	if (pmatch[PATH].rm_so != -1) {
