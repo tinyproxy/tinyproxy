@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.7 2001-09-07 04:18:26 rjkaes Exp $
+/* $Id: sock.c,v 1.8 2001-09-16 20:11:07 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -197,6 +197,36 @@ char *getpeer_string(int fd, char *string)
 	}
 
 	return string;
+}
+
+/*
+ * Write the buffer to the socket. If an EINTR occurs, pick up and try
+ * again.
+ */
+ssize_t safe_write(int fd, const void *buffer, size_t count)
+{
+	ssize_t len;
+
+	do {
+		len = write(fd, buffer, count);
+	} while (len < 0 && errno == EINTR);
+
+	return len;
+}
+
+/*
+ * Matched pair for safe_write(). If an EINTR occurs, pick up and try
+ * again.
+ */
+ssize_t safe_read(int fd, void *buffer, size_t count)
+{
+	ssize_t len;
+
+	do {
+		len = read(fd, buffer, count);
+	} while (len < 0 && errno == EINTR);
+
+	return len;
 }
 
 /*
