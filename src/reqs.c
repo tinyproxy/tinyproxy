@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.15 2001-08-26 21:11:55 rjkaes Exp $
+/* $Id: reqs.c,v 1.16 2001-08-27 03:44:22 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -122,14 +122,14 @@ static int process_method(struct conn_s *connptr)
 		log_message(LOG_ERR, "clientreq: regcomp");
 		httperr(connptr, 503, HTTP503ERROR);
 		update_stats(STAT_BADCONN);
-		goto COMMON_EXIT;
+		goto EARLY_EXIT;
 	}
 	if (regexec(&preg, inbuf, NMATCH, pmatch, 0) != 0) {
 		log_message(LOG_ERR, "clientreq: regexec");
 		regfree(&preg);
 		httperr(connptr, 503, HTTP503ERROR);
 		update_stats(STAT_BADCONN);
-		goto COMMON_EXIT;
+		goto EARLY_EXIT;
 	}
 	regfree(&preg);
 
@@ -147,7 +147,7 @@ static int process_method(struct conn_s *connptr)
 		    peer_ipaddr, inbuf);
 		httperr(connptr, 400, HTTP400ERROR);
 		update_stats(STAT_BADCONN);
-		goto COMMON_EXIT;
+		goto EARLY_EXIT;
 	}
 
 	len = pmatch[URI_IND].rm_eo - pmatch[URI_IND].rm_so;
@@ -157,7 +157,7 @@ static int process_method(struct conn_s *connptr)
 		    peer_ipaddr);
 		httperr(connptr, 503, HTTP503ERROR);
 		update_stats(STAT_BADCONN);
-		goto COMMON_EXIT;
+		goto EARLY_EXIT;
 	}
 	memcpy(buffer, inbuf + pmatch[URI_IND].rm_so, len);
 	buffer[len] = '\0';
@@ -166,7 +166,7 @@ static int process_method(struct conn_s *connptr)
 		log_message(LOG_ERR, "clientreq: Problem with explode_uri");
 		httperr(connptr, 503, HTTP503ERROR);
 		update_stats(STAT_BADCONN);
-		goto COMMON_EXIT;
+		goto EARLY_EXIT;
 	}
 	safefree(buffer);
 
@@ -287,9 +287,11 @@ static int process_method(struct conn_s *connptr)
 	free_uri(uri);
 	return 0;
 
-      COMMON_EXIT:
-	safefree(request);
+COMMON_EXIT:
 	free_uri(uri);
+	
+EARLY_EXIT:
+	safefree(request);
 	return -1;
 }
 
