@@ -1,4 +1,14 @@
-EXTRA_DIST = TODO
+# Redhat spec files (from RPMs)
+REDHAT_DIR = packaging/redhat
+REDHAT = \
+	$(REDHAT_DIR)/tinyproxy-1.5.2-config-patch \
+	$(REDHAT_DIR)/tinyproxy-initd \
+	$(REDHAT_DIR)/tinyproxy.spec
+
+# Packaging files
+PACKAGING = $(REDHAT)
+
+EXTRA_DIST = TODO $(PACKAGING)
 SUBDIRS = src doc
 
 install-data-local:
