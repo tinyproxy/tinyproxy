@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.23 2002-04-15 02:07:27 rjkaes Exp $
+/* $Id: utils.c,v 1.24 2002-04-15 04:13:14 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -387,7 +387,11 @@ strlcat(char *dst, const char *src, size_t size)
 size_t
 chomp(char *buffer, size_t length)
 {
-	size_t chars = 0;
+	size_t chars;
+
+	assert(buffer != NULL);
+
+	chars = 0;
 
 	--length;
 	while (buffer[length] == '\r' || buffer[length] == '\n') {
