@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.98 2003-05-29 19:43:57 rjkaes Exp $
+/* $Id: reqs.c,v 1.99 2003-05-29 20:48:25 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -104,7 +104,7 @@ add_connect_port_allowed(int port)
 	}
 
 	log_message(LOG_INFO, "Adding Port [%d] to the list allowed by CONNECT", port);
-	vector_insert(ports_allowed_by_connect, (void **)&port, sizeof(port));
+	vector_append(ports_allowed_by_connect, (void **)&port, sizeof(port));
 }
 
 /*
