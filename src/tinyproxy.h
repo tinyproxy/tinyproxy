@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.19 2001-10-25 17:27:39 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.20 2001-11-22 00:31:10 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -81,7 +81,7 @@
 
 /* Global variables for the main controls of the program */
 #define MAXBUFFSIZE	((size_t)(1024 * 48))	/* Max size of buffer */
-#define MAXLISTEN	1024		/* Max number of connections */
+#define MAXLISTEN	1024	/* Max number of connections */
 #define MAX_IDLE_TIME 	(60 * 10)	/* 10 minutes of no activity */
 
 /* Useful function macros */

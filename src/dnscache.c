@@ -1,4 +1,4 @@
-/* $Id: dnscache.c,v 1.17 2001-10-25 17:27:39 rjkaes Exp $
+/* $Id: dnscache.c,v 1.18 2001-11-22 00:31:10 rjkaes Exp $
  *
  * This is a caching DNS system. When a host name is needed we look it up here
  * and see if there is already an answer for it. The domains are placed in a
@@ -36,7 +36,7 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 #define UNLOCK() pthread_mutex_unlock(&mutex);
 
 #define DNSEXPIRE (5 * 60)
-#define DNS_INSERT_LIMIT 10000            /* free the memory after inserts */
+#define DNS_INSERT_LIMIT 10000	/* free the memory after inserts */
 
 struct dnscache_s {
 	struct in_addr ipaddr;
@@ -46,7 +46,8 @@ struct dnscache_s {
 static TERNARY dns_tree = -1;
 static unsigned int dns_insertions;
 
-static int dns_lookup(struct in_addr *addr, char *domain)
+static int
+dns_lookup(struct in_addr *addr, char *domain)
 {
 	int ret;
 	struct dnscache_s *ptr;
@@ -54,7 +55,7 @@ static int dns_lookup(struct in_addr *addr, char *domain)
 	assert(addr != NULL);
 	assert(domain != NULL);
 
-	ret = ternary_search(dns_tree, domain, (void *)&ptr);
+	ret = ternary_search(dns_tree, domain, (void *) &ptr);
 
 	if (TE_ISERROR(ret)
 	    || difftime(time(NULL), ptr->expire) > DNSEXPIRE) {
@@ -66,7 +67,8 @@ static int dns_lookup(struct in_addr *addr, char *domain)
 	return 0;
 }
 
-static int dns_insert(struct in_addr *addr, char *domain)
+static int
+dns_insert(struct in_addr *addr, char *domain)
 {
 	struct dnscache_s *newptr;
 
@@ -92,7 +94,8 @@ static int dns_insert(struct in_addr *addr, char *domain)
 	return 0;
 }
 
-int dnscache(struct in_addr *addr, char *domain)
+int
+dnscache(struct in_addr *addr, char *domain)
 {
 	struct hostent *resolv;
 
@@ -107,7 +110,7 @@ int dnscache(struct in_addr *addr, char *domain)
 		dns_insertions = 0;
 	}
 
-	if (inet_aton(domain, (struct in_addr *)addr) != 0) {
+	if (inet_aton(domain, (struct in_addr *) addr) != 0) {
 		UNLOCK();
 		return 0;
 	}
@@ -130,7 +133,9 @@ int dnscache(struct in_addr *addr, char *domain)
 
 	dns_insertions++;
 	if (dns_insertions > DNS_INSERT_LIMIT) {
-		log_message(LOG_INFO, "DNS Insertion limit reached (%u). Rebuilding cache.", dns_insertions);
+		log_message(LOG_INFO,
+			    "DNS Insertion limit reached (%u). Rebuilding cache.",
+			    dns_insertions);
 		ternary_destroy(dns_tree, free);
 		dns_tree = ternary_new();
 		dns_insertions = 0;

@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.4 2001-11-21 01:00:08 rjkaes Exp $
+/* $Id: conns.c,v 1.5 2001-11-22 00:31:10 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connnection related tasks put here, but for now the header
@@ -25,7 +25,8 @@
 #include "stats.h"
 #include "utils.h"
 
-void initialize_conn(struct conn_s *connptr)
+void
+initialize_conn(struct conn_s *connptr)
 {
 	connptr->client_fd = connptr->server_fd = -1;
 	connptr->cbuffer = new_buffer();
@@ -42,7 +43,8 @@ void initialize_conn(struct conn_s *connptr)
 	update_stats(STAT_OPEN);
 }
 
-void destroy_conn(struct conn_s *connptr)
+void
+destroy_conn(struct conn_s *connptr)
 {
 	if (connptr->client_fd != -1)
 		close(connptr->client_fd);

@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.10 2001-10-25 16:58:50 rjkaes Exp $
+/* $Id: utils.h,v 1.11 2001-11-22 00:31:10 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -23,7 +23,7 @@
 
 #include "conns.h"
 
-extern int send_http_message(struct conn_s* connptr, int http_code,
+extern int send_http_message(struct conn_s *connptr, int http_code,
 			     const char *error_title, const char *message);
 extern int httperr(struct conn_s *connptr, int err, const char *msg);
 
@@ -34,21 +34,24 @@ extern int create_file_safely(const char *filename);
 
 #ifndef HAVE_STRLCAT
 extern size_t strlcat(char *dst, const char *src, size_t size);
-#endif /* HAVE_STRLCAT */
+#endif				/* HAVE_STRLCAT */
 
 #ifndef HAVE_STRLCPY
 extern size_t strlcpy(char *dst, const char *src, size_t size);
-#endif /* HAVE_STRLCPY */
+#endif				/* HAVE_STRLCPY */
 
 /*
  * The following is to allow for better memory checking.
  */
 #ifndef NDEBUG
 
-extern void *debugging_calloc(size_t nmemb, size_t size, const char *file, unsigned long line);
-extern void *debugging_malloc(size_t size, const char *file, unsigned long line);
+extern void *debugging_calloc(size_t nmemb, size_t size, const char *file,
+			      unsigned long line);
+extern void *debugging_malloc(size_t size, const char *file,
+			      unsigned long line);
 extern void debugging_free(void *ptr, const char *file, unsigned long line);
-extern void *debugging_realloc(void *ptr, size_t size, const char *file, unsigned long line);
+extern void *debugging_realloc(void *ptr, size_t size, const char *file,
+			       unsigned long line);
 
 #  define safecalloc(x, y) debugging_calloc(x, y, __FILE__, __LINE__)
 #  define safemalloc(x) debugging_malloc(x, __FILE__, __LINE__)

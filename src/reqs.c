@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.40 2001-11-22 00:19:45 rjkaes Exp $
+/* $Id: reqs.c,v 1.41 2001-11-22 00:31:10 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -46,7 +46,8 @@
 /*
  * Remove any new lines or carriage returns from the end of a string.
  */
-static inline void trim(char *string, unsigned int len)
+static inline void
+trim(char *string, unsigned int len)
 {
 	char *ptr;
 
@@ -71,14 +72,17 @@ static inline void trim(char *string, unsigned int len)
  * connections. The request line is allocated from the heap, but it must
  * be freed in another function.
  */
-static char *read_request_line(struct conn_s *connptr)
+static char *
+read_request_line(struct conn_s *connptr)
 {
 	char *request_buffer;
 	size_t len;
 
 	len = readline(connptr->client_fd, &request_buffer);
 	if (len <= 0) {
-		log_message(LOG_ERR, "read_request_line: Client (file descriptor: %d) closed socket before read.", connptr->client_fd);
+		log_message(LOG_ERR,
+			    "read_request_line: Client (file descriptor: %d) closed socket before read.",
+			    connptr->client_fd);
 		safefree(request_buffer);
 		return NULL;
 	}
@@ -106,7 +110,8 @@ struct request_s {
 	int port;
 };
 
-static void free_request_struct(struct request_s *request)
+static void
+free_request_struct(struct request_s *request)
 {
 	if (!request)
 		return;
@@ -123,7 +128,8 @@ static void free_request_struct(struct request_s *request)
 /*
  * Pull the information out of the URL line.
  */
-static int extract_http_url(const char *url, struct request_s *request)
+static int
+extract_http_url(const char *url, struct request_s *request)
 {
 	request->host = safemalloc(strlen(url) + 1);
 	request->path = safemalloc(strlen(url) + 1);
@@ -135,11 +141,14 @@ static int extract_http_url(const char *url, struct request_s *request)
 		return -1;
 	}
 
-	if (sscanf(url, "http://%[^:/]:%d%s", request->host, &request->port, request->path) == 3)
-		;
-	else if (sscanf(url, "http://%[^/]%s", request->host, request->path) == 2)
+	if (sscanf
+	    (url, "http://%[^:/]:%d%s", request->host, &request->port,
+	     request->path) == 3) ;
+	else if (sscanf(url, "http://%[^/]%s", request->host, request->path) ==
+		 2)
 		request->port = 80;
-	else if (sscanf(url, "http://%[^:/]:%d", request->host, &request->port) == 2)
+	else if (sscanf(url, "http://%[^:/]:%d", request->host, &request->port)
+		 == 2)
 		strcpy(request->path, "/");
 	else if (sscanf(url, "http://%[^/]", request->host) == 1) {
 		request->port = 80;
@@ -149,7 +158,7 @@ static int extract_http_url(const char *url, struct request_s *request)
 
 		safefree(request->host);
 		safefree(request->path);
-		
+
 		return -1;
 	}
 
@@ -159,14 +168,14 @@ static int extract_http_url(const char *url, struct request_s *request)
 /*
  * Extract the URL from a SSL connection.
  */
-static int extract_ssl_url(const char *url, struct request_s *request)
+static int
+extract_ssl_url(const char *url, struct request_s *request)
 {
 	request->host = safemalloc(strlen(url) + 1);
 	if (!request->host)
 		return -1;
 
-	if (sscanf(url, "%[^:]:%d", request->host, &request->port) == 2)
-		;
+	if (sscanf(url, "%[^:]:%d", request->host, &request->port) == 2) ;
 	else if (sscanf(url, "%s", request->host) == 1)
 		request->port = 443;
 	else {
@@ -182,17 +191,19 @@ static int extract_ssl_url(const char *url, struct request_s *request)
 /*
  * Create a connection for HTTP connections.
  */
-static int establish_http_connection(struct conn_s *connptr,
-				     struct request_s *request)
+static int
+establish_http_connection(struct conn_s *connptr, struct request_s *request)
 {
 	/*
 	 * Send the request line
 	 */
-	if (safe_write(connptr->server_fd, request->method, strlen(request->method)) < 0)
+	if (safe_write
+	    (connptr->server_fd, request->method, strlen(request->method)) < 0)
 		return -1;
 	if (safe_write(connptr->server_fd, " ", 1) < 0)
 		return -1;
-	if (safe_write(connptr->server_fd, request->path, strlen(request->path)) < 0)
+	if (safe_write(connptr->server_fd, request->path, strlen(request->path))
+	    < 0)
 		return -1;
 	if (safe_write(connptr->server_fd, " ", 1) < 0)
 		return -1;
@@ -204,7 +215,8 @@ static int establish_http_connection(struct conn_s *connptr,
 	 */
 	if (safe_write(connptr->server_fd, "Host: ", 6) < 0)
 		return -1;
-	if (safe_write(connptr->server_fd, request->host, strlen(request->host)) < 0)
+	if (safe_write(connptr->server_fd, request->host, strlen(request->host))
+	    < 0)
 		return -1;
 
 	if (safe_write(connptr->server_fd, "\r\n", 2) < 0)
@@ -230,12 +242,16 @@ static int establish_http_connection(struct conn_s *connptr,
  * Send the appropriate response to the client to establish a SSL
  * connection.
  */
-static inline int send_ssl_response(struct conn_s *connptr)
+static inline int
+send_ssl_response(struct conn_s *connptr)
 {
-	if (safe_write(connptr->client_fd, SSL_CONNECTION_RESPONSE, strlen(SSL_CONNECTION_RESPONSE)) < 0)
+	if (safe_write
+	    (connptr->client_fd, SSL_CONNECTION_RESPONSE,
+	     strlen(SSL_CONNECTION_RESPONSE)) < 0)
 		return -1;
 
-	if (safe_write(connptr->client_fd, PROXY_AGENT, strlen(PROXY_AGENT)) < 0)
+	if (safe_write(connptr->client_fd, PROXY_AGENT, strlen(PROXY_AGENT)) <
+	    0)
 		return -1;
 
 	if (safe_write(connptr->client_fd, "\r\n", 2) < 0)
@@ -248,8 +264,8 @@ static inline int send_ssl_response(struct conn_s *connptr)
  * Break the request line apart and figure out where to connect and
  * build a new request line. Finally connect to the remote server.
  */
-static struct request_s *process_request(struct conn_s *connptr,
-					 char *request_line)
+static struct request_s *
+process_request(struct conn_s *connptr, char *request_line)
 {
 	char *url;
 	struct request_s *request;
@@ -276,9 +292,13 @@ static struct request_s *process_request(struct conn_s *connptr,
 		return NULL;
 	}
 
-	ret = sscanf(request_line, "%[^ ] %[^ ] %[^ ]", request->method, url, request->protocol);
+	ret =
+	    sscanf(request_line, "%[^ ] %[^ ] %[^ ]", request->method, url,
+		   request->protocol);
 	if (ret < 2) {
-		log_message(LOG_ERR, "process_request: Bad Request on file descriptor %d", connptr->client_fd);
+		log_message(LOG_ERR,
+			    "process_request: Bad Request on file descriptor %d",
+			    connptr->client_fd);
 		httperr(connptr, 400, "Bad Request. No request found.");
 
 		safefree(url);
@@ -290,7 +310,9 @@ static struct request_s *process_request(struct conn_s *connptr,
 	}
 
 	if (!url) {
-		log_message(LOG_ERR, "process_request: Null URL on file descriptor %d", connptr->client_fd);
+		log_message(LOG_ERR,
+			    "process_request: Null URL on file descriptor %d",
+			    connptr->client_fd);
 		httperr(connptr, 400, "Bad Request. Null URL.");
 
 		safefree(url);
@@ -304,8 +326,9 @@ static struct request_s *process_request(struct conn_s *connptr,
 		memcpy(url, "http", 4);
 
 		if (extract_http_url(url, request) < 0) {
-			httperr(connptr, 400, "Bad Request. Could not parse URL.");
-			
+			httperr(connptr, 400,
+				"Bad Request. Could not parse URL.");
+
 			safefree(url);
 			free_request_struct(request);
 
@@ -314,7 +337,8 @@ static struct request_s *process_request(struct conn_s *connptr,
 		connptr->ssl = FALSE;
 	} else if (strcmp(request->method, "CONNECT") == 0) {
 		if (extract_ssl_url(url, request) < 0) {
-			httperr(connptr, 400, "Bad Request. Could not parse URL.");
+			httperr(connptr, 400,
+				"Bad Request. Could not parse URL.");
 
 			safefree(url);
 			free_request_struct(request);
@@ -323,7 +347,9 @@ static struct request_s *process_request(struct conn_s *connptr,
 		}
 		connptr->ssl = TRUE;
 	} else {
-		log_message(LOG_ERR, "process_request: Unknown URL type on file descriptor %d", connptr->client_fd);
+		log_message(LOG_ERR,
+			    "process_request: Unknown URL type on file descriptor %d",
+			    connptr->client_fd);
 		httperr(connptr, 400, "Bad Request. Unknown URL type.");
 
 		safefree(url);
@@ -342,8 +368,11 @@ static struct request_s *process_request(struct conn_s *connptr,
 		if (filter_url(request->host)) {
 			update_stats(STAT_DENIED);
 
-			log_message(LOG_NOTICE, "Proxying refused on filtered domain \"%s\"", request->host);
-			httperr(connptr, 404, "Connection to filtered domain is now allowed.");
+			log_message(LOG_NOTICE,
+				    "Proxying refused on filtered domain \"%s\"",
+				    request->host);
+			httperr(connptr, 404,
+				"Connection to filtered domain is now allowed.");
 
 			free_request_struct(request);
 
@@ -369,7 +398,8 @@ static struct request_s *process_request(struct conn_s *connptr,
 	 */
 	if (strncasecmp(request->protocol, "http", 4) == 0) {
 		memcpy(request->protocol, "HTTP", 4);
-		sscanf(request->protocol, "HTTP/%hu.%hu", &connptr->protocol.major, &connptr->protocol.minor);
+		sscanf(request->protocol, "HTTP/%hu.%hu",
+		       &connptr->protocol.major, &connptr->protocol.minor);
 	}
 
 	return request;
@@ -380,7 +410,8 @@ static struct request_s *process_request(struct conn_s *connptr,
  * headers which are to be allowed. If the header is found in the
  * anonymous list return 0, otherwise return -1.
  */
-static int compare_header(char *line)
+static int
+compare_header(char *line)
 {
 	char *buffer;
 	char *ptr;
@@ -392,7 +423,7 @@ static int compare_header(char *line)
 	if ((buffer = safemalloc(ptr - line + 1)) == NULL)
 		return -1;
 
-	memcpy(buffer, line, (size_t)(ptr - line));
+	memcpy(buffer, line, (size_t) (ptr - line));
 	buffer[ptr - line] = '\0';
 
 	ret = anonymous_search(buffer);
@@ -407,7 +438,8 @@ static int compare_header(char *line)
  * server headers can be processed.
  *	- rjkaes
  */
-static int pull_client_data(struct conn_s *connptr, unsigned long int length)
+static int
+pull_client_data(struct conn_s *connptr, unsigned long int length)
 {
 	char *buffer;
 	ssize_t len;
@@ -417,7 +449,9 @@ static int pull_client_data(struct conn_s *connptr, unsigned long int length)
 		return -1;
 
 	do {
-		len = safe_read(connptr->client_fd, buffer, min(MAXBUFFSIZE, length));
+		len =
+		    safe_read(connptr->client_fd, buffer,
+			      min(MAXBUFFSIZE, length));
 
 		if (len <= 0) {
 			safefree(buffer);
@@ -444,7 +478,8 @@ static int pull_client_data(struct conn_s *connptr, unsigned long int length)
  * the server.
  *	-rjkaes
  */
-static int add_xtinyproxy_header(struct conn_s *connptr)
+static int
+add_xtinyproxy_header(struct conn_s *connptr)
 {
 	char ipaddr[PEER_IP_LENGTH];
 	char xtinyproxy[32];
@@ -464,7 +499,7 @@ static int add_xtinyproxy_header(struct conn_s *connptr)
 
 	return 0;
 }
-#endif		/* XTINYPROXY */
+#endif				/* XTINYPROXY */
 
 /*
  * Here we loop through all the headers the client is sending. If we
@@ -472,7 +507,8 @@ static int add_xtinyproxy_header(struct conn_s *connptr)
  * (plus a few which are required for various methods).
  *	- rjkaes
  */
-static int process_client_headers(struct conn_s *connptr)
+static int
+process_client_headers(struct conn_s *connptr)
 {
 	char *header;
 	long content_length = -1;
@@ -490,9 +526,10 @@ static int process_client_headers(struct conn_s *connptr)
 	};
 	int i;
 
-	for ( ; ; ) {
+	for (;;) {
 		if (readline(connptr->client_fd, &header) <= 0) {
-			DEBUG2("Client (file descriptor %d) closed connection.", connptr->client_fd);
+			DEBUG2("Client (file descriptor %d) closed connection.",
+			       connptr->client_fd);
 			return -1;
 		}
 
@@ -514,7 +551,6 @@ static int process_client_headers(struct conn_s *connptr)
 			safefree(header);
 			continue;
 		}
-
 #if 0
 		/*
 		 * If we find a Via header we need to append our information
@@ -527,19 +563,25 @@ static int process_client_headers(struct conn_s *connptr)
 			sent_via_header = 1;
 
 			gethostname(hostname, sizeof(hostname));
-			snprintf(via_header_buffer, sizeof(via_header_buffer), ", %hu.%hu %s (%s/%s)\r\n", connptr->protocol.major, connptr->protocol.minor, hostname, PACKAGE, VERSION);
+			snprintf(via_header_buffer, sizeof(via_header_buffer),
+				 ", %hu.%hu %s (%s/%s)\r\n",
+				 connptr->protocol.major,
+				 connptr->protocol.minor, hostname, PACKAGE,
+				 VERSION);
 
 			trim(header, strlen(header));
 
 			strlcat(header, via_header_buffer, LINE_LENGTH);
 		}
-#endif 
+#endif
 
 		/*
 		 * Don't send certain headers.
 		 */
 		for (i = 0; i < (sizeof(skipheaders) / sizeof(char *)); i++) {
-			if (strncasecmp(header, skipheaders[i], strlen(skipheaders[i])) == 0) {
+			if (strncasecmp
+			    (header, skipheaders[i],
+			     strlen(skipheaders[i])) == 0) {
 				break;
 			}
 		}
@@ -559,7 +601,9 @@ static int process_client_headers(struct conn_s *connptr)
 			content_length = atol(content_ptr);
 		}
 
-		if ((connptr->server_fd != -1) && safe_write(connptr->server_fd, header, strlen(header)) < 0) {
+		if ((connptr->server_fd != -1)
+		    && safe_write(connptr->server_fd, header,
+				  strlen(header)) < 0) {
 			safefree(header);
 			return -1;
 		}
@@ -576,22 +620,26 @@ static int process_client_headers(struct conn_s *connptr)
 		char hostname[128];
 
 		gethostname(hostname, sizeof(hostname));
-		snprintf(via_header_buffer, sizeof(via_header_buffer), "Via: %hu.%hu %s (%s/%s)\r\n", connptr->protocol.major, connptr->protocol.minor, hostname, PACKAGE, VERSION);
+		snprintf(via_header_buffer, sizeof(via_header_buffer),
+			 "Via: %hu.%hu %s (%s/%s)\r\n", connptr->protocol.major,
+			 connptr->protocol.minor, hostname, PACKAGE, VERSION);
 
-		safe_write(connptr->server_fd, via_header_buffer, strlen(via_header_buffer));
+		safe_write(connptr->server_fd, via_header_buffer,
+			   strlen(via_header_buffer));
 	}
 #endif
 
 	if (!connptr->send_message && (connptr->upstream || !connptr->ssl)) {
 #ifdef XTINYPROXY_ENABLE
-		if (config.my_domain
-		    && add_xtinyproxy_header(connptr) < 0) {
+		if (config.my_domain && add_xtinyproxy_header(connptr) < 0) {
 			safefree(header);
 			return -1;
 		}
-#endif	/* XTINYPROXY */
+#endif				/* XTINYPROXY */
 
-		if ((connptr->server_fd != -1) && safe_write(connptr->server_fd, header, strlen(header)) < 0) {
+		if ((connptr->server_fd != -1)
+		    && safe_write(connptr->server_fd, header,
+				  strlen(header)) < 0) {
 			safefree(header);
 			return -1;
 		}
@@ -603,7 +651,8 @@ static int process_client_headers(struct conn_s *connptr)
 	 * Spin here pulling the data from the client.
 	 */
 	if (content_length >= 0)
-		return pull_client_data(connptr, (unsigned long int)content_length);
+		return pull_client_data(connptr,
+					(unsigned long int) content_length);
 	else
 		return 0;
 }
@@ -612,13 +661,15 @@ static int process_client_headers(struct conn_s *connptr)
  * Loop through all the headers (including the response code) from the
  * server.
  */
-static int process_server_headers(struct conn_s *connptr)
+static int
+process_server_headers(struct conn_s *connptr)
 {
 	char *header;
 
-	for ( ; ; ) {
+	for (;;) {
 		if (readline(connptr->server_fd, &header) <= 0) {
-			DEBUG2("Server (file descriptor %d) closed connection.", connptr->server_fd);
+			DEBUG2("Server (file descriptor %d) closed connection.",
+			       connptr->server_fd);
 			return -1;
 		}
 
@@ -628,12 +679,13 @@ static int process_server_headers(struct conn_s *connptr)
 		}
 
 		if (!connptr->simple_req
-		    && safe_write(connptr->client_fd, header, strlen(header)) < 0) {
+		    && safe_write(connptr->client_fd, header,
+				  strlen(header)) < 0) {
 			safefree(header);
 			return -1;
 		}
 	}
-	
+
 	if (!connptr->simple_req
 	    && safe_write(connptr->client_fd, header, strlen(header)) < 0) {
 		safefree(header);
@@ -652,7 +704,8 @@ static int process_server_headers(struct conn_s *connptr)
  * tinyproxy oh so long ago...)
  *	- rjkaes
  */
-static void relay_connection(struct conn_s *connptr)
+static void
+relay_connection(struct conn_s *connptr)
 {
 	fd_set rset, wset;
 	struct timeval tv;
@@ -666,11 +719,12 @@ static void relay_connection(struct conn_s *connptr)
 
 	last_access = time(NULL);
 
-	for ( ; ; ) {
+	for (;;) {
 		FD_ZERO(&rset);
 		FD_ZERO(&wset);
 
-		tv.tv_sec = config.idletimeout - difftime(time(NULL), last_access);
+		tv.tv_sec =
+		    config.idletimeout - difftime(time(NULL), last_access);
 		tv.tv_usec = 0;
 
 		if (BUFFER_SIZE(connptr->sbuffer) > 0)
@@ -687,13 +741,18 @@ static void relay_connection(struct conn_s *connptr)
 		if (ret == 0) {
 			tdiff = difftime(time(NULL), last_access);
 			if (tdiff > config.idletimeout) {
-				log_message(LOG_INFO, "Idle Timeout (after select) as %g > %u.", tdiff, config.idletimeout);
+				log_message(LOG_INFO,
+					    "Idle Timeout (after select) as %g > %u.",
+					    tdiff, config.idletimeout);
 				return;
 			} else {
 				continue;
 			}
 		} else if (ret < 0) {
-			log_message(LOG_ERR, "relay_connection: select() error \"%s\". Closing connection (client_fd:%d, server_fd:%d)", strerror(errno), connptr->client_fd, connptr->server_fd);
+			log_message(LOG_ERR,
+				    "relay_connection: select() error \"%s\". Closing connection (client_fd:%d, server_fd:%d)",
+				    strerror(errno), connptr->client_fd,
+				    connptr->server_fd);
 			return;
 		} else {
 			/*
@@ -701,7 +760,7 @@ static void relay_connection(struct conn_s *connptr)
 			 */
 			last_access = time(NULL);
 		}
-		
+
 		if (FD_ISSET(connptr->server_fd, &rset)
 		    && readbuff(connptr->server_fd, connptr->sbuffer) < 0) {
 			break;
@@ -746,21 +805,25 @@ static void relay_connection(struct conn_s *connptr)
 /*
  * Establish a connection to the upstream proxy server.
  */
-static int connect_to_upstream(struct conn_s *connptr,
-			       struct request_s *request)
+static int
+connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 {
 	char *combined_string;
 	int len;
 
-	connptr->server_fd = opensock(config.upstream_name, config.upstream_port);
+	connptr->server_fd =
+	    opensock(config.upstream_name, config.upstream_port);
 
 	if (connptr->server_fd < 0) {
-		log_message(LOG_WARNING, "Could not connect to upstream proxy.");
+		log_message(LOG_WARNING,
+			    "Could not connect to upstream proxy.");
 		httperr(connptr, 404, "Unable to connect to upstream proxy.");
 		return -1;
 	}
 
-	log_message(LOG_CONN, "Established connection to upstream proxy \"%s\" using file descriptor %d.", config.upstream_name, connptr->server_fd);
+	log_message(LOG_CONN,
+		    "Established connection to upstream proxy \"%s\" using file descriptor %d.",
+		    config.upstream_name, connptr->server_fd);
 
 	/*
 	 * We need to re-write the "path" part of the request so that we
@@ -775,7 +838,8 @@ static int connect_to_upstream(struct conn_s *connptr,
 			return -1;
 		}
 
-		snprintf(combined_string, len, "%s:%d", request->host, request->port);
+		snprintf(combined_string, len, "%s:%d", request->host,
+			 request->port);
 	} else {
 		len = strlen(request->host) + strlen(request->path) + 14;
 		combined_string = safemalloc(len + 1);
@@ -783,12 +847,13 @@ static int connect_to_upstream(struct conn_s *connptr,
 			return -1;
 		}
 
-		snprintf(combined_string, len, "http://%s:%d%s", request->host, request->port, request->path);
+		snprintf(combined_string, len, "http://%s:%d%s", request->host,
+			 request->port, request->path);
 	}
 
 	safefree(request->path);
 	request->path = combined_string;
-	
+
 	return establish_http_connection(connptr, request);
 }
 #endif
@@ -802,7 +867,8 @@ static int connect_to_upstream(struct conn_s *connptr,
  * tinyproxy code, which was confusing, redundant. Hail progress.
  * 	- rjkaes
  */
-void handle_connection(int fd)
+void
+handle_connection(int fd)
 {
 	struct conn_s *connptr;
 	struct request_s *request = NULL;
@@ -826,42 +892,46 @@ void handle_connection(int fd)
 
 	if (check_acl(fd) <= 0) {
 		update_stats(STAT_DENIED);
-		httperr(connptr, 403, "You do not have authorization for using this service.");
+		httperr(connptr, 403,
+			"You do not have authorization for using this service.");
 		goto send_error;
 	}
-
 #ifdef TUNNEL_SUPPORT
-        /*
+	/*
 	 * If tunnel has been configured then redirect any connections to
 	 * it. I know I used GOTOs, but it seems to me to be the best way
 	 * of handling this situations. So sue me. :)
-	 *	- rjkaes
+	 *      - rjkaes
 	 */
 	if (config.tunnel_name && config.tunnel_port != -1) {
 		log_message(LOG_INFO, "Redirecting to %s:%d",
 			    config.tunnel_name, config.tunnel_port);
 
-		connptr->server_fd = opensock(config.tunnel_name, config.tunnel_port);
-		
+		connptr->server_fd =
+		    opensock(config.tunnel_name, config.tunnel_port);
+
 		if (connptr->server_fd < 0) {
-			log_message(LOG_WARNING, "Could not connect to tunnel.");
+			log_message(LOG_WARNING,
+				    "Could not connect to tunnel.");
 			httperr(connptr, 404, "Unable to connect to tunnel.");
 
 			goto internal_proxy;
 		}
 
-		log_message(LOG_INFO, "Established a connection to the tunnel \"%s\" using file descriptor %d.", config.tunnel_name, connptr->server_fd);
+		log_message(LOG_INFO,
+			    "Established a connection to the tunnel \"%s\" using file descriptor %d.",
+			    config.tunnel_name, connptr->server_fd);
 
 		/*
 		 * I know GOTOs are evil, but duplicating the code is even
 		 * more evil.
-		 *	- rjkaes
+		 *      - rjkaes
 		 */
 		goto relay_proxy;
 	}
-#endif /* TUNNEL_SUPPORT */
+#endif				/* TUNNEL_SUPPORT */
 
-internal_proxy:
+      internal_proxy:
 	request_line = read_request_line(connptr);
 	if (!request_line) {
 		update_stats(STAT_BADCONN);
@@ -880,7 +950,6 @@ internal_proxy:
 		}
 		goto send_error;
 	}
-
 #ifdef UPSTREAM_SUPPORT
 	if (config.upstream_name && config.upstream_port != -1) {
 		connptr->upstream = TRUE;
@@ -895,7 +964,9 @@ internal_proxy:
 			goto send_error;
 		}
 
-		log_message(LOG_CONN, "Established connection to host \"%s\" using file descriptor %d.", request->host, connptr->server_fd);
+		log_message(LOG_CONN,
+			    "Established connection to host \"%s\" using file descriptor %d.",
+			    request->host, connptr->server_fd);
 
 		if (!connptr->ssl)
 			establish_http_connection(connptr, request);
@@ -903,7 +974,7 @@ internal_proxy:
 	}
 #endif
 
-send_error:
+      send_error:
 	free_request_struct(request);
 
 	if (!connptr->simple_req) {
@@ -929,14 +1000,15 @@ send_error:
 		}
 	} else {
 		if (send_ssl_response(connptr) < 0) {
-			log_message(LOG_ERR, "handle_connection: Could not send SSL greeting to client.");
+			log_message(LOG_ERR,
+				    "handle_connection: Could not send SSL greeting to client.");
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
 			return;
 		}
 	}
 
-relay_proxy:
+      relay_proxy:
 	relay_connection(connptr);
 
 	/*

@@ -1,4 +1,4 @@
-/* $Id: ternary.c,v 1.11 2001-10-25 17:27:39 rjkaes Exp $
+/* $Id: ternary.c,v 1.12 2001-11-22 00:31:10 rjkaes Exp $
  *
  * This module creates a Ternary Search Tree which can store both string
  * keys, and arbitrary data for each key. It works similar to a hash, and
@@ -61,8 +61,8 @@ static Ttree *trees[MAXTREES];	/* the array of trees */
 /*
  * nonce generator -- this MUST be non-zero _always_
  */
-#define IOFFSET	0x1221	/* used to hide index number in token */
-#define NOFFSET 0x0502	/* initial nonce */
+#define IOFFSET	0x1221		/* used to hide index number in token */
+#define NOFFSET 0x0502		/* initial nonce */
 static unsigned int noncectr = NOFFSET;
 
 /*
@@ -82,10 +82,11 @@ char te_errbuf[256];
  *				(te_errbuf has disambiguating string)
  * Exceptions:	none
  */
-static TERNARY create_token_ref(unsigned int ind)
+static TERNARY
+create_token_ref(unsigned int ind)
 {
-	unsigned int high;     	/* high 16 bits of token (index) */
-	unsigned int low;      	/* low 16 bits of token (nonce) */
+	unsigned int high;	/* high 16 bits of token (index) */
+	unsigned int low;	/* low 16 bits of token (nonce) */
 
 	/*
 	 * Sanity check argument; called internally...
@@ -118,7 +119,7 @@ static TERNARY create_token_ref(unsigned int ind)
 		return TE_INTINCON;
 	}
 
-	return (TERNARY)((high << 16) | low);
+	return (TERNARY) ((high << 16) | low);
 }
 
 /*
@@ -136,9 +137,10 @@ static TERNARY create_token_ref(unsigned int ind)
  *				(te_errbuf has disambiguating string)
  * EXCEPTIONS:	none
  */
-static int read_token_ref(TERNARY tno)
+static int
+read_token_ref(TERNARY tno)
 {
-	unsigned int ind;    	/* index of current tree */
+	unsigned int ind;	/* index of current tree */
 
 	/*
 	 * Get the index number and check it for validity
@@ -159,8 +161,8 @@ static int read_token_ref(TERNARY tno)
 	 */
 	if (trees[ind]->token != tno) {
 		ERRBUF3("readbuf: token refers to old tree (new=%u, old=%u)",
-			(unsigned int)((trees[ind]->token) & 0xffff) - IOFFSET,
-			(unsigned int)(tno & 0xffff) - NOFFSET);
+			(unsigned int) ((trees[ind]->token) & 0xffff) - IOFFSET,
+			(unsigned int) (tno & 0xffff) - NOFFSET);
 		return TE_BADTOKEN;
 	}
 
@@ -186,7 +188,8 @@ static int read_token_ref(TERNARY tno)
  *				(te_errbuf has descriptive string)
  * Exceptions:	none
  */
-TERNARY ternary_new(void)
+TERNARY
+ternary_new(void)
 {
 	int cur;		/* index of current tree */
 	TERNARY token;		/* new token for current tree */
@@ -242,7 +245,8 @@ TERNARY ternary_new(void)
  *				read_token_ref()).
  * Exceptions:	none
  */
-int ternary_destroy(TERNARY tno, void (*freeptr)(void *))
+int
+ternary_destroy(TERNARY tno, void (*freeptr) (void *))
 {
 	int cur;		/* index of current tree */
 	unsigned int i, j;
@@ -262,7 +266,7 @@ int ternary_destroy(TERNARY tno, void (*freeptr)(void *))
 			ptr = (trees[cur]->freearr[i] + j);
 			if (ptr->splitchar == 0)
 				if (freeptr)
-					(*freeptr)(ptr->eqkid);
+					(*freeptr) (ptr->eqkid);
 		}
 		safefree(trees[cur]->freearr[i]);
 	}
@@ -287,8 +291,9 @@ int ternary_destroy(TERNARY tno, void (*freeptr)(void *))
  *		TE_TOOFULL	tree is full, so no new elements can be added.
  * Exceptions:	none
  */
-int ternary_insert_replace(TERNARY tno, const char *s, void *data,
-			   short int replace)
+int
+ternary_insert_replace(TERNARY tno, const char *s, void *data,
+		       short int replace)
 {
 	int cur;		/* index of current tree */
 	Ttree *tree;		/* pointer to tree structure */
@@ -301,7 +306,7 @@ int ternary_insert_replace(TERNARY tno, const char *s, void *data,
 	 */
 	if (TE_ISERROR(cur = read_token_ref(tno)))
 		return cur;
-	
+
 	tree = trees[cur];
 	p = &(tree->tree_root);
 
@@ -312,7 +317,7 @@ int ternary_insert_replace(TERNARY tno, const char *s, void *data,
 					return TE_EXISTS;
 				else {
 					free(pp->eqkid);
-					pp->eqkid = (Tnode *)data;
+					pp->eqkid = (Tnode *) data;
 					return TE_NONE;
 				}
 			}
@@ -327,14 +332,14 @@ int ternary_insert_replace(TERNARY tno, const char *s, void *data,
 		if (tree->bufn-- == 0) {
 			tree->buf = safecalloc(BUFSIZE, sizeof(Tnode));
 			if (!tree->buf) {
-				ERRBUF("ternary_insert: malloc: no more memory");
+				ERRBUF
+				    ("ternary_insert: malloc: no more memory");
 				return TE_NOROOM;
 			}
 
 			if (tree->freen == BUFARRAY - 1) {
 				ERRBUF3("ternary_insert: freen %u equals %u",
-					tree->freen,
-					BUFARRAY - 1);
+					tree->freen, BUFARRAY - 1);
 				return TE_TOOFULL;
 			}
 
@@ -364,7 +369,8 @@ int ternary_insert_replace(TERNARY tno, const char *s, void *data,
  * Errors:
  * Exceptions:
  */
-int ternary_search(TERNARY tno, const char *s, void **data)
+int
+ternary_search(TERNARY tno, const char *s, void **data)
 {
 	int cur;
 	Tnode *p;
@@ -384,7 +390,7 @@ int ternary_search(TERNARY tno, const char *s, void **data)
 		else if (toupper(*s) == toupper(p->splitchar)) {
 			if (*s++ == 0) {
 				if (data)
-					*data = (void *)p->eqkid;
+					*data = (void *) p->eqkid;
 				return TE_NONE;
 			}
 			p = p->eqkid;
@@ -393,6 +399,6 @@ int ternary_search(TERNARY tno, const char *s, void **data)
 	}
 
 	if (data)
-		*data = (void *)NULL;
+		*data = (void *) NULL;
 	return TE_EMPTY;
 }

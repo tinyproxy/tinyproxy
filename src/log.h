@@ -1,4 +1,4 @@
-/* $Id: log.h,v 1.7 2001-08-26 21:10:04 rjkaes Exp $
+/* $Id: log.h,v 1.8 2001-11-22 00:31:10 rjkaes Exp $
  *
  * See 'log.c' for a detailed description.
  *
@@ -84,7 +84,7 @@
 #  define LOG_DEBUG   7
 #endif
 
-#define LOG_CONN      8 /* extra to log connections without the INFO stuff */
+#define LOG_CONN      8		/* extra to log connections without the INFO stuff */
 
 /*
  * Use this for debugging. The format is specific:

@@ -1,4 +1,4 @@
-/* $Id: filter.c,v 1.7 2001-10-25 17:27:39 rjkaes Exp $
+/* $Id: filter.c,v 1.8 2001-11-22 00:31:10 rjkaes Exp $
  *
  * Copyright (c) 1999  George Talusan (gstalusan@uwaterloo.ca)
  *
@@ -30,12 +30,12 @@ struct filter_list {
 	regex_t *cpat;
 };
 
-
 static struct filter_list *fl = NULL;
 static int already_init = 0;
 
 /* initializes a linked list of strings containing hosts to be filtered */
-void filter_init(void)
+void
+filter_init(void)
 {
 	FILE *fd;
 	struct filter_list *p;
@@ -50,22 +50,29 @@ void filter_init(void)
 			while (fgets(buf, 255, fd)) {
 				s = buf;
 				if (!p)	/* head of list */
-					fl = p = safecalloc(1, sizeof(struct filter_list));
+					fl = p =
+					    safecalloc(1,
+						       sizeof(struct
+							      filter_list));
 				else {	/* next entry */
-					p->next = safecalloc(1, sizeof(struct filter_list));
+					p->next =
+					    safecalloc(1,
+						       sizeof(struct
+							      filter_list));
 					p = p->next;
 				}
 
 				/* replace first whitespace with \0 */
 				while (*s++)
-					if (isspace((unsigned char)*s))
+					if (isspace((unsigned char) *s))
 						*s = '\0';
 
 				p->pat = strdup(buf);
 				p->cpat = safemalloc(sizeof(regex_t));
-				if ((err = regcomp(p->cpat, p->pat, REG_NEWLINE | REG_NOSUB)) != 0) {
-					fprintf(stderr,
-						"Bad regex in %s: %s\n",
+				if ((err =
+				     regcomp(p->cpat, p->pat,
+					     REG_NEWLINE | REG_NOSUB)) != 0) {
+					fprintf(stderr, "Bad regex in %s: %s\n",
 						config.filter, p->pat);
 					exit(EX_DATAERR);
 				}
@@ -77,7 +84,8 @@ void filter_init(void)
 }
 
 /* unlink the list */
-void filter_destroy(void)
+void
+filter_destroy(void)
 {
 	struct filter_list *p, *q;
 
@@ -95,7 +103,8 @@ void filter_destroy(void)
 }
 
 /* returns 0 if host is not an element of filter list, non-zero otherwise */
-int filter_url(char *host)
+int
+filter_url(char *host)
 {
 	struct filter_list *p;
 	char *s, *port;

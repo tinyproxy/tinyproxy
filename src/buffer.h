@@ -1,4 +1,4 @@
-/* $Id: buffer.h,v 1.5 2001-11-05 15:23:05 rjkaes Exp $
+/* $Id: buffer.h,v 1.6 2001-11-22 00:31:10 rjkaes Exp $
  *
  * See 'buffer.c' for a detailed description.
  *
@@ -25,7 +25,7 @@
 struct buffer_s {
 	struct bufline_s *head;	/* top of the buffer */
 	struct bufline_s *tail;	/* bottom of the buffer */
-	size_t size;	/* total size of the buffer */
+	size_t size;		/* total size of the buffer */
 };
 
 /*

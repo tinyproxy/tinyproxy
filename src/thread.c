@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.17 2001-10-24 00:37:23 rjkaes Exp $
+/* $Id: thread.c,v 1.18 2001-11-22 00:31:10 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -80,7 +80,8 @@ static pthread_mutex_t servers_mutex = PTHREAD_MUTEX_INITIALIZER;
 /*
  * Set the configuration values for the various thread related settings.
  */
-short int thread_configure(thread_config_t type, unsigned int val)
+short int
+thread_configure(thread_config_t type, unsigned int val)
 {
 	switch (type) {
 	case THREAD_MAXCLIENTS:
@@ -109,19 +110,20 @@ short int thread_configure(thread_config_t type, unsigned int val)
 /*
  * This is the main (per thread) loop.
  */
-static void *thread_main(void *arg)
+static void *
+thread_main(void *arg)
 {
 	int connfd;
 	struct sockaddr *cliaddr;
 	socklen_t clilen;
 	struct thread_s *ptr;
 
-	ptr = (struct thread_s *)arg;
+	ptr = (struct thread_s *) arg;
 
 	cliaddr = safemalloc(addrlen);
 	if (!cliaddr)
 		return NULL;
-	
+
 	while (!config.quit) {
 		clilen = addrlen;
 
@@ -142,10 +144,13 @@ static void *thread_main(void *arg)
 			DEBUG2("%u connections so far...", ptr->connects);
 
 			if (ptr->connects >= thread_config.maxrequestsperchild) {
-				log_message(LOG_NOTICE, "Thread has reached MaxRequestsPerChild (%u > %u). Killing thread.", ptr->connects, thread_config.maxrequestsperchild);
+				log_message(LOG_NOTICE,
+					    "Thread has reached MaxRequestsPerChild (%u > %u). Killing thread.",
+					    ptr->connects,
+					    thread_config.maxrequestsperchild);
 
 				ptr->status = T_EMPTY;
-				
+
 				safefree(cliaddr);
 
 				return NULL;
@@ -160,7 +165,8 @@ static void *thread_main(void *arg)
 			 */
 			SERVER_UNLOCK();
 
-			log_message(LOG_NOTICE, "Waiting servers exceeds MaxSpareServers. Killing thread.");
+			log_message(LOG_NOTICE,
+				    "Waiting servers exceeds MaxSpareServers. Killing thread.");
 
 			ptr->status = T_EMPTY;
 
@@ -170,7 +176,7 @@ static void *thread_main(void *arg)
 		SERVER_UNLOCK();
 
 		ptr->status = T_WAITING;
-		
+
 		SERVER_INC();
 	}
 
@@ -181,7 +187,8 @@ static void *thread_main(void *arg)
 /*
  * Create the initial pool of threads.
  */
-short int thread_pool_create(void)
+short int
+thread_pool_create(void)
 {
 	unsigned int i;
 
@@ -196,26 +203,33 @@ short int thread_pool_create(void)
 	pthread_attr_setstacksize(&thread_attr, THREAD_STACK_SIZE);
 
 	if (thread_config.maxclients == 0) {
-		log_message(LOG_ERR, "thread_pool_create: \"MaxClients\" must be greater than zero.");
+		log_message(LOG_ERR,
+			    "thread_pool_create: \"MaxClients\" must be greater than zero.");
 		return -1;
 	}
 	if (thread_config.startservers == 0) {
-		log_message(LOG_ERR, "thread_pool_create: \"StartServers\" must be greater than zero.");
+		log_message(LOG_ERR,
+			    "thread_pool_create: \"StartServers\" must be greater than zero.");
 		return -1;
 	}
 
-	thread_ptr = safecalloc((size_t)thread_config.maxclients, sizeof(struct thread_s));
+	thread_ptr =
+	    safecalloc((size_t) thread_config.maxclients,
+		       sizeof(struct thread_s));
 	if (!thread_ptr)
 		return -1;
 
 	if (thread_config.startservers > thread_config.maxclients) {
-		log_message(LOG_WARNING, "Can not start more than \"MaxClients\" servers. Starting %u servers instead.", thread_config.maxclients);
+		log_message(LOG_WARNING,
+			    "Can not start more than \"MaxClients\" servers. Starting %u servers instead.",
+			    thread_config.maxclients);
 		thread_config.startservers = thread_config.maxclients;
 	}
 
 	for (i = 0; i < thread_config.startservers; i++) {
 		thread_ptr[i].status = T_WAITING;
-		pthread_create(&thread_ptr[i].tid, &thread_attr, &thread_main, &thread_ptr[i]);
+		pthread_create(&thread_ptr[i].tid, &thread_attr, &thread_main,
+			       &thread_ptr[i]);
 	}
 	servers_waiting = thread_config.startservers;
 
@@ -231,7 +245,8 @@ short int thread_pool_create(void)
  * Keep the proper number of servers running. This is the birth of the
  * servers. It monitors this at least once a second.
  */
-void thread_main_loop(void)
+void
+thread_main_loop(void)
 {
 	int i;
 
@@ -242,13 +257,15 @@ void thread_main_loop(void)
 
 		for (i = 0; i < thread_config.maxclients; i++) {
 			if (thread_ptr[i].status == T_EMPTY) {
-				pthread_create(&thread_ptr[i].tid, &thread_attr, &thread_main, &thread_ptr[i]);
+				pthread_create(&thread_ptr[i].tid, &thread_attr,
+					       &thread_main, &thread_ptr[i]);
 				thread_ptr[i].status = T_WAITING;
 				thread_ptr[i].connects = 0;
 
 				SERVER_INC();
 
-				log_message(LOG_NOTICE, "Waiting servers is less than MinSpareServers. Creating new thread.");
+				log_message(LOG_NOTICE,
+					    "Waiting servers is less than MinSpareServers. Creating new thread.");
 
 				break;
 			}
@@ -257,13 +274,15 @@ void thread_main_loop(void)
 	SERVER_UNLOCK();
 }
 
-int thread_listening_sock(uint16_t port)
+int
+thread_listening_sock(uint16_t port)
 {
 	listenfd = listen_sock(port, &addrlen);
 	return listenfd;
 }
 
-void thread_close_sock(void)
+void
+thread_close_sock(void)
 {
 	close(listenfd);
 }

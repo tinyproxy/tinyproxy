@@ -1,4 +1,4 @@
-/* $Id: ternary.h,v 1.3 2001-08-30 16:52:09 rjkaes Exp $
+/* $Id: ternary.h,v 1.4 2001-11-22 00:31:10 rjkaes Exp $
  *
  * See 'ternary.c' for a detailed description.
  *
@@ -27,7 +27,7 @@ typedef long int TERNARY;
  * Macros for testing for errors from the various functions.
  */
 #define TE_ISERROR(x)	((x) < 0)	/* true if x is tlib error code */
-#define TE_NONE		0		/* no errors */
+#define TE_NONE		0	/* no errors */
 
 /*
  * Contains any error messages from the functions.
@@ -56,7 +56,7 @@ extern char te_errbuf[256];
  * Library functions.
  */
 extern TERNARY ternary_new(void);
-extern int ternary_destroy(TERNARY tno, void (*freeptr)(void *));
+extern int ternary_destroy(TERNARY tno, void (*freeptr) (void *));
 
 #define ternary_insert(x, y, z)  ternary_insert_replace(x, y, z, 0)
 #define ternary_replace(x, y, z) ternary_insert_replace(x, y, z, 1)

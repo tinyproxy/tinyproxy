@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.15 2001-11-05 15:23:05 rjkaes Exp $
+/* $Id: buffer.c,v 1.16 2001-11-22 00:31:10 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -33,8 +33,8 @@
 struct bufline_s {
 	unsigned char *string;	/* the actual string of data */
 	struct bufline_s *next;	/* pointer to next in linked list */
-	size_t length;	/* length of the string of data */
-	size_t pos;	/* start sending from this offset */
+	size_t length;		/* length of the string of data */
+	size_t pos;		/* start sending from this offset */
 };
 
 /*
@@ -43,7 +43,8 @@ struct bufline_s {
  * pointer into the structure. In other words, when you insert data into the
  * buffer, the buffer becomes responsible for freeing it.
  */
-static struct bufline_s *makenewline(unsigned char *data, size_t length)
+static struct bufline_s *
+makenewline(unsigned char *data, size_t length)
 {
 	struct bufline_s *newline;
 
@@ -66,7 +67,8 @@ static struct bufline_s *makenewline(unsigned char *data, size_t length)
 /*
  * Free the allocated buffer line
  */
-static void free_line(struct bufline_s *line)
+static void
+free_line(struct bufline_s *line)
 {
 	assert(line != NULL);
 
@@ -82,7 +84,8 @@ static void free_line(struct bufline_s *line)
 /*
  * Create a new buffer
  */
-struct buffer_s *new_buffer(void)
+struct buffer_s *
+new_buffer(void)
 {
 	struct buffer_s *buffptr;
 
@@ -103,7 +106,8 @@ struct buffer_s *new_buffer(void)
 /*
  * Delete all the lines in the buffer and the buffer itself
  */
-void delete_buffer(struct buffer_s *buffptr)
+void
+delete_buffer(struct buffer_s *buffptr)
 {
 	struct bufline_s *next;
 
@@ -121,8 +125,8 @@ void delete_buffer(struct buffer_s *buffptr)
 /*
  * Push a new line on to the end of the buffer
  */
-static int add_to_buffer(struct buffer_s *buffptr, unsigned char *data,
-			 size_t length)
+static int
+add_to_buffer(struct buffer_s *buffptr, unsigned char *data, size_t length)
 {
 	struct bufline_s *newline;
 
@@ -158,7 +162,8 @@ static int add_to_buffer(struct buffer_s *buffptr, unsigned char *data,
 /*
  * Remove the first line from the top of the buffer
  */
-static struct bufline_s *remove_from_buffer(struct buffer_s *buffptr)
+static struct bufline_s *
+remove_from_buffer(struct buffer_s *buffptr)
 {
 	struct bufline_s *line;
 
@@ -178,7 +183,8 @@ static struct bufline_s *remove_from_buffer(struct buffer_s *buffptr)
  * Takes a connection and returns the number of bytes read.
  */
 #define READ_BUFFER_SIZE (1024 * 2)
-ssize_t readbuff(int fd, struct buffer_s *buffptr)
+ssize_t
+readbuff(int fd, struct buffer_s * buffptr)
 {
 	ssize_t bytesin;
 	unsigned char *buffer;
@@ -204,7 +210,8 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 		}
 
 		if (add_to_buffer(buffptr, newbuffer, bytesin) < 0) {
-			log_message(LOG_ERR, "readbuff: add_to_buffer() error.");
+			log_message(LOG_ERR,
+				    "readbuff: add_to_buffer() error.");
 			return -1;
 		}
 
@@ -226,7 +233,9 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
 			case EINTR:
 				return 0;
 			default:
-				log_message(LOG_ERR, "readbuff: recv() error \"%s\" on file descriptor %d", strerror(errno), fd);
+				log_message(LOG_ERR,
+					    "readbuff: recv() error \"%s\" on file descriptor %d",
+					    strerror(errno), fd);
 				return -1;
 			}
 		}
@@ -237,7 +246,8 @@ ssize_t readbuff(int fd, struct buffer_s *buffptr)
  * Write the bytes in the buffer to the socket.
  * Takes a connection and returns the number of bytes written.
  */
-ssize_t writebuff(int fd, struct buffer_s *buffptr)
+ssize_t
+writebuff(int fd, struct buffer_s * buffptr)
 {
 	ssize_t bytessent;
 	struct bufline_s *line;
@@ -252,7 +262,8 @@ ssize_t writebuff(int fd, struct buffer_s *buffptr)
 	assert(BUFFER_HEAD(buffptr) != NULL);
 
 	line = BUFFER_HEAD(buffptr);
-	bytessent = write(fd, line->string + line->pos, line->length - line->pos);
+	bytessent =
+	    write(fd, line->string + line->pos, line->length - line->pos);
 
 	if (bytessent >= 0) {
 		/* bytes sent, adjust buffer */
@@ -273,10 +284,14 @@ ssize_t writebuff(int fd, struct buffer_s *buffptr)
 			return 0;
 		case ENOBUFS:
 		case ENOMEM:
-			log_message(LOG_ERR, "writebuff: write() error [NOBUFS/NOMEM] \"%s\" on file descriptor %d", strerror(errno), fd);
+			log_message(LOG_ERR,
+				    "writebuff: write() error [NOBUFS/NOMEM] \"%s\" on file descriptor %d",
+				    strerror(errno), fd);
 			return 0;
 		default:
-			log_message(LOG_ERR, "writebuff: write() error \"%s\" on file descriptor %d", strerror(errno), fd);
+			log_message(LOG_ERR,
+				    "writebuff: write() error \"%s\" on file descriptor %d",
+				    strerror(errno), fd);
 			return -1;
 		}
 	}

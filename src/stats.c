@@ -1,4 +1,4 @@
-/* $Id: stats.c,v 1.6 2001-09-15 21:27:58 rjkaes Exp $
+/* $Id: stats.c,v 1.7 2001-11-22 00:31:10 rjkaes Exp $
  *
  * This module handles the statistics for tinyproxy. There are only two
  * public API functions. The reason for the functions, rather than just a
@@ -48,7 +48,8 @@ pthread_mutex_t stats_mutex = PTHREAD_MUTEX_INITIALIZER;
 /*
  * Initialise the statistics information to zero.
  */
-void init_stats(void)
+void
+init_stats(void)
 {
 	LOCK();
 	memset(&stats, 0, sizeof(stats));
@@ -58,18 +59,19 @@ void init_stats(void)
 /*
  * Display the statics of the tinyproxy server.
  */
-int showstats(struct conn_s *connptr)
+int
+showstats(struct conn_s *connptr)
 {
-	static char *msg = \
-	    "<html><head><title>%s (%s) stats</title></head>\r\n" \
-	    "<body>\r\n" \
-	    "<center><h2>%s (%s) run-time statistics</h2></center><hr>\r\n" \
-	    "<blockquote>\r\n" \
-	    "Number of open connections: %lu<br>\r\n" \
-	    "Number of requests: %lu<br>\r\n" \
-	    "Number of bad connections: %lu<br>\r\n" \
-            "Number of denied connections: %lu<br>\r\n" \
-	    "Number of refused connections due to high load: %lu\r\n" \
+	static char *msg =
+	    "<html><head><title>%s (%s) stats</title></head>\r\n"
+	    "<body>\r\n"
+	    "<center><h2>%s (%s) run-time statistics</h2></center><hr>\r\n"
+	    "<blockquote>\r\n"
+	    "Number of open connections: %lu<br>\r\n"
+	    "Number of requests: %lu<br>\r\n"
+	    "Number of bad connections: %lu<br>\r\n"
+	    "Number of denied connections: %lu<br>\r\n"
+	    "Number of refused connections due to high load: %lu\r\n"
 	    "</blockquote>\r\n</body></html>\r\n";
 
 	char *message_buffer;
@@ -80,12 +82,10 @@ int showstats(struct conn_s *connptr)
 
 	LOCK();
 	snprintf(message_buffer, MAXBUFFSIZE, msg,
-		PACKAGE, VERSION, PACKAGE, VERSION,
-		stats.num_open,
-		stats.num_reqs,
-		stats.num_badcons,
-		stats.num_denied,
-		stats.num_refused);
+		 PACKAGE, VERSION, PACKAGE, VERSION,
+		 stats.num_open,
+		 stats.num_reqs,
+		 stats.num_badcons, stats.num_denied, stats.num_refused);
 	UNLOCK();
 
 	if (send_http_message(connptr, 200, "OK", message_buffer) < 0) {
@@ -101,10 +101,11 @@ int showstats(struct conn_s *connptr)
  * Update the value of the statistics. The update_level is defined in
  * stats.h
  */
-int update_stats(status_t update_level)
+int
+update_stats(status_t update_level)
 {
 	LOCK();
-	switch(update_level) {
+	switch (update_level) {
 	case STAT_BADCONN:
 		stats.num_badcons++;
 		break;

@@ -1,4 +1,4 @@
-/* $Id: log.c,v 1.15 2001-10-25 17:27:39 rjkaes Exp $
+/* $Id: log.c,v 1.16 2001-11-22 00:31:10 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
@@ -44,7 +44,8 @@ static short int log_level = LOG_ERR;
 /*
  * Set the log level for writing to the log file.
  */
-void set_log_level(short int level)
+void
+set_log_level(short int level)
 {
 	log_level = level;
 }
@@ -52,7 +53,8 @@ void set_log_level(short int level)
 /*
  * This routine logs messages to either the log file or the syslog function.
  */
-void log_message(short int level, char *fmt, ...)
+void
+log_message(short int level, char *fmt, ...)
 {
 	va_list args;
 	time_t nowtime;
@@ -74,12 +76,11 @@ void log_message(short int level, char *fmt, ...)
 		if (level > LOG_INFO && level != LOG_CONN)
 			return;
 	} else if (level > log_level)
-			return;
+		return;
 #endif
-	
 
 #ifdef HAVE_SYSLOG_H
-	if (config.syslog && level == LOG_CONN) 
+	if (config.syslog && level == LOG_CONN)
 		level = LOG_INFO;
 #endif
 
@@ -104,7 +105,7 @@ void log_message(short int level, char *fmt, ...)
 			cf = stderr;
 
 		fprintf(cf, "%-9s %s [%ld]: ", syslog_level[level],
-			time_string, (long int)getpid());
+			time_string, (long int) getpid());
 		vfprintf(cf, fmt, args);
 		fprintf(cf, "\n");
 		fflush(cf);

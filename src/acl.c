@@ -1,4 +1,4 @@
-/* $Id: acl.c,v 1.10 2001-11-03 06:08:37 rjkaes Exp $
+/* $Id: acl.c,v 1.11 2001-11-22 00:31:10 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
@@ -38,7 +38,8 @@ static struct acl_s *access_list = NULL;
  * Take a netmask number (between 0 and 32) and returns a network ordered
  * value for comparison. Somebody please clean this up. :)
  */
-static in_addr_t make_netmask(int netmask_num)
+static in_addr_t
+make_netmask(int netmask_num)
 {
 	static in_addr_t netmasks[] = {
 		0x00000000, 0x80000000, 0xc0000000, 0xe0000000,
@@ -66,7 +67,8 @@ static in_addr_t make_netmask(int netmask_num)
  *    -1 on failure
  *     0 otherwise.
  */
-int insert_acl(char *location, acl_access_t access_type)
+int
+insert_acl(char *location, acl_access_t access_type)
 {
 	size_t i;
 	struct acl_s **rev_acl_ptr, *acl_ptr, *new_acl_ptr;
@@ -81,7 +83,7 @@ int insert_acl(char *location, acl_access_t access_type)
 		/*
 		 * Numeric strings can not contain letters, so test on it.
 		 */
-		if (isalpha((unsigned char)location[i])) {
+		if (isalpha((unsigned char) location[i])) {
 			break;
 		}
 	}
@@ -99,9 +101,9 @@ int insert_acl(char *location, acl_access_t access_type)
 	if (!new_acl_ptr) {
 		return -1;
 	}
-	
+
 	new_acl_ptr->acl_access = access_type;
-	
+
 	if (location[i] == '\0') {
 		DEBUG2("ACL \"%s\" is a number.", location);
 
@@ -115,7 +117,8 @@ int insert_acl(char *location, acl_access_t access_type)
 			*nptr++ = '\0';
 
 			new_acl_ptr->netmask = strtol(nptr, NULL, 10);
-			if (new_acl_ptr->netmask < 0 || new_acl_ptr->netmask > 32) {
+			if (new_acl_ptr->netmask < 0
+			    || new_acl_ptr->netmask > 32) {
 				safefree(new_acl_ptr);
 				return -1;
 			}
@@ -137,7 +140,7 @@ int insert_acl(char *location, acl_access_t access_type)
 
 	*rev_acl_ptr = new_acl_ptr;
 	new_acl_ptr->next = acl_ptr;
-	
+
 	return 0;
 }
 
@@ -149,7 +152,8 @@ int insert_acl(char *location, acl_access_t access_type)
  *     0 if denied
  *    -1 if error
  */
-int check_acl(int fd)
+int
+check_acl(int fd)
 {
 	struct acl_s *aclptr;
 	char ip_address[PEER_IP_LENGTH];
@@ -180,9 +184,13 @@ int check_acl(int fd)
 				continue;
 			}
 
-			if (strcasecmp(string_address + (test_length - match_length), aclptr->location) == 0) {
+			if (strcasecmp
+			    (string_address + (test_length - match_length),
+			     aclptr->location) == 0) {
 				if (aclptr->acl_access == ACL_DENY) {
-					log_message(LOG_NOTICE, "Unauthorized access from \"%s\"", string_address);
+					log_message(LOG_NOTICE,
+						    "Unauthorized access from \"%s\"",
+						    string_address);
 					return 0;
 				} else {
 					return 1;
@@ -202,9 +210,12 @@ int check_acl(int fd)
 
 			netmask_addr = make_netmask(aclptr->netmask);
 
-			if ((test_addr.s_addr & netmask_addr) == (match_addr.s_addr & netmask_addr)) {
+			if ((test_addr.s_addr & netmask_addr) ==
+			    (match_addr.s_addr & netmask_addr)) {
 				if (aclptr->acl_access == ACL_DENY) {
-					log_message(LOG_NOTICE, "Unauthorized access from [%s].", ip_address);
+					log_message(LOG_NOTICE,
+						    "Unauthorized access from [%s].",
+						    ip_address);
 					return 0;
 				} else {
 					return 1;
@@ -218,10 +229,10 @@ int check_acl(int fd)
 		aclptr = aclptr->next;
 	}
 
-
 	/*
 	 * Deny all connections by default.
 	 */
-	log_message(LOG_NOTICE, "Unauthorized connection from \"%s\" [%s].", string_address, ip_address);
+	log_message(LOG_NOTICE, "Unauthorized connection from \"%s\" [%s].",
+		    string_address, ip_address);
 	return 0;
 }
