@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.11 2002-12-04 17:06:13 rjkaes Exp $
+/* $Id: conns.h,v 1.12 2003-03-13 21:27:29 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -37,9 +37,20 @@ struct conn_s {
 	unsigned int connect_method;
 	unsigned int show_stats;
 
-	/* Store the error response if there is one */
-	char *error_string;
+	/*
+	 * Store the error response if there is one.
+	 * This structure stores key -> value mappings for substitution
+	 * in the error HTML files.  a NULL pointer indicates the end of 
+	 * the array
+	 */
+	struct error_variable_s {
+		char *error_key;
+		char *error_val;
+	} **error_variables;
+	int error_variable_count;
+
 	int error_number;
+	char *error_string;
 
 	/* A Content-Length value from the remote server */
 	long remote_content_length;
