@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.114 2004-08-11 02:49:05 rjkaes Exp $
+/* $Id: reqs.c,v 1.115 2004-08-12 19:57:15 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -978,15 +978,10 @@ pull_client_data(struct conn_s *connptr, long int length)
  * the server.
  *	-rjkaes
  */
-static int
+static inline int
 add_xtinyproxy_header(struct conn_s *connptr)
 {
-	/*
-	 * Don't try to send if we have an invalid server handle.
-	 */
-	if (connptr->server_fd < 0)
-		return 0;
-
+        assert(connptr && connptr->server_fd >= 0);
 	return write_message(connptr->server_fd,
 			     "X-Tinyproxy: %s\r\n",
 			     connptr->client_ip_addr);
