@@ -1,4 +1,4 @@
-/* $Id: conns.c,v 1.7 2002-04-07 21:32:01 rjkaes Exp $
+/* $Id: conns.c,v 1.8 2002-04-11 20:27:51 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connnection related tasks put here, but for now the header
@@ -61,6 +61,8 @@ initialize_conn(int client_fd)
 	connptr->connect_method = FALSE;
 
 	connptr->protocol.major = connptr->protocol.minor = 0;
+
+	connptr->remote_content_length = -1;
 
 	update_stats(STAT_OPEN);
 

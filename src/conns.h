@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.6 2002-04-07 21:32:01 rjkaes Exp $
+/* $Id: conns.h,v 1.7 2002-04-11 20:27:51 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -35,6 +35,9 @@ struct conn_s {
 
 	bool_t connect_method;
 	bool_t response_message_sent;
+
+	/* A Content-Length value from the remote server */
+	long remote_content_length;
 
 	/*
 	 * Store the incoming request's HTTP protocol.
