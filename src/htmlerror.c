@@ -1,4 +1,4 @@
-/* $Id: htmlerror.c,v 1.5 2003-05-31 23:02:21 rjkaes Exp $
+/* $Id: htmlerror.c,v 1.6 2003-07-14 17:42:43 rjkaes Exp $
  * 
  * This file contains source code for the handling and display of
  * HTML error pages with variable substitution.
@@ -260,12 +260,16 @@ indicate_http_error(struct conn_s* connptr, int number, char *message, ...)
 
 	while((key = va_arg(ap, char *))) {
 		val = va_arg(ap, char *);
-		if(add_error_variable(connptr, key, val) == -1)
+		if(add_error_variable(connptr, key, val) == -1) {
+			va_end(ap);
 			return(-1);
+		}
 	}
 
 	connptr->error_number = number;
 	connptr->error_string = safestrdup(message);
+
+	va_end(ap);
 
 	return(add_standard_vars(connptr));
 }
