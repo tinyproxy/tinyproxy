@@ -1,8 +1,23 @@
+2001-12-16  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/sock.c (safe_write): Add assert() calls to make sure the
+	arguments are sane.
+
+	* src/reqs.c (read_request_line): Ignore any blank lines if
+	tinyproxy is expecting a request line. This is suggested by
+	RFC2616 for a tolerant application.
+	(UPSTREAM_CONFIGURED): Added a macro to encapsulate the test for
+	upstream proxy support.
+	(establish_http_connection): Lines are now composed in a buffer
+	and then sent to the safe_write() function. This was done because
+	some sites (like www.heise.de) do not like having the the request
+	line sent in pieces.
+
 2001-12-15  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/sock.c (safe_write): In addition to handling "interruption"
 	errors, continue sending the buffer until it has been fully sent
-	or a fatal error occured.
+	or a fatal error occurred.
 
 	* src/anonymous.c: Removed the calls to the ternary tree and just
 	use a basic linked list. The ternary tree might have been slightly
