@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.10 2001-06-02 03:10:34 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.11 2001-06-04 23:30:34 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -202,8 +202,8 @@ int main(int argc, char **argv)
 	/* Open the log file if not using syslog */
 	if (config.syslog == FALSE) {
 		if (!config.logf_name) {
-			log_message(LOG_INFO, "Setting Logfile to \"%s\"", DEFAULT_LOG);
-			config.logf_name = DEFAULT_LOG;
+			fprintf(stderr, "You MUST set a LogFile in the configuration file.\n");
+			exit(EX_SOFTWARE);
 		}
 
 		if (!(config.logf = fopen(config.logf_name, "a"))) {
@@ -225,16 +225,15 @@ int main(int argc, char **argv)
 	 * Set the default values if they were not set in the config file.
 	 */
 	if (config.port == 0) {
-		log_message(LOG_INFO, "Setting Port to %u", DEFAULT_PORT);
-		config.port = DEFAULT_PORT;
+		fprintf(stderr, "You MUST set a Port in the configuration file\n");
+		exit(EX_SOFTWARE);
 	}
 	if (!config.stathost) {
 		log_message(LOG_INFO, "Setting stathost to \"%s\"", DEFAULT_STATHOST);
 		config.stathost = DEFAULT_STATHOST;
 	}
 	if (!config.username) {
-		log_message(LOG_INFO, "Setting user to \"%s\"", DEFAULT_USER);
-		config.username = DEFAULT_USER;
+		log_message(LOG_WARNING, "You SHOULD set a UserName in the configuration file. Using current user instead.");
 	}
 	if (config.idletimeout == 0) {
 		log_message(LOG_INFO, "Setting idle timeout to %u seconds", MAX_IDLE_TIME);
