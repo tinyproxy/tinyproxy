@@ -1,10 +1,10 @@
-/* $Id: reqs.c,v 1.16 2001-08-27 03:44:22 rjkaes Exp $
+/* $Id: reqs.c,v 1.17 2001-08-28 04:32:14 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
  * processes the headers from the client, the response from the server,
  * and then relays the bytes between the two.
- * If the UPSTEAM_PROXY is enabled, then tinyproxy will actually work
+ * If TUNNEL_SUPPORT is enabled, then tinyproxy will actually work
  * as a simple buffering TCP tunnel. Very cool! (Robert actually uses
  * this feature for a buffering NNTP tunnel.)
  *
@@ -82,6 +82,29 @@ static ssize_t safe_read(int fd, void *buffer, size_t count)
 }
 
 /*
+ * Remove any new lines or carriage returns from the end of a string.
+ */
+static inline void trim(char *string, unsigned int len)
+{
+	char *ptr;
+
+	assert(string != NULL);
+	assert(len > 0);
+
+	ptr = string + len - 1;
+	while (*ptr == '\r' || *ptr == '\n') {
+		*ptr-- = '\0';
+
+		/*
+		 * Don't let the ptr back past the beginning of the
+		 * string.
+		 */
+		if (ptr < string)
+			return;
+	}
+}
+
+/*
  * Parse a client HTTP request and then establish connection.
  */
 static int process_method(struct conn_s *connptr)
@@ -89,7 +112,6 @@ static int process_method(struct conn_s *connptr)
 	URI *uri = NULL;
 	char inbuf[LINE_LENGTH];
 	char *buffer = NULL, *request = NULL, *port = NULL;
-	char *inbuf_ptr = NULL;
 
 	regex_t preg;
 	regmatch_t pmatch[NMATCH];
@@ -112,9 +134,7 @@ static int process_method(struct conn_s *connptr)
 	/*
 	 * Strip the newline and character return from the string.
 	 */
-	inbuf_ptr = inbuf + len - 1;
-	while (*inbuf_ptr == '\r' || *inbuf_ptr == '\n')
-		*inbuf_ptr-- = '\0';
+	trim(inbuf, len);
 
 	log_message(LOG_CONN, "Request: %s", inbuf);
 
