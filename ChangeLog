@@ -1,5 +1,9 @@
 2001-11-21  Robert James Kaes  <rjkaes@flarenet.com>
 
+	* src/utils.c (chomp): Replaced the "trim()" function in reqs.c
+	with the new chomp() function which has similar semantics as the
+	chomp() function in Perl.
+
 	* src/sock.c (readline): Replaced the old function with a new
 	version that will allow an arbitrary long string.
 
