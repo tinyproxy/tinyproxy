@@ -1,3 +1,8 @@
+2002-01-07  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* src/thread.c (thread_main): Added code to check if tinyproxy is
+	being killed by the user.
+
 2001-12-28  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/thread.c (thread_main): Added code to detect errors in the

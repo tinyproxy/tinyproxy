@@ -1,4 +1,4 @@
-/* $Id: thread.c,v 1.19 2001-12-28 22:29:11 rjkaes Exp $
+/* $Id: thread.c,v 1.20 2002-01-08 02:02:25 rjkaes Exp $
  *
  * Handles the creation/destruction of the various threads required for
  * processing incoming connections.
@@ -26,7 +26,7 @@
 
 /*
  * This is the stack frame size used by all the threads. We'll start by
- * setting it to 128 KB.
+ * setting it to 32 KB.
  */
 #define THREAD_STACK_SIZE (1024 * 32)
 
@@ -128,6 +128,15 @@ thread_main(void *arg)
 		clilen = addrlen;
 
 		pthread_mutex_lock(&mlock);
+
+		/*
+		 * Check to see if the program is shutting down.
+		 */
+		if (config.quit) {
+			pthread_mutex_unlock(&mlock);
+			break;
+		}
+		
 		connfd = accept(listenfd, cliaddr, &clilen);
 		pthread_mutex_unlock(&mlock);
 
@@ -138,7 +147,6 @@ thread_main(void *arg)
 			log_message(LOG_ERR, "Accept returned an error (%s) ... retrying.", strerror(errno));
 			continue;
 		}
-
 
 		ptr->status = T_CONNECTED;
 
@@ -160,9 +168,7 @@ thread_main(void *arg)
 
 				ptr->status = T_EMPTY;
 
-				safefree(cliaddr);
-
-				return NULL;
+				break;
 			}
 		}
 
@@ -179,8 +185,7 @@ thread_main(void *arg)
 
 			ptr->status = T_EMPTY;
 
-			safefree(cliaddr);
-			return NULL;
+			break;
 		}
 		SERVER_UNLOCK();
 
