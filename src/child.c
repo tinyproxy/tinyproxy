@@ -1,4 +1,4 @@
-/* $Id: child.c,v 1.7 2002-11-21 21:54:09 rjkaes Exp $
+/* $Id: child.c,v 1.8 2003-03-13 19:30:19 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
@@ -179,7 +179,12 @@ child_main(struct child_s* ptr)
 
 		connfd = accept(listenfd, cliaddr, &clilen);
 
-		DEBUG2("Process %u has accepted connection", ptr->tid);
+#ifndef NDEBUG
+		/* Pause for 10 seconds to allow us to connect debugger */
+		fprintf(stderr, "Process has accepted connection: %u\n", ptr->tid);
+		sleep(10);
+		fprintf(stderr, "Continuing process: %u\n", ptr->tid);
+#endif
 
 		/*
 		 * Make sure no error occurred...
