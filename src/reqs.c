@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.113 2004-08-10 21:24:23 rjkaes Exp $
+/* $Id: reqs.c,v 1.114 2004-08-11 02:49:05 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -6,7 +6,7 @@
  * and then relays the bytes between the two.
  *
  * Copyright (C) 1998	    Steven Young
- * Copyright (C) 1999-2002  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 1999-2004  Robert James Kaes (rjkaes@flarenet.com)
  * Copyright (C) 2000       Chris Lightfoot (chris@ex-parrot.com)
  * Copyright (C) 2002       Petr Lampa (lampa@fit.vutbr.cz)
  *
@@ -204,17 +204,22 @@ free_request_struct(struct request_s *request)
 static void
 strip_username_password(char* host)
 {
-	char *ptr1, *ptr2;
+	char *p;
 
-	if ((ptr1 = strchr(host, '@')) != NULL) {
-		ptr1++; /* move to one past the @ symbol */
-		ptr2 = host;
+        assert(host);
+        assert(strlen(host) > 0);
 
-		/* copy the bytes up to the NUL */
-		while (*ptr1) 
-			*ptr2++ = *ptr1++;
-		*ptr2 = '\0';
-	}
+        if ((p = strchr(host, '@')) == NULL)
+                return;
+
+        /*
+         * Move the pointer past the "@" and then copy from that point
+         * until the NUL to the beginning of the host buffer.
+         */
+        p++;
+        while (*p) 
+                *host++ = *p++;
+        *host = '\0';
 }
 
 /*
