@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.116 2004-08-12 20:15:04 rjkaes Exp $
+/* $Id: reqs.c,v 1.117 2004-08-24 16:35:27 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -630,10 +630,31 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 		return NULL;
 	}
 
-	ret =
-	    sscanf(connptr->request_line, "%[^ ] %[^ ] %[^ ]",
-		   request->method, url, request->protocol);
-	if (ret < 2) {
+	ret = sscanf(connptr->request_line, "%[^ ] %[^ ] %[^ ]",
+                     request->method, url, request->protocol);
+        if (ret == 2 && !strcasecmp(request->method, "GET")) {
+		request->protocol[0] = 0;
+
+                /* Indicate that this is a HTTP/0.9 GET request */
+                connptr->protocol.major = 0;
+                connptr->protocol.minor = 9;
+        } else if (ret == 3 && !strncasecmp(request->protocol, "HTTP/", 5)) {
+                /*
+                 * Break apart the protocol and update the connection
+                 * structure.
+                 */
+                ret = sscanf(request->protocol + 5, "%u.%u",
+                             &connptr->protocol.major,
+                             &connptr->protocol.minor);
+
+                /*
+                 * If the conversion doesn't succeed, drop down below and
+                 * send the error to the user.
+                 */
+                if (ret != 2)
+                        goto BAD_REQUEST_ERROR;
+        } else {
+        BAD_REQUEST_ERROR:
 		log_message(LOG_ERR,
 			    "process_request: Bad Request on file descriptor %d",
 			    connptr->client_fd);
@@ -646,13 +667,7 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 		free_request_struct(request);
 
 		return NULL;
-	} else if (ret == 2)
-		request->protocol[0] = 0;
-
-	/* 
-	 * FIXME: We need to add code for the simple HTTP/0.9 style GET
-	 * request.
-	 */
+	}
 
 	if (!url) {
 		log_message(LOG_ERR,
@@ -901,15 +916,6 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 
 		free_request_struct(request);
 		return NULL;
-	}
-
-	/*
-	 * Break apart the protocol and update the connection structure.
-	 */
-	if (strncasecmp(request->protocol, "http", 4) == 0) {
-		memcpy(request->protocol, "HTTP", 4);
-		sscanf(request->protocol, "HTTP/%u.%u",
-		       &connptr->protocol.major, &connptr->protocol.minor);
 	}
 
 	return request;
@@ -1329,8 +1335,6 @@ process_server_headers(struct conn_s *connptr)
 	struct reversepath *reverse = config.reversepath_list;
 #endif
 
-	/* FIXME: Remember to handle a "simple_req" type */
-
 	/* Get the response line from the remote server. */
       retry:
 	len = readline(connptr->server_fd, &response_line);
@@ -1370,11 +1374,24 @@ process_server_headers(struct conn_s *connptr)
 		return -1;
 	}
 
+        /*
+         * At this point we've received the response line and all the
+         * headers.  However, if this is a simple HTTP/0.9 request we
+         * CAN NOT send any of that information back to the client.
+         * Instead we'll free all the memory and return.
+         */
+        if (connptr->protocol.major < 1) {
+                hashmap_delete(hashofheaders);
+                safefree(response_line);
+                return 0;
+        }
+
+        
 	/* Send the saved response line first */
-	ret = write_message(connptr->client_fd, "%s\r\n", response_line);
-	safefree(response_line);
-	if (ret < 0)
-		goto ERROR_EXIT;
+        ret = write_message(connptr->client_fd, "%s\r\n", response_line);
+        safefree(response_line);
+        if (ret < 0)
+                goto ERROR_EXIT;
 
 	/*
 	 * If there is a "Content-Length" header, retrieve the information
@@ -1774,15 +1791,15 @@ handle_connection(int fd)
       send_error:
 	free_request_struct(request);
 
-	if (process_client_headers(connptr, hashofheaders) < 0) {
-		update_stats(STAT_BADCONN);
-		if (!connptr->error_variables) {
-			hashmap_delete(hashofheaders);
-			destroy_conn(connptr);
-			return;
-		}
-	}
-	hashmap_delete(hashofheaders);
+        if (process_client_headers(connptr, hashofheaders) < 0) {
+                update_stats(STAT_BADCONN);
+                if (!connptr->error_variables) {
+                        hashmap_delete(hashofheaders);
+                        destroy_conn(connptr);
+                        return;
+                }
+        }
+        hashmap_delete(hashofheaders);
 
 	if (connptr->error_variables) {
 		send_http_error_message(connptr);
