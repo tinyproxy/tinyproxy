@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.12 2002-04-10 17:30:08 rjkaes Exp $
+dnl $Id: configure.ac,v 2.13 2002-04-10 19:10:07 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -14,7 +14,7 @@ dnl 8. System services
 dnl
 dnl Read the Autoconf manual for details.
 
-AC_INIT([tinyproxy], [1.5.0pre3], [rjkaes@users.sourceforge.net])
+AC_INIT([tinyproxy], [1.5.0pre4], [rjkaes@users.sourceforge.net])
 AC_CONFIG_SRCDIR([src/tinyproxy.c])
 AC_PREREQ(2.52)
 
@@ -252,7 +252,6 @@ dnl
 AC_FUNC_ALLOCA
 AC_FUNC_FORK
 AC_FUNC_MALLOC
-dnl AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
 AC_FUNC_STRERROR_R
 AC_FUNC_STRFTIME

@@ -1,3 +1,9 @@
+2002-04-10  Robert James Kaes  <rjkaes@flarenet.com>
+
+	* configure.ac: Removed the AC_FUNC_LSTAT macro since it wants to
+	add lstat.o onto some machines.  I don't think the test was really
+	needed anyway, so it's better to have it gone.
+
 2002-04-09  Robert James Kaes  <rjkaes@flarenet.com>
 
 	* src/anonymous.c: Changed this module to use the hashmap module
