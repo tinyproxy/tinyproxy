@@ -1,4 +1,4 @@
-/* $Id: htmlerror.c,v 1.2 2003-03-14 22:45:59 rjkaes Exp $
+/* $Id: htmlerror.c,v 1.3 2003-03-14 22:49:03 rjkaes Exp $
  * 
  * This file contains source code for the handling and display of
  * HTML error pages with variable substitution.
@@ -60,7 +60,7 @@ add_new_errorpage(char *filepath, unsigned int errornum) {
 /*
  * Get the file appropriate for a given error.
  */
-char*
+static char*
 get_html_file(int errornum) {
 	int i;
 
@@ -77,7 +77,7 @@ get_html_file(int errornum) {
 /*
  * Look up the value for a variable.
  */
-char*
+static char*
 lookup_variable(struct conn_s *connptr, char *varname) {
 	int i;
 
