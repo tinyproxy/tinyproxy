@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.32 2001-10-24 00:37:23 rjkaes Exp $
+/* $Id: reqs.c,v 1.33 2001-10-25 04:40:48 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new thread created for them. The thread then
@@ -491,11 +491,13 @@ static int process_client_headers(struct conn_s *connptr)
 		if (connptr->send_message)
 			continue;
 
+#if 0
 		/*
 		 * Don't send any of the headers if we're in SSL mode.
 		 */
 		if (connptr->ssl)
 			continue;
+#endif
 
 		/*
 		 * Don't send certain headers.
@@ -649,21 +651,25 @@ static void relay_connection(struct conn_s *connptr)
 		
 		if (FD_ISSET(connptr->server_fd, &rset)
 		    && readbuff(connptr->server_fd, connptr->sbuffer) < 0) {
+#if 0
 			shutdown(connptr->server_fd, SHUT_WR);
+#endif
 			break;
 		}
 		if (FD_ISSET(connptr->client_fd, &rset)
 		    && readbuff(connptr->client_fd, connptr->cbuffer) < 0) {
-			return;
+			break;
 		}
 		if (FD_ISSET(connptr->server_fd, &wset)
 		    && writebuff(connptr->server_fd, connptr->cbuffer) < 0) {
+#if 0
 			shutdown(connptr->server_fd, SHUT_WR);
+#endif
 			break;
 		}
 		if (FD_ISSET(connptr->client_fd, &wset)
 		    && writebuff(connptr->client_fd, connptr->sbuffer) < 0) {
-			return;
+			break;
 		}
 	}
 
@@ -674,7 +680,16 @@ static void relay_connection(struct conn_s *connptr)
 	socket_blocking(connptr->client_fd);
 	while (buffer_size(connptr->sbuffer) > 0) {
 		if (writebuff(connptr->client_fd, connptr->sbuffer) < 0)
-			return;
+			break;
+	}
+
+	/*
+	 * Try to send any remaining data to the server if we can.
+	 */
+	socket_blocking(connptr->server_fd);
+	while (buffer_size(connptr->cbuffer) > 0) {
+		if (writebuff(connptr->client_fd, connptr->cbuffer) < 0)
+			break;
 	}
 
 	return;
@@ -718,7 +733,7 @@ static void destroy_conn(struct conn_s *connptr)
 static int connect_to_upstream(struct conn_s *connptr,
 			       struct request_s *request)
 {
-	char *combined_host_path;
+	char *combined_string;
 	int len;
 
 	connptr->server_fd = opensock(config.upstream_name, config.upstream_port);
@@ -731,29 +746,32 @@ static int connect_to_upstream(struct conn_s *connptr,
 
 	log_message(LOG_CONN, "Established connection to upstream proxy \"%s\" using file descriptor %d.", config.upstream_name, connptr->server_fd);
 
-	if (connptr->ssl) {
-		safe_write(connptr->server_fd, "CONNECT ", 8);
-		safe_write(connptr->server_fd, request->host, strlen(request->host));
-		safe_write(connptr->server_fd, ":443 HTTP/1.0\r\n", 15);
-
-		return 0;
-	}
-
 	/*
-	 * Since we're going to use the establish_http_connection() function
-	 * we need to rebuild the "path" by combining the host, port, and
-	 * path so we can use the common send functions.
+	 * We need to re-write the "path" part of the request so that we
+	 * can reuse the establish_http_connection() function. It expects a
+	 * method and path.
 	 */
-	len = strlen(request->host) + strlen(request->path) + 14;
-	combined_host_path = safemalloc(len + 1);
-	if (!combined_host_path) {
-		return -1;
-	}
+	if (connptr->ssl) {
+		len = strlen(request->host) + 6;
 
-        snprintf(combined_host_path, len, "http://%s:%d%s", request->host, request->port, request->path);
+		combined_string = safemalloc(len + 1);
+		if (!combined_string) {
+			return -1;
+		}
+
+		snprintf(combined_string, len, "%s:%d", request->host, request->port);
+	} else {
+		len = strlen(request->host) + strlen(request->path) + 14;
+		combined_string = safemalloc(len + 1);
+		if (!combined_string) {
+			return -1;
+		}
+
+		snprintf(combined_string, len, "http://%s:%d%s", request->host, request->port, request->path);
+	}
 
 	safefree(request->path);
-	request->path = combined_host_path;
+	request->path = combined_string;
 	
 	return establish_http_connection(connptr, request);
 }
@@ -849,6 +867,7 @@ internal_proxy:
 
 #ifdef UPSTREAM_SUPPORT
 	if (config.upstream_name && config.upstream_port != -1) {
+		DEBUG1("Going to connect to the upstream.");
 		if (connect_to_upstream(connptr, request) < 0)
 			goto send_error;
 	} else {
@@ -886,6 +905,7 @@ send_error:
 	}
 
 	if (!connptr->ssl || config.upstream_name) {
+		DEBUG1("Processing the server's headers now.");
 		if (process_server_headers(connptr) < 0) {
 			update_stats(STAT_BADCONN);
 			destroy_conn(connptr);
