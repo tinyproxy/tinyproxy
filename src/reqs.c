@@ -1,12 +1,9 @@
-/* $Id: reqs.c,v 1.83 2002-10-17 19:27:08 rjkaes Exp $
+/* $Id: reqs.c,v 1.84 2002-11-03 17:10:32 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
  * processes the headers from the client, the response from the server,
  * and then relays the bytes between the two.
- * If TUNNEL_SUPPORT is enabled, then tinyproxy will actually work
- * as a simple buffering TCP tunnel. Very cool! (Robert actually uses
- * this feature for a buffering NNTP tunnel.)
  *
  * Copyright (C) 1998	    Steven Young
  * Copyright (C) 1999-2002  Robert James Kaes (rjkaes@flarenet.com)
@@ -60,15 +57,6 @@
 #  define UPSTREAM_CONFIGURED() (config.upstream_name && config.upstream_port != -1)
 #else
 #  define UPSTREAM_CONFIGURED() (0)
-#endif
-
-/*
- * Macro to help test if tunnel support is compiled in, and is enabled.
- */
-#ifdef TUNNEL_SUPPORT
-#  define TUNNEL_CONFIGURED() (config.tunnel_name && config.tunnel_port != -1)
-#else
-#  define TUNNEL_CONFIGURED() (0)
 #endif
 
 /*
@@ -1185,65 +1173,6 @@ connect_to_upstream(struct conn_s *connptr, struct request_s *request)
 }
 #endif
 
-#ifdef TUNNEL_SUPPORT
-/*
- * If tunnel has been configured then redirect any connections to it.
- */
-static int
-connect_to_tunnel(struct conn_s *connptr)
-{
-
-#if 0
-	/*
-	 * NOTE: This must be fixed
-	 *
-	 * Needed to remove this for right now since it breaks the semantics
-	 * of the "tunnel" concept since the information from the remote host
-	 * wasn't being sent until _after_ data was sent by the client.  This
-	 * is not correct since we should be sending the data regardless of
-	 * who sent it first.
-	 *
-	 * I'll have to look into this for the next release.
-	 */
-	char *request_buf;
-	ssize_t len;
-	int pos;
-
-	request_buf = safemalloc(HTTP_LINE_LENGTH);
-	if (request_buf) {
-		len = recv(connptr->client_fd, request_buf, HTTP_LINE_LENGTH - 1, MSG_PEEK);
-		for (pos = 0; pos < len && request_buf[pos] != '\n'; pos++)
-			;
-		request_buf[pos] = '\0';
-	     
-		log_message(LOG_CONN, "Request: %s", request_buf);
-
-		safefree(request_buf);
-	}
-#endif
-
-	log_message(LOG_INFO, "Redirecting to %s:%d",
-		    config.tunnel_name, config.tunnel_port);
-
-	connptr->server_fd =
-		opensock(config.tunnel_name, config.tunnel_port);
-
-	if (connptr->server_fd < 0) {
-		log_message(LOG_WARNING,
-			    "Could not connect to tunnel.");
-		indicate_http_error(connptr, 404, "Unable to connect to tunnel.");
-
-		return -1;
-	}
-
-	log_message(LOG_INFO,
-		    "Established a connection to the tunnel \"%s\" using file descriptor %d.",
-		    config.tunnel_name, connptr->server_fd);
-
-	return 0;
-}
-#endif
-
 /*
  * This is the main drive for each connection. As you can tell, for the
  * first few steps we are using a blocking socket. If you remember the
@@ -1283,14 +1212,6 @@ handle_connection(int fd)
 		return;
 	}
 
-	if (TUNNEL_CONFIGURED()) {
-		if (connect_to_tunnel(connptr) < 0)
-			goto internal_proxy;
-		else
-			goto relay_proxy;
-	}
-
-      internal_proxy:
 	if (read_request_line(connptr) < 0) {
 		update_stats(STAT_BADCONN);
 		indicate_http_error(connptr, 408,
@@ -1394,7 +1315,6 @@ handle_connection(int fd)
 		}
 	}
 
-      relay_proxy:
 	relay_connection(connptr);
 
 	log_message(LOG_INFO, "Closed connection between local client (fd:%d) and remote client (fd:%d)",

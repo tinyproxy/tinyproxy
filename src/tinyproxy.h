@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.33 2002-06-15 17:29:59 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.34 2002-11-03 17:10:32 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -42,10 +42,6 @@ struct config_s {
 #ifdef XTINYPROXY_ENABLE
 	char *my_domain;
 #endif
-#ifdef TUNNEL_SUPPORT
-	char *tunnel_name;
-	int tunnel_port;
-#endif				/* TUNNEL_SUPPORT */
 #ifdef UPSTREAM_SUPPORT
 	char *upstream_name;
 	int upstream_port;

@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.44 2002-08-09 20:28:16 rjkaes Exp $
+dnl $Id: configure.ac,v 2.45 2002-11-03 17:10:33 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -114,16 +114,6 @@ AC_ARG_ENABLE(filter,
 if test x"$filter_enabled" = x"yes"; then
     ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS filter.o"
     AC_DEFINE(FILTER_ENABLE)
-fi
-
-dnl Include support for TCP tunneling
-AH_TEMPLATE([TUNNEL_SUPPORT], [Include TCP tunnelling support])
-AC_ARG_ENABLE(tunnel,
-              [AC_HELP_STRING([--enable-tunnel],
-                              [Enable support for TCP tunneling (default is YES)])],
-              tunnel_enabled=$enableval, tunnel_enabled=yes)
-if test x"$tunnel_enabled" = x"yes"; then
-    AC_DEFINE(TUNNEL_SUPPORT)
 fi
 
 dnl Include support for upstream proxies?

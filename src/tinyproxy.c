@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.39 2002-10-03 20:53:11 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.40 2002-11-03 17:10:32 rjkaes Exp $
  *
  * The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -141,9 +141,6 @@ Options:\n\
 #ifndef NDEBUG
 	printf("    Debugging code\n");
 #endif				/* NDEBUG */
-#ifdef TUNNEL_SUPPORT
-	printf("    TCP Tunnelling\n");
-#endif				/* TUNNEL_SUPPORT */
 #ifdef TRANSPARENT_PROXY
 	printf("    Transparent Proxy Support\n");
 #endif                          /* TRANSPARENT_PROXY */
@@ -213,15 +210,6 @@ main(int argc, char **argv)
 		exit(EX_SOFTWARE);
 	}
 	yyparse();
-
-#if defined(TUNNEL_SUPPORT) && defined(UPSTREAM_SUPPORT)
-	if (config.tunnel_name && config.upstream_name) {
-		fprintf(stderr,
-			"%s: \"Tunnel\" and \"Upstream\" directives can not be both set.\n",
-			argv[0]);
-		exit(EX_SOFTWARE);
-	}
-#endif
 
 	/* Open the log file if not using syslog */
 	if (config.syslog == FALSE) {
