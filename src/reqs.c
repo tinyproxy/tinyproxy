@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.109 2004-01-26 19:11:51 rjkaes Exp $
+/* $Id: reqs.c,v 1.110 2004-02-04 19:57:40 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -218,36 +218,58 @@ strip_username_password(char* host)
 }
 
 /*
+ * Take a host string and if there is a port part, strip
+ * it off and set proper port variable i.e. for www.host.com:8001
+ */
+static int
+strip_return_port(char* host)
+{
+	char *ptr1;
+	int port;
+
+	ptr1 = strchr(host, ':');
+	if (ptr1 == NULL)
+		return 0;
+
+	*ptr1++ = '\0';
+	if (sscanf(ptr1, "%d", &port) != 1) /* one conversion required */
+		return 0;
+	return port;
+}
+
+/*
  * Pull the information out of the URL line.  This will handle both HTTP
  * and FTP (proxied) URLs.
  */
 static int
 extract_http_url(const char *url, struct request_s *request)
 {
-	request->host = (char*)safemalloc(strlen(url) + 1);
-	request->path = (char*)safemalloc(strlen(url) + 1);
+	char *p;
+	int len;
+	int port;
+
+	/* Split the URL on the slash to separate host from path */
+	p = strchr(url, '/');
+	if (p != NULL) {
+		len = p - url;
+		request->host = safemalloc(len + 1);
+		memcpy(request->host, url, len);
+		request->host[len] = '\0';
+		request->path = safestrdup(p);
+	} else {
+		request->host = safestrdup(url);
+		request->path = safestrdup("/");
+	}
 
 	if (!request->host || !request->path)
 		goto ERROR_EXIT;
 
-	if (sscanf
-	    (url, "%[^:/]:%hu%s", request->host, &request->port,
-	     request->path) == 3) ;
-	else if (sscanf(url, "%[^/]%s", request->host, request->path) == 2)
-		request->port = HTTP_PORT;
-	else if (sscanf(url, "%[^:/]:%hu", request->host, &request->port)
-		 == 2)
-		strcpy(request->path, "/");
-	else if (sscanf(url, "%[^/]", request->host) == 1) {
-		request->port = HTTP_PORT;
-		strcpy(request->path, "/");
-	} else {
-		log_message(LOG_ERR, "extract_http_url: Can't parse URL.");
-		goto ERROR_EXIT;
-	}
-
 	/* Remove the username/password if they're present */
 	strip_username_password(request->host);
+
+	/* Find a proper port in www.site.com:8001 URLs */
+	port = strip_return_port(request->host);
+	request->port = (port != 0) ? port : HTTP_PORT;
 
 	return 0;
 
