@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.10 2002-04-07 21:33:38 rjkaes Exp $
+# $Id: Makefile.am,v 1.11 2002-04-10 21:51:01 rjkaes Exp $
 #
 # 
 #
@@ -37,12 +37,10 @@ tinyproxy_SOURCES = \
 	grammar.y scanner.l \
 	regexp.h
 
-tinyproxy_LDADD = @LIBOBJS@
-
-EXTRA_DIST = gnuregex.c gnuregex.h \
-	filter.c filter.h
-
-EXTRA_tinyproxy_SOURCES = grammar.h
+EXTRA_DIST = gnuregex.c gnuregex.h
+EXTRA_tinyproxy_SOURCES = filter.c filter.h grammar.h
+tinyproxy_DEPENDENCIES = @ADDITIONAL_OBJECTS@
+tinyproxy_LDADD = @ADDITIONAL_OBJECTS@
 
 scanner.c: scanner.l grammar.h
 	$(LEX) $(AM_LFLAGS) $(LFLAGS) -i $< && mv $(LEX_OUTPUT_ROOT).c $@
