@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.c,v 1.11 2001-06-04 23:30:34 rjkaes Exp $
+/* $Id: tinyproxy.c,v 1.12 2001-08-26 21:17:30 rjkaes Exp $
  *
  * The initialise routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
@@ -94,36 +94,51 @@ void takesig(int sig)
 /*
  * Display the version information for the user.
  */
-static void versiondisp(void)
+static void display_version(void)
 {
-	printf("tinyproxy " VERSION "\n");
+	printf("%s %s (%s)\n", PACKAGE, VERSION, TARGET_SYSTEM);
+}
+
+/*
+ * Display the copyright and license for this program.
+ */
+static void display_license(void)
+{
+	display_version();
+
 	printf("\
-Copyright 1998       Steven Young (sdyoung@well.com)\n\
-Copyright 1998-2000  Robert James Kaes (rjkaes@flarenet.com)\n\
-Copyright 2000       Chris Lightfoot (chris@ex-parrot.com)\n\
+  Copyright 1998       Steven Young (sdyoung@well.com)\n\
+  Copyright 1998-2001  Robert James Kaes (rjkaes@users.sourceforge.net)\n\
+  Copyright 1999       George Talusan (gstalusan@uwaterloo.ca)\n\
+  Copyright 2000       Chris Lightfoot (chris@ex-parrot.com)\n\
 \n\
-This program is free software; you can redistribute it and/or modify it\n\
-under the terms of the GNU General Public License as published by the Free\n\
-Software Foundation; either version 2, or (at your option) any later\n\
-version.\n\
+  This program is free software; you can redistribute it and/or modify\n\
+  it under the terms of the GNU General Public License as published by\n\
+  the Free Software Foundation; either version 2, or (at your option)\n\
+  any later version.\n\
 \n\
-This program is distributed in the hope that it will be useful, but WITHOUT\n\
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or\n\
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for\n\
-more details.\n");
+  This program is distributed in the hope that it will be useful,\n\
+  but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
+  GNU General Public License for more details.\n\
+\n\
+  You should have received a copy of the GNU General Public License\n\
+  along with this program; if not, write to the Free Software\n\
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.\n");
 }
 
 /*
  * Display usage to the user.
  */
-static void usagedisp(void)
+static void display_usage(void)
 {
+	printf("Usage: %s [options]\n", PACKAGE);
 	printf("\
-Usage: tinyproxy [options]\n\
 Options:\n\
   -d		Operate in DEBUG mode.\n\
   -c FILE	Use an alternate configuration file.\n\
   -h		Display this usage information.\n\
+  -l            Display the license.\n\
   -v            Display the version number.\n");
 
 
@@ -166,11 +181,14 @@ int main(int argc, char **argv)
 	/*
 	 * Process the various options
 	 */
-	while ((optch = getopt(argc, argv, "c:vdh")) !=
+	while ((optch = getopt(argc, argv, "c:vldh")) !=
 	       EOF) {
 		switch (optch) {
 		case 'v':
-			versiondisp();
+			display_version();
+			exit(EX_OK);
+		case 'l':
+			display_license();
 			exit(EX_OK);
 		case 'd':
 			godaemon = FALSE;
@@ -184,7 +202,7 @@ int main(int argc, char **argv)
 			break;
 		case 'h':
 		default:
-			usagedisp();
+		        display_usage();
 			exit(EX_OK);
 		}
 	}
@@ -249,9 +267,9 @@ int main(int argc, char **argv)
 	 * hand in hand with Content-Length.
 	 *     - rjkaes
 	 */
-	if (config.anonymous) {
-		anon_insert("Content-Length:");
-		anon_insert("Content-Type:");
+	if (is_anonymous_enabled()) {
+		anonymous_insert("Content-Length");
+		anonymous_insert("Content-Type");
 	}
 
 	if (godaemon == TRUE)
@@ -335,9 +353,6 @@ int main(int argc, char **argv)
 	log_message(LOG_INFO, "Starting the DNS caching subsystem.");
 	if (!new_dnscache())
 		exit(EX_SOFTWARE);
-	log_message(LOG_INFO, "Starting the Anonymous header subsystem.");
-	if (!new_anonymous())
-		exit(EX_SOFTWARE);
 
 	/*
 	 * Start the main loop.
@@ -356,7 +371,7 @@ int main(int argc, char **argv)
 	 */
 	if (unlink(config.pidpath) < 0) {
 		log_message(LOG_WARNING, "Could not remove PID file %s: %s",
-		    config.pidpath, strerror(errno));
+			    config.pidpath, strerror(errno));
 	}
 
 #ifdef FILTER_ENABLE
