@@ -1,4 +1,4 @@
-/* $Id: heap.h,v 1.2 2002-05-26 18:56:06 rjkaes Exp $
+/* $Id: heap.h,v 1.3 2003-05-31 23:04:15 rjkaes Exp $
  *
  * See 'heap.c' for a detailed description.
  *
@@ -36,13 +36,21 @@ extern char *debugging_strdup(const char* s, const char* file,
 #  define safecalloc(x, y) debugging_calloc(x, y, __FILE__, __LINE__)
 #  define safemalloc(x) debugging_malloc(x, __FILE__, __LINE__)
 #  define saferealloc(x, y) debugging_realloc(x, y, __FILE__, __LINE__)
-#  define safefree(x) debugging_free(x, __FILE__, __LINE__); (x) = NULL
 #  define safestrdup(x) debugging_strdup(x, __FILE__, __LINE__)
+#  define safefree(x) do { \
+void **__safefree_tmp = (void *)&(x); \
+debugging_free(*__safefree_tmp, __FILE__, __LINE__); \
+*__safefree_tmp = NULL; \
+} while (0)
 #else
 #  define safecalloc(x, y) calloc(x, y)
 #  define safemalloc(x) malloc(x)
 #  define saferealloc(x, y) realloc(x, y)
-#  define safefree(x) free(x); (x) = NULL
+#  define safefree(x) do { \
+void **__safefree_tmp = (void *)&(x); \
+free(*__safefree_tmp); \
+*__safefree_tmp = NULL; \
+} while (0)
 #  define safestrdup(x) strdup(x)
 #endif
 
