@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.117 2004-08-24 16:35:27 rjkaes Exp $
+/* $Id: reqs.c,v 1.118 2005-07-06 21:44:08 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -1205,8 +1205,6 @@ process_client_headers(struct conn_s *connptr, hashmap_t hashofheaders)
 	static char *skipheaders[] = {
 		"host",
 		"keep-alive",
-		"proxy-authenticate",
-		"proxy-authorization",
 		"proxy-connection",
 		"te",
 		"trailers",
