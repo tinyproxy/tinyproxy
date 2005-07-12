@@ -1,8 +1,8 @@
-/* $Id: conns.h,v 1.18 2004-08-10 21:24:23 rjkaes Exp $
+/* $Id: conns.h,v 1.19 2005-07-12 17:39:43 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
- * Copyright (C) 2001  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2001  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

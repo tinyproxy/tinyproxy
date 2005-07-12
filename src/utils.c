@@ -1,4 +1,4 @@
-/* $Id: utils.c,v 1.38 2003-03-14 06:15:27 rjkaes Exp $
+/* $Id: utils.c,v 1.39 2005-07-12 17:39:44 rjkaes Exp $
  *
  * Misc. routines which are used by the various functions to handle strings
  * and memory allocation and pretty much anything else we can think of. Also,
@@ -6,8 +6,7 @@
  * it, so it's in here.
  *
  * Copyright (C) 1998       Steven Young
- * Copyright (C) 1999,2001,2003 by
- *   Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 1999-2003  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

@@ -1,10 +1,10 @@
-/* $Id: vector.c,v 1.11 2004-02-13 21:27:41 rjkaes Exp $
+/* $Id: vector.c,v 1.12 2005-07-12 17:39:44 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbitrary length, and
  * the data for each entry is an lump of data (the size is stored in the
  * vector.)
  *
- * Copyright (C) 2002  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2002  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

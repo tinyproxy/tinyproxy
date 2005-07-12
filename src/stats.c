@@ -1,4 +1,4 @@
-/* $Id: stats.c,v 1.16 2004-04-27 18:48:53 rjkaes Exp $
+/* $Id: stats.c,v 1.17 2005-07-12 17:39:44 rjkaes Exp $
  *
  * This module handles the statistics for tinyproxy. There are only two
  * public API functions. The reason for the functions, rather than just a
@@ -8,7 +8,7 @@
  * statistics in the future, just add to the structure, enum (in the header),
  * and the switch statement in update_stats().
  *
- * Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2000  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

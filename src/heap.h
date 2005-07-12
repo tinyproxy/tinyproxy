@@ -1,8 +1,8 @@
-/* $Id: heap.h,v 1.4 2003-07-31 23:41:26 rjkaes Exp $
+/* $Id: heap.h,v 1.5 2005-07-12 17:39:44 rjkaes Exp $
  *
  * See 'heap.c' for a detailed description.
  *
- * Copyright (C) 2002  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2002  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

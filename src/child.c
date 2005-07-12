@@ -1,9 +1,9 @@
-/* $Id: child.c,v 1.16 2004-08-24 16:33:00 rjkaes Exp $
+/* $Id: child.c,v 1.17 2005-07-12 17:39:43 rjkaes Exp $
  *
  * Handles the creation/destruction of the various children required for
  * processing incoming connections.
  *
- * Copyright (C) 2000 Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2000 Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

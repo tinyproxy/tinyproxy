@@ -1,11 +1,11 @@
-/* $Id: conns.c,v 1.23 2004-08-10 21:24:23 rjkaes Exp $
+/* $Id: conns.c,v 1.24 2005-07-12 17:39:43 rjkaes Exp $
  *
  * Create and free the connection structure. One day there could be
  * other connection related tasks put here, but for now the header
  * file and this file are only used for create/free functions and the
  * connection structure definition.
  *
- * Copyright (C) 2001  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2001  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

@@ -1,8 +1,8 @@
-/* $Id: acl.h,v 1.3 2002-04-17 20:52:45 rjkaes Exp $
+/* $Id: acl.h,v 1.4 2005-07-12 17:39:43 rjkaes Exp $
  *
  * See 'acl.c' for detailed information.
  *
- * Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2000  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

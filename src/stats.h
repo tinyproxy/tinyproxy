@@ -1,8 +1,8 @@
-/* $Id: stats.h,v 1.4 2001-11-22 00:31:10 rjkaes Exp $
+/* $Id: stats.h,v 1.5 2005-07-12 17:39:44 rjkaes Exp $
  *
  * See 'stats.h' for a detailed description.
  *
- * Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2000  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

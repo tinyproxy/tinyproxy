@@ -1,8 +1,8 @@
-/* $Id: anonymous.h,v 1.6 2001-12-15 20:08:24 rjkaes Exp $
+/* $Id: anonymous.h,v 1.7 2005-07-12 17:39:43 rjkaes Exp $
  *
  * See 'anonymous.c' for a detailed description.
  *
- * Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2000  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

@@ -1,11 +1,11 @@
-/* $Id: text.c,v 1.3 2003-03-13 05:20:06 rjkaes Exp $
+/* $Id: text.c,v 1.4 2005-07-12 17:39:44 rjkaes Exp $
  *
  * The functions included here are useful for text manipulation.  They
  * replace or augment the standard C string library.  These functions
  * are either safer replacements, or they provide services not included
  * with the standard C string library.
  *
- * Copyright (C) 2002  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2002  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

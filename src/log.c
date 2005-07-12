@@ -1,10 +1,10 @@
-/* $Id: log.c,v 1.29 2004-08-14 03:20:01 rjkaes Exp $
+/* $Id: log.c,v 1.30 2005-07-12 17:39:44 rjkaes Exp $
  *
  * Logs the various messages which tinyproxy produces to either a log file or
  * the syslog daemon. Not much to it...
  *
  * Copyright (C) 1998  Steven Young
- * Copyright (C) 1999  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 1999  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

@@ -1,9 +1,9 @@
-/* $Id: anonymous.c,v 1.14 2002-05-23 18:20:27 rjkaes Exp $
+/* $Id: anonymous.c,v 1.15 2005-07-12 17:39:43 rjkaes Exp $
  *
  * Handles insertion and searches for headers which should be let through when
  * the anonymous feature is turned on.
  *
- * Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2000  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

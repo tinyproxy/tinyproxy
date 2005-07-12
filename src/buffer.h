@@ -1,8 +1,8 @@
-/* $Id: buffer.h,v 1.8 2002-05-14 00:43:38 rjkaes Exp $
+/* $Id: buffer.h,v 1.9 2005-07-12 17:39:43 rjkaes Exp $
  *
  * See 'buffer.c' for a detailed description.
  *
- * Copyright (C) 1999  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 1999  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

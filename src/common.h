@@ -1,11 +1,11 @@
-/* $Id: common.h,v 1.7 2003-08-07 16:32:12 rjkaes Exp $
+/* $Id: common.h,v 1.8 2005-07-12 17:39:43 rjkaes Exp $
  *
  * This file groups all the headers required throughout the tinyproxy
  * system.  All this information use to be in the "tinyproxy.h" header,
  * but various other "libraries" in the program need the same information,
  * without the tinyproxy specific defines.
  *
- * Copyright (C) 2002  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2002  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

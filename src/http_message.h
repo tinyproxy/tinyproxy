@@ -1,4 +1,4 @@
-/* $Id: http_message.h,v 1.1 2003-03-13 05:25:30 rjkaes Exp $
+/* $Id: http_message.h,v 1.2 2005-07-12 17:39:44 rjkaes Exp $
  *
  * HTTP Message API
  * ----------------
@@ -27,7 +27,7 @@
  * allocated memory referenced by the http_message_t will no long
  * exist.)
  *
- * Copyright (C) 2003 Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2003 Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

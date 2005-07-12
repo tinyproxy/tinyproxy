@@ -1,8 +1,8 @@
-/* $Id: daemon.h,v 1.1 2002-05-23 04:39:32 rjkaes Exp $
+/* $Id: daemon.h,v 1.2 2005-07-12 17:39:43 rjkaes Exp $
  *
  * See 'daemon.c' for a detailed description.
  *
- * Copyright (C) 2002  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2002  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

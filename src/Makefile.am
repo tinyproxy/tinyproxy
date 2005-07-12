@@ -1,6 +1,6 @@
-# $Id: Makefile.am,v 1.21 2004-08-14 00:37:50 rjkaes Exp $
+# $Id: Makefile.am,v 1.22 2005-07-12 17:39:40 rjkaes Exp $
 #
-# Copyright (C) 2000  Robert James Kaes (rjkaes@flarenet.com)
+# Copyright (C) 2000  Robert James Kaes (rjkaes@users.sourceforge.net)
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the

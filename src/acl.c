@@ -1,10 +1,10 @@
-/* $Id: acl.c,v 1.20 2004-08-24 16:31:45 rjkaes Exp $
+/* $Id: acl.c,v 1.21 2005-07-12 17:39:43 rjkaes Exp $
  *
  * This system handles Access Control for use of this daemon. A list of
  * domains, or IP addresses (including IP blocks) are stored in a list
  * which is then used to compare incoming connections.
  *
- * Copyright (C) 2000,2002  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2000,2002  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

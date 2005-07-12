@@ -1,8 +1,8 @@
-/* $Id: child.h,v 1.2 2004-08-10 21:24:23 rjkaes Exp $
+/* $Id: child.h,v 1.3 2005-07-12 17:39:43 rjkaes Exp $
  *
  * See 'child.c' for more information.
  *
- * Copyright (C) 2002 Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2002 Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

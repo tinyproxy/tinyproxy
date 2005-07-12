@@ -1,4 +1,4 @@
-/* $Id: hashmap.h,v 1.2 2002-04-25 18:55:56 rjkaes Exp $
+/* $Id: hashmap.h,v 1.3 2005-07-12 17:39:44 rjkaes Exp $
  *
  * A hashmap implementation.  The keys are case-insensitive NULL terminated
  * strings, and the data is arbitrary lumps of data.  Copies of both the
@@ -8,7 +8,7 @@
  * data as it's modifying the data stored in the hashmap.  (In other words,
  * don't try to free the data, or realloc the memory. :)
  *
- * Copyright (C) 2002  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2002  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

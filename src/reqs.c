@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.118 2005-07-06 21:44:08 rjkaes Exp $
+/* $Id: reqs.c,v 1.119 2005-07-12 17:39:44 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -6,7 +6,7 @@
  * and then relays the bytes between the two.
  *
  * Copyright (C) 1998	    Steven Young
- * Copyright (C) 1999-2004  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 1999-2004  Robert James Kaes (rjkaes@users.sourceforge.net)
  * Copyright (C) 2000       Chris Lightfoot (chris@ex-parrot.com)
  * Copyright (C) 2002       Petr Lampa (lampa@fit.vutbr.cz)
  *

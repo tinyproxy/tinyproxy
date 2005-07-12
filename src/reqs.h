@@ -1,9 +1,9 @@
-/* $Id: reqs.h,v 1.5 2004-01-26 19:11:51 rjkaes Exp $
+/* $Id: reqs.h,v 1.6 2005-07-12 17:39:44 rjkaes Exp $
  *
  * See 'reqs.c' for a detailed description.
  *
  * Copyright (C) 1998  Steven Young
- * Copyright (C) 1999  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 1999  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

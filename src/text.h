@@ -1,8 +1,8 @@
-/* $Id: text.h,v 1.2 2003-03-13 05:20:06 rjkaes Exp $
+/* $Id: text.h,v 1.3 2005-07-12 17:39:44 rjkaes Exp $
  *
  * See 'text.c' for a detailed description.
  *
- * Copyright (C) 2002  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2002  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

@@ -1,10 +1,10 @@
-/* $Id: daemon.c,v 1.3 2004-08-10 21:24:23 rjkaes Exp $
+/* $Id: daemon.c,v 1.4 2005-07-12 17:39:43 rjkaes Exp $
  *
  * This file contains functions which are useful when writing a
  * daemon process.  The functions include a "makedaemon" function and
  * a function to portably set a signal handler.
  *
- * Copyright (C) 2002  Robert James Kaes (rjkaes@flarenet.com)
+ * Copyright (C) 2002  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
