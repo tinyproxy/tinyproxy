@@ -1,4 +1,4 @@
-/* $Id: sock.c,v 1.41 2004-04-27 18:53:14 rjkaes Exp $
+/* $Id: sock.c,v 1.42 2005-07-12 20:34:26 rjkaes Exp $
  *
  * Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
@@ -210,7 +210,7 @@ int
 getsock_ip(int fd, char* ipaddr)
 {
 	struct sockaddr_storage name;
-	int namelen = sizeof(name);
+	socklen_t namelen = sizeof(name);
 
 	assert(fd >= 0);
 
