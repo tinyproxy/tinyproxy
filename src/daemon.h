@@ -1,4 +1,4 @@
-/* $Id: daemon.h,v 1.3 2005-08-15 03:54:31 rjkaes Exp $
+/* $Id: daemon.h,v 1.4 2005-08-15 18:35:09 rjkaes Exp $
  *
  * See 'daemon.c' for a detailed description.
  *
@@ -18,12 +18,12 @@
 #ifndef TINYPROXY_DAEMON_H
 #define TINYPROXY_DAEMON_H
 
-typedef void signal_func(int);
+typedef void signal_func (int);
 
 /*
  * Pass a singal integer and a function to handle the signal.
  */
-extern signal_func *set_signal_handler(int signo, signal_func * func);
+extern signal_func *set_signal_handler(int signo, signal_func *func);
 
 /*
  * Make a program a daemon process

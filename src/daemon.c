@@ -1,4 +1,4 @@
-/* $Id: daemon.c,v 1.5 2005-08-15 03:54:31 rjkaes Exp $
+/* $Id: daemon.c,v 1.6 2005-08-15 18:35:09 rjkaes Exp $
  *
  * This file contains functions which are useful when writing a
  * daemon process.  The functions include a "makedaemon" function and
@@ -56,7 +56,7 @@ makedaemon(void)
  * to handle signals sent to the process.
  */
 signal_func *
-set_signal_handler(int signo, signal_func * func)
+set_signal_handler(int signo, signal_func *func)
 {
         struct sigaction act, oact;
 
