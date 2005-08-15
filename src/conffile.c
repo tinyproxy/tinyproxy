@@ -1,4 +1,4 @@
-/* $Id: conffile.c,v 1.4 2004-08-24 16:34:22 rjkaes Exp $
+/* $Id: conffile.c,v 1.5 2005-08-15 03:54:31 rjkaes Exp $
  *
  * Parses the configuration file and sets up the config_s structure for
  * use by the application.  This file replaces the old grammar.y and
@@ -57,12 +57,11 @@
  */
 #define RE_MAX_MATCHES 16
 
-
 /*
  * All configuration handling functions are REQUIRED to be defined
  * with the same function template as below.
  */
-typedef int (*CONFFILE_HANDLER)(struct config_s*, const char*, regmatch_t[]);
+typedef int (*CONFFILE_HANDLER) (struct config_s *, const char *, regmatch_t[]);
 
 /*
  * Define the pattern used by any directive handling function.  The
@@ -77,12 +76,16 @@ typedef int (*CONFFILE_HANDLER)(struct config_s*, const char*, regmatch_t[]);
  */
 #define HANDLE_FUNC(func) int func(struct config_s* conf, const char* line, regmatch_t match[])
 
-
 /*
  * List all the handling functions.  These are defined later, but they need
  * to be in-scope before the big structure below.
  */
-static HANDLE_FUNC(handle_nop) { return 0; } /* do nothing function */
+static
+HANDLE_FUNC(handle_nop)
+{
+        return 0;
+}                               /* do nothing function */
+
 static HANDLE_FUNC(handle_allow);
 static HANDLE_FUNC(handle_anonymous);
 static HANDLE_FUNC(handle_bind);
@@ -115,11 +118,11 @@ static HANDLE_FUNC(handle_statfile);
 static HANDLE_FUNC(handle_stathost);
 static HANDLE_FUNC(handle_syslog);
 static HANDLE_FUNC(handle_timeout);
+
 //static HANDLE_FUNC(handle_upstream);
 static HANDLE_FUNC(handle_user);
 static HANDLE_FUNC(handle_viaproxyname);
 static HANDLE_FUNC(handle_xtinyproxy);
-
 
 /*
  * This macro can be used to make standard directives in the form:
@@ -134,7 +137,6 @@ static HANDLE_FUNC(handle_xtinyproxy);
  */
 #define STDCONF(d, re, func) { BEGIN "(" d ")" WS re END, func, NULL }
 
-
 /*
  * Holds the regular expression used to match the configuration directive,
  * the function pointer to the routine to handle the directive, and
@@ -142,74 +144,66 @@ static HANDLE_FUNC(handle_xtinyproxy);
  * to be compiled one.
  */
 struct {
-        const char* re;
+        const char *re;
         CONFFILE_HANDLER handler;
-        regex_t* cre;
+        regex_t *cre;
 } directives[] = {
         /* comments */
-        { BEGIN "#", handle_nop },
-        
-        /* blank lines */
-        { "^[[:space:]]+$", handle_nop },
-        
-        /* string arguments */
-        STDCONF("logfile", STR, handle_logfile),
-        STDCONF("pidfile", STR, handle_pidfile),
-        STDCONF("anonymous", STR, handle_anonymous),
-        STDCONF("viaproxyname", STR, handle_viaproxyname),
-        STDCONF("defaulterrorfile", STR, handle_defaulterrorfile),
-        STDCONF("statfile", STR, handle_statfile),
-        STDCONF("stathost", STR, handle_stathost),
-        STDCONF("xtinyproxy", STR, handle_xtinyproxy),
-
-        /* boolean arguments */
-        STDCONF("syslog", BOOL, handle_syslog),
-        STDCONF("bindsame", BOOL, handle_bindsame),
-
-        /* integer arguments */
-        STDCONF("port", INT, handle_port),
-        STDCONF("maxclients", INT, handle_maxclients),
-        STDCONF("maxspareservers", INT, handle_maxspareservers),
-        STDCONF("minspareservers", INT, handle_minspareservers),
-        STDCONF("startservers", INT, handle_startservers),
-        STDCONF("maxrequestsperchild", INT, handle_maxrequestsperchild),
-        STDCONF("timeout", INT, handle_timeout),
-        STDCONF("connectport", INT, handle_connectport),
-
-        /* alphanumeric arguments */
-        STDCONF("user", ALNUM, handle_user),
-        STDCONF("group", ALNUM, handle_group),
-
-        /* ip arguments */
-        STDCONF("listen", IP, handle_listen),
-        STDCONF("allow", "(" IPMASK "|" ALNUM ")", handle_allow),
-        STDCONF("deny", "(" IPMASK "|" ALNUM ")", handle_deny),
-        STDCONF("bind", IP, handle_bind),
-          
-        /* error files */
-        STDCONF("errorfile", INT WS STR, handle_errorfile),
-
-        /* filtering */
-        STDCONF("filter", STR, handle_filter),
-        STDCONF("filterurls", BOOL, handle_filterurls),
-        STDCONF("filterextended", BOOL, handle_filterextended),
-        STDCONF("filterdefaultdeny", BOOL, handle_filterdefaultdeny),
-        STDCONF("filtercasesensitive", BOOL, handle_filtercasesensitive),
-
-        /* Reverse proxy arguments */
-        STDCONF("reversebaseurl", STR, handle_reversebaseurl),
-        STDCONF("reverseonly", BOOL, handle_reverseonly),
-        STDCONF("reversemagic", BOOL, handle_reversemagic),
-        STDCONF("reversepath", STR WS "(" STR ")?", handle_reversepath),
-
-        /* upstream is rather complicated */
+        {
+        BEGIN "#", handle_nop},
+            /* blank lines */
+        {
+        "^[[:space:]]+$", handle_nop},
+            /* string arguments */
+            STDCONF("logfile", STR, handle_logfile),
+            STDCONF("pidfile", STR, handle_pidfile),
+            STDCONF("anonymous", STR, handle_anonymous),
+            STDCONF("viaproxyname", STR, handle_viaproxyname),
+            STDCONF("defaulterrorfile", STR, handle_defaulterrorfile),
+            STDCONF("statfile", STR, handle_statfile),
+            STDCONF("stathost", STR, handle_stathost),
+            STDCONF("xtinyproxy", STR, handle_xtinyproxy),
+            /* boolean arguments */
+            STDCONF("syslog", BOOL, handle_syslog),
+            STDCONF("bindsame", BOOL, handle_bindsame),
+            /* integer arguments */
+            STDCONF("port", INT, handle_port),
+            STDCONF("maxclients", INT, handle_maxclients),
+            STDCONF("maxspareservers", INT, handle_maxspareservers),
+            STDCONF("minspareservers", INT, handle_minspareservers),
+            STDCONF("startservers", INT, handle_startservers),
+            STDCONF("maxrequestsperchild", INT, handle_maxrequestsperchild),
+            STDCONF("timeout", INT, handle_timeout),
+            STDCONF("connectport", INT, handle_connectport),
+            /* alphanumeric arguments */
+            STDCONF("user", ALNUM, handle_user),
+            STDCONF("group", ALNUM, handle_group),
+            /* ip arguments */
+            STDCONF("listen", IP, handle_listen),
+            STDCONF("allow", "(" IPMASK "|" ALNUM ")", handle_allow),
+            STDCONF("deny", "(" IPMASK "|" ALNUM ")", handle_deny),
+            STDCONF("bind", IP, handle_bind),
+            /* error files */
+            STDCONF("errorfile", INT WS STR, handle_errorfile),
+            /* filtering */
+            STDCONF("filter", STR, handle_filter),
+            STDCONF("filterurls", BOOL, handle_filterurls),
+            STDCONF("filterextended", BOOL, handle_filterextended),
+            STDCONF("filterdefaultdeny", BOOL, handle_filterdefaultdeny),
+            STDCONF("filtercasesensitive", BOOL, handle_filtercasesensitive),
+            /* Reverse proxy arguments */
+            STDCONF("reversebaseurl", STR, handle_reversebaseurl),
+            STDCONF("reverseonly", BOOL, handle_reverseonly),
+            STDCONF("reversemagic", BOOL, handle_reversemagic),
+            STDCONF("reversepath", STR WS "(" STR ")?", handle_reversepath),
+            /* upstream is rather complicated */
 //        { BEGIN "no" WS "upstream" WS STR END, handle_no_upstream },
 //        { BEGIN "upstream" WS IP ":" INT "(" WS STR ")" END, handle_upstream },
-
-        /* loglevel */
-        STDCONF("loglevel", "(critical|error|warning|notice|connect|info)", handle_loglevel)
+            /* loglevel */
+            STDCONF("loglevel", "(critical|error|warning|notice|connect|info)",
+                    handle_loglevel)
 };
-const unsigned int ndirectives = sizeof(directives)/sizeof(directives[0]);
+const unsigned int ndirectives = sizeof(directives) / sizeof(directives[0]);
 
 /*
  * Compiles the regular expressions used by the configuration file.  This
@@ -225,7 +219,7 @@ config_compile(void)
         for (i = 0; i != ndirectives; ++i) {
                 assert(directives[i].handler);
                 assert(!directives[i].cre);
-                
+
                 directives[i].cre = safemalloc(sizeof(regex_t));
                 if (!directives[i].cre)
                         return -1;
@@ -233,11 +227,11 @@ config_compile(void)
                 r = regcomp(directives[i].cre,
                             directives[i].re,
                             REG_EXTENDED | REG_ICASE | REG_NEWLINE);
-                if (r) return r;
+                if (r)
+                        return r;
         }
         return 0;
 }
-
 
 /*
  * Attempt to match the supplied line with any of the configuration
@@ -248,7 +242,7 @@ config_compile(void)
  * a negative number is returned.
  */
 static int
-check_match(struct config_s* conf, const char* line)
+check_match(struct config_s *conf, const char *line)
 {
         regmatch_t match[RE_MAX_MATCHES];
         unsigned int i;
@@ -258,7 +252,7 @@ check_match(struct config_s* conf, const char* line)
         for (i = 0; i != ndirectives; ++i) {
                 assert(directives[i].cre);
                 if (!regexec(directives[i].cre, line, RE_MAX_MATCHES, match, 0))
-                        return (*directives[i].handler)(conf, line, match);
+                        return (*directives[i].handler) (conf, line, match);
         }
 
         return -1;
@@ -268,9 +262,9 @@ check_match(struct config_s* conf, const char* line)
  * Parse the previously opened configuration stream.
  */
 int
-config_parse(struct config_s* conf, FILE* f)
+config_parse(struct config_s *conf, FILE * f)
 {
-        char buffer[1024]; /* 1KB lines should be plenty */
+        char buffer[1024];      /* 1KB lines should be plenty */
         unsigned long lineno = 1;
 
         while (fgets(buffer, sizeof(buffer), f)) {
@@ -283,7 +277,6 @@ config_parse(struct config_s* conf, FILE* f)
         return 0;
 }
 
-
 /***********************************************************************
  *
  * The following are basic data extraction building blocks that can
@@ -291,15 +284,15 @@ config_parse(struct config_s* conf, FILE* f)
  *
  ***********************************************************************/
 
-static char*
-get_string_arg(const char* line, regmatch_t* match)
+static char *
+get_string_arg(const char *line, regmatch_t * match)
 {
         char *p;
         const unsigned int len = match->rm_eo - match->rm_so;
 
         assert(line);
         assert(len > 0);
-        
+
         p = safemalloc(len + 1);
         if (!p)
                 return NULL;
@@ -310,9 +303,10 @@ get_string_arg(const char* line, regmatch_t* match)
 }
 
 static int
-set_string_arg(char** var, const char* line, regmatch_t* match)
+set_string_arg(char **var, const char *line, regmatch_t * match)
 {
-        char* arg = get_string_arg(line, match);
+        char *arg = get_string_arg(line, match);
+
         if (!arg)
                 return -1;
         *var = safestrdup(arg);
@@ -321,9 +315,9 @@ set_string_arg(char** var, const char* line, regmatch_t* match)
 }
 
 static int
-get_bool_arg(const char* line, regmatch_t* match)
+get_bool_arg(const char *line, regmatch_t * match)
 {
-        const char* p = line + match->rm_so;
+        const char *p = line + match->rm_so;
 
         assert(line);
         assert(match && match->rm_so != -1);
@@ -336,35 +330,34 @@ get_bool_arg(const char* line, regmatch_t* match)
 }
 
 static int
-set_bool_arg(unsigned int* var, const char* line, regmatch_t* match)
+set_bool_arg(unsigned int *var, const char *line, regmatch_t * match)
 {
         assert(var);
         assert(line);
         assert(match && match->rm_so != -1);
-        
+
         *var = get_bool_arg(line, match);
         return 0;
 }
 
 static inline long int
-get_int_arg(const char* line, regmatch_t* match)
+get_int_arg(const char *line, regmatch_t * match)
 {
         assert(line);
         assert(match && match->rm_so != -1);
-        
+
         return strtol(line + match->rm_so, NULL, 0);
 }
 static int
-set_int_arg(int long* var, const char* line, regmatch_t* match)
+set_int_arg(int long *var, const char *line, regmatch_t * match)
 {
         assert(var);
         assert(line);
         assert(match);
-        
+
         *var = get_int_arg(line, match);
         return 0;
 }
-
 
 /***********************************************************************
  *
@@ -384,17 +377,23 @@ set_int_arg(int long* var, const char* line, regmatch_t* match)
  *
  ***********************************************************************/
 
-static HANDLE_FUNC(handle_logfile)
+static
+HANDLE_FUNC(handle_logfile)
 {
         return set_string_arg(&conf->logf_name, line, &match[2]);
 }
-static HANDLE_FUNC(handle_pidfile)
+
+static
+HANDLE_FUNC(handle_pidfile)
 {
         return set_string_arg(&conf->pidpath, line, &match[2]);
 }
-static HANDLE_FUNC(handle_anonymous)
+
+static
+HANDLE_FUNC(handle_anonymous)
 {
         char *arg = get_string_arg(line, &match[2]);
+
         if (!arg)
                 return -1;
 
@@ -402,35 +401,46 @@ static HANDLE_FUNC(handle_anonymous)
         safefree(arg);
         return 0;
 }
-static HANDLE_FUNC(handle_viaproxyname)
+
+static
+HANDLE_FUNC(handle_viaproxyname)
 {
         int r = set_string_arg(&conf->via_proxy_name, line, &match[2]);
-        if (r) return r;
+
+        if (r)
+                return r;
         log_message(LOG_INFO,
-                    "Setting \"Via\" header proxy to %s",
-                    conf->via_proxy_name);
+                    "Setting \"Via\" header proxy to %s", conf->via_proxy_name);
         return 0;
 }
-static HANDLE_FUNC(handle_defaulterrorfile)
+
+static
+HANDLE_FUNC(handle_defaulterrorfile)
 {
         return set_string_arg(&conf->errorpage_undef, line, &match[2]);
 }
-static HANDLE_FUNC(handle_statfile)
+
+static
+HANDLE_FUNC(handle_statfile)
 {
         return set_string_arg(&conf->statpage, line, &match[2]);
 }
-static HANDLE_FUNC(handle_stathost)
+
+static
+HANDLE_FUNC(handle_stathost)
 {
         int r = set_string_arg(&conf->stathost, line, &match[2]);
-        if (r) return r;
-        log_message(LOG_INFO,
-                    "Stathost set to \"%s\"",
-                    conf->stathost);
+
+        if (r)
+                return r;
+        log_message(LOG_INFO, "Stathost set to \"%s\"", conf->stathost);
         return 0;
 }
-static HANDLE_FUNC(handle_xtinyproxy)
+
+static
+HANDLE_FUNC(handle_xtinyproxy)
 {
-#ifdef XTINYPROXY_ENABLE        
+#ifdef XTINYPROXY_ENABLE
         return set_string_arg(&conf->my_domain, line, &match[2]);
 #else
         fprintf(stderr,
@@ -438,91 +448,126 @@ static HANDLE_FUNC(handle_xtinyproxy)
         return 1;
 #endif
 }
-static HANDLE_FUNC(handle_syslog)
+
+static
+HANDLE_FUNC(handle_syslog)
 {
-#ifdef HAVE_SYSLOG_H        
+#ifdef HAVE_SYSLOG_H
         return set_bool_arg(&conf->syslog, line, &match[2]);
 #else
-        fprintf(stderr,
-                "Syslog support not compiled in executable.\n");
+        fprintf(stderr, "Syslog support not compiled in executable.\n");
         return 1;
 #endif
 }
-static HANDLE_FUNC(handle_bindsame)
+
+static
+HANDLE_FUNC(handle_bindsame)
 {
         int r = set_bool_arg(&conf->bindsame, line, &match[2]);
-        if (r) return r;
+
+        if (r)
+                return r;
         log_message(LOG_INFO, "Binding outgoing connection to incoming IP");
         return 0;
 }
-static HANDLE_FUNC(handle_port)
+
+static
+HANDLE_FUNC(handle_port)
 {
-        return set_int_arg((long int*)&conf->port, line, &match[2]);
+        return set_int_arg((long int *)&conf->port, line, &match[2]);
 }
-static HANDLE_FUNC(handle_maxclients)
+
+static
+HANDLE_FUNC(handle_maxclients)
 {
         child_configure(CHILD_MAXCLIENTS, get_int_arg(line, &match[2]));
         return 0;
 }
-static HANDLE_FUNC(handle_maxspareservers)
+
+static
+HANDLE_FUNC(handle_maxspareservers)
 {
         child_configure(CHILD_MAXSPARESERVERS, get_int_arg(line, &match[2]));
         return 0;
 }
-static HANDLE_FUNC(handle_minspareservers)
+
+static
+HANDLE_FUNC(handle_minspareservers)
 {
         child_configure(CHILD_MINSPARESERVERS, get_int_arg(line, &match[2]));
         return 0;
 }
-static HANDLE_FUNC(handle_startservers)
+
+static
+HANDLE_FUNC(handle_startservers)
 {
         child_configure(CHILD_STARTSERVERS, get_int_arg(line, &match[2]));
         return 0;
 }
-static HANDLE_FUNC(handle_maxrequestsperchild)
+
+static
+HANDLE_FUNC(handle_maxrequestsperchild)
 {
-        child_configure(CHILD_MAXREQUESTSPERCHILD, get_int_arg(line, &match[2]));
+        child_configure(CHILD_MAXREQUESTSPERCHILD,
+                        get_int_arg(line, &match[2]));
         return 0;
 }
-static HANDLE_FUNC(handle_timeout)
+
+static
+HANDLE_FUNC(handle_timeout)
 {
-        return set_int_arg((long int*)&conf->idletimeout, line, &match[2]);
+        return set_int_arg((long int *)&conf->idletimeout, line, &match[2]);
 }
-static HANDLE_FUNC(handle_connectport)
+
+static
+HANDLE_FUNC(handle_connectport)
 {
         add_connect_port_allowed(get_int_arg(line, &match[2]));
         return 0;
 }
-static HANDLE_FUNC(handle_user)
+
+static
+HANDLE_FUNC(handle_user)
 {
         return set_string_arg(&conf->username, line, &match[2]);
 }
-static HANDLE_FUNC(handle_group)
+
+static
+HANDLE_FUNC(handle_group)
 {
         return set_string_arg(&conf->group, line, &match[2]);
 }
-static HANDLE_FUNC(handle_allow)
+
+static
+HANDLE_FUNC(handle_allow)
 {
-        char* arg = get_string_arg(line, &match[2]);
+        char *arg = get_string_arg(line, &match[2]);
+
         insert_acl(arg, ACL_ALLOW);
         safefree(arg);
         return 0;
 }
-static HANDLE_FUNC(handle_deny)
+
+static
+HANDLE_FUNC(handle_deny)
 {
         char *arg = get_string_arg(line, &match[2]);
+
         insert_acl(arg, ACL_DENY);
         safefree(arg);
         return 0;
 }
-static HANDLE_FUNC(handle_bind)
+
+static
+HANDLE_FUNC(handle_bind)
 {
 #ifndef TRANSPARENT_PROXY
         int r = set_string_arg(&conf->bind_address, line, &match[2]);
-        if (r) return r;
+
+        if (r)
+                return r;
         log_message(LOG_INFO,
-                    "Outgoing connections bound to IP %s",
-                    conf->bind_address);
+                    "Outgoing connections bound to IP %s", conf->bind_address);
         return 0;
 #else
         fprintf(stderr,
@@ -530,14 +575,20 @@ static HANDLE_FUNC(handle_bind)
         return 1;
 #endif
 }
-static HANDLE_FUNC(handle_listen)
+
+static
+HANDLE_FUNC(handle_listen)
 {
         int r = set_string_arg(&conf->ipAddr, line, &match[2]);
-        if (r) return r;
+
+        if (r)
+                return r;
         log_message(LOG_INFO, "Listing on IP %s", conf->ipAddr);
         return 0;
 }
-static HANDLE_FUNC(handle_errorfile)
+
+static
+HANDLE_FUNC(handle_errorfile)
 {
         /*
          * Because an integer is defined as ((0x)?[[:digit:]]+) _two_
@@ -548,6 +599,7 @@ static HANDLE_FUNC(handle_errorfile)
          */
         long int err = get_int_arg(line, &match[2]);
         char *page = get_string_arg(line, &match[4]);
+
         add_new_errorpage(page, err);
         safefree(page);
         return 0;
@@ -557,24 +609,27 @@ static HANDLE_FUNC(handle_errorfile)
  * Log level's strings.
  */
 struct log_levels_s {
-        const char* string;
+        const char *string;
         int level;
 };
 static struct log_levels_s log_levels[] = {
-        { "critical", LOG_CRIT },
-        { "error", LOG_ERR },
-        { "warning", LOG_WARNING },
-        { "notice", LOG_NOTICE },
-        { "connect", LOG_CONN },
-        { "info", LOG_INFO }
+        {"critical", LOG_CRIT},
+        {"error", LOG_ERR},
+        {"warning", LOG_WARNING},
+        {"notice", LOG_NOTICE},
+        {"connect", LOG_CONN},
+        {"info", LOG_INFO}
 };
 
-static HANDLE_FUNC(handle_loglevel)
+static
+HANDLE_FUNC(handle_loglevel)
 {
-        static const unsigned int nlevels = sizeof(log_levels)/sizeof(log_levels[0]);
+        static const unsigned int nlevels =
+            sizeof(log_levels) / sizeof(log_levels[0]);
         unsigned int i;
-        
+
         char *arg = get_string_arg(line, &match[2]);
+
         for (i = 0; i != nlevels; ++i) {
                 if (!strcasecmp(arg, log_levels[i].string)) {
                         set_log_level(log_levels[i].level);
@@ -584,29 +639,37 @@ static HANDLE_FUNC(handle_loglevel)
         return -1;
 }
 
-
 #ifdef FILTER_ENABLE
-static HANDLE_FUNC(handle_filter)
+static
+HANDLE_FUNC(handle_filter)
 {
         return set_string_arg(&conf->filter, line, &match[2]);
 }
-static HANDLE_FUNC(handle_filterurls)
+
+static
+HANDLE_FUNC(handle_filterurls)
 {
         return set_bool_arg(&conf->filter_url, line, &match[2]);
 }
-static HANDLE_FUNC(handle_filterextended)
+
+static
+HANDLE_FUNC(handle_filterextended)
 {
         return set_bool_arg(&conf->filter_extended, line, &match[2]);
 }
-static HANDLE_FUNC(handle_filterdefaultdeny)
+
+static
+HANDLE_FUNC(handle_filterdefaultdeny)
 {
         assert(match[2].rm_so != -1);
-        
+
         if (get_bool_arg(line, &match[2]))
                 filter_set_default_policy(FILTER_DEFAULT_DENY);
         return 0;
 }
-static HANDLE_FUNC(handle_filtercasesensitive)
+
+static
+HANDLE_FUNC(handle_filtercasesensitive)
 {
         return set_bool_arg(&conf->filter_casesensitive, line, &match[2]);
 }
@@ -618,29 +681,59 @@ no_filter_support(void)
         return -1;
 }
 
-static HANDLE_FUNC(handle_filter) { return no_filter_support(); }
-static HANDLE_FUNC(handle_filtercasesensitive) { return no_filter_support(); }
-static HANDLE_FUNC(handle_filterdefaultdeny) { return no_filter_support(); }
-static HANDLE_FUNC(handle_filterextended) { return no_filter_support(); }
-static HANDLE_FUNC(handle_filterurls) { return no_filter_support(); }
+static
+HANDLE_FUNC(handle_filter)
+{
+        return no_filter_support();
+}
+
+static
+HANDLE_FUNC(handle_filtercasesensitive)
+{
+        return no_filter_support();
+}
+
+static
+HANDLE_FUNC(handle_filterdefaultdeny)
+{
+        return no_filter_support();
+}
+
+static
+HANDLE_FUNC(handle_filterextended)
+{
+        return no_filter_support();
+}
+
+static
+HANDLE_FUNC(handle_filterurls)
+{
+        return no_filter_support();
+}
 
 #endif
 
-
 #ifdef REVERSE_SUPPORT
-static HANDLE_FUNC(handle_reverseonly)
+static
+HANDLE_FUNC(handle_reverseonly)
 {
         return set_bool_arg(&conf->reverseonly, line, &match[2]);
 }
-static HANDLE_FUNC(handle_reversemagic)
+
+static
+HANDLE_FUNC(handle_reversemagic)
 {
         return set_bool_arg(&conf->reversemagic, line, &match[2]);
 }
-static HANDLE_FUNC(handle_reversebaseurl)
+
+static
+HANDLE_FUNC(handle_reversebaseurl)
 {
         return set_string_arg(&conf->reversebaseurl, line, &match[2]);
 }
-static HANDLE_FUNC(handle_reversepath)
+
+static
+HANDLE_FUNC(handle_reversepath)
 {
         /*
          * The second string argument is optional.
@@ -648,7 +741,8 @@ static HANDLE_FUNC(handle_reversepath)
         char *arg1, *arg2;
 
         arg1 = get_string_arg(line, &match[2]);
-        if (!arg1) return -1;
+        if (!arg1)
+                return -1;
 
         if (match[3].rm_so != -1) {
                 arg2 = get_string_arg(line, &match[3]);
@@ -674,9 +768,28 @@ no_reverse_support(void)
         return -1;
 }
 
-static HANDLE_FUNC(handle_reversebaseurl) { return no_reverse_support(); }
-static HANDLE_FUNC(handle_reversemagic) { return no_reverse_support(); }
-static HANDLE_FUNC(handle_reverseonly) { return no_reverse_support(); }
-static HANDLE_FUNC(handle_reversepath) { return no_reverse_support(); }
+static
+HANDLE_FUNC(handle_reversebaseurl)
+{
+        return no_reverse_support();
+}
+
+static
+HANDLE_FUNC(handle_reversemagic)
+{
+        return no_reverse_support();
+}
+
+static
+HANDLE_FUNC(handle_reverseonly)
+{
+        return no_reverse_support();
+}
+
+static
+HANDLE_FUNC(handle_reversepath)
+{
+        return no_reverse_support();
+}
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: heap.h,v 1.5 2005-07-12 17:39:44 rjkaes Exp $
+/* $Id: heap.h,v 1.6 2005-08-15 03:54:31 rjkaes Exp $
  *
  * See 'heap.c' for a detailed description.
  *
@@ -24,14 +24,14 @@
 #ifndef NDEBUG
 
 extern void *debugging_calloc(size_t nmemb, size_t size, const char *file,
-			      unsigned long line);
+                              unsigned long line);
 extern void *debugging_malloc(size_t size, const char *file,
-			      unsigned long line);
+                              unsigned long line);
 extern void debugging_free(void *ptr, const char *file, unsigned long line);
 extern void *debugging_realloc(void *ptr, size_t size, const char *file,
-			       unsigned long line);
-extern char *debugging_strdup(const char* s, const char* file,
-			      unsigned long line);
+                               unsigned long line);
+extern char *debugging_strdup(const char *s, const char *file,
+                              unsigned long line);
 
 #  define safecalloc(x, y) debugging_calloc(x, y, __FILE__, __LINE__)
 #  define safemalloc(x) debugging_malloc(x, __FILE__, __LINE__)
@@ -57,7 +57,7 @@ free(*__safefree_tmp); \
 /*
  * Allocate memory from the "shared" region of memory.
  */
-extern void* malloc_shared_memory(size_t size);
-extern void* calloc_shared_memory(size_t nmemb, size_t size);
+extern void *malloc_shared_memory(size_t size);
+extern void *calloc_shared_memory(size_t nmemb, size_t size);
 
 #endif

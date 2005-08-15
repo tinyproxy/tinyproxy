@@ -1,4 +1,4 @@
-/* $Id: log.h,v 1.12 2005-07-12 17:39:44 rjkaes Exp $
+/* $Id: log.h,v 1.13 2005-08-15 03:54:31 rjkaes Exp $
  *
  * See 'log.c' for a detailed description.
  *
@@ -84,7 +84,7 @@
 #  define LOG_DEBUG   7
 #endif
 
-#define LOG_CONN      8		/* extra to log connections without the INFO stuff */
+#define LOG_CONN      8         /* extra to log connections without the INFO stuff */
 
 /*
  * Use this for debugging. The format is specific:
@@ -99,7 +99,7 @@
 # define DEBUG2(x, y...) do { } while(0)
 #endif
 
-extern int open_log_file(const char* file);
+extern int open_log_file(const char *file);
 extern void close_log_file(void);
 extern void truncate_log_file(void);
 

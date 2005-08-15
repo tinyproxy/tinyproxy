@@ -1,4 +1,4 @@
-/* $Id: conffile.h,v 1.1 2004-08-13 20:19:50 rjkaes Exp $
+/* $Id: conffile.h,v 1.2 2005-08-15 03:54:31 rjkaes Exp $
  *
  * See 'conffile.c' for more details.
  *
@@ -19,6 +19,6 @@
 #define TINYPROXY_CONFFILE_H
 
 extern int config_compile(void);
-extern int config_parse(struct config_s* conf, FILE* f);
+extern int config_parse(struct config_s *conf, FILE * f);
 
 #endif

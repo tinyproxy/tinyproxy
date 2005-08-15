@@ -1,4 +1,4 @@
-/* $Id: buffer.c,v 1.24 2004-02-13 21:27:42 rjkaes Exp $
+/* $Id: buffer.c,v 1.25 2005-08-15 03:54:31 rjkaes Exp $
  *
  * The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
@@ -31,10 +31,10 @@
 #define BUFFER_TAIL(x) (x)->tail
 
 struct bufline_s {
-	unsigned char *string;	/* the actual string of data */
-	struct bufline_s *next;	/* pointer to next in linked list */
-	size_t length;		/* length of the string of data */
-	size_t pos;		/* start sending from this offset */
+        unsigned char *string;  /* the actual string of data */
+        struct bufline_s *next; /* pointer to next in linked list */
+        size_t length;          /* length of the string of data */
+        size_t pos;             /* start sending from this offset */
 };
 
 /*
@@ -42,9 +42,9 @@ struct bufline_s {
  * (and includes the total size)
  */
 struct buffer_s {
-	struct bufline_s *head;	/* top of the buffer */
-	struct bufline_s *tail;	/* bottom of the buffer */
-	size_t size;		/* total size of the buffer */
+        struct bufline_s *head; /* top of the buffer */
+        struct bufline_s *tail; /* bottom of the buffer */
+        size_t size;            /* total size of the buffer */
 };
 
 /*
@@ -55,28 +55,28 @@ struct buffer_s {
 static struct bufline_s *
 makenewline(unsigned char *data, size_t length)
 {
-	struct bufline_s *newline;
+        struct bufline_s *newline;
 
-	assert(data != NULL);
-	assert(length > 0);
+        assert(data != NULL);
+        assert(length > 0);
 
-	if (!(newline = safemalloc(sizeof(struct bufline_s))))
-		return NULL;
+        if (!(newline = safemalloc(sizeof(struct bufline_s))))
+                return NULL;
 
-	if (!(newline->string = safemalloc(length))) {
-		safefree(newline);
-		return NULL;
-	}
+        if (!(newline->string = safemalloc(length))) {
+                safefree(newline);
+                return NULL;
+        }
 
-	memcpy(newline->string, data, length);
+        memcpy(newline->string, data, length);
 
-	newline->next = NULL;
-	newline->length = length;
+        newline->next = NULL;
+        newline->length = length;
 
-	/* Position our "read" pointer at the beginning of the data */
-	newline->pos = 0;
+        /* Position our "read" pointer at the beginning of the data */
+        newline->pos = 0;
 
-	return newline;
+        return newline;
 }
 
 /*
@@ -85,15 +85,15 @@ makenewline(unsigned char *data, size_t length)
 static void
 free_line(struct bufline_s *line)
 {
-	assert(line != NULL);
+        assert(line != NULL);
 
-	if (!line)
-		return;
+        if (!line)
+                return;
 
-	if (line->string)
-		safefree(line->string);
+        if (line->string)
+                safefree(line->string);
 
-	safefree(line);
+        safefree(line);
 }
 
 /*
@@ -102,20 +102,20 @@ free_line(struct bufline_s *line)
 struct buffer_s *
 new_buffer(void)
 {
-	struct buffer_s *buffptr;
+        struct buffer_s *buffptr;
 
-	if (!(buffptr = safemalloc(sizeof(struct buffer_s))))
-		return NULL;
+        if (!(buffptr = safemalloc(sizeof(struct buffer_s))))
+                return NULL;
 
-	/*
-	 * Since the buffer is initially empty, set the HEAD and TAIL
-	 * pointers to NULL since they can't possibly point anywhere at the
-	 * moment.
-	 */
-	BUFFER_HEAD(buffptr) = BUFFER_TAIL(buffptr) = NULL;
-	buffptr->size = 0;
+        /*
+         * Since the buffer is initially empty, set the HEAD and TAIL
+         * pointers to NULL since they can't possibly point anywhere at the
+         * moment.
+         */
+        BUFFER_HEAD(buffptr) = BUFFER_TAIL(buffptr) = NULL;
+        buffptr->size = 0;
 
-	return buffptr;
+        return buffptr;
 }
 
 /*
@@ -124,25 +124,26 @@ new_buffer(void)
 void
 delete_buffer(struct buffer_s *buffptr)
 {
-	struct bufline_s *next;
+        struct bufline_s *next;
 
-	assert(buffptr != NULL);
+        assert(buffptr != NULL);
 
-	while (BUFFER_HEAD(buffptr)) {
-		next = BUFFER_HEAD(buffptr)->next;
-		free_line(BUFFER_HEAD(buffptr));
-		BUFFER_HEAD(buffptr) = next;
-	}
+        while (BUFFER_HEAD(buffptr)) {
+                next = BUFFER_HEAD(buffptr)->next;
+                free_line(BUFFER_HEAD(buffptr));
+                BUFFER_HEAD(buffptr) = next;
+        }
 
-	safefree(buffptr);
+        safefree(buffptr);
 }
 
 /*
  * Return the current size of the buffer.
  */
-size_t buffer_size(struct buffer_s *buffptr)
+size_t
+buffer_size(struct buffer_s *buffptr)
 {
-	return buffptr->size;
+        return buffptr->size;
 }
 
 /*
@@ -151,37 +152,37 @@ size_t buffer_size(struct buffer_s *buffptr)
 int
 add_to_buffer(struct buffer_s *buffptr, unsigned char *data, size_t length)
 {
-	struct bufline_s *newline;
+        struct bufline_s *newline;
 
-	assert(buffptr != NULL);
-	assert(data != NULL);
-	assert(length > 0);
+        assert(buffptr != NULL);
+        assert(data != NULL);
+        assert(length > 0);
 
-	/*
-	 * Sanity check here. A buffer with a non-NULL head pointer must
-	 * have a size greater than zero, and vice-versa.
-	 */
-	if (BUFFER_HEAD(buffptr) == NULL)
-		assert(buffptr->size == 0);
-	else
-		assert(buffptr->size > 0);
+        /*
+         * Sanity check here. A buffer with a non-NULL head pointer must
+         * have a size greater than zero, and vice-versa.
+         */
+        if (BUFFER_HEAD(buffptr) == NULL)
+                assert(buffptr->size == 0);
+        else
+                assert(buffptr->size > 0);
 
-	/*
-	 * Make a new line so we can add it to the buffer.
-	 */
-	if (!(newline = makenewline(data, length)))
-		return -1;
+        /*
+         * Make a new line so we can add it to the buffer.
+         */
+        if (!(newline = makenewline(data, length)))
+                return -1;
 
-	if (buffptr->size == 0)
-		BUFFER_HEAD(buffptr) = BUFFER_TAIL(buffptr) = newline;
-	else {
-		BUFFER_TAIL(buffptr)->next = newline;
-		BUFFER_TAIL(buffptr) = newline;
-	}
+        if (buffptr->size == 0)
+                BUFFER_HEAD(buffptr) = BUFFER_TAIL(buffptr) = newline;
+        else {
+                BUFFER_TAIL(buffptr)->next = newline;
+                BUFFER_TAIL(buffptr) = newline;
+        }
 
-	buffptr->size += length;
+        buffptr->size += length;
 
-	return 0;
+        return 0;
 }
 
 /*
@@ -190,17 +191,17 @@ add_to_buffer(struct buffer_s *buffptr, unsigned char *data, size_t length)
 static struct bufline_s *
 remove_from_buffer(struct buffer_s *buffptr)
 {
-	struct bufline_s *line;
+        struct bufline_s *line;
 
-	assert(buffptr != NULL);
-	assert(BUFFER_HEAD(buffptr) != NULL);
+        assert(buffptr != NULL);
+        assert(BUFFER_HEAD(buffptr) != NULL);
 
-	line = BUFFER_HEAD(buffptr);
-	BUFFER_HEAD(buffptr) = line->next;
+        line = BUFFER_HEAD(buffptr);
+        BUFFER_HEAD(buffptr) = line->next;
 
-	buffptr->size -= line->length;
+        buffptr->size -= line->length;
 
-	return line;
+        return line;
 }
 
 /*
@@ -211,51 +212,51 @@ remove_from_buffer(struct buffer_s *buffptr)
 ssize_t
 read_buffer(int fd, struct buffer_s * buffptr)
 {
-	ssize_t bytesin;
-	unsigned char buffer[READ_BUFFER_SIZE];
+        ssize_t bytesin;
+        unsigned char buffer[READ_BUFFER_SIZE];
 
-	assert(fd >= 0);
-	assert(buffptr != NULL);
+        assert(fd >= 0);
+        assert(buffptr != NULL);
 
-	/*
-	 * Don't allow the buffer to grow larger than MAXBUFFSIZE
-	 */
-	if (buffptr->size >= MAXBUFFSIZE)
-		return 0;
+        /*
+         * Don't allow the buffer to grow larger than MAXBUFFSIZE
+         */
+        if (buffptr->size >= MAXBUFFSIZE)
+                return 0;
 
-	bytesin = read(fd, buffer, READ_BUFFER_SIZE);
+        bytesin = read(fd, buffer, READ_BUFFER_SIZE);
 
-	if (bytesin > 0) {
-		if (add_to_buffer(buffptr, buffer, bytesin) < 0) {
-			log_message(LOG_ERR,
-				    "readbuff: add_to_buffer() error.");
-			return -1;
-		}
+        if (bytesin > 0) {
+                if (add_to_buffer(buffptr, buffer, bytesin) < 0) {
+                        log_message(LOG_ERR,
+                                    "readbuff: add_to_buffer() error.");
+                        return -1;
+                }
 
-		return bytesin;
-	} else {
-		if (bytesin == 0) {
-			/* connection was closed by client */
-			return -1;
-		} else {
-			switch (errno) {
+                return bytesin;
+        } else {
+                if (bytesin == 0) {
+                        /* connection was closed by client */
+                        return -1;
+                } else {
+                        switch (errno) {
 #ifdef EWOULDBLOCK
-			case EWOULDBLOCK:
+                        case EWOULDBLOCK:
 #else
 #  ifdef EAGAIN
-			case EAGAIN:
+                        case EAGAIN:
 #  endif
 #endif
-			case EINTR:
-				return 0;
-			default:
-				log_message(LOG_ERR,
-					    "readbuff: recv() error \"%s\" on file descriptor %d",
-					    strerror(errno), fd);
-				return -1;
-			}
-		}
-	}
+                        case EINTR:
+                                return 0;
+                        default:
+                                log_message(LOG_ERR,
+                                            "readbuff: recv() error \"%s\" on file descriptor %d",
+                                            strerror(errno), fd);
+                                return -1;
+                        }
+                }
+        }
 }
 
 /*
@@ -265,50 +266,51 @@ read_buffer(int fd, struct buffer_s * buffptr)
 ssize_t
 write_buffer(int fd, struct buffer_s * buffptr)
 {
-	ssize_t bytessent;
-	struct bufline_s *line;
+        ssize_t bytessent;
+        struct bufline_s *line;
 
-	assert(fd >= 0);
-	assert(buffptr != NULL);
+        assert(fd >= 0);
+        assert(buffptr != NULL);
 
-	if (buffptr->size == 0)
-		return 0;
+        if (buffptr->size == 0)
+                return 0;
 
-	/* Sanity check. It would be bad to be using a NULL pointer! */
-	assert(BUFFER_HEAD(buffptr) != NULL);
-	line = BUFFER_HEAD(buffptr);
+        /* Sanity check. It would be bad to be using a NULL pointer! */
+        assert(BUFFER_HEAD(buffptr) != NULL);
+        line = BUFFER_HEAD(buffptr);
 
-	bytessent =
-	    send(fd, line->string + line->pos, line->length - line->pos, MSG_NOSIGNAL);
+        bytessent =
+            send(fd, line->string + line->pos, line->length - line->pos,
+                 MSG_NOSIGNAL);
 
-	if (bytessent >= 0) {
-		/* bytes sent, adjust buffer */
-		line->pos += bytessent;
-		if (line->pos == line->length)
-			free_line(remove_from_buffer(buffptr));
-		return bytessent;
-	} else {
-		switch (errno) {
+        if (bytessent >= 0) {
+                /* bytes sent, adjust buffer */
+                line->pos += bytessent;
+                if (line->pos == line->length)
+                        free_line(remove_from_buffer(buffptr));
+                return bytessent;
+        } else {
+                switch (errno) {
 #ifdef EWOULDBLOCK
-		case EWOULDBLOCK:
+                case EWOULDBLOCK:
 #else
 #  ifdef EAGAIN
-		case EAGAIN:
+                case EAGAIN:
 #  endif
 #endif
-		case EINTR:
-			return 0;
-		case ENOBUFS:
-		case ENOMEM:
-			log_message(LOG_ERR,
-				    "writebuff: write() error [NOBUFS/NOMEM] \"%s\" on file descriptor %d",
-				    strerror(errno), fd);
-			return 0;
-		default:
-			log_message(LOG_ERR,
-				    "writebuff: write() error \"%s\" on file descriptor %d",
-				    strerror(errno), fd);
-			return -1;
-		}
-	}
+                case EINTR:
+                        return 0;
+                case ENOBUFS:
+                case ENOMEM:
+                        log_message(LOG_ERR,
+                                    "writebuff: write() error [NOBUFS/NOMEM] \"%s\" on file descriptor %d",
+                                    strerror(errno), fd);
+                        return 0;
+                default:
+                        log_message(LOG_ERR,
+                                    "writebuff: write() error \"%s\" on file descriptor %d",
+                                    strerror(errno), fd);
+                        return -1;
+                }
+        }
 }

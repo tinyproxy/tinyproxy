@@ -1,4 +1,4 @@
-/* $Id: filter.h,v 1.5 2002-06-07 18:36:21 rjkaes Exp $
+/* $Id: filter.h,v 1.6 2005-08-15 03:54:31 rjkaes Exp $
  *
  * See 'filter.c' for a detailed description.
  *
@@ -19,8 +19,8 @@
 #define _TINYPROXY_FILTER_H_
 
 typedef enum {
-	FILTER_DEFAULT_ALLOW,
-	FILTER_DEFAULT_DENY,
+        FILTER_DEFAULT_ALLOW,
+        FILTER_DEFAULT_DENY,
 } filter_policy_t;
 
 extern void filter_init(void);

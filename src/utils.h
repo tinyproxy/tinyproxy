@@ -1,4 +1,4 @@
-/* $Id: utils.h,v 1.24 2005-07-12 17:39:44 rjkaes Exp $
+/* $Id: utils.h,v 1.25 2005-08-15 03:54:31 rjkaes Exp $
  *
  * See 'utils.h' for a detailed description.
  *
@@ -25,7 +25,7 @@
 struct conn_s;
 
 extern int send_http_message(struct conn_s *connptr, int http_code,
-			     const char *error_title, const char *message);
+                             const char *error_title, const char *message);
 
 extern int pidfile_create(const char *path);
 extern int create_file_safely(const char *filename, unsigned int truncate_file);

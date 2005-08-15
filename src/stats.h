@@ -1,4 +1,4 @@
-/* $Id: stats.h,v 1.5 2005-07-12 17:39:44 rjkaes Exp $
+/* $Id: stats.h,v 1.6 2005-08-15 03:54:31 rjkaes Exp $
  *
  * See 'stats.h' for a detailed description.
  *
@@ -24,11 +24,11 @@
  * Various logable statistics
  */
 typedef enum {
-	STAT_BADCONN,		/* bad connection, for unknown reason */
-	STAT_OPEN,		/* connection opened */
-	STAT_CLOSE,		/* connection closed */
-	STAT_REFUSE,		/* connection refused (to outside world) */
-	STAT_DENIED		/* connection denied to tinyproxy itself */
+        STAT_BADCONN,           /* bad connection, for unknown reason */
+        STAT_OPEN,              /* connection opened */
+        STAT_CLOSE,             /* connection closed */
+        STAT_REFUSE,            /* connection refused (to outside world) */
+        STAT_DENIED             /* connection denied to tinyproxy itself */
 } status_t;
 
 /*

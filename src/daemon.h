@@ -1,4 +1,4 @@
-/* $Id: daemon.h,v 1.2 2005-07-12 17:39:43 rjkaes Exp $
+/* $Id: daemon.h,v 1.3 2005-08-15 03:54:31 rjkaes Exp $
  *
  * See 'daemon.c' for a detailed description.
  *
@@ -23,7 +23,7 @@ typedef void signal_func(int);
 /*
  * Pass a singal integer and a function to handle the signal.
  */
-extern signal_func *set_signal_handler(int signo, signal_func *func);
+extern signal_func *set_signal_handler(int signo, signal_func * func);
 
 /*
  * Make a program a daemon process

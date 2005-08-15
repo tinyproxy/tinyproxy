@@ -1,4 +1,4 @@
-/* $Id: vector.c,v 1.12 2005-07-12 17:39:44 rjkaes Exp $
+/* $Id: vector.c,v 1.13 2005-08-15 03:54:31 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbitrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -34,16 +34,16 @@
  * count of the number of entries (or how long the vector is.)
  */
 struct vectorentry_s {
-	void *data;
-	size_t len;
+        void *data;
+        size_t len;
 
-	struct vectorentry_s *next;
+        struct vectorentry_s *next;
 };
 
 struct vector_s {
-	size_t num_entries;
-	struct vectorentry_s *head;
-	struct vectorentry_s *tail;
+        size_t num_entries;
+        struct vectorentry_s *head;
+        struct vectorentry_s *tail;
 };
 
 /*
@@ -56,16 +56,16 @@ struct vector_s {
 vector_t
 vector_create(void)
 {
-	vector_t vector;
+        vector_t vector;
 
-	vector = safemalloc(sizeof(struct vector_s));
-	if (!vector)
-		return NULL;
+        vector = safemalloc(sizeof(struct vector_s));
+        if (!vector)
+                return NULL;
 
-	vector->num_entries = 0;
-	vector->head = vector->tail = NULL;
-	
-	return vector;
+        vector->num_entries = 0;
+        vector->head = vector->tail = NULL;
+
+        return vector;
 }
 
 /*
@@ -77,23 +77,23 @@ vector_create(void)
 int
 vector_delete(vector_t vector)
 {
-	struct vectorentry_s *ptr, *next;
+        struct vectorentry_s *ptr, *next;
 
-	if (!vector)
-		return -EINVAL;
-       
-	ptr = vector->head;
-	while (ptr) {
-		next = ptr->next;
-		safefree(ptr->data);
-		safefree(ptr);
+        if (!vector)
+                return -EINVAL;
 
-		ptr = next;
-	}
+        ptr = vector->head;
+        while (ptr) {
+                next = ptr->next;
+                safefree(ptr->data);
+                safefree(ptr);
 
-	safefree(vector);
+                ptr = next;
+        }
 
-	return 0;
+        safefree(vector);
+
+        return 0;
 }
 
 /*
@@ -112,42 +112,42 @@ vector_delete(vector_t vector)
 static int
 vector_insert(vector_t vector, void *data, ssize_t len, int pos)
 {
-	struct vectorentry_s *entry;
+        struct vectorentry_s *entry;
 
-	if (!vector || !data || len <= 0 ||
-	    (pos != INSERT_PREPEND && pos != INSERT_APPEND))
-		return -EINVAL;
+        if (!vector || !data || len <= 0 ||
+            (pos != INSERT_PREPEND && pos != INSERT_APPEND))
+                return -EINVAL;
 
-	entry = safemalloc(sizeof(struct vectorentry_s));
-	if (!entry)
-		return -ENOMEM;
+        entry = safemalloc(sizeof(struct vectorentry_s));
+        if (!entry)
+                return -ENOMEM;
 
-	entry->data = safemalloc(len);
-	if (!entry->data) {
-		safefree(entry);
-		return -ENOMEM;
-	}
+        entry->data = safemalloc(len);
+        if (!entry->data) {
+                safefree(entry);
+                return -ENOMEM;
+        }
 
-	memcpy(entry->data, data, len);
-	entry->len = len;
-	entry->next = NULL;
+        memcpy(entry->data, data, len);
+        entry->len = len;
+        entry->next = NULL;
 
-	/* If there is no head or tail, create them */
-	if (!vector->head && !vector->tail)
-		vector->head = vector->tail = entry;
-	else if (pos == 0) {
-		/* prepend the entry */
-		entry->next = vector->head;
-		vector->head = entry;
-	} else {
-		/* append the entry */
-		vector->tail->next = entry;
-		vector->tail = entry;
-	}
-       
-	vector->num_entries++;
+        /* If there is no head or tail, create them */
+        if (!vector->head && !vector->tail)
+                vector->head = vector->tail = entry;
+        else if (pos == 0) {
+                /* prepend the entry */
+                entry->next = vector->head;
+                vector->head = entry;
+        } else {
+                /* append the entry */
+                vector->tail->next = entry;
+                vector->tail = entry;
+        }
 
-	return 0;
+        vector->num_entries++;
+
+        return 0;
 }
 
 /*
@@ -158,13 +158,13 @@ vector_insert(vector_t vector, void *data, ssize_t len, int pos)
 int
 vector_append(vector_t vector, void *data, ssize_t len)
 {
-	return vector_insert(vector, data, len, INSERT_APPEND);
+        return vector_insert(vector, data, len, INSERT_APPEND);
 }
 
 int
 vector_prepend(vector_t vector, void *data, ssize_t len)
 {
-	return vector_insert(vector, data, len, INSERT_PREPEND);
+        return vector_insert(vector, data, len, INSERT_PREPEND);
 }
 
 /*
@@ -175,26 +175,26 @@ vector_prepend(vector_t vector, void *data, ssize_t len)
  *          length of data if position is valid
  */
 void *
-vector_getentry(vector_t vector, size_t pos, size_t* size)
+vector_getentry(vector_t vector, size_t pos, size_t * size)
 {
-	struct vectorentry_s *ptr;
-	size_t loc;
+        struct vectorentry_s *ptr;
+        size_t loc;
 
-	if (!vector || pos < 0 || pos >= vector->num_entries)
-		return NULL;
+        if (!vector || pos < 0 || pos >= vector->num_entries)
+                return NULL;
 
-	loc = 0;
-	ptr = vector->head;
+        loc = 0;
+        ptr = vector->head;
 
-	while (loc != pos) {
-		ptr = ptr->next;
-		loc++;
-	}
+        while (loc != pos) {
+                ptr = ptr->next;
+                loc++;
+        }
 
-	if (size)
-		*size = ptr->len;
+        if (size)
+                *size = ptr->len;
 
-	return ptr->data;
+        return ptr->data;
 }
 
 /*
@@ -206,8 +206,8 @@ vector_getentry(vector_t vector, size_t pos, size_t* size)
 ssize_t
 vector_length(vector_t vector)
 {
-	if (!vector)
-		return -EINVAL;
+        if (!vector)
+                return -EINVAL;
 
-	return vector->num_entries;
+        return vector->num_entries;
 }

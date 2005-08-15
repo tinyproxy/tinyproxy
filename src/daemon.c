@@ -1,4 +1,4 @@
-/* $Id: daemon.c,v 1.4 2005-07-12 17:39:43 rjkaes Exp $
+/* $Id: daemon.c,v 1.5 2005-08-15 03:54:31 rjkaes Exp $
  *
  * This file contains functions which are useful when writing a
  * daemon process.  The functions include a "makedaemon" function and
@@ -28,26 +28,26 @@
 void
 makedaemon(void)
 {
-	if (fork() != 0)
-		exit(0);
+        if (fork() != 0)
+                exit(0);
 
-	setsid();
-	set_signal_handler(SIGHUP, SIG_IGN);
+        setsid();
+        set_signal_handler(SIGHUP, SIG_IGN);
 
-	if (fork() != 0)
-		exit(0);
+        if (fork() != 0)
+                exit(0);
 
-	chdir("/");
-	umask(077);
+        chdir("/");
+        umask(077);
 
 #if NDEBUG
         /*
          * When not in debugging mode, close the standard file
          * descriptors.
          */
-	close(0);
-	close(1);
-	close(2);
+        close(0);
+        close(1);
+        close(2);
 #endif
 }
 
@@ -56,25 +56,25 @@ makedaemon(void)
  * to handle signals sent to the process.
  */
 signal_func *
-set_signal_handler(int signo, signal_func *func)
+set_signal_handler(int signo, signal_func * func)
 {
-	struct sigaction act, oact;
+        struct sigaction act, oact;
 
-	act.sa_handler = func;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
-	if (signo == SIGALRM) {
+        act.sa_handler = func;
+        sigemptyset(&act.sa_mask);
+        act.sa_flags = 0;
+        if (signo == SIGALRM) {
 #ifdef SA_INTERRUPT
-		act.sa_flags |= SA_INTERRUPT;	/* SunOS 4.x */
+                act.sa_flags |= SA_INTERRUPT;   /* SunOS 4.x */
 #endif
-	} else {
+        } else {
 #ifdef SA_RESTART
-		act.sa_flags |= SA_RESTART;	/* SVR4, 4.4BSD */
+                act.sa_flags |= SA_RESTART;     /* SVR4, 4.4BSD */
 #endif
-	}
+        }
 
-	if (sigaction(signo, &act, &oact) < 0)
-		return SIG_ERR;
+        if (sigaction(signo, &act, &oact) < 0)
+                return SIG_ERR;
 
-	return oact.sa_handler;
+        return oact.sa_handler;
 }

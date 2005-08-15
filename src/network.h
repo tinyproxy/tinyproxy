@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.2 2004-02-18 20:17:18 rjkaes Exp $
+/* $Id: network.h,v 1.3 2005-08-15 03:54:31 rjkaes Exp $
  *
  * See 'network.c' for a detailed description.
  *
@@ -24,7 +24,7 @@ extern ssize_t safe_read(int fd, char *buffer, size_t count);
 extern int write_message(int fd, const char *fmt, ...);
 extern ssize_t readline(int fd, char **whole_buffer);
 
-extern char* get_ip_string(struct sockaddr* sa, char* buf, size_t len);
-extern int full_inet_pton(const char* ip, void* dst);
+extern char *get_ip_string(struct sockaddr *sa, char *buf, size_t len);
+extern int full_inet_pton(const char *ip, void *dst);
 
 #endif

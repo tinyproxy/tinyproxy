@@ -1,4 +1,4 @@
-/* $Id: heap.c,v 1.9 2005-07-12 17:39:44 rjkaes Exp $
+/* $Id: heap.c,v 1.10 2005-08-15 03:54:31 rjkaes Exp $
  *
  * Debugging versions of various heap related functions are combined
  * here.  The debugging versions include assertions and also print
@@ -25,70 +25,70 @@
 
 void *
 debugging_calloc(size_t nmemb, size_t size, const char *file,
-		 unsigned long line)
+                 unsigned long line)
 {
-	void *ptr;
+        void *ptr;
 
-	assert(nmemb > 0);
-	assert(size > 0);
+        assert(nmemb > 0);
+        assert(size > 0);
 
-	ptr = calloc(nmemb, size);
-	fprintf(stderr, "{calloc: %p:%u x %u} %s:%lu\n", ptr, nmemb, size, file,
-		line);
-	return ptr;
+        ptr = calloc(nmemb, size);
+        fprintf(stderr, "{calloc: %p:%u x %u} %s:%lu\n", ptr, nmemb, size, file,
+                line);
+        return ptr;
 }
 
 void *
 debugging_malloc(size_t size, const char *file, unsigned long line)
 {
-	void *ptr;
+        void *ptr;
 
-	assert(size > 0);
+        assert(size > 0);
 
-	ptr = malloc(size);
-	fprintf(stderr, "{malloc: %p:%u} %s:%lu\n", ptr, size, file, line);
-	return ptr;
+        ptr = malloc(size);
+        fprintf(stderr, "{malloc: %p:%u} %s:%lu\n", ptr, size, file, line);
+        return ptr;
 }
 
 void *
 debugging_realloc(void *ptr, size_t size, const char *file, unsigned long line)
 {
-	void *newptr;
-	
-	assert(size > 0);
-	
-	newptr = realloc(ptr, size);
-	fprintf(stderr, "{realloc: %p -> %p:%u} %s:%lu\n", ptr, newptr, size,
-		file, line);
-	return newptr;
+        void *newptr;
+
+        assert(size > 0);
+
+        newptr = realloc(ptr, size);
+        fprintf(stderr, "{realloc: %p -> %p:%u} %s:%lu\n", ptr, newptr, size,
+                file, line);
+        return newptr;
 }
 
 void
 debugging_free(void *ptr, const char *file, unsigned long line)
 {
-	fprintf(stderr, "{free: %p} %s:%lu\n", ptr, file, line);
+        fprintf(stderr, "{free: %p} %s:%lu\n", ptr, file, line);
 
-	if (ptr != NULL)
-		free(ptr);
-	return;
+        if (ptr != NULL)
+                free(ptr);
+        return;
 }
 
-char*
-debugging_strdup(const char* s, const char* file, unsigned long line)
+char *
+debugging_strdup(const char *s, const char *file, unsigned long line)
 {
-	char* ptr;
-	size_t len;
+        char *ptr;
+        size_t len;
 
-	assert(s != NULL);
+        assert(s != NULL);
 
-	len = strlen(s) + 1;
-	ptr = malloc(len);
-	if (!ptr)
-		return NULL;
-	memcpy(ptr, s, len);
+        len = strlen(s) + 1;
+        ptr = malloc(len);
+        if (!ptr)
+                return NULL;
+        memcpy(ptr, s, len);
 
-	fprintf(stderr, "{strdup: %p:%u} %s:%lu\n", ptr, len, file, line);
-	return ptr;
+        fprintf(stderr, "{strdup: %p:%u} %s:%lu\n", ptr, len, file, line);
+        return ptr;
 }
 
 /*
@@ -99,51 +99,50 @@ debugging_strdup(const char* s, const char* file, unsigned long line)
  * want to look into something like MM (Shared Memory Library) for a better
  * solution.
  */
-void*
+void *
 malloc_shared_memory(size_t size)
 {
-	int fd;
-	void* ptr;
-	char buffer[32];
+        int fd;
+        void *ptr;
+        char buffer[32];
 
-	static char* shared_file = "/tmp/tinyproxy.shared.XXXXXX";
+        static char *shared_file = "/tmp/tinyproxy.shared.XXXXXX";
 
-	assert(size > 0);
+        assert(size > 0);
 
-	strlcpy(buffer, shared_file, sizeof(buffer));
+        strlcpy(buffer, shared_file, sizeof(buffer));
 
-	if ((fd = mkstemp(buffer)) == -1)
-		return MAP_FAILED;
-	unlink(buffer);
+        if ((fd = mkstemp(buffer)) == -1)
+                return MAP_FAILED;
+        unlink(buffer);
 
-	if (ftruncate(fd, size) == -1)
-		return MAP_FAILED;
-	ptr = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+        if (ftruncate(fd, size) == -1)
+                return MAP_FAILED;
+        ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
-	return ptr;
+        return ptr;
 }
 
 /*
  * Allocate a block of memory from the "shared" region an initialize it to
  * zero.
  */
-void*
+void *
 calloc_shared_memory(size_t nmemb, size_t size)
 {
-	void* ptr;
-	long length;
+        void *ptr;
+        long length;
 
-	assert(nmemb > 0);
-	assert(size > 0);
+        assert(nmemb > 0);
+        assert(size > 0);
 
-	length = nmemb * size;
+        length = nmemb * size;
 
-	ptr = malloc_shared_memory(length);
-	if (ptr == MAP_FAILED)
-		return ptr;
+        ptr = malloc_shared_memory(length);
+        if (ptr == MAP_FAILED)
+                return ptr;
 
-	memset(ptr, 0, length);
+        memset(ptr, 0, length);
 
-	return ptr;
+        return ptr;
 }
-

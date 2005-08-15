@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.46 2005-07-12 17:39:44 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.47 2005-08-15 03:54:31 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -23,26 +23,26 @@
 #include "hashmap.h"
 
 /* Global variables for the main controls of the program */
-#define MAXBUFFSIZE	((size_t)(1024 * 96))	/* Max size of buffer */
-#define MAX_IDLE_TIME 	(60 * 10)	/* 10 minutes of no activity */
+#define MAXBUFFSIZE	((size_t)(1024 * 96))   /* Max size of buffer */
+#define MAX_IDLE_TIME 	(60 * 10)       /* 10 minutes of no activity */
 
 /*
  * Even if upstream support is not compiled into tinyproxy, this
  * structure still needs to be defined.
  */
 struct upstream {
-	struct upstream *next;
-	char *domain; /* optional */
-	char *host;
-	int port;
-	in_addr_t ip, mask;
+        struct upstream *next;
+        char *domain;           /* optional */
+        char *host;
+        int port;
+        in_addr_t ip, mask;
 };
 
 #ifdef REVERSE_SUPPORT
 struct reversepath {
-	struct reversepath *next;
-	char *path;
-	char *url;
+        struct reversepath *next;
+        char *path;
+        char *url;
 };
 
 #define REVERSE_COOKIE "yummy_magical_cookie"
@@ -52,63 +52,63 @@ struct reversepath {
  * Hold all the configuration time information.
  */
 struct config_s {
-	char *logf_name;
-	char *config_file;
-	unsigned int syslog; /* boolean */
-	int port;
-	char *stathost;
-	unsigned int quit; /* boolean */
-	char *username;
-	char *group;
-	char *ipAddr;
+        char *logf_name;
+        char *config_file;
+        unsigned int syslog;    /* boolean */
+        int port;
+        char *stathost;
+        unsigned int quit;      /* boolean */
+        char *username;
+        char *group;
+        char *ipAddr;
 #ifdef FILTER_ENABLE
-	char *filter;
-	unsigned int filter_url; /* boolean */
-	unsigned int filter_extended; /* boolean */
-        unsigned int filter_casesensitive; /* boolean */
-#endif				/* FILTER_ENABLE */
+        char *filter;
+        unsigned int filter_url;        /* boolean */
+        unsigned int filter_extended;   /* boolean */
+        unsigned int filter_casesensitive;      /* boolean */
+#endif                          /* FILTER_ENABLE */
 #ifdef XTINYPROXY_ENABLE
-	char *my_domain;
+        char *my_domain;
 #endif
 #ifdef REVERSE_SUPPORT
-	struct reversepath *reversepath_list;
-	unsigned int reverseonly; /* boolean */
-	unsigned int reversemagic; /* boolean */
-	char *reversebaseurl;
+        struct reversepath *reversepath_list;
+        unsigned int reverseonly;       /* boolean */
+        unsigned int reversemagic;      /* boolean */
+        char *reversebaseurl;
 #endif
 #ifdef UPSTREAM_SUPPORT
-	struct upstream *upstream_list;
-#endif				/* UPSTREAM_SUPPORT */
-	char *pidpath;
-	unsigned int idletimeout;
-	char* bind_address;
-	unsigned int bindsame;
+        struct upstream *upstream_list;
+#endif                          /* UPSTREAM_SUPPORT */
+        char *pidpath;
+        unsigned int idletimeout;
+        char *bind_address;
+        unsigned int bindsame;
 
-	/*
-	 * The configured name to use in the HTTP "Via" header field.
-	 */
-	char* via_proxy_name;
+        /*
+         * The configured name to use in the HTTP "Via" header field.
+         */
+        char *via_proxy_name;
 
         /* 
-	 * Error page support.  Map error numbers to file paths.
-	 */
-	hashmap_t errorpages;
+         * Error page support.  Map error numbers to file paths.
+         */
+        hashmap_t errorpages;
 
-	/* 
-	 * Error page to be displayed if appropriate page cannot be located
-	 * in the errorpages structure.
-	 */
-	char *errorpage_undef;
+        /* 
+         * Error page to be displayed if appropriate page cannot be located
+         * in the errorpages structure.
+         */
+        char *errorpage_undef;
 
-	/* 
-	 * The HTML statistics page. 
-	 */
-	char *statpage;
+        /* 
+         * The HTML statistics page. 
+         */
+        char *statpage;
 };
 
 /* Global Structures used in the program */
 extern struct config_s config;
-extern unsigned int received_sighup; /* boolean */
-extern unsigned int processed_config_file; /* boolean */
+extern unsigned int received_sighup;    /* boolean */
+extern unsigned int processed_config_file;      /* boolean */
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: child.h,v 1.3 2005-07-12 17:39:43 rjkaes Exp $
+/* $Id: child.h,v 1.4 2005-08-15 03:54:31 rjkaes Exp $
  *
  * See 'child.c' for more information.
  *
@@ -19,11 +19,11 @@
 #define TINYPROXY_CHILD_H
 
 typedef enum {
-	CHILD_MAXCLIENTS,
-	CHILD_MAXSPARESERVERS,
-	CHILD_MINSPARESERVERS,
-	CHILD_STARTSERVERS,
-	CHILD_MAXREQUESTSPERCHILD
+        CHILD_MAXCLIENTS,
+        CHILD_MAXSPARESERVERS,
+        CHILD_MINSPARESERVERS,
+        CHILD_STARTSERVERS,
+        CHILD_MAXREQUESTSPERCHILD
 } child_config_t;
 
 extern short int child_pool_create(void);

@@ -1,4 +1,4 @@
-/* $Id: http_message.h,v 1.2 2005-07-12 17:39:44 rjkaes Exp $
+/* $Id: http_message.h,v 1.3 2005-08-15 03:54:31 rjkaes Exp $
  *
  * HTTP Message API
  * ----------------
@@ -55,7 +55,7 @@ typedef struct http_message_s *http_message_t;
 
 /* Initialize the internal structure of the HTTP message */
 extern http_message_t http_message_create(int response_code,
-					  const char* response_string);
+                                          const char *response_string);
 
 /* Free up an _internal_ resources */
 extern int http_message_destroy(http_message_t msg);
@@ -72,10 +72,10 @@ extern int http_message_send(http_message_t msg, int fd);
  * add a new set of headers.
  */
 extern int http_message_set_body(http_message_t msg,
-				 const char* body, size_t len);
+                                 const char *body, size_t len);
 extern int http_message_set_response(http_message_t msg,
-				     int response_code,
-				     const char* response_string);
+                                     int response_code,
+                                     const char *response_string);
 
 /*
  * Set the headers for this HTTP message.  Each string must be NUL ('\0')
@@ -84,7 +84,6 @@ extern int http_message_set_response(http_message_t msg,
  * sent.
  */
 extern int http_message_add_headers(http_message_t msg,
-				    char** headers,
-				    int num_headers);
+                                    char **headers, int num_headers);
 
-#endif /* _TINYPROXY_HTTP_MESSAGE_H_ */
+#endif                          /* _TINYPROXY_HTTP_MESSAGE_H_ */

@@ -1,4 +1,4 @@
-/* $Id: conns.h,v 1.19 2005-07-12 17:39:43 rjkaes Exp $
+/* $Id: conns.h,v 1.20 2005-08-15 03:54:31 rjkaes Exp $
  *
  * See 'conns.c' for a detailed description.
  *
@@ -25,58 +25,58 @@
  * Connection Definition
  */
 struct conn_s {
-	int client_fd;
-	int server_fd;
+        int client_fd;
+        int server_fd;
 
-	struct buffer_s *cbuffer;
-	struct buffer_s *sbuffer;
+        struct buffer_s *cbuffer;
+        struct buffer_s *sbuffer;
 
-	/* The request line (first line) from the client */
-	char *request_line;
+        /* The request line (first line) from the client */
+        char *request_line;
 
-	/* Booleans */
-	unsigned int connect_method;
-	unsigned int show_stats;
+        /* Booleans */
+        unsigned int connect_method;
+        unsigned int show_stats;
 
         /*
-	 * This structure stores key -> value mappings for substitution
-	 * in the error HTML files.
-	 */
-	hashmap_t error_variables;
+         * This structure stores key -> value mappings for substitution
+         * in the error HTML files.
+         */
+        hashmap_t error_variables;
 
-	int error_number;
-	char *error_string;
+        int error_number;
+        char *error_string;
 
-	/* A Content-Length value from the remote server */
-	struct {
-		long int server;
-		long int client;
-	} content_length;
+        /* A Content-Length value from the remote server */
+        struct {
+                long int server;
+                long int client;
+        } content_length;
 
-	/*
-	 * Store the server's IP (for BindSame)
-	 */
-	char* server_ip_addr;
+        /*
+         * Store the server's IP (for BindSame)
+         */
+        char *server_ip_addr;
 
-	/*
-	 * Store the client's IP and hostname information
-	 */
-	char* client_ip_addr;
-	char* client_string_addr;
+        /*
+         * Store the client's IP and hostname information
+         */
+        char *client_ip_addr;
+        char *client_string_addr;
 
-	/*
-	 * Store the incoming request's HTTP protocol.
-	 */
-	struct {
-		unsigned int major;
-		unsigned int minor;
-	} protocol;
+        /*
+         * Store the incoming request's HTTP protocol.
+         */
+        struct {
+                unsigned int major;
+                unsigned int minor;
+        } protocol;
 
 #ifdef REVERSE_SUPPORT
-	/*
-	 * Place to store the current per-connection reverse proxy path
-	 */
-	char* reversepath;
+        /*
+         * Place to store the current per-connection reverse proxy path
+         */
+        char *reversepath;
 #endif
 
         /*
@@ -88,9 +88,9 @@ struct conn_s {
 /*
  * Functions for the creation and destruction of a connection structure.
  */
-extern struct conn_s* initialize_conn(int client_fd, const char* ipaddr,
-				      const char* string_addr,
-				      const char* sock_ipaddr);
+extern struct conn_s *initialize_conn(int client_fd, const char *ipaddr,
+                                      const char *string_addr,
+                                      const char *sock_ipaddr);
 extern void destroy_conn(struct conn_s *connptr);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: htmlerror.h,v 1.2 2003-03-14 22:45:59 rjkaes Exp $
+/* $Id: htmlerror.h,v 1.3 2005-08-15 03:54:31 rjkaes Exp $
  *
  * Contains header declarations for the HTML error functions in
  * htmlerror.c
@@ -24,10 +24,11 @@ struct conn_s;
 
 extern int add_new_errorpage(char *filepath, unsigned int errornum);
 extern int send_http_error_message(struct conn_s *connptr);
-extern int indicate_http_error(struct conn_s *connptr, int number, char *message, ...);
+extern int indicate_http_error(struct conn_s *connptr, int number,
+                               char *message, ...);
 extern int add_error_variable(struct conn_s *connptr, char *key, char *val);
-extern int send_html_file(FILE *infile, struct conn_s *connptr);
+extern int send_html_file(FILE * infile, struct conn_s *connptr);
 extern int send_http_headers(struct conn_s *connptr, int code, char *message);
 extern int add_standard_vars(struct conn_s *connptr);
 
-#endif /* !TINYPROXY_HTMLERROR_H */
+#endif                          /* !TINYPROXY_HTMLERROR_H */

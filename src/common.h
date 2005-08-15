@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.8 2005-07-12 17:39:43 rjkaes Exp $
+/* $Id: common.h,v 1.9 2005-08-15 03:54:31 rjkaes Exp $
  *
  * This file groups all the headers required throughout the tinyproxy
  * system.  All this information use to be in the "tinyproxy.h" header,
@@ -166,13 +166,13 @@
 #  define MSG_NOSIGNAL (0)
 #endif
 
-#ifndef SHUT_RD			/* these three Posix.1g names are quite new */
-#  define SHUT_RD	0	/* shutdown for reading */
-#  define SHUT_WR	1	/* shutdown for writing */
-#  define SHUT_RDWR	2	/* shutdown for reading and writing */
+#ifndef SHUT_RD                 /* these three Posix.1g names are quite new */
+#  define SHUT_RD	0       /* shutdown for reading */
+#  define SHUT_WR	1       /* shutdown for writing */
+#  define SHUT_RDWR	2       /* shutdown for reading and writing */
 #endif
 
-#define MAXLISTEN	1024	/* Max number of connections */
+#define MAXLISTEN	1024    /* Max number of connections */
 
 /*
  * SunOS doesn't have INADDR_NONE defined.

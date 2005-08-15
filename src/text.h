@@ -1,4 +1,4 @@
-/* $Id: text.h,v 1.3 2005-07-12 17:39:44 rjkaes Exp $
+/* $Id: text.h,v 1.4 2005-08-15 03:54:31 rjkaes Exp $
  *
  * See 'text.c' for a detailed description.
  *
@@ -20,11 +20,11 @@
 
 #ifndef HAVE_STRLCAT
 extern size_t strlcat(char *dst, const char *src, size_t size);
-#endif				/* HAVE_STRLCAT */
+#endif                          /* HAVE_STRLCAT */
 
 #ifndef HAVE_STRLCPY
 extern size_t strlcpy(char *dst, const char *src, size_t size);
-#endif				/* HAVE_STRLCPY */
+#endif                          /* HAVE_STRLCPY */
 
 extern ssize_t chomp(char *buffer, size_t length);
 

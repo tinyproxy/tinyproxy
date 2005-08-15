@@ -1,4 +1,4 @@
-/* $Id: anonymous.c,v 1.15 2005-07-12 17:39:43 rjkaes Exp $
+/* $Id: anonymous.c,v 1.16 2005-08-15 03:54:31 rjkaes Exp $
  *
  * Handles insertion and searches for headers which should be let through when
  * the anonymous feature is turned on.
@@ -28,7 +28,7 @@ static hashmap_t anonymous_map = NULL;
 short int
 is_anonymous_enabled(void)
 {
-	return (anonymous_map != NULL) ? 1 : 0;
+        return (anonymous_map != NULL) ? 1 : 0;
 }
 
 /*
@@ -38,10 +38,10 @@ is_anonymous_enabled(void)
 int
 anonymous_search(char *s)
 {
-	assert(s != NULL);
-	assert(anonymous_map != NULL);
+        assert(s != NULL);
+        assert(anonymous_map != NULL);
 
-	return hashmap_search(anonymous_map, s);
+        return hashmap_search(anonymous_map, s);
 }
 
 /*
@@ -53,21 +53,21 @@ anonymous_search(char *s)
 int
 anonymous_insert(char *s)
 {
-	char data = 1;
+        char data = 1;
 
-	assert(s != NULL);
+        assert(s != NULL);
 
-	if (!anonymous_map) {
-		anonymous_map = hashmap_create(32);
-		if (!anonymous_map)
-			return -1;
-	}
+        if (!anonymous_map) {
+                anonymous_map = hashmap_create(32);
+                if (!anonymous_map)
+                        return -1;
+        }
 
-	if (hashmap_search(anonymous_map, s) > 0) {
-		/* The key was already found, so return a positive number. */
-		return 0;
-	}
+        if (hashmap_search(anonymous_map, s) > 0) {
+                /* The key was already found, so return a positive number. */
+                return 0;
+        }
 
-	/* Insert the new key */
-	return hashmap_insert(anonymous_map, s, &data, sizeof(data));
+        /* Insert the new key */
+        return hashmap_insert(anonymous_map, s, &data, sizeof(data));
 }

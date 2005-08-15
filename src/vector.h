@@ -1,4 +1,4 @@
-/* $Id: vector.h,v 1.6 2005-07-12 17:39:44 rjkaes Exp $
+/* $Id: vector.h,v 1.7 2005-08-15 03:54:31 rjkaes Exp $
  *
  * A vector implementation.  The vector can be of an arbritrary length, and
  * the data for each entry is an lump of data (the size is stored in the
@@ -34,14 +34,14 @@ extern "C" {
  * vector.  Sure, it's a pointer, but the struct is hidden in the C file.
  * So, just use the vector_t like it's a cookie. :)
  */
-typedef struct vector_s *vector_t;
+        typedef struct vector_s *vector_t;
 
 /*
  * vector_create() takes no arguments.
  * vector_delete() is self explanatory.
  */
-extern vector_t vector_create(void);
-extern int vector_delete(vector_t vector);
+        extern vector_t vector_create(void);
+        extern int vector_delete(vector_t vector);
 
 /*
  * When you insert a piece of data into the vector, the data will be
@@ -51,8 +51,8 @@ extern int vector_delete(vector_t vector);
  * Returns: negative on error
  *          0 upon successful insert.
  */
-extern int vector_append(vector_t vector, void *data, ssize_t len);
-extern int vector_prepend(vector_t vector, void *data, ssize_t len);
+        extern int vector_append(vector_t vector, void *data, ssize_t len);
+        extern int vector_prepend(vector_t vector, void *data, ssize_t len);
 
 /*
  * A pointer to the data at position "pos" (zero based) is returned and the
@@ -70,7 +70,8 @@ extern int vector_prepend(vector_t vector, void *data, ssize_t len);
  * Returns: NULL on error
  *          valid pointer to data
  */
-extern void* vector_getentry(vector_t vector, size_t pos, size_t* size);
+        extern void *vector_getentry(vector_t vector, size_t pos,
+                                     size_t * size);
 
 /*
  * Returns the number of enteries (or the length) of the vector.
@@ -78,10 +79,9 @@ extern void* vector_getentry(vector_t vector, size_t pos, size_t* size);
  * Returns: negative if vector is not valid
  *          positive length of vector otherwise
  */
-extern ssize_t vector_length(vector_t vector);
+        extern ssize_t vector_length(vector_t vector);
 
 #if defined(__cplusplus)
 }
-#endif /* C++ */
-
-#endif /* _VECTOR_H */
+#endif                          /* C++ */
+#endif                          /* _VECTOR_H */
