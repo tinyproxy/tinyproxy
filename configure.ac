@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 2.69 2004-08-24 18:43:17 rjkaes Exp $
+dnl $Id: configure.ac,v 2.70 2005-08-16 04:03:18 rjkaes Exp $
 
 dnl Devlopers, please strive to achieve this order:
 dnl
@@ -130,6 +130,7 @@ TP_ARG_ENABLE(reverse,
               [Enable reverse proxying (default is NO)]
               no)
 if test x"$reverse_enabled" = x"yes"; then
+    ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS reverse_proxy.o"
     AC_DEFINE(REVERSE_SUPPORT)
 fi
 

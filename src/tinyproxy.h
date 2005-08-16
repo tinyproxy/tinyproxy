@@ -1,4 +1,4 @@
-/* $Id: tinyproxy.h,v 1.47 2005-08-15 03:54:31 rjkaes Exp $
+/* $Id: tinyproxy.h,v 1.48 2005-08-16 04:03:19 rjkaes Exp $
  *
  * See 'tinyproxy.c' for a detailed description.
  *
@@ -37,16 +37,6 @@ struct upstream {
         int port;
         in_addr_t ip, mask;
 };
-
-#ifdef REVERSE_SUPPORT
-struct reversepath {
-        struct reversepath *next;
-        char *path;
-        char *url;
-};
-
-#define REVERSE_COOKIE "yummy_magical_cookie"
-#endif
 
 /*
  * Hold all the configuration time information.

@@ -1,4 +1,4 @@
-/* $Id: conffile.c,v 1.5 2005-08-15 03:54:31 rjkaes Exp $
+/* $Id: conffile.c,v 1.6 2005-08-16 04:03:19 rjkaes Exp $
  *
  * Parses the configuration file and sets up the config_s structure for
  * use by the application.  This file replaces the old grammar.y and
@@ -30,6 +30,7 @@
 #include "htmlerror.h"
 #include "log.h"
 #include "reqs.h"
+#include "reverse_proxy.h"
 
 /*
  * The configuration directives are defined in the structure below.  Each

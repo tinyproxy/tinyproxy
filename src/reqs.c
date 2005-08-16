@@ -1,4 +1,4 @@
-/* $Id: reqs.c,v 1.120 2005-08-15 03:54:31 rjkaes Exp $
+/* $Id: reqs.c,v 1.121 2005-08-16 04:03:19 rjkaes Exp $
  *
  * This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
@@ -6,7 +6,7 @@
  * and then relays the bytes between the two.
  *
  * Copyright (C) 1998	    Steven Young
- * Copyright (C) 1999-2004  Robert James Kaes (rjkaes@users.sourceforge.net)
+ * Copyright (C) 1999-2005  Robert James Kaes (rjkaes@users.sourceforge.net)
  * Copyright (C) 2000       Chris Lightfoot (chris@ex-parrot.com)
  * Copyright (C) 2002       Petr Lampa (lampa@fit.vutbr.cz)
  *
@@ -39,6 +39,7 @@
 #include "text.h"
 #include "utils.h"
 #include "vector.h"
+#include "reverse_proxy.h"
 
 /*
  * Maximum length of a HTTP line
@@ -497,75 +498,6 @@ upstream_get(char *host)
 }
 #endif
 
-#ifdef REVERSE_SUPPORT
-/*
- * Add entry to the reversepath list
- */
-void
-reversepath_add(const char *path, const char *url)
-{
-        struct reversepath *reverse;
-
-        if (url == NULL) {
-                log_message(LOG_WARNING,
-                            "Illegal reverse proxy rule: missing url");
-                return;
-        }
-
-        if (!strstr(url, "://")) {
-                log_message(LOG_WARNING,
-                            "Skipping reverse proxy rule: '%s' is not a valid url",
-                            url);
-                return;
-        }
-
-        if (path && *path != '/') {
-                log_message(LOG_WARNING,
-                            "Skipping reverse proxy rule: path '%s' doesn't start with a /",
-                            path);
-                return;
-        }
-
-        if (!(reverse = safemalloc(sizeof(struct reversepath)))) {
-                log_message(LOG_ERR,
-                            "Unable to allocate memory in reversepath_add()");
-                return;
-        }
-
-        if (!path)
-                reverse->path = safestrdup("/");
-        else
-                reverse->path = safestrdup(path);
-
-        reverse->url = safestrdup(url);
-
-        reverse->next = config.reversepath_list;
-        config.reversepath_list = reverse;
-
-        log_message(LOG_INFO,
-                    "Added reverse proxy rule: %s -> %s", reverse->path,
-                    reverse->url);
-}
-
-/*
- * Check if a request url is in the reversepath list
- */
-static struct reversepath *
-reversepath_get(char *url)
-{
-        struct reversepath *reverse = config.reversepath_list;
-
-        while (reverse) {
-                if (strstr(url, reverse->path) == url)
-                        return reverse;
-
-                reverse = reverse->next;
-        }
-
-        return NULL;
-}
-#endif
-
 /*
  * Create a connection for HTTP connections.
  */
@@ -616,16 +548,7 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
 {
         char *url;
         struct request_s *request;
-
-#ifdef REVERSE_SUPPORT
-        char *rewrite_url = NULL;
-        char *cookie = NULL;
-        char *cookieval;
-        struct reversepath *reverse;
-#endif
-
         int ret;
-
         size_t request_len;
 
         /* NULL out all the fields so frees don't cause segfaults. */
@@ -698,72 +621,24 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
                 return NULL;
         }
 #ifdef REVERSE_SUPPORT
-        /*
-         * Reverse proxy URL rewriting.
-         */
         if (config.reversepath_list != NULL) {
-                /* Reverse requests always start with a slash */
-                if (*url == '/') {
-                        /* First try locating the reverse mapping by request url */
-                        reverse = reversepath_get(url);
-                        if (reverse) {
-                                rewrite_url = safemalloc(strlen(url) +
-                                                         strlen(reverse->url) +
-                                                         1);
-                                strcpy(rewrite_url, reverse->url);
-                                strcat(rewrite_url,
-                                       url + strlen(reverse->path));
-                        } else if (config.reversemagic
-                                   && hashmap_entry_by_key(hashofheaders,
-                                                           "cookie",
-                                                           (void **)&cookie) >
-                                   0) {
+                /*
+                 * Rewrite the URL based on the reverse path.  After calling
+                 * reverse_rewrite_url "url" can be freed since we either
+                 * have the newly rewritten URL, or something failed and
+                 * we'll be closing anyway.
+                 */
+                char *reverse_url;
 
-                                /* No match - try the magical tracking cookie next */
-                                if ((cookieval =
-                                     strstr(cookie, REVERSE_COOKIE "="))
-                                    && (reverse =
-                                        reversepath_get(cookieval +
-                                                        strlen(REVERSE_COOKIE) +
-                                                        1))) {
-
-                                        rewrite_url = safemalloc(strlen(url) +
-                                                                 strlen
-                                                                 (reverse->
-                                                                  url) + 1);
-                                        strcpy(rewrite_url, reverse->url);
-                                        strcat(rewrite_url, url + 1);
-
-                                        log_message(LOG_INFO,
-                                                    "Magical tracking cookie says: %s",
-                                                    reverse->path);
-                                }
-                        }
-                }
-
-                /* Forward proxy support off and no reverse path match found */
-                if (config.reverseonly && !rewrite_url) {
-                        log_message(LOG_ERR, "Bad request");
-                        indicate_http_error(connptr, 400, "Bad Request",
-                                            "detail",
-                                            "Request has an invalid URL", "url",
-                                            url, NULL);
-
-                        safefree(url);
-                        free_request_struct(request);
-
-                        return NULL;
-                }
-
-                log_message(LOG_CONN, "Rewriting URL: %s -> %s",
-                            url, rewrite_url);
-
+                reverse_url = reverse_rewrite_url(connptr, hashofheaders, url);
                 safefree(url);
-                url = rewrite_url;
 
-                /* Store reverse path so that the magical tracking cookie can be set */
-                if (config.reversemagic)
-                        connptr->reversepath = safestrdup(reverse->path);
+                if (!reverse_url) {
+                        free_request_struct(request);
+                        return NULL;
+                } else {
+                        url = reverse_url;
+                }
         }
 #endif
 
