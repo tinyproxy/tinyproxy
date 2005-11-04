@@ -1,4 +1,4 @@
-/* $Id: conffile.c,v 1.8 2005-11-04 01:31:41 rjkaes Exp $
+/* $Id: conffile.c,v 1.9 2005-11-04 05:15:47 rjkaes Exp $
  *
  * Parses the configuration file and sets up the config_s structure for
  * use by the application.  This file replaces the old grammar.y and
@@ -124,10 +124,14 @@ static HANDLE_FUNC(handle_stathost);
 static HANDLE_FUNC(handle_syslog);
 static HANDLE_FUNC(handle_timeout);
 
-//static HANDLE_FUNC(handle_upstream);
 static HANDLE_FUNC(handle_user);
 static HANDLE_FUNC(handle_viaproxyname);
 static HANDLE_FUNC(handle_xtinyproxy);
+
+#ifdef UPSTREAM_SUPPORT
+static HANDLE_FUNC(handle_upstream);
+static HANDLE_FUNC(handle_upstream_no);
+#endif
 
 /*
  * This macro can be used to make standard directives in the form:
@@ -213,9 +217,11 @@ struct {
         STDCONF("reversepath", STR WS "(" STR ")?", handle_reversepath),
 #endif
 
+#ifdef UPSTREAM_SUPPORT
         /* upstream is rather complicated */
-//        { BEGIN "no" WS "upstream" WS STR END, handle_no_upstream },
-//        { BEGIN "upstream" WS IP ":" INT "(" WS STR ")" END, handle_upstream },
+        { BEGIN "(no" WS "upstream)" WS STR END, handle_upstream_no },
+        { BEGIN "(upstream)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR ")?" END, handle_upstream },
+#endif
 
         /* loglevel */
         STDCONF("loglevel", "(critical|error|warning|notice|connect|info)",
@@ -737,6 +743,48 @@ HANDLE_FUNC(handle_reversepath)
                 reversepath_add(NULL, arg1);
                 safefree(arg1);
         }
+        return 0;
+}
+#endif
+
+#ifdef UPSTREAM_SUPPORT
+static
+HANDLE_FUNC(handle_upstream)
+{
+        char *ip;
+        int port;
+        char *domain;
+
+        ip = get_string_arg(line, &match[2]);
+        if (!ip) return -1;
+        port = get_int_arg(line, &match[7]);
+
+        if (match[9].rm_so != -1) {
+                domain = get_string_arg(line, &match[9]);
+                if (domain) {
+                        upstream_add(ip, port, domain);
+                        safefree(domain);
+                }
+        } else {
+                upstream_add(ip, port, NULL);
+        }
+
+        safefree(ip);
+        
+        return 0;
+}
+
+static
+HANDLE_FUNC(handle_upstream_no)
+{
+        char *domain;
+
+        domain = get_string_arg(line, &match[2]);
+        if (!domain) return -1;
+        
+        upstream_add(NULL, 0, domain);
+        safefree(domain);
+
         return 0;
 }
 #endif
