@@ -1,4 +1,4 @@
-/* $Id: conffile.c,v 1.7 2005-11-04 00:47:07 rjkaes Exp $
+/* $Id: conffile.c,v 1.8 2005-11-04 01:31:41 rjkaes Exp $
  *
  * Parses the configuration file and sets up the config_s structure for
  * use by the application.  This file replaces the old grammar.y and
@@ -95,11 +95,13 @@ static HANDLE_FUNC(handle_connectport);
 static HANDLE_FUNC(handle_defaulterrorfile);
 static HANDLE_FUNC(handle_deny);
 static HANDLE_FUNC(handle_errorfile);
+#ifdef FILTER_ENABLE
 static HANDLE_FUNC(handle_filter);
 static HANDLE_FUNC(handle_filtercasesensitive);
 static HANDLE_FUNC(handle_filterdefaultdeny);
 static HANDLE_FUNC(handle_filterextended);
 static HANDLE_FUNC(handle_filterurls);
+#endif
 static HANDLE_FUNC(handle_group);
 static HANDLE_FUNC(handle_listen);
 static HANDLE_FUNC(handle_logfile);
@@ -110,10 +112,12 @@ static HANDLE_FUNC(handle_maxspareservers);
 static HANDLE_FUNC(handle_minspareservers);
 static HANDLE_FUNC(handle_pidfile);
 static HANDLE_FUNC(handle_port);
+#ifdef REVERSE_SUPPORT
 static HANDLE_FUNC(handle_reversebaseurl);
 static HANDLE_FUNC(handle_reversemagic);
 static HANDLE_FUNC(handle_reverseonly);
 static HANDLE_FUNC(handle_reversepath);
+#endif
 static HANDLE_FUNC(handle_startservers);
 static HANDLE_FUNC(handle_statfile);
 static HANDLE_FUNC(handle_stathost);
@@ -150,7 +154,7 @@ struct {
         regex_t *cre;
 } directives[] = {
         /* comments */
-        { BEGIN "#", handle_nop},
+        { BEGIN "#", handle_nop },
 
         /* blank lines */
         { "^[[:space:]]+$", handle_nop },
@@ -192,18 +196,22 @@ struct {
         /* error files */
         STDCONF("errorfile", INT WS STR, handle_errorfile),
 
+#ifdef FILTER_ENABLE
         /* filtering */
         STDCONF("filter", STR, handle_filter),
         STDCONF("filterurls", BOOL, handle_filterurls),
         STDCONF("filterextended", BOOL, handle_filterextended),
         STDCONF("filterdefaultdeny", BOOL, handle_filterdefaultdeny),
         STDCONF("filtercasesensitive", BOOL, handle_filtercasesensitive),
+#endif
 
+#ifdef REVERSE_SUPPORT
         /* Reverse proxy arguments */
         STDCONF("reversebaseurl", STR, handle_reversebaseurl),
         STDCONF("reverseonly", BOOL, handle_reverseonly),
         STDCONF("reversemagic", BOOL, handle_reversemagic),
         STDCONF("reversepath", STR WS "(" STR ")?", handle_reversepath),
+#endif
 
         /* upstream is rather complicated */
 //        { BEGIN "no" WS "upstream" WS STR END, handle_no_upstream },
@@ -683,44 +691,6 @@ HANDLE_FUNC(handle_filtercasesensitive)
 {
         return set_bool_arg(&conf->filter_casesensitive, line, &match[2]);
 }
-#else
-static int
-no_filter_support(void)
-{
-        fprintf(stderr, "Filter NOT Enabled! Recompile with --enable-filter\n");
-        return -1;
-}
-
-static
-HANDLE_FUNC(handle_filter)
-{
-        return no_filter_support();
-}
-
-static
-HANDLE_FUNC(handle_filtercasesensitive)
-{
-        return no_filter_support();
-}
-
-static
-HANDLE_FUNC(handle_filterdefaultdeny)
-{
-        return no_filter_support();
-}
-
-static
-HANDLE_FUNC(handle_filterextended)
-{
-        return no_filter_support();
-}
-
-static
-HANDLE_FUNC(handle_filterurls)
-{
-        return no_filter_support();
-}
-
 #endif
 
 #ifdef REVERSE_SUPPORT
@@ -769,37 +739,4 @@ HANDLE_FUNC(handle_reversepath)
         }
         return 0;
 }
-#else
-static int
-no_reverse_support(void)
-{
-        fprintf(stderr,
-                "Reverse Proxy NOT Enabled! Recompile with --enable-reverse\n");
-        return -1;
-}
-
-static
-HANDLE_FUNC(handle_reversebaseurl)
-{
-        return no_reverse_support();
-}
-
-static
-HANDLE_FUNC(handle_reversemagic)
-{
-        return no_reverse_support();
-}
-
-static
-HANDLE_FUNC(handle_reverseonly)
-{
-        return no_reverse_support();
-}
-
-static
-HANDLE_FUNC(handle_reversepath)
-{
-        return no_reverse_support();
-}
-
 #endif
