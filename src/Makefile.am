@@ -45,6 +45,3 @@ EXTRA_tinyproxy_SOURCES = filter.c filter.h \
 tinyproxy_DEPENDENCIES = @ADDITIONAL_OBJECTS@
 tinyproxy_LDADD = @ADDITIONAL_OBJECTS@
 
-clean:
-	rm -f *.da
-	rm -f gmon.out
