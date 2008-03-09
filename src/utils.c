@@ -23,7 +23,7 @@
 
 #include "conns.h"
 #include "heap.h"
-#include "http_message.h"
+#include "http-message.h"
 #include "utils.h"
 
 /*

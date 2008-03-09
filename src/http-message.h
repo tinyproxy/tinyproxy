@@ -1,4 +1,4 @@
-/* $Id: http_message.h,v 1.3 2005-08-15 03:54:31 rjkaes Exp $
+/* $Id: http-message.h,v 1.3 2005-08-15 03:54:31 rjkaes Exp $
  *
  * HTTP Message API
  * ----------------

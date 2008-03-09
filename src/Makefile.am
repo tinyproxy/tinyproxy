@@ -29,7 +29,7 @@ tinyproxy_SOURCES = \
 	hashmap.c hashmap.h \
 	heap.c heap.h \
 	htmlerror.c htmlerror.h \
-	http_message.c http_message.h \
+	http-message.c http-message.h \
 	log.c log.h \
 	network.c network.h \
 	reqs.c reqs.h \

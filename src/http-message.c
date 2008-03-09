@@ -1,6 +1,6 @@
-/* $Id: http_message.c,v 1.6 2005-08-15 03:54:31 rjkaes Exp $
+/* $Id: http-message.c,v 1.6 2005-08-15 03:54:31 rjkaes Exp $
  *
- * See 'http_message.h' for a detailed description.
+ * See 'http-message.h' for a detailed description.
  *
  * Copyright (C) 2003  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
@@ -17,7 +17,7 @@
 
 #include "common.h"
 #include "heap.h"
-#include "http_message.h"
+#include "http-message.h"
 #include "network.h"
 
 /*
