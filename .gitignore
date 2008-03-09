@@ -2,7 +2,6 @@ COPYING
 INSTALL
 Makefile
 Makefile.in
-NEWS
 aclocal.m4
 config.cache
 config.h
