@@ -236,7 +236,7 @@ int
 getpeer_information(int fd, char *ipaddr, char *string_addr)
 {
         struct sockaddr_storage sa;
-        size_t salen = sizeof(sa);
+        socklen_t salen = sizeof sa;
 
         assert(fd >= 0);
         assert(ipaddr != NULL);
@@ -247,7 +247,7 @@ getpeer_information(int fd, char *ipaddr, char *string_addr)
         strlcpy(string_addr, "[unknown]", HOSTNAME_LENGTH);
 
         /* Look up the IP address */
-        if (getpeername(fd, (struct sockaddr *)&sa, &salen) != 0)
+        if (getpeername(fd, (struct sockaddr *) &sa, &salen) != 0)
                 return -1;
 
         if (get_ip_string((struct sockaddr *)&sa, ipaddr, IP_LENGTH) == NULL)
