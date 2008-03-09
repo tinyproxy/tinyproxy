@@ -30,7 +30,7 @@
 #include "htmlerror.h"
 #include "log.h"
 #include "reqs.h"
-#include "reverse_proxy.h"
+#include "reverse-proxy.h"
 
 /*
  * The configuration directives are defined in the structure below.  Each

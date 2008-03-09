@@ -41,7 +41,7 @@ tinyproxy_SOURCES = \
 	vector.c vector.h
 
 EXTRA_tinyproxy_SOURCES = filter.c filter.h \
-	reverse_proxy.c reverse_proxy.h
+	reverse-proxy.c reverse-proxy.h
 tinyproxy_DEPENDENCIES = @ADDITIONAL_OBJECTS@
 tinyproxy_LDADD = @ADDITIONAL_OBJECTS@
 

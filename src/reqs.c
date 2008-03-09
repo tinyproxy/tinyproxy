@@ -39,7 +39,7 @@
 #include "text.h"
 #include "utils.h"
 #include "vector.h"
-#include "reverse_proxy.h"
+#include "reverse-proxy.h"
 
 /*
  * Maximum length of a HTTP line

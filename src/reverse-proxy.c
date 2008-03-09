@@ -1,4 +1,4 @@
-/* $Id: reverse_proxy.c,v 1.1 2005-08-16 04:03:19 rjkaes Exp $
+/* $Id: reverse-proxy.c,v 1.1 2005-08-16 04:03:19 rjkaes Exp $
  *
  * Allow tinyproxy to be used as a reverse proxy.
  *
@@ -16,7 +16,7 @@
  */
 
 #include "tinyproxy.h"
-#include "reverse_proxy.h"
+#include "reverse-proxy.h"
 
 #include "conns.h"
 #include "heap.h"

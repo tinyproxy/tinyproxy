@@ -130,7 +130,7 @@ TP_ARG_ENABLE(reverse,
               [Enable reverse proxying (default is NO)]
               no)
 if test x"$reverse_enabled" = x"yes"; then
-    ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS reverse_proxy.o"
+    ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS reverse-proxy.o"
     AC_DEFINE(REVERSE_SUPPORT)
 fi
 

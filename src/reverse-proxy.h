@@ -1,6 +1,6 @@
-/* $Id: reverse_proxy.h,v 1.1 2005-08-16 04:03:19 rjkaes Exp $
+/* $Id: reverse-proxy.h,v 1.1 2005-08-16 04:03:19 rjkaes Exp $
  *
- * See 'reverse_proxy.c' for a detailed description.
+ * See 'reverse-proxy.c' for a detailed description.
  *
  * Copyright (C) 2005  Robert James Kaes (rjkaes@users.sourceforge.net)
  *
