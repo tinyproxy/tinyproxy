@@ -47,6 +47,3 @@ EXTRA_tinyproxy_SOURCES = grammar.h
 scanner.c: scanner.l grammar.h
 	$(LEX) $(AM_LFLAGS) $(LFLAGS) -i $< && mv $(LEX_OUTPUT_ROOT).c $@
 
-clean:
-	rm -f *.da
-	rm -f gmon.out
