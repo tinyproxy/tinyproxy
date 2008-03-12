@@ -155,7 +155,7 @@ int listen_sock(uint16_t port, socklen_t *addrlen)
 char *getpeer_ip(int fd, char *ipaddr)
 {
 	struct sockaddr_in name;
-	size_t namelen = sizeof(name);
+	socklen_t namelen = sizeof(name);
 
 	assert(fd >= 0);
 	assert(ipaddr != NULL);
@@ -183,7 +183,7 @@ char *getpeer_ip(int fd, char *ipaddr)
 char *getpeer_string(int fd, char *string)
 {
 	struct sockaddr_in name;
-	size_t namelen = sizeof(name);
+	socklen_t namelen = sizeof(name);
 	struct hostent *peername;
 
 	assert(fd >= 0);
