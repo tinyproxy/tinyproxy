@@ -71,7 +71,6 @@ static struct keyword keywords[] = {
 
 #define MAX_REGEXP_LEN	1024
 
-unsigned int yylineno = 1;
 char tiny_buf[MAX_REGEXP_LEN];
 char *tiny_str;
 
