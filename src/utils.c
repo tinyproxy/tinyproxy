@@ -35,21 +35,21 @@
 void *debugging_calloc(size_t nmemb, size_t size, const char *file, unsigned long line)
 {
 	void *ptr = calloc(nmemb, size);
-	fprintf(stderr, "{calloc: %p:%u x %u} %s:%lu\n", ptr, nmemb, size, file, line);
+	fprintf(stderr, "{calloc: %p:%zu x %zu} %s:%lu\n", ptr, nmemb, size, file, line);
 	return ptr;
 }
 
 void *debugging_malloc(size_t size, const char *file, unsigned long line)
 {
 	void *ptr = malloc(size);
-	fprintf(stderr, "{malloc: %p:%u} %s:%lu\n", ptr, size, file, line);
+	fprintf(stderr, "{malloc: %p:%zu} %s:%lu\n", ptr, size, file, line);
 	return ptr;
 }
 
 void *debugging_realloc(void *ptr, size_t size, const char *file, unsigned long line)
 {
 	void *newptr = realloc(ptr, size);
-	fprintf(stderr, "{realloc: %p -> %p:%u} %s:%lu\n", ptr, newptr, size, file, line);
+	fprintf(stderr, "{realloc: %p -> %p:%zu} %s:%lu\n", ptr, newptr, size, file, line);
 	return newptr;
 }
 
