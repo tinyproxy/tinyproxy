@@ -6,3 +6,4 @@ grammar.c
 grammar.h
 scanner.c
 tinyproxy
+*.o
