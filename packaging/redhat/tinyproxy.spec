@@ -9,7 +9,6 @@ Prefix: %{_prefix}
 Packager: S. A. Hutchins <sh4d0wstr1f3@yahoo.com>
 Source: tinyproxy-1.5.2.tar.gz
 Source1: tinyproxy-initd
-Patch0: tinyproxy-1.5.2-config-patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 %description
@@ -20,7 +19,6 @@ intensive, or a security risk.
 
 %prep
 %setup
-%patch
 
 %build
     ./configure  --enable-transparent-proxy --prefix=%{_prefix} \
