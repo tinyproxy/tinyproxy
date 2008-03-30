@@ -1,21 +1,19 @@
-# Redhat spec files (from RPMs)
-REDHAT_DIR = packaging/redhat
-REDHAT = \
-	$(REDHAT_DIR)/tinyproxy-initd \
-	$(REDHAT_DIR)/tinyproxy.spec
+# RPM spec files
+RPM_DIR = rpm
+RPM_FILES = \
+	$(RPM_DIR)/tinyproxy-initd \
+	$(RPM_DIR)/tinyproxy.spec
 
 # Packaging files
-PACKAGING = $(REDHAT)
+PACKAGING_FILES = $(RPM_FILES)
 
-#
 # The following files are required for the build process
-#
 CONFIG_FILES = \
   config/config.guess config/config.sub \
   config/ltmain.sh config/install-sh config/missing config/mkinstalldirs \
   config/typecheck.m4 config/argenable.m4
 
-EXTRA_DIST = $(CONFIG_FILES) TODO $(PACKAGING) bootstrap
+EXTRA_DIST = $(CONFIG_FILES) TODO $(PACKAGING_FILES) bootstrap
 SUBDIRS = src doc
 
 install-data-local: tinyproxy-configure-file tinyproxy-html-files
