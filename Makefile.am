@@ -1,11 +1,7 @@
-# RPM spec files
-RPM_DIR = rpm
-RPM_FILES = \
-	$(RPM_DIR)/tinyproxy-initd \
-	$(RPM_DIR)/tinyproxy.spec
-
 # Packaging files
-PACKAGING_FILES = $(RPM_FILES)
+PACKAGING_FILES = \
+	packaging/fedora/tinyproxy.init \
+	packaging/fedora/tinyproxy.spec
 
 # The following files are required for the build process
 CONFIG_FILES = \
