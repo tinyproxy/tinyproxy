@@ -2,7 +2,7 @@
 %define tinyproxy_datadir %{_datadir}/tinyproxy
 
 Name:           tinyproxy
-Version:        1.6.3
+Version:        @VERSION@
 Release:        1%{?dist}
 Summary:        A small, efficient HTTP/SSL proxy daemon
 

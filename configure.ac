@@ -342,6 +342,7 @@ Makefile
 src/Makefile
 doc/Makefile
 packaging/Makefile
+packaging/fedora/tinyproxy.spec
 packaging/fedora/Makefile
 ])
 
