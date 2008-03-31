@@ -138,22 +138,19 @@ log_message(int level, char *fmt, ...)
                 if (!log_message_storage) {
                         log_message_storage = vector_create();
                         if (!log_message_storage)
-                                return;
+                                goto out;
                 }
 
                 vsnprintf(str, STRING_LENGTH, fmt, args);
 
                 entry_buffer = safemalloc(strlen(str) + 6);
                 if (!entry_buffer)
-                        return;
+                        goto out;
 
                 sprintf(entry_buffer, "%d %s", level, str);
                 vector_append(log_message_storage, entry_buffer,
                               strlen(entry_buffer) + 1);
-
-                va_end(args);
-
-                return;
+                goto out;
         }
 #ifdef HAVE_SYSLOG_H
         if (config.syslog) {
@@ -185,6 +182,7 @@ log_message(int level, char *fmt, ...)
         }
 #endif
 
+ out:
         va_end(args);
 }
 
