@@ -1,7 +1,3 @@
-# Packaging files
-PACKAGING_FILES = \
-	packaging/fedora/tinyproxy.init \
-	packaging/fedora/tinyproxy.spec
 
 # The following files are required for the build process
 CONFIG_FILES = \
@@ -9,8 +5,8 @@ CONFIG_FILES = \
   config/ltmain.sh config/install-sh config/missing config/mkinstalldirs \
   config/typecheck.m4 config/argenable.m4
 
-EXTRA_DIST = $(CONFIG_FILES) TODO $(PACKAGING_FILES) bootstrap
-SUBDIRS = src doc
+EXTRA_DIST = $(CONFIG_FILES) TODO autogen.sh
+SUBDIRS = src doc packaging
 
 install-data-local: tinyproxy-configure-file tinyproxy-html-files
 
