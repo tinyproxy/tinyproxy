@@ -657,9 +657,12 @@ HANDLE_FUNC(handle_loglevel)
         for (i = 0; i != nlevels; ++i) {
                 if (!strcasecmp(arg, log_levels[i].string)) {
                         set_log_level(log_levels[i].level);
+                        safefree(arg);
                         return 0;
                 }
         }
+
+        safefree(arg);
         return -1;
 }
 
