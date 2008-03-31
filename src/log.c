@@ -150,6 +150,8 @@ log_message(int level, char *fmt, ...)
                 sprintf(entry_buffer, "%d %s", level, str);
                 vector_append(log_message_storage, entry_buffer,
                               strlen(entry_buffer) + 1);
+
+                safefree(entry_buffer);
                 goto out;
         }
 #ifdef HAVE_SYSLOG_H
