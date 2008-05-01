@@ -3,7 +3,7 @@
 
 Name:           tinyproxy
 Version:        @VERSION@
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        A small, efficient HTTP/SSL proxy daemon
 
 Group:          System Environment/Daemons
@@ -14,6 +14,10 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Source0:        http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
 Source1:        %{name}.init
 Source2:        %{name}.conf
+
+Requires(post):     chkconfig
+Requires(preun):    chkconfig
+Requires(preun):    initscripts
 
 %description
 tinyproxy is a small, efficient HTTP/SSL proxy daemon released under the
@@ -31,8 +35,8 @@ make %{?_smp_mflags}
 
 
 %install
-rm -rf $RPM_BUILD_ROOT
-make install-exec DESTDIR=$RPM_BUILD_ROOT
+rm -rf %{buildroot}
+make install-exec DESTDIR=%{buildroot}
 
 # The default 'make install' installs too many items, so we trim it down
 # and install manually
@@ -47,7 +51,7 @@ do
 done
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 
 %post
@@ -62,7 +66,7 @@ fi
     
 
 %postun
-if [ $1 -ge 1 ]; then
+if [ "$1" -ge "1" ]; then
     /sbin/service %{name} condrestart > /dev/null 2>&1 || :
 fi  
  
@@ -80,5 +84,9 @@ fi
 %config(noreplace) %{tinyproxy_confdir}/%{name}.conf
 
 %changelog
+* Wed Apr 16 2008 Jeremy Hinegardner <jeremy at hinegardner dot org> - 1.6.3-2
+- fix spec review issues
+- fix initscript
+
 * Sun Mar 09 2008 Jeremy Hinegardner <jeremy at hinegardner dot org> - 1.6.3-1
 - Initial rpm configuration
