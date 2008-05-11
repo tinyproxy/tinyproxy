@@ -50,6 +50,3 @@ tinyproxy_LDADD = @ADDITIONAL_OBJECTS@
 scanner.c: scanner.l grammar.h
 	$(LEX) $(LEX_FLAGS) $(LFLAGS) -i $< && mv $(LEX_OUTPUT_ROOT).c $@
 
-clean:
-	rm -f *.da
-	rm -f gmon.out
