@@ -34,7 +34,7 @@
 #include "filter.h"
 #include "hashmap.h"
 #include "heap.h"
-#include "htmlerror.h"
+#include "html-error.h"
 #include "log.h"
 #include "network.h"
 #include "reqs.h"

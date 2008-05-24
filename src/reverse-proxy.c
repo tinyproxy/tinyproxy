@@ -23,7 +23,7 @@
 
 #include "conns.h"
 #include "heap.h"
-#include "htmlerror.h"
+#include "html-error.h"
 #include "log.h"
 
 /*

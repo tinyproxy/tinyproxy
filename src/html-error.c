@@ -26,7 +26,7 @@
 #include "buffer.h"
 #include "conns.h"
 #include "heap.h"
-#include "htmlerror.h"
+#include "html-error.h"
 #include "network.h"
 #include "utils.h"
 

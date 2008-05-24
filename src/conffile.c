@@ -31,7 +31,7 @@
 #include "child.h"
 #include "filter.h"
 #include "heap.h"
-#include "htmlerror.h"
+#include "html-error.h"
 #include "log.h"
 #include "reqs.h"
 #include "reverse-proxy.h"

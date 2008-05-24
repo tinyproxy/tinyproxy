@@ -29,7 +29,7 @@
 
 #include "log.h"
 #include "heap.h"
-#include "htmlerror.h"
+#include "html-error.h"
 #include "stats.h"
 #include "utils.h"
 
