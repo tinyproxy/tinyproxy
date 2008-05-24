@@ -13,8 +13,6 @@
 # General Public License for more details.
 #
 
-LDFLAGS = @LDFLAGS@
-
 sbin_PROGRAMS = tinyproxy
 
 tinyproxy_SOURCES = \
