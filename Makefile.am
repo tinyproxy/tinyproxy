@@ -1,9 +1,9 @@
 
 # The following files are required for the build process
 CONFIG_FILES = \
-  config/config.guess config/config.sub \
-  config/ltmain.sh config/install-sh config/missing config/mkinstalldirs \
-  config/typecheck.m4 config/argenable.m4
+  config.guess config.sub \
+  ltmain.sh install-sh missing \
+  m4macros/typecheck.m4 m4macros/argenable.m4
 
 EXTRA_DIST = $(CONFIG_FILES) TODO autogen.sh
 SUBDIRS = src doc packaging
