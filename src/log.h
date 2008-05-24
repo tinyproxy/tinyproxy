@@ -1,20 +1,23 @@
-/* $Id: log.h,v 1.13 2005-08-15 03:54:31 rjkaes Exp $
+/* tinyproxy - A fast light-weight HTTP proxy
+ * Copyright (C) 1998 Steven Young <sdyoung@miranda.org>
+ * Copyright (C) 1999 Robert James Kaes <rjkaes@users.sourceforge.net>
  *
- * See 'log.c' for a detailed description.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * Copyright (C) 1998  Steven Young
- * Copyright (C) 1999  Robert James Kaes (rjkaes@users.sourceforge.net)
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
+/* See 'log.c' for detailed information. */
 
 #ifndef TINYPROXY_LOG_H
 #define TINYPROXY_LOG_H
@@ -29,7 +32,7 @@
  * can see them below and I'll describe what each level should be for.
  * Hopefully tinyproxy will remain consistent with these levels.
  *	-- rjkaes
- * Sorry but I had to destroy the hope ;-) There was a need to log 
+ * Sorry but I had to destroy the hope ;-) There was a need to log
  * connections without the INFO stuff and not to have them as NOTICE.
  *	-- hgb
  *
@@ -59,7 +62,7 @@
  *		now it is used for actions like creating/destroying children,
  *		unauthorized access, signal handling, etc.
  *
- * LOG_CONN	This additional level is for logging connections only, so 
+ * LOG_CONN	This additional level is for logging connections only, so
  *		it is easy to control only the requests in the logfile.
  *		If we log through syslog, this is set to LOG_INFO.
  *			-- hgb

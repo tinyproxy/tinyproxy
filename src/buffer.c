@@ -1,24 +1,28 @@
-/* $Id: buffer.c,v 1.25 2005-08-15 03:54:31 rjkaes Exp $
+/* tinyproxy - A fast light-weight HTTP proxy
+ * Copyright (C) 1999, 2001 Robert James Kaes <rjkaes@users.sourceforge.net>
  *
- * The buffer used in each connection is a linked list of lines. As the lines
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+/* The buffer used in each connection is a linked list of lines. As the lines
  * are read in and written out the buffer expands and contracts. Basically,
  * by using this method we can increase the buffer size dynamically. However,
  * we have a hard limit of 64 KB for the size of the buffer. The buffer can be
  * thought of as a queue were we act on both the head and tail. The various
  * functions act on each end (the names are taken from what Perl uses to act on
  * the ends of an array. :)
- *
- * Copyright (C) 1999,2001  Robert James Kaes (rjkaes@users.sourceforge.net)
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
  */
 
 #include "tinyproxy.h"

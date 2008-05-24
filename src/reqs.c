@@ -1,24 +1,28 @@
-/* $Id: reqs.c,v 1.121 2005-08-16 04:03:19 rjkaes Exp $
+/* tinyproxy - A fast light-weight HTTP proxy
+ * Copyright (C) 1998 Steven Young <sdyoung@miranda.org>
+ * Copyright (C) 1999-2005 Robert James Kaes <rjkaes@users.sourceforge.net>
+ * Copyright (C) 2000 Chris Lightfoot <chris@ex-parrot.com>
+ * Copyright (C) 2002 Petr Lampa <lampa@fit.vutbr.cz>
  *
- * This is where all the work in tinyproxy is actually done. Incoming
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+/* This is where all the work in tinyproxy is actually done. Incoming
  * connections have a new child created for them. The child then
  * processes the headers from the client, the response from the server,
  * and then relays the bytes between the two.
- *
- * Copyright (C) 1998	    Steven Young
- * Copyright (C) 1999-2005  Robert James Kaes (rjkaes@users.sourceforge.net)
- * Copyright (C) 2000       Chris Lightfoot (chris@ex-parrot.com)
- * Copyright (C) 2002       Petr Lampa (lampa@fit.vutbr.cz)
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
  */
 
 #include "tinyproxy.h"

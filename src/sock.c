@@ -1,24 +1,28 @@
-/* $Id: sock.c,v 1.43 2005-08-15 03:54:31 rjkaes Exp $
+/* tinyproxy - A fast light-weight HTTP proxy
+ * Copyright (C) 1998 Steven Young <sdyoung@miranda.org>
+ * Copyright (C) 1999, 2004 Robert James Kaes <rjkaes@users.sourceforge.net>
+ * Copyright (C) 2000 Chris Lightfoot <chris@ex-parrot.com>
  *
- * Sockets are created and destroyed here. When a new connection comes in from
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+/* Sockets are created and destroyed here. When a new connection comes in from
  * a client, we need to copy the socket and the create a second socket to the
  * remote server the client is trying to connect to. Also, the listening
  * socket is created and destroyed here. Sounds more impressive than it
  * actually is.
- *
- * Copyright (C) 1998  Steven Young
- * Copyright (C) 1999,2004  Robert James Kaes (rjkaes@users.sourceforge.net)
- * Copyright (C) 2000  Chris Lightfoot (chris@ex-parrot.com)
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
  */
 
 #include "tinyproxy.h"

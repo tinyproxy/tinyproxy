@@ -1,21 +1,25 @@
-/* $Id: conffile.c,v 1.9 2005-11-04 05:15:47 rjkaes Exp $
+/* tinyproxy - A fast light-weight HTTP proxy
+ * Copyright (C) 2004 Robert James Kaes <rjkaes@users.sourceforge.net>
  *
- * Parses the configuration file and sets up the config_s structure for
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+/* Parses the configuration file and sets up the config_s structure for
  * use by the application.  This file replaces the old grammar.y and
  * scanner.l files.  It takes up less space and _I_ think is easier to
  * add new directives to.  Who knows if I'm right though.
- *
- * Copyright (C) 2004  Robert James Kaes (rjkaes@users.sourceforge.net)
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
  */
 
 #include "tinyproxy.h"
@@ -773,7 +777,7 @@ HANDLE_FUNC(handle_upstream)
         }
 
         safefree(ip);
-        
+
         return 0;
 }
 
@@ -784,7 +788,7 @@ HANDLE_FUNC(handle_upstream_no)
 
         domain = get_string_arg(line, &match[2]);
         if (!domain) return -1;
-        
+
         upstream_add(NULL, 0, domain);
         safefree(domain);
 

@@ -1,14 +1,5 @@
-/* $Id: hashmap.h,v 1.4 2005-08-15 03:54:31 rjkaes Exp $
- *
- * A hashmap implementation.  The keys are case-insensitive NULL terminated
- * strings, and the data is arbitrary lumps of data.  Copies of both the
- * key and the data in the hashmap itself, so you must free the original
- * key and data to avoid a memory leak.  The hashmap returns a pointer
- * to the data when a key is searched for, so take care in modifying the
- * data as it's modifying the data stored in the hashmap.  (In other words,
- * don't try to free the data, or realloc the memory. :)
- *
- * Copyright (C) 2002  Robert James Kaes (rjkaes@users.sourceforge.net)
+/* tinyproxy - A fast light-weight HTTP proxy
+ * Copyright (C) 2002 Robert James Kaes <rjkaes@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +11,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
+/* See 'hashmap.c' for detailed information. */
 
 #ifndef _HASHMAP_H
 #define _HASHMAP_H
@@ -110,7 +103,7 @@ extern "C" {
 /*
  * Searches for _any_ occurrances of "key" within the hashmap and returns the
  * number of matching entries.
- * 
+ *
  * Returns: negative upon an error
  *          zero if no key is found
  *          count found (positive value)

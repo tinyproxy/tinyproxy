@@ -1,20 +1,23 @@
-/* $Id: tinyproxy.h,v 1.48 2005-08-16 04:03:19 rjkaes Exp $
+/* tinyproxy - A fast light-weight HTTP proxy
+ * Copyright (C) 1998 Steven Young <sdyoung@miranda.org>
+ * Copyright (C) 1999 Robert James Kaes <rjkaes@users.sourceforge.net>
  *
- * See 'tinyproxy.c' for a detailed description.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * Copyright (C) 1998  Steven Young
- * Copyright (C) 1999  Robert James Kaes (rjkaes@users.sourceforge.net)
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
+/* See 'tinyproxy.c' for detailed information. */
 
 #ifndef TINYPROXY_TINYPROXY_H
 #define TINYPROXY_TINYPROXY_H
@@ -79,19 +82,19 @@ struct config_s {
          */
         char *via_proxy_name;
 
-        /* 
+        /*
          * Error page support.  Map error numbers to file paths.
          */
         hashmap_t errorpages;
 
-        /* 
+        /*
          * Error page to be displayed if appropriate page cannot be located
          * in the errorpages structure.
          */
         char *errorpage_undef;
 
-        /* 
-         * The HTML statistics page. 
+        /*
+         * The HTML statistics page.
          */
         char *statpage;
 };

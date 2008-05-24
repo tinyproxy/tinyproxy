@@ -1,25 +1,29 @@
-/* $Id: tinyproxy.c,v 1.52 2005-08-15 03:54:31 rjkaes Exp $
+/* tinyproxy - A fast light-weight HTTP proxy
+ * Copyright (C) 1998 Steven Young <sdyoung@miranda.org>
+ * Copyright (C) 1998-2002 Robert James Kaes <rjkaes@users.sourceforge.net>
+ * Copyright (C) 2000 Chris Lightfoot <chris@ex-parrot.com>
  *
- * The initialize routine. Basically sets up all the initial stuff (logfile,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+/* The initialize routine. Basically sets up all the initial stuff (logfile,
  * listening socket, config options, etc.) and then sits there and loops
  * over the new connections until the daemon is closed. Also has additional
  * functions to handle the "user friendly" aspects of a program (usage,
  * stats, etc.) Like any good program, most of the work is actually done
  * elsewhere.
- *
- * Copyright (C) 1998       Steven Young
- * Copyright (C) 1998-2002  Robert James Kaes (rjkaes@users.sourceforge.net)
- * Copyright (C) 2000       Chris Lightfoot (chris@ex-parrot.com>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
  */
 
 #include "tinyproxy.h"
@@ -39,7 +43,7 @@
 
 RETSIGTYPE takesig(int sig);
 
-/* 
+/*
  * Global Structures
  */
 struct config_s config;

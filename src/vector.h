@@ -1,10 +1,5 @@
-/* $Id: vector.h,v 1.7 2005-08-15 03:54:31 rjkaes Exp $
- *
- * A vector implementation.  The vector can be of an arbritrary length, and
- * the data for each entry is an lump of data (the size is stored in the
- * vector.)
- *
- * Copyright (C) 2002  Robert James Kaes (rjkaes@users.sourceforge.net)
+/* tinyproxy - A fast light-weight HTTP proxy
+ * Copyright (C) 2002 Robert James Kaes <rjkaes@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +11,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
+/* See 'vector.c' for detailed information. */
 
 #ifndef _VECTOR_H
 #define _VECTOR_H
