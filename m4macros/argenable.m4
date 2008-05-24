@@ -9,7 +9,7 @@ dnl
 dnl This macro also defines on variable in the form "option_enabled"
 dnl set to either "yes" or "no".
 dnl
-AC_DEFUN(TP_ARG_ENABLE,
+AC_DEFUN([TP_ARG_ENABLE],
 [AC_ARG_ENABLE([$1],
   AS_HELP_STRING([--enable-$1], [$2]),
   [case "${enableval}" in
