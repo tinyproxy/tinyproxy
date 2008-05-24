@@ -1,10 +1,9 @@
 
- DESCRIPTION
- -----------
+ tinyproxy version 1.7.x
 
  tinyproxy is a small, efficient HTTP/SSL proxy daemon released under
- the GNU General Public License (GPL).  tinyproxy is very useful in a
- small network setting, where a larger proxy like Squid would either
+ the GNU General Public License.  tinyproxy is very useful in a
+ small network setting, where a larger proxy would either
  be too resource intensive, or a security risk.  One of the key
  features of tinyproxy is the buffering connection concept.  In
  effect, tinyproxy will buffer a high speed response from a server,
@@ -15,15 +14,16 @@
  allowed, then tinyproxy is a great tool for the network
  administrator.
 
+ For more info, please visit: https://projects.banu.com/tinyproxy
 
- INSTALLATION
- ------------
+
+INSTALLATION
 
  To install this package under a Unix derivative, read the INSTALL
  file.  tinyproxy uses a standard GNU configure script (basically you
  should be able to do:
 
-	 ./configure ; make ; make install
+	 ./configure && make && make install
 
  in the top level directory to compile and install tinyproxy).  There
  are additional command line arguments you can supply to configure.
@@ -51,26 +51,18 @@
 	--with-config=FILE	Set the default location of the
 				configuration file
 
- Once you have completed your installation, if you would like to
- report your success please execute the report.sh script in the doc
- directory.  This will send an email to the authors reporting your
- version, and a few bits of information concerning the memory usage of 
- tinyproxy.  Alternatively, you could just send an email stating the
- version, whichever you prefer.
 
+SUPPORT
 
- SUPPORT
- -------
+ If you are having problems with tinyproxy, please submit a bug at the
+ tinyproxy Bugzilla component at:
 
- If you are having problems with tinyproxy, please submit a bug to the
- tinyproxy Bug Tracking system hosted by SourceForge and located at:
+	https://bugzilla.banu.com/enter_bug.cgi?product=tinyproxy
 
-	http://sourceforge.net/tracker/?group_id=2632
-
- You may also wish to subscribe to the tinyproxy-user mailing list. To
+ You may also wish to subscribe to the tinyproxy mailing list. To
  do so please visit:
 
-        http://lists.sourceforge.net/lists/listinfo/tinyproxy-users
+	https://lists.banu.com/mailman/listinfo/tinyproxy
 
  for more information on how to subscribe and post messages to the
  list.
@@ -97,10 +89,10 @@
  copy to the authors.
 
 
- HOW TO CONTRIBUTE TO tinyproxy
- ------------------------------
+CONTRIBUTING
 
  If you would like to contribute a feature, or a bug fix to the
- tinyproxy source, please send a diff (preferable a unified
- diff. i.e. "diff -u") against the latest release of tinyproxy.  Also, 
- if you could include a brief description of what your patch does.
+ tinyproxy source, please send a patch (preferably as a unified
+ diff. i.e. "diff -u") against the "master" branch of the tinyproxy
+ repository. Please include a description of what your patch does.
+
