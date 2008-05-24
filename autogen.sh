@@ -6,9 +6,8 @@
 # can now be used...
 #
 
-test -d config || mkdir config
 set -x
-aclocal -I config \
+aclocal \
   && autoheader \
   && automake --gnu --add-missing \
   && autoconf
