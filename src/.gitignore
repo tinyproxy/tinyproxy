@@ -7,3 +7,4 @@ grammar.h
 scanner.c
 tinyproxy
 *.o
+*.pcno
