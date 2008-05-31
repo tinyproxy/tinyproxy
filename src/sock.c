@@ -198,7 +198,7 @@ int
 getpeer_information(int fd, char* ipaddr, char* string_addr)
 {
 	struct sockaddr_in name;
-	size_t namelen = sizeof(name);
+	socklen_t namelen = sizeof(name);
 	struct hostent* result;
 
 	assert(fd >= 0);
