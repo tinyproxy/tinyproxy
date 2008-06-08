@@ -1,6 +1,5 @@
 /* tinyproxy - A fast light-weight HTTP proxy
- * Copyright (C) 1998 Steven Young <sdyoung@miranda.org>
- * Copyright (C) 1999 Robert James Kaes <rjkaes@users.sourceforge.net>
+ * Copyright (C) 2008 Robert James Kaes <rjk@wormbytes.ca>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,35 +16,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* See 'reqs.c' for detailed information. */
+/* See 'transparent-proxy.c' for detailed information. */
 
-#ifndef _TINYPROXY_REQS_H_
-#define _TINYPROXY_REQS_H_
+#ifndef TINYPROXY_TRANSPARENT_PROXY_H
+#define TINYPROXY_TRANSPARENT_PROXY_H
 
 #include "common.h"
 
+#ifdef TRANSPARENT_PROXY
 
-/*
- * Port constants for HTTP (80) and SSL (443)
- */
-#define HTTP_PORT 80
-#define HTTP_PORT_SSL 443
+#include "conns.h"
+#include "hashmap.h"
+#include "reqs.h"
 
-/*
- * This structure holds the information pulled from a URL request.
- */
-struct request_s {
-        char *method;
-        char *protocol;
+extern int do_transparent_proxy(struct conn_s *connptr,
+                                hashmap_t hashofheaders, struct request_s *request,
+                                struct config_s *config, char *url);
 
-        char *host;
-        uint16_t port;
 
-        char *path;
-};
-
-extern void handle_connection(int fd);
-extern void add_connect_port_allowed(int port);
-extern void upstream_add(const char *host, int port, const char *domain);
+#endif
 
 #endif

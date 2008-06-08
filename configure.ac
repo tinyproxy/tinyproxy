@@ -141,6 +141,7 @@ TP_ARG_ENABLE(transparent,
               [Enable transparent proxying code (default is NO)],
               no)
 if test x"$transparent_enabled" = x"yes"; then
+   ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS transparent-proxy.o"
    AC_DEFINE(TRANSPARENT_PROXY)
 fi
 

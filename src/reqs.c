@@ -44,17 +44,13 @@
 #include "utils.h"
 #include "vector.h"
 #include "reverse-proxy.h"
+#include "transparent-proxy.h"
 
 /*
  * Maximum length of a HTTP line
  */
 #define HTTP_LINE_LENGTH (MAXBUFFSIZE / 6)
 
-/*
- * Port constants for HTTP (80) and SSL (443)
- */
-#define HTTP_PORT 80
-#define HTTP_PORT_SSL 443
 
 /*
  * Macro to help test if the Upstream proxy supported is compiled in and
@@ -79,18 +75,6 @@
  */
 static vector_t ports_allowed_by_connect = NULL;
 
-/*
- * This structure holds the information pulled from a URL request.
- */
-struct request_s {
-        char *method;
-        char *protocol;
-
-        char *host;
-        uint16_t port;
-
-        char *path;
-};
 
 /*
  * Now, this routine adds a "port" to the list.  It also creates the list if
@@ -316,28 +300,6 @@ extract_ssl_url(const char *url, struct request_s *request)
         return 0;
 }
 
-#ifdef TRANSPARENT_PROXY
-/*
- * Build a URL from parts.
- */
-static int
-build_url(char **url, const char *host, int port, const char *path)
-{
-        int len;
-
-        assert(url != NULL);
-        assert(host != NULL);
-        assert(port > 0 && port < 32768);
-        assert(path != NULL);
-
-        len = strlen(host) + strlen(path) + 14;
-        *url = safemalloc(len);
-        if (*url == NULL)
-                return -1;
-
-        return snprintf(*url, len, "http://%s:%d%s", host, port, path);
-}
-#endif                          /* TRANSPARENT_PROXY */
 
 #ifdef UPSTREAM_SUPPORT
 /*
@@ -692,88 +654,22 @@ process_request(struct conn_s *connptr, hashmap_t hashofheaders)
                 connptr->connect_method = TRUE;
         } else {
 #ifdef TRANSPARENT_PROXY
-                /*
-                 * This section of code is used for the transparent proxy
-                 * option.  You will need to configure your firewall to
-                 * redirect all connections for HTTP traffic to tinyproxy
-                 * for this to work properly.
-                 *
-                 * This code was written by Petr Lampa <lampa@fit.vutbr.cz>
-                 */
-                int length;
-                char *data;
-
-                length =
-                    hashmap_entry_by_key(hashofheaders, "host", (void **)&data);
-                if (length <= 0) {
-                        struct sockaddr_in dest_addr;
-
-                        if (getsockname
-                            (connptr->client_fd, (struct sockaddr *)&dest_addr,
-                             &length) < 0) {
-                                log_message(LOG_ERR,
-                                            "process_request: cannot get destination IP for %d",
-                                            connptr->client_fd);
-                                indicate_http_error(connptr, 400, "Bad Request",
-                                                    "detail",
-                                                    "Unknown destination",
-                                                    "url", url, NULL);
-                                safefree(url);
-                                free_request_struct(request);
-                                return NULL;
-                        }
-                        request->host = safemalloc(17);
-                        strcpy(request->host, inet_ntoa(dest_addr.sin_addr));
-                        request->port = ntohs(dest_addr.sin_port);
-                        request->path = safemalloc(strlen(url) + 1);
-                        strcpy(request->path, url);
-                        safefree(url);
-                        build_url(&url, request->host, request->port,
-                                  request->path);
-                        log_message(LOG_INFO,
-                                    "process_request: trans IP %s %s for %d",
-                                    request->method, url, connptr->client_fd);
-                } else {
-                        request->host = safemalloc(length + 1);
-                        if (sscanf
-                            (data, "%[^:]:%hu", request->host,
-                             &request->port) != 2) {
-                                strcpy(request->host, data);
-                                request->port = HTTP_PORT;
-                        }
-                        request->path = safemalloc(strlen(url) + 1);
-                        strcpy(request->path, url);
-                        safefree(url);
-                        build_url(&url, request->host, request->port,
-                                  request->path);
-                        log_message(LOG_INFO,
-                                    "process_request: trans Host %s %s for %d",
-                                    request->method, url, connptr->client_fd);
-                }
-                if (config.ipAddr && strcmp(request->host, config.ipAddr) == 0) {
-                        log_message(LOG_ERR,
-                                    "process_request: destination IP is localhost %d",
-                                    connptr->client_fd);
-                        indicate_http_error(connptr, 400, "Bad Request",
-                                            "detail",
-                                            "You tried to connect to the machine the proxy is running on",
-                                            "url", url, NULL);
+                if (!do_transparent_proxy(connptr, hashofheaders, request, &config, url)) {
                         safefree(url);
                         free_request_struct(request);
                         return NULL;
                 }
 #else
-                log_message(LOG_ERR,
-                            "process_request: Unknown URL type on file descriptor %d",
-                            connptr->client_fd);
-                indicate_http_error(connptr, 400, "Bad Request",
-                                    "detail", "Unknown URL type",
-                                    "url", url, NULL);
-
+                indicate_http_error(connptr, 501, "Not Implemented",
+                                "detail", "Unknown method or unsupported protocol.",
+                                "url", url, NULL);
+                log_message(LOG_INFO,
+                                "Unknown method (%s) or protocol (%s)",
+                                request->method, url);
                 safefree(url);
                 free_request_struct(request);
-
                 return NULL;
+                                
 #endif
         }
 
