@@ -232,14 +232,15 @@ add_error_variable(struct conn_s *connptr, char *key, char *val)
                      hashmap_create(ERRVAR_BUCKETCOUNT)))
                         return (-1);
 
-        if (hashmap_insert(connptr->error_variables, key, val,
-                           strlen(val) + 1) < 0)
-                return (-1);
-
-        return (0);
+        return hashmap_insert(connptr->error_variables, key, val,
+			      strlen(val) + 1);
 }
 
-#define ADD_VAR_RET(x, y) if(y) { if(add_error_variable(connptr, x, y) == -1) return(-1); }
+#define ADD_VAR_RET(x, y)				   \
+	do {						   \
+		if (add_error_variable(connptr, x, y) < 0) \
+			return -1;			   \
+	} while (0)
 
 /*
  * Set some standard variables used by all HTML pages
