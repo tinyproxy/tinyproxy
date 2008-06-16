@@ -57,6 +57,41 @@ struct acl_s {
  */
 static vector_t access_list = NULL;
 
+
+/*
+ * Fills in the netmask array given a numeric value.
+ *
+ * Returns:
+ *   0 on success
+ *  -1 on failure (invalid mask value)
+ *
+ */
+inline static int
+fill_netmask_array(long int mask, unsigned char array[], unsigned int len)
+{
+        unsigned int i;
+
+        if (mask < 0 || mask > (8 * len))
+                return -1;
+
+        for (i = 0; i != len; ++i) {
+                if (mask >= 8) {
+                        array[i] = 0xff;
+                        mask -= 8;
+                }
+                else if (mask > 0) {
+                        array[i] = (unsigned char)(0xff << (8 - mask));
+                        mask = 0;
+                }
+                else {
+                        array[i] = 0;
+                }
+        }
+
+        return 0;
+}
+
+
 /*
  * Inserts a new access control into the list. The function will figure out
  * whether the location is an IP address (with optional netmask) or a
@@ -70,7 +105,8 @@ int
 insert_acl(char *location, acl_access_t access_type)
 {
         struct acl_s acl;
-        int i, ret, mask;
+        int ret;
+        long int mask;
         char *p, ip_dst[IPV6_LEN];
 
         assert(location != NULL);
@@ -119,13 +155,8 @@ insert_acl(char *location, acl_access_t access_type)
                         memcpy(acl.address.ip.octet, ip_dst, IPV6_LEN);
 
                         mask = strtol(p + 1, NULL, 10);
-                        for (i = 0; i != IPV6_LEN; ++i) {
-                                if (mask >= ((i + 1) * 8))
-                                        acl.address.ip.mask[i] = 0xff;
-                                else
-                                        acl.address.ip.mask[i] =
-                                            0xff << (8 - (mask - i * 8));
-                        }
+                        if (fill_netmask_array(mask, &(acl.address.ip.mask[0]), IPV6_LEN) < 0)
+                                return -1;
                 } else {
                         /* In all likelihood a string */
                         acl.type = ACL_STRING;
