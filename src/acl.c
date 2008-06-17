@@ -67,13 +67,26 @@ static vector_t access_list = NULL;
  *
  */
 inline static int
-fill_netmask_array(long int mask, unsigned char array[], unsigned int len)
+fill_netmask_array(char *bitmask_string, unsigned char array[], unsigned int len)
 {
         unsigned int i;
+        long int mask;
+        char *endptr;
 
+        errno = 0; /* to distinguish success/failure after call */
+        mask = strtol(bitmask_string, &endptr, 10);
+
+        /* check for various conversion errors */
+        if ((errno == ERANGE && (mask == LONG_MIN || mask == LONG_MAX))
+                        || (errno != 0 && mask == 0)
+                        || (endptr == bitmask_string))
+                return -1;
+
+        /* valid range for a bit mask */
         if (mask < 0 || mask > (8 * len))
                 return -1;
 
+        /* we have a valid range to fill in the array */
         for (i = 0; i != len; ++i) {
                 if (mask >= 8) {
                         array[i] = 0xff;
@@ -106,7 +119,6 @@ insert_acl(char *location, acl_access_t access_type)
 {
         struct acl_s acl;
         int ret;
-        long int mask;
         char *p, ip_dst[IPV6_LEN];
 
         assert(location != NULL);
@@ -154,8 +166,7 @@ insert_acl(char *location, acl_access_t access_type)
                         acl.type = ACL_NUMERIC;
                         memcpy(acl.address.ip.octet, ip_dst, IPV6_LEN);
 
-                        mask = strtol(p + 1, NULL, 10);
-                        if (fill_netmask_array(mask, &(acl.address.ip.mask[0]), IPV6_LEN) < 0)
+                        if (fill_netmask_array(p + 1, &(acl.address.ip.mask[0]), IPV6_LEN) < 0)
                                 return -1;
                 } else {
                         /* In all likelihood a string */
