@@ -35,6 +35,9 @@
 #ifdef HAVE_SYS_TYPES_H
 #  include      <sys/types.h>
 #endif
+#ifdef HAVE_VALUES_H
+#  include      <values.h>
+#endif
 #ifdef HAVE_INTTYPES_H
 #  include	<inttypes.h>
 #endif

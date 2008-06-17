@@ -198,7 +198,8 @@ AC_CHECK_HEADERS([sys/ioctl.h sys/mman.h sys/resource.h \
 		  sys/un.h arpa/inet.h netinet/in.h \
 		  assert.h ctype.h errno.h fcntl.h grp.h io.h libintl.h \
 		  netdb.h pwd.h regex.h signal.h stdarg.h stddef.h stdio.h \
-		  sysexits.h syslog.h time.h wchar.h wctype.h])
+		  sysexits.h syslog.h time.h wchar.h wctype.h \
+		  values.h])
 
 dnl OpenBSD machines don't like having malloc included (even if it's present)
 dnl as they expect you to use stdlib.h
