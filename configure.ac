@@ -12,7 +12,7 @@ dnl 8. System services
 dnl
 dnl Read the Autoconf manual for details.
 
-AC_INIT([tinyproxy], [1.6.3], [rjkaes@users.sourceforge.net])
+AC_INIT([tinyproxy], [1.6.4], [https://bugzilla.banu.com/enter_bug.cgi?product=tinyproxy], [tinyproxy])
 AC_CONFIG_SRCDIR([src/tinyproxy.c])
 AC_PREREQ(2.52)
 
