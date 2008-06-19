@@ -17,6 +17,7 @@ libtool
 missing
 mkinstalldirs
 stamp-h1
+ylwrap
 autom4te.cache
 cscope.files
 cscope.out
