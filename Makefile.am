@@ -1,5 +1,5 @@
 EXTRA_DIST = $(CONFIG_FILES) TODO autogen.sh
-SUBDIRS = src doc
+SUBDIRS = src doc packaging
 
 install-data-local: tinyproxy-configure-file tinyproxy-html-files
 

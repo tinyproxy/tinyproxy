@@ -1,0 +1,106 @@
+#!/bin/sh
+#
+# tinyproxy     Startup script for the tinyproxy server
+#
+# chkconfig:   - 85 15
+# description: small, efficient HTTP/SSL proxy daemon
+#
+# processname: tinyproxy
+# config:      /etc/tinyproxy/tinyproxy.conf
+# config:      /etc/sysconfig/tinyproxy
+# pidfile:     /var/run/tinyproxy.pid
+#
+# Note: pidfile is created by tinyproxy in its config
+# see PidFile in the configuration file.
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+.  /etc/sysconfig/network
+
+# Check that networking is up.
+[ "$NETWORKING" = "no" ] && exit 0
+
+exec="/usr/sbin/tinyproxy"
+prog=$(basename $exec)
+config="/etc/tinyproxy/tinyproxy.conf"
+
+[ -e /etc/sysconfig/tinyproxy ] && . /etc/sysconfig/tinyproxy
+
+lockfile=/var/lock/subsys/tinyproxy
+
+start() {
+    [ -x $exec ] || exit 5
+    [ -f $config ] || exit 6
+    echo -n $"Starting $prog: "
+    daemon $exec -c $config
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && touch $lockfile
+    return $retval
+}
+
+stop() {
+    echo -n $"Stopping $prog: "
+    # stop it here, often "killproc $prog"
+    killproc $prog
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && rm -f $lockfile
+    return $retval
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    restart
+}
+
+force_reload() {
+    restart
+}
+
+rh_status() {
+    status $prog
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        rh_status_q || exit 0
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    reload)
+        rh_status_q || exit 7
+        $1
+        ;;
+    force-reload)
+        force_reload
+        ;;
+    status)
+        rh_status
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 0
+        restart
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload}"
+        exit 2
+esac
+exit $?
+
