@@ -15,7 +15,6 @@ depcomp
 install-sh
 libtool
 missing
-mkinstalldirs
 stamp-h1
 autom4te.cache
 cscope.files
