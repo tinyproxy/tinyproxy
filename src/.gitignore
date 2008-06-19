@@ -1,0 +1,11 @@
+.deps
+.libs
+Makefile
+Makefile.in
+grammar.c
+grammar.h
+grammar.output
+scanner.c
+tinyproxy
+*.o
+*.pcno
