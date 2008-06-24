@@ -349,5 +349,5 @@ AC_SUBST(ADDITIONAL_OBJECTS)
 AC_SUBST(TINYPROXY_CONFIG_DIR)
 AC_SUBST(TINYPROXY_CONFIG_FILE)
 
-AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile packaging/Makefile packaging/fedora/Makefile packaging/fedora/tinyproxy.spec])
 AC_OUTPUT
