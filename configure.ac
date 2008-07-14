@@ -151,9 +151,6 @@ AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_ISC_POSIX
 AC_PROG_INSTALL
-AC_PROG_LN_S
-AC_PROG_LIBTOOL
-AC_PROG_RANLIB
 
 dnl If a CFLAGS variable was passed during configure, set the initial
 dnl CFLAGS variable to it; otherwise, start with an empty CFLAGS
