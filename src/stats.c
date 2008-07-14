@@ -116,8 +116,8 @@ showstats(struct conn_s *connptr)
         add_error_variable(connptr, "opens", opens);
         add_error_variable(connptr, "reqs", reqs);
         add_error_variable(connptr, "badconns", badconns);
-        add_error_variable(connptr, "denied", denied);
-        add_error_variable(connptr, "refused", refused);
+        add_error_variable(connptr, "deniedconns", denied);
+        add_error_variable(connptr, "refusedconns", refused);
         add_standard_vars(connptr);
         send_http_headers(connptr, 200, "Statistic requested");
         send_html_file(statfile, connptr);
