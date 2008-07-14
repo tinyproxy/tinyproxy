@@ -13,7 +13,7 @@ dnl
 dnl Read the Autoconf manual for details.
 
 AC_PREREQ(2.54)
-AC_INIT([tinyproxy], [1.7.1], [https://bugzilla.banu.com/enter_bug.cgi?product=tinyproxy],[tinyproxy])
+AC_INIT([tinyproxy], [1.7.1], [tinyproxy@lists.banu.com],[tinyproxy])
 AC_CONFIG_SRCDIR([src/tinyproxy.c])
 dnl AC_CONFIG_AUX_DIR(config)
 dnl AC_CONFIG_MACRO_DIR(config)
