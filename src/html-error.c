@@ -244,7 +244,9 @@ add_error_variable(struct conn_s *connptr, char *key, char *val)
 }
 
 #define ADD_VAR_RET(x, y)				   \
-	do {						   \
+	do {                                               \
+                if (y == NULL)                             \
+                        break;                             \
 		if (add_error_variable(connptr, x, y) < 0) \
 			return -1;			   \
 	} while (0)
@@ -266,14 +268,20 @@ add_standard_vars(struct conn_s *connptr)
         ADD_VAR_RET("request", connptr->request_line);
         ADD_VAR_RET("clientip", connptr->client_ip_addr);
         ADD_VAR_RET("clienthost", connptr->client_string_addr);
-        ADD_VAR_RET("version", VERSION);
-        ADD_VAR_RET("package", PACKAGE);
-        ADD_VAR_RET("website", "http://tinyproxy.banu.com/");
+
+        /* The following value parts are all non-NULL and will
+         * trigger warnings in ADD_VAR_RET(), so we use
+         * add_error_variable() directly.
+         */
 
         global_time = time(NULL);
         strftime(timebuf, sizeof(timebuf), "%a, %d %b %Y %H:%M:%S GMT",
                  gmtime(&global_time));
-        ADD_VAR_RET("date", timebuf);
+        add_error_variable(connptr, "date", timebuf);
+
+        add_error_variable(connptr, "website", "http://tinyproxy.banu.com/");
+        add_error_variable(connptr, "version", VERSION);
+        add_error_variable(connptr, "package", PACKAGE);
 
         return (0);
 }
