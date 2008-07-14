@@ -149,6 +149,24 @@ Options:\n\
 #endif                          /* REVERSE_SUPPORT */
 }
 
+static int
+get_id (char *str)
+{
+	char *tstr;
+
+	if (str == NULL)
+		return -1;
+
+	tstr = str;
+	while (*tstr != 0) {
+		if (!isdigit(*tstr))
+			return -1;
+		tstr++;
+	}
+
+	return atoi(str);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -268,7 +286,7 @@ main(int argc, char **argv)
                             DEFAULT_STATHOST);
                 config.stathost = DEFAULT_STATHOST;
         }
-        if (!config.username) {
+        if (!config.user) {
                 log_message(LOG_WARNING,
                             "You SHOULD set a UserName in the configuration file. Using current user instead.");
         }
@@ -328,38 +346,49 @@ main(int argc, char **argv)
          */
         if (geteuid() == 0) {
                 if (config.group && strlen(config.group) > 0) {
-                        thisgroup = getgrnam(config.group);
-                        if (!thisgroup) {
+			int gid = get_id(config.group);
+			if (gid < 0) {
+				thisgroup = getgrnam(config.group);
+				if (!thisgroup) {
+					fprintf(stderr,
+						"%s: Unable to find "
+						"group \"%s\".\n",
+						argv[0], config.group);
+					exit(EX_NOUSER);
+				}
+				gid = thisgroup->gr_gid;
+			}
+                        if (setgid(gid) < 0) {
                                 fprintf(stderr,
-                                        "%s: Unable to find group \"%s\".\n",
-                                        argv[0], config.group);
-                                exit(EX_NOUSER);
-                        }
-                        if (setgid(thisgroup->gr_gid) < 0) {
-                                fprintf(stderr,
-                                        "%s: Unable to change to group \"%s\".\n",
+                                        "%s: Unable to change to "
+					"group \"%s\".\n",
                                         argv[0], config.group);
                                 exit(EX_CANTCREAT);
                         }
                         log_message(LOG_INFO, "Now running as group \"%s\".",
                                     config.group);
                 }
-                if (config.username && strlen(config.username) > 0) {
-                        thisuser = getpwnam(config.username);
-                        if (!thisuser) {
-                                fprintf(stderr,
-                                        "%s: Unable to find user \"%s\".",
-                                        argv[0], config.username);
-                                exit(EX_NOUSER);
-                        }
-                        if (setuid(thisuser->pw_uid) < 0) {
+                if (config.user && strlen(config.user) > 0) {
+			int uid = get_id(config.user);
+			if (uid < 0) {
+				thisuser = getpwnam(config.user);
+				if (!thisuser) {
+					fprintf(stderr,
+						"%s: Unable to find "
+						"user \"%s\".",
+						argv[0], config.user);
+					exit(EX_NOUSER);
+				}
+				uid = thisuser->pw_uid;
+			}
+                        if (setuid(uid) < 0) {
                                 fprintf(stderr,
                                         "%s: Unable to change to user \"%s\".",
-                                        argv[0], config.username);
+                                        argv[0], config.user);
                                 exit(EX_CANTCREAT);
                         }
                         log_message(LOG_INFO, "Now running as user \"%s\".",
-                                    config.username);
+                                    config.user);
                 }
         } else {
                 log_message(LOG_WARNING,

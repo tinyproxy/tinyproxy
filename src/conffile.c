@@ -557,7 +557,7 @@ HANDLE_FUNC(handle_connectport)
 static
 HANDLE_FUNC(handle_user)
 {
-        return set_string_arg(&conf->username, line, &match[2]);
+        return set_string_arg(&conf->user, line, &match[2]);
 }
 
 static

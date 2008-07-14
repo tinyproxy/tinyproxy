@@ -51,7 +51,7 @@ struct config_s {
         int port;
         char *stathost;
         unsigned int quit;      /* boolean */
-        char *username;
+        char *user;
         char *group;
         char *ipAddr;
 #ifdef FILTER_ENABLE
