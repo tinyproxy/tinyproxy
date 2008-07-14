@@ -63,16 +63,21 @@ int
 showstats(struct conn_s *connptr)
 {
         static char *msg =
-            "<html><head><title>%s (%s) stats</title></head>\r\n"
-            "<body>\r\n"
-            "<center><h2>%s (%s) run-time statistics</h2></center><hr>\r\n"
-            "<blockquote>\r\n"
-            "Number of open connections: %lu<br>\r\n"
-            "Number of requests: %lu<br>\r\n"
-            "Number of bad connections: %lu<br>\r\n"
-            "Number of denied connections: %lu<br>\r\n"
-            "Number of refused connections due to high load: %lu\r\n"
-            "</blockquote>\r\n</body></html>\r\n";
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
+            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
+            "<html>\n"
+            "<head><title>%s version %s run-time statistics</title></head>\n"
+            "<body>\n"
+            "<h1>%s version %s run-time statistics</h1>\n"
+            "<p>\n"
+            "Number of open connections: %lu<br />\n"
+            "Number of requests: %lu<br />\n"
+            "Number of bad connections: %lu<br />\n"
+            "Number of denied connections: %lu<br />\n"
+            "Number of refused connections due to high load: %lu\n"
+            "</p>\n"
+            "</body>\n"
+            "</html>\n";
 
         char *message_buffer;
         char opens[16], reqs[16], badconns[16], denied[16], refused[16];
