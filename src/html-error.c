@@ -248,20 +248,26 @@ add_error_variable(struct conn_s *connptr, char *key, char *val)
 int
 add_standard_vars(struct conn_s *connptr)
 {
+        char errnobuf[16];
         char timebuf[30];
-        time_t global_time = time(NULL);
+        time_t global_time;
 
-        strftime(timebuf, sizeof(timebuf), "%a, %d %b %Y %H:%M:%S GMT",
-                 gmtime(&global_time));
+        snprintf(errnobuf, sizeof errnobuf, "%d", connptr->error_number);
+        ADD_VAR_RET("errno", errnobuf);
 
-        ADD_VAR_RET("request", connptr->request_line);
         ADD_VAR_RET("cause", connptr->error_string);
+        ADD_VAR_RET("request", connptr->request_line);
         ADD_VAR_RET("clientip", connptr->client_ip_addr);
         ADD_VAR_RET("clienthost", connptr->client_string_addr);
         ADD_VAR_RET("version", VERSION);
         ADD_VAR_RET("package", PACKAGE);
         ADD_VAR_RET("website", "http://tinyproxy.banu.com/");
+
+        global_time = time(NULL);
+        strftime(timebuf, sizeof(timebuf), "%a, %d %b %Y %H:%M:%S GMT",
+                 gmtime(&global_time));
         ADD_VAR_RET("date", timebuf);
+
         return (0);
 }
 
