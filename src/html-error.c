@@ -260,6 +260,7 @@ add_standard_vars(struct conn_s *connptr)
         ADD_VAR_RET("clienthost", connptr->client_string_addr);
         ADD_VAR_RET("version", VERSION);
         ADD_VAR_RET("package", PACKAGE);
+        ADD_VAR_RET("website", "http://tinyproxy.banu.com/");
         ADD_VAR_RET("date", timebuf);
         return (0);
 }
