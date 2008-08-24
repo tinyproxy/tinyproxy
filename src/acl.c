@@ -309,7 +309,7 @@ check_acl(int fd, const char *ip, const char *host)
 {
         struct acl_s *acl;
         int perm;
-        int i;
+        size_t i;
 
         assert(fd >= 0);
         assert(ip != NULL);
