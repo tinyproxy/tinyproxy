@@ -217,7 +217,7 @@ ssize_t
 read_buffer(int fd, struct buffer_s * buffptr)
 {
         ssize_t bytesin;
-        unsigned char buffer[READ_BUFFER_SIZE];
+        unsigned char *buffer;
 
         assert(fd >= 0);
         assert(buffptr != NULL);
@@ -228,20 +228,23 @@ read_buffer(int fd, struct buffer_s * buffptr)
         if (buffptr->size >= MAXBUFFSIZE)
                 return 0;
 
+        buffer = safemalloc(READ_BUFFER_SIZE);
+        if (!buffer) {
+                return -ENOMEM;
+        }
+
         bytesin = read(fd, buffer, READ_BUFFER_SIZE);
 
         if (bytesin > 0) {
                 if (add_to_buffer(buffptr, buffer, bytesin) < 0) {
                         log_message(LOG_ERR,
                                     "readbuff: add_to_buffer() error.");
-                        return -1;
+                        bytesin = -1;
                 }
-
-                return bytesin;
         } else {
                 if (bytesin == 0) {
                         /* connection was closed by client */
-                        return -1;
+                        bytesin = -1;
                 } else {
                         switch (errno) {
 #ifdef EWOULDBLOCK
@@ -252,15 +255,20 @@ read_buffer(int fd, struct buffer_s * buffptr)
 #  endif
 #endif
                         case EINTR:
-                                return 0;
+                                bytesin = 0;
+                                break;
                         default:
                                 log_message(LOG_ERR,
                                             "readbuff: recv() error \"%s\" on file descriptor %d",
                                             strerror(errno), fd);
-                                return -1;
+                                bytesin = -1;
+                                break;
                         }
                 }
         }
+
+        safefree(buffer);
+        return bytesin;
 }
 
 /*
