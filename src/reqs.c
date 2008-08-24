@@ -117,7 +117,7 @@ add_connect_port_allowed(int port)
 static int
 check_allowed_connect_ports(int port)
 {
-	ssize_t i;
+	size_t i;
 	int *data;
 
 	/*

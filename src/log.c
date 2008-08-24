@@ -199,7 +199,7 @@ send_stored_logs(void)
 
 	int level;
 
-	int i;
+	size_t i;
 
 	for (i = 0; i != vector_length(log_message_storage); ++i) {
 		string = vector_getentry(log_message_storage, i, NULL);
