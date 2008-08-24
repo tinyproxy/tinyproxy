@@ -188,6 +188,11 @@ main(int argc, char **argv)
         }
 #endif                          /* HAVE_SETRLIMIT */
 
+        /* Only allow u+rw bits. This may be required for some versions
+         * of glibc so that mkstemp() doesn't make us vulnerable.
+         */
+        umask(0177);
+
         /* Default configuration file location */
         config.config_file = DEFAULT_CONF_FILE;
 

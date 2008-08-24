@@ -42,7 +42,7 @@ makedaemon(void)
                 exit(0);
 
         chdir("/");
-        umask(077);
+        umask(0177);
 
 #if NDEBUG
         /*
