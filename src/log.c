@@ -146,11 +146,12 @@ log_message(int level, char *fmt, ...)
 		entry_buffer = safemalloc(strlen(str) + 6);
 		if (!entry_buffer)
 			return;
-			
+
 		sprintf(entry_buffer, "%d %s", level, str);
 		vector_append(log_message_storage, entry_buffer,
 			      strlen(entry_buffer) + 1);
 
+		safefree(entry_buffer);
 		va_end(args);
 
 		return;
