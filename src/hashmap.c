@@ -215,16 +215,12 @@ hashmap_insert(hashmap_t map, const char *key, const void *data, size_t len)
         if (!key_copy)
                 return -ENOMEM;
 
-        if (data) {
-                data_copy = safemalloc(len);
-                if (!data_copy) {
-                        safefree(key_copy);
-                        return -ENOMEM;
-                }
-                memcpy(data_copy, data, len);
-        } else {
-                data_copy = NULL;
-        }
+	data_copy = safemalloc(len);
+	if (!data_copy) {
+	  safefree(key_copy);
+	  return -ENOMEM;
+	}
+	memcpy(data_copy, data, len);
 
         ptr = safemalloc(sizeof(struct hashentry_s));
         if (!ptr) {
