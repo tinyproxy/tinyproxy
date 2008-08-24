@@ -73,6 +73,11 @@ _child_lock_init(void)
 {
 	char lock_file[] = "/tmp/tinyproxy.servers.lock.XXXXXX";
 
+        /* Only allow u+rw bits. This may be required for some versions
+         * of glibc so that mkstemp() doesn't make us vulnerable.
+         */
+        umask(0177);
+
 	lock_fd = mkstemp(lock_file);
 	unlink(lock_file);
 
