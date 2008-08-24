@@ -1,31 +1,17 @@
-dnl Developers, please strive to achieve this order:
-dnl
-dnl 0. Initialization and options processing
-dnl 1. Programs
-dnl 2. Libraries
-dnl 3. Header files
-dnl 4. Types
-dnl 5. Structures
-dnl 6. Compiler characteristics
-dnl 7. Functions, global variables
-dnl 8. System services
-dnl
-dnl Read the Autoconf manual for details.
-
 AC_PREREQ(2.54)
+
 AC_INIT([Tinyproxy], [1.7.1], [https://dev.banu.com/bugzilla/enter_bug.cgi?product=Tinyproxy], [tinyproxy])
-AC_CONFIG_SRCDIR([src/tinyproxy.c])
 dnl AC_CONFIG_AUX_DIR(config)
 dnl AC_CONFIG_MACRO_DIR(config)
 
 AC_CANONICAL_TARGET
+AM_INIT_AUTOMAKE
+AM_CONFIG_HEADER(config.h)
+AM_MAINTAINER_MODE
 
 AH_TEMPLATE([TARGET_SYSTEM],
 	    [A string containing the target system for which tinyproxy was built.])
 AC_DEFINE_UNQUOTED(TARGET_SYSTEM, ["$target"])
-
-AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
-AM_CONFIG_HEADER(config.h)
 
 dnl Check if we're compiling on a weird platform :)
 AC_AIX
