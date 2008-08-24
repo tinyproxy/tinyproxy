@@ -137,15 +137,19 @@ log_message(int level, char *fmt, ...)
 
 		if (!log_message_storage) {
 			log_message_storage = vector_create();
-			if (!log_message_storage)
+			if (!log_message_storage) {
+				va_end(args);
 				return;
+			}
 		}
 
 		vsnprintf(str, STRING_LENGTH, fmt, args);
 
 		entry_buffer = safemalloc(strlen(str) + 6);
-		if (!entry_buffer)
+		if (!entry_buffer) {
+			va_end(args);
 			return;
+		}
 
 		sprintf(entry_buffer, "%d %s", level, str);
 		vector_append(log_message_storage, entry_buffer,
