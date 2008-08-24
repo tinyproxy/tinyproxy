@@ -116,6 +116,11 @@ malloc_shared_memory(size_t size)
 
         strlcpy(buffer, shared_file, sizeof(buffer));
 
+        /* Only allow u+rw bits. This may be required for some versions
+         * of glibc so that mkstemp() doesn't make us vulnerable.
+         */
+        umask(0177);
+
         if ((fd = mkstemp(buffer)) == -1)
                 return MAP_FAILED;
         unlink(buffer);
