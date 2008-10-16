@@ -14,7 +14,7 @@ tinyproxy version 1.7.x
  allowed, then tinyproxy is a great tool for the network
  administrator.
 
- For more info, please visit: http://tinyproxy.banu.com/
+ For more info, please visit: https://www.banu.com/tinyproxy/
 
 
 INSTALLATION
@@ -54,18 +54,19 @@ INSTALLATION
 
 SUPPORT
 
- If you are having problems with tinyproxy, please submit a bug at the
- tinyproxy Bugzilla product at:
+ If you are having problems with tinyproxy, please submit a bug at:
 
-	https://bugzilla.banu.com/enter_bug.cgi?product=tinyproxy
+	https://www.banu.com/tinyproxy/newticket
 
- You may also wish to subscribe to the tinyproxy mailing list. To
+ You may also wish to subscribe to the tinyproxy mailing lists. To
  do so please visit:
 
-	https://lists.banu.com/mailman/listinfo/tinyproxy
+	https://www.banu.com/mailman/listinfo/tinyproxy-announce-list
+	https://www.banu.com/mailman/listinfo/tinyproxy-users-list
+	https://www.banu.com/mailman/listinfo/tinyproxy-developers-list
 
  for more information on how to subscribe and post messages to the
- list.
+ lists.
 
  Please recompile tinyproxy with full debug support (--enable-debug)
  and include a copy of the log file, and any assert errors reported by

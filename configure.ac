@@ -1,6 +1,6 @@
 AC_PREREQ(2.54)
 
-AC_INIT([Tinyproxy], [1.7.1], [https://dev.banu.com/bugzilla/enter_bug.cgi?product=Tinyproxy], [tinyproxy])
+AC_INIT([Tinyproxy], [1.7.1], [https://www.banu.com/tinyproxy/newticket], [tinyproxy])
 dnl AC_CONFIG_AUX_DIR(config)
 dnl AC_CONFIG_MACRO_DIR(config)
 
