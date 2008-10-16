@@ -15,6 +15,8 @@
  allowed, then tinyproxy is a great tool for the network
  administrator.
 
+ For more info, please visit: https://www.banu.com/tinyproxy/
+
 
  INSTALLATION
  ------------
@@ -62,18 +64,19 @@
  SUPPORT
  -------
 
- If you are having problems with tinyproxy, please submit a bug to the
- tinyproxy Bug Tracking system hosted by SourceForge and located at:
+ If you are having problems with tinyproxy, please submit a bug at:
 
-	http://sourceforge.net/tracker/?group_id=2632
+	https://www.banu.com/tinyproxy/newticket
 
- You may also wish to subscribe to the tinyproxy-user mailing list. To
- do so please visit:
+ You may also wish to subscribe to the tinyproxy mailing lists. To do
+ so please visit:
 
-        http://lists.sourceforge.net/lists/listinfo/tinyproxy-users
+	https://www.banu.com/mailman/listinfo/tinyproxy-announce-list
+	https://www.banu.com/mailman/listinfo/tinyproxy-users-list
+	https://www.banu.com/mailman/listinfo/tinyproxy-developers-list
 
  for more information on how to subscribe and post messages to the
- list.
+ lists.
 
  Please recompile tinyproxy with full debug support (--enable-debug)
  and include a copy of the log file, and any assert errors reported by
