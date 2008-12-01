@@ -33,18 +33,18 @@
  * destination buffer.
  */
 size_t
-strlcpy(char *dst, const char *src, size_t size)
+strlcpy (char *dst, const char *src, size_t size)
 {
-        size_t len = strlen(src);
-        size_t ret = len;
+  size_t len = strlen (src);
+  size_t ret = len;
 
-        if (len >= size)
-                len = size - 1;
+  if (len >= size)
+    len = size - 1;
 
-        memcpy(dst, src, len);
-        dst[len] = '\0';
+  memcpy (dst, src, len);
+  dst[len] = '\0';
 
-        return ret;
+  return ret;
 }
 #endif
 
@@ -56,20 +56,21 @@ strlcpy(char *dst, const char *src, size_t size)
  * length.
  */
 size_t
-strlcat(char *dst, const char *src, size_t size)
+strlcat (char *dst, const char *src, size_t size)
 {
-        size_t len1 = strlen(dst);
-        size_t len2 = strlen(src);
-        size_t ret = len1 + len2;
+  size_t len1 = strlen (dst);
+  size_t len2 = strlen (src);
+  size_t ret = len1 + len2;
 
-        if (len1 + len2 >= size)
-                len2 = size - len1 - 1;
-        if (len2 > 0) {
-                memcpy(dst + len1, src, len2);
-                dst[len1 + len2] = '\0';
-        }
+  if (len1 + len2 >= size)
+    len2 = size - len1 - 1;
+  if (len2 > 0)
+    {
+      memcpy (dst + len1, src, len2);
+      dst[len1 + len2] = '\0';
+    }
 
-        return ret;
+  return ret;
 }
 #endif
 
@@ -83,30 +84,31 @@ strlcat(char *dst, const char *src, size_t size)
  * negative return value indicates an error.
  */
 ssize_t
-chomp(char *buffer, size_t length)
+chomp (char *buffer, size_t length)
 {
-        size_t chars;
+  size_t chars;
 
-        assert(buffer != NULL);
-        assert(length > 0);
+  assert (buffer != NULL);
+  assert (length > 0);
 
-        /* Make sure the arguments are valid */
-        if (buffer == NULL)
-                return -EFAULT;
-        if (length < 1)
-                return -ERANGE;
+  /* Make sure the arguments are valid */
+  if (buffer == NULL)
+    return -EFAULT;
+  if (length < 1)
+    return -ERANGE;
 
-        chars = 0;
+  chars = 0;
 
-        --length;
-        while (buffer[length] == '\r' || buffer[length] == '\n') {
-                buffer[length] = '\0';
-                chars++;
+  --length;
+  while (buffer[length] == '\r' || buffer[length] == '\n')
+    {
+      buffer[length] = '\0';
+      chars++;
 
-                /* Stop once we get to zero to prevent wrap-around */
-                if (length-- == 0)
-                        break;
-        }
+      /* Stop once we get to zero to prevent wrap-around */
+      if (length-- == 0)
+	break;
+    }
 
-        return chars;
+  return chars;
 }

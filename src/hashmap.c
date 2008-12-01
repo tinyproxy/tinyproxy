@@ -37,23 +37,26 @@
  * internal use.  It stores the number of buckets the hashmap was created
  * with.
  */
-struct hashentry_s {
-        char *key;
-        void *data;
-        size_t len;
+struct hashentry_s
+{
+  char *key;
+  void *data;
+  size_t len;
 
-        struct hashentry_s *prev, *next;
+  struct hashentry_s *prev, *next;
 };
 
-struct hashbucket_s {
-        struct hashentry_s *head, *tail;
+struct hashbucket_s
+{
+  struct hashentry_s *head, *tail;
 };
 
-struct hashmap_s {
-        unsigned int size;
-        hashmap_iter end_iterator;
+struct hashmap_s
+{
+  unsigned int size;
+  hashmap_iter end_iterator;
 
-        struct hashbucket_s *buckets;
+  struct hashbucket_s *buckets;
 };
 
 /*
@@ -66,25 +69,26 @@ struct hashmap_s {
  * If any of the arguments are invalid a negative number is returned.
  */
 static int
-hashfunc(const char *key, unsigned int size)
+hashfunc (const char *key, unsigned int size)
 {
-        uint32_t hash;
+  uint32_t hash;
 
-        if (key == NULL)
-                return -EINVAL;
-        if (size == 0)
-                return -ERANGE;
+  if (key == NULL)
+    return -EINVAL;
+  if (size == 0)
+    return -ERANGE;
 
-        for (hash = tolower(*key++); *key != '\0'; key++) {
-                uint32_t bit = (hash & 1) ? (1 << (sizeof(uint32_t) - 1)) : 0;
+  for (hash = tolower (*key++); *key != '\0'; key++)
+    {
+      uint32_t bit = (hash & 1) ? (1 << (sizeof (uint32_t) - 1)) : 0;
 
-                hash >>= 1;
+      hash >>= 1;
 
-                hash += tolower(*key) + bit;
-        }
+      hash += tolower (*key) + bit;
+    }
 
-        /* Keep the hash within the table limits */
-        return hash % size;
+  /* Keep the hash within the table limits */
+  return hash % size;
 }
 
 /*
@@ -95,28 +99,29 @@ hashfunc(const char *key, unsigned int size)
  * NULLs are also returned if memory could not be allocated for hashmap.
  */
 hashmap_t
-hashmap_create(unsigned int nbuckets)
+hashmap_create (unsigned int nbuckets)
 {
-        struct hashmap_s *ptr;
+  struct hashmap_s *ptr;
 
-        if (nbuckets == 0)
-                return NULL;
+  if (nbuckets == 0)
+    return NULL;
 
-        ptr = safecalloc(1, sizeof(struct hashmap_s));
-        if (!ptr)
-                return NULL;
+  ptr = safecalloc (1, sizeof (struct hashmap_s));
+  if (!ptr)
+    return NULL;
 
-        ptr->size = nbuckets;
-        ptr->buckets = safecalloc(nbuckets, sizeof(struct hashbucket_s));
-        if (!ptr->buckets) {
-                safefree(ptr);
-                return NULL;
-        }
+  ptr->size = nbuckets;
+  ptr->buckets = safecalloc (nbuckets, sizeof (struct hashbucket_s));
+  if (!ptr->buckets)
+    {
+      safefree (ptr);
+      return NULL;
+    }
 
-        /* This points to "one" past the end of the hashmap. */
-        ptr->end_iterator = 0;
+  /* This points to "one" past the end of the hashmap. */
+  ptr->end_iterator = 0;
 
-        return ptr;
+  return ptr;
 }
 
 /*
@@ -127,26 +132,27 @@ hashmap_create(unsigned int nbuckets)
  *          negative number is returned if "entry" was NULL
  */
 static inline int
-delete_hashbucket(struct hashbucket_s *bucket)
+delete_hashbucket (struct hashbucket_s *bucket)
 {
-        struct hashentry_s *nextptr;
-        struct hashentry_s *ptr;
+  struct hashentry_s *nextptr;
+  struct hashentry_s *ptr;
 
-        if (bucket == NULL || bucket->head == NULL)
-                return -EINVAL;
+  if (bucket == NULL || bucket->head == NULL)
+    return -EINVAL;
 
-        ptr = bucket->head;
-        while (ptr) {
-                nextptr = ptr->next;
+  ptr = bucket->head;
+  while (ptr)
+    {
+      nextptr = ptr->next;
 
-                safefree(ptr->key);
-                safefree(ptr->data);
-                safefree(ptr);
+      safefree (ptr->key);
+      safefree (ptr->data);
+      safefree (ptr);
 
-                ptr = nextptr;
-        }
+      ptr = nextptr;
+    }
 
-        return 0;
+  return 0;
 }
 
 /*
@@ -156,23 +162,25 @@ delete_hashbucket(struct hashbucket_s *bucket)
  *          negative if a NULL "map" was supplied
  */
 int
-hashmap_delete(hashmap_t map)
+hashmap_delete (hashmap_t map)
 {
-        unsigned int i;
+  unsigned int i;
 
-        if (map == NULL)
-                return -EINVAL;
+  if (map == NULL)
+    return -EINVAL;
 
-        for (i = 0; i != map->size; i++) {
-                if (map->buckets[i].head != NULL) {
-                        delete_hashbucket(&map->buckets[i]);
-                }
-        }
+  for (i = 0; i != map->size; i++)
+    {
+      if (map->buckets[i].head != NULL)
+	{
+	  delete_hashbucket (&map->buckets[i]);
+	}
+    }
 
-        safefree(map->buckets);
-        safefree(map);
+  safefree (map->buckets);
+  safefree (map);
 
-        return 0;
+  return 0;
 }
 
 /*
@@ -186,67 +194,69 @@ hashmap_delete(hashmap_t map)
  *          negative number if there are errors
  */
 int
-hashmap_insert(hashmap_t map, const char *key, const void *data, size_t len)
+hashmap_insert (hashmap_t map, const char *key, const void *data, size_t len)
 {
-        struct hashentry_s *ptr;
-        int hash;
-        char *key_copy;
-        void *data_copy;
+  struct hashentry_s *ptr;
+  int hash;
+  char *key_copy;
+  void *data_copy;
 
-        assert(map != NULL);
-        assert(key != NULL);
-        assert(data != NULL);
-        assert(len > 0);
+  assert (map != NULL);
+  assert (key != NULL);
+  assert (data != NULL);
+  assert (len > 0);
 
-        if (map == NULL || key == NULL)
-                return -EINVAL;
-        if (!data || len < 1)
-                return -ERANGE;
+  if (map == NULL || key == NULL)
+    return -EINVAL;
+  if (!data || len < 1)
+    return -ERANGE;
 
-        hash = hashfunc(key, map->size);
-        if (hash < 0)
-                return hash;
+  hash = hashfunc (key, map->size);
+  if (hash < 0)
+    return hash;
 
-        /*
-         * First make copies of the key and data in case there is a memory
-         * problem later.
-         */
-        key_copy = safestrdup(key);
-        if (!key_copy)
-                return -ENOMEM;
+  /*
+   * First make copies of the key and data in case there is a memory
+   * problem later.
+   */
+  key_copy = safestrdup (key);
+  if (!key_copy)
+    return -ENOMEM;
 
-	data_copy = safemalloc(len);
-	if (!data_copy) {
-	  safefree(key_copy);
-	  return -ENOMEM;
-	}
-	memcpy(data_copy, data, len);
+  data_copy = safemalloc (len);
+  if (!data_copy)
+    {
+      safefree (key_copy);
+      return -ENOMEM;
+    }
+  memcpy (data_copy, data, len);
 
-        ptr = safemalloc(sizeof(struct hashentry_s));
-        if (!ptr) {
-                safefree(key_copy);
-                safefree(data_copy);
-                return -ENOMEM;
-        }
+  ptr = safemalloc (sizeof (struct hashentry_s));
+  if (!ptr)
+    {
+      safefree (key_copy);
+      safefree (data_copy);
+      return -ENOMEM;
+    }
 
-        ptr->key = key_copy;
-        ptr->data = data_copy;
-        ptr->len = len;
+  ptr->key = key_copy;
+  ptr->data = data_copy;
+  ptr->len = len;
 
-        /*
-         * Now add the entry to the end of the bucket chain.
-         */
-        ptr->next = NULL;
-        ptr->prev = map->buckets[hash].tail;
-        if (map->buckets[hash].tail)
-                map->buckets[hash].tail->next = ptr;
+  /*
+   * Now add the entry to the end of the bucket chain.
+   */
+  ptr->next = NULL;
+  ptr->prev = map->buckets[hash].tail;
+  if (map->buckets[hash].tail)
+    map->buckets[hash].tail->next = ptr;
 
-        map->buckets[hash].tail = ptr;
-        if (!map->buckets[hash].head)
-                map->buckets[hash].head = ptr;
+  map->buckets[hash].tail = ptr;
+  if (!map->buckets[hash].head)
+    map->buckets[hash].head = ptr;
 
-        map->end_iterator++;
-        return 0;
+  map->end_iterator++;
+  return 0;
 }
 
 /*
@@ -255,17 +265,17 @@ hashmap_insert(hashmap_t map, const char *key, const void *data, size_t len)
  * Returns: an negative value upon error.
  */
 hashmap_iter
-hashmap_first(hashmap_t map)
+hashmap_first (hashmap_t map)
 {
-        assert(map != NULL);
+  assert (map != NULL);
 
-        if (!map)
-                return -EINVAL;
+  if (!map)
+    return -EINVAL;
 
-        if (map->end_iterator == 0)
-                return -1;
-        else
-                return 0;
+  if (map->end_iterator == 0)
+    return -1;
+  else
+    return 0;
 }
 
 /*
@@ -275,18 +285,18 @@ hashmap_first(hashmap_t map)
  *          0 otherwise
  */
 int
-hashmap_is_end(hashmap_t map, hashmap_iter iter)
+hashmap_is_end (hashmap_t map, hashmap_iter iter)
 {
-        assert(map != NULL);
-        assert(iter >= 0);
+  assert (map != NULL);
+  assert (iter >= 0);
 
-        if (!map || iter < 0)
-                return -EINVAL;
+  if (!map || iter < 0)
+    return -EINVAL;
 
-        if (iter == map->end_iterator)
-                return 1;
-        else
-                return 0;
+  if (iter == map->end_iterator)
+    return 1;
+  else
+    return 0;
 }
 
 /*
@@ -298,37 +308,40 @@ hashmap_is_end(hashmap_t map, hashmap_iter iter)
  *          an "end-iterator" if the key wasn't found
  */
 hashmap_iter
-hashmap_find(hashmap_t map, const char *key)
+hashmap_find (hashmap_t map, const char *key)
 {
-        unsigned int i;
-        hashmap_iter iter = 0;
-        struct hashentry_s *ptr;
+  unsigned int i;
+  hashmap_iter iter = 0;
+  struct hashentry_s *ptr;
 
-        assert(map != NULL);
-        assert(key != NULL);
+  assert (map != NULL);
+  assert (key != NULL);
 
-        if (!map || !key)
-                return -EINVAL;
+  if (!map || !key)
+    return -EINVAL;
 
-        /*
-         * Loop through all the keys and look for the first occurrence
-         * of a particular key.
-         */
-        for (i = 0; i != map->size; i++) {
-                ptr = map->buckets[i].head;
+  /*
+   * Loop through all the keys and look for the first occurrence
+   * of a particular key.
+   */
+  for (i = 0; i != map->size; i++)
+    {
+      ptr = map->buckets[i].head;
 
-                while (ptr) {
-                        if (strcasecmp(ptr->key, key) == 0) {
-                                /* Found it, so return the current count */
-                                return iter;
-                        }
+      while (ptr)
+	{
+	  if (strcasecmp (ptr->key, key) == 0)
+	    {
+	      /* Found it, so return the current count */
+	      return iter;
+	    }
 
-                        iter++;
-                        ptr = ptr->next;
-                }
-        }
+	  iter++;
+	  ptr = ptr->next;
+	}
+    }
 
-        return iter;
+  return iter;
 }
 
 /*
@@ -338,37 +351,41 @@ hashmap_find(hashmap_t map, const char *key)
  *          negative upon error
  */
 ssize_t
-hashmap_return_entry(hashmap_t map, hashmap_iter iter, char **key, void **data)
+hashmap_return_entry (hashmap_t map, hashmap_iter iter, char **key,
+		      void **data)
 {
-        unsigned int i;
-        struct hashentry_s *ptr;
-        hashmap_iter count = 0;
+  unsigned int i;
+  struct hashentry_s *ptr;
+  hashmap_iter count = 0;
 
-        assert(map != NULL);
-        assert(iter >= 0);
-        assert(iter != map->end_iterator);
-        assert(key != NULL);
-        assert(data != NULL);
+  assert (map != NULL);
+  assert (iter >= 0);
+  assert (iter != map->end_iterator);
+  assert (key != NULL);
+  assert (data != NULL);
 
-        if (!map || iter < 0 || !key || !data)
-                return -EINVAL;
+  if (!map || iter < 0 || !key || !data)
+    return -EINVAL;
 
-        for (i = 0; i != map->size; i++) {
-                ptr = map->buckets[i].head;
-                while (ptr) {
-                        if (count == iter) {
-                                /* This is the data so return it */
-                                *key = ptr->key;
-                                *data = ptr->data;
-                                return ptr->len;
-                        }
+  for (i = 0; i != map->size; i++)
+    {
+      ptr = map->buckets[i].head;
+      while (ptr)
+	{
+	  if (count == iter)
+	    {
+	      /* This is the data so return it */
+	      *key = ptr->key;
+	      *data = ptr->data;
+	      return ptr->len;
+	    }
 
-                        ptr = ptr->next;
-                        count++;
-                }
-        }
+	  ptr = ptr->next;
+	  count++;
+	}
+    }
 
-        return -EFAULT;
+  return -EFAULT;
 }
 
 /*
@@ -379,31 +396,32 @@ hashmap_return_entry(hashmap_t map, hashmap_iter iter, char **key, void **data)
  *          count found
  */
 ssize_t
-hashmap_search(hashmap_t map, const char *key)
+hashmap_search (hashmap_t map, const char *key)
 {
-        int hash;
-        struct hashentry_s *ptr;
-        ssize_t count = 0;
+  int hash;
+  struct hashentry_s *ptr;
+  ssize_t count = 0;
 
-        if (map == NULL || key == NULL)
-                return -EINVAL;
+  if (map == NULL || key == NULL)
+    return -EINVAL;
 
-        hash = hashfunc(key, map->size);
-        if (hash < 0)
-                return hash;
+  hash = hashfunc (key, map->size);
+  if (hash < 0)
+    return hash;
 
-        ptr = map->buckets[hash].head;
+  ptr = map->buckets[hash].head;
 
-        /* All right, there is an entry here, now see if it's the one we want */
-        while (ptr) {
-                if (strcasecmp(ptr->key, key) == 0)
-                        ++count;
+  /* All right, there is an entry here, now see if it's the one we want */
+  while (ptr)
+    {
+      if (strcasecmp (ptr->key, key) == 0)
+	++count;
 
-                /* This entry didn't contain the key; move to the next one */
-                ptr = ptr->next;
-        }
+      /* This entry didn't contain the key; move to the next one */
+      ptr = ptr->next;
+    }
 
-        return count;
+  return count;
 }
 
 /*
@@ -415,30 +433,32 @@ hashmap_search(hashmap_t map, const char *key)
  *          length of data for the entry
  */
 ssize_t
-hashmap_entry_by_key(hashmap_t map, const char *key, void **data)
+hashmap_entry_by_key (hashmap_t map, const char *key, void **data)
 {
-        int hash;
-        struct hashentry_s *ptr;
+  int hash;
+  struct hashentry_s *ptr;
 
-        if (!map || !key || !data)
-                return -EINVAL;
+  if (!map || !key || !data)
+    return -EINVAL;
 
-        hash = hashfunc(key, map->size);
-        if (hash < 0)
-                return hash;
+  hash = hashfunc (key, map->size);
+  if (hash < 0)
+    return hash;
 
-        ptr = map->buckets[hash].head;
+  ptr = map->buckets[hash].head;
 
-        while (ptr) {
-                if (strcasecmp(ptr->key, key) == 0) {
-                        *data = ptr->data;
-                        return ptr->len;
-                }
+  while (ptr)
+    {
+      if (strcasecmp (ptr->key, key) == 0)
+	{
+	  *data = ptr->data;
+	  return ptr->len;
+	}
 
-                ptr = ptr->next;
-        }
+      ptr = ptr->next;
+    }
 
-        return 0;
+  return 0;
 }
 
 /*
@@ -450,53 +470,55 @@ hashmap_entry_by_key(hashmap_t map, const char *key, void **data)
  *         positive count of entries deleted
  */
 ssize_t
-hashmap_remove(hashmap_t map, const char *key)
+hashmap_remove (hashmap_t map, const char *key)
 {
-        int hash;
-        struct hashentry_s *ptr, *next;
-        short int deleted = 0;
+  int hash;
+  struct hashentry_s *ptr, *next;
+  short int deleted = 0;
 
-        if (map == NULL || key == NULL)
-                return -EINVAL;
+  if (map == NULL || key == NULL)
+    return -EINVAL;
 
-        hash = hashfunc(key, map->size);
-        if (hash < 0)
-                return hash;
+  hash = hashfunc (key, map->size);
+  if (hash < 0)
+    return hash;
 
-        ptr = map->buckets[hash].head;
-        while (ptr) {
-                if (strcasecmp(ptr->key, key) == 0) {
-                        /*
-                         * Found the data, now need to remove everything
-                         * and update the hashmap.
-                         */
-                        next = ptr->next;
+  ptr = map->buckets[hash].head;
+  while (ptr)
+    {
+      if (strcasecmp (ptr->key, key) == 0)
+	{
+	  /*
+	   * Found the data, now need to remove everything
+	   * and update the hashmap.
+	   */
+	  next = ptr->next;
 
-                        if (ptr->prev)
-                                ptr->prev->next = ptr->next;
-                        if (ptr->next)
-                                ptr->next->prev = ptr->prev;
+	  if (ptr->prev)
+	    ptr->prev->next = ptr->next;
+	  if (ptr->next)
+	    ptr->next->prev = ptr->prev;
 
-                        if (map->buckets[hash].head == ptr)
-                                map->buckets[hash].head = ptr->next;
-                        if (map->buckets[hash].tail == ptr)
-                                map->buckets[hash].tail = ptr->prev;
+	  if (map->buckets[hash].head == ptr)
+	    map->buckets[hash].head = ptr->next;
+	  if (map->buckets[hash].tail == ptr)
+	    map->buckets[hash].tail = ptr->prev;
 
-                        safefree(ptr->key);
-                        safefree(ptr->data);
-                        safefree(ptr);
+	  safefree (ptr->key);
+	  safefree (ptr->data);
+	  safefree (ptr);
 
-                        ++deleted;
-                        --map->end_iterator;
+	  ++deleted;
+	  --map->end_iterator;
 
-                        ptr = next;
-                        continue;
-                }
+	  ptr = next;
+	  continue;
+	}
 
-                /* This entry didn't contain the key; move to the next one */
-                ptr = ptr->next;
-        }
+      /* This entry didn't contain the key; move to the next one */
+      ptr = ptr->next;
+    }
 
-        /* The key was not found, so return 0 */
-        return deleted;
+  /* The key was not found, so return 0 */
+  return deleted;
 }

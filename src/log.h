@@ -87,7 +87,7 @@
 #  define LOG_DEBUG   7
 #endif
 
-#define LOG_CONN      8         /* extra to log connections without the INFO stuff */
+#define LOG_CONN      8		/* extra to log connections without the INFO stuff */
 
 /*
  * Use this for debugging. The format is specific:
@@ -102,12 +102,12 @@
 # define DEBUG2(x, y...) do { } while(0)
 #endif
 
-extern int open_log_file(const char *file);
-extern void close_log_file(void);
-extern void truncate_log_file(void);
+extern int open_log_file (const char *file);
+extern void close_log_file (void);
+extern void truncate_log_file (void);
 
-extern void log_message(int level, char *fmt, ...);
-extern void set_log_level(int level);
-extern void send_stored_logs(void);
+extern void log_message (int level, char *fmt, ...);
+extern void set_log_level (int level);
+extern void send_stored_logs (void);
 
 #endif

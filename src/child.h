@@ -21,20 +21,21 @@
 #ifndef TINYPROXY_CHILD_H
 #define TINYPROXY_CHILD_H
 
-typedef enum {
-        CHILD_MAXCLIENTS,
-        CHILD_MAXSPARESERVERS,
-        CHILD_MINSPARESERVERS,
-        CHILD_STARTSERVERS,
-        CHILD_MAXREQUESTSPERCHILD
+typedef enum
+{
+  CHILD_MAXCLIENTS,
+  CHILD_MAXSPARESERVERS,
+  CHILD_MINSPARESERVERS,
+  CHILD_STARTSERVERS,
+  CHILD_MAXREQUESTSPERCHILD
 } child_config_t;
 
-extern short int child_pool_create(void);
-extern int child_listening_sock(uint16_t port);
-extern void child_close_sock(void);
-extern void child_main_loop(void);
-extern void child_kill_children(void);
+extern short int child_pool_create (void);
+extern int child_listening_sock (uint16_t port);
+extern void child_close_sock (void);
+extern void child_main_loop (void);
+extern void child_kill_children (void);
 
-extern short int child_configure(child_config_t type, int val);
+extern short int child_configure (child_config_t type, int val);
 
 #endif

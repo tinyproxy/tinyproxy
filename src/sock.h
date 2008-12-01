@@ -28,13 +28,13 @@
 
 #define MAXLINE (1024 * 4)
 
-extern int opensock(const char *host, int port, const char *bind_to);
-extern int listen_sock(uint16_t port, socklen_t * addrlen);
+extern int opensock (const char *host, int port, const char *bind_to);
+extern int listen_sock (uint16_t port, socklen_t * addrlen);
 
-extern int socket_nonblocking(int sock);
-extern int socket_blocking(int sock);
+extern int socket_nonblocking (int sock);
+extern int socket_blocking (int sock);
 
-extern int getsock_ip(int fd, char *ipaddr);
-extern int getpeer_information(int fd, char *ipaddr, char *string_addr);
+extern int getsock_ip (int fd, char *ipaddr);
+extern int getpeer_information (int fd, char *ipaddr, char *string_addr);
 
 #endif

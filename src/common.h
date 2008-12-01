@@ -173,13 +173,13 @@
 #  define MSG_NOSIGNAL (0)
 #endif
 
-#ifndef SHUT_RD                 /* these three Posix.1g names are quite new */
-#  define SHUT_RD	0       /* shutdown for reading */
-#  define SHUT_WR	1       /* shutdown for writing */
-#  define SHUT_RDWR	2       /* shutdown for reading and writing */
+#ifndef SHUT_RD			/* these three Posix.1g names are quite new */
+#  define SHUT_RD	0	/* shutdown for reading */
+#  define SHUT_WR	1	/* shutdown for writing */
+#  define SHUT_RDWR	2	/* shutdown for reading and writing */
 #endif
 
-#define MAXLISTEN	1024    /* Max number of connections */
+#define MAXLISTEN	1024	/* Max number of connections */
 
 /*
  * SunOS doesn't have INADDR_NONE defined.

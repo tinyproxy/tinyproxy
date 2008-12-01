@@ -21,7 +21,7 @@
 #ifndef TINYPROXY_CONFFILE_H
 #define TINYPROXY_CONFFILE_H
 
-extern int config_compile(void);
-extern int config_parse(struct config_s *conf, FILE * f);
+extern int config_compile (void);
+extern int config_parse (struct config_s *conf, FILE * f);
 
 #endif

@@ -21,16 +21,17 @@
 #ifndef _TINYPROXY_FILTER_H_
 #define _TINYPROXY_FILTER_H_
 
-typedef enum {
-        FILTER_DEFAULT_ALLOW,
-        FILTER_DEFAULT_DENY,
+typedef enum
+{
+  FILTER_DEFAULT_ALLOW,
+  FILTER_DEFAULT_DENY,
 } filter_policy_t;
 
-extern void filter_init(void);
-extern void filter_destroy(void);
-extern int filter_domain(const char *host);
-extern int filter_url(const char *url);
+extern void filter_init (void);
+extern void filter_destroy (void);
+extern int filter_domain (const char *host);
+extern int filter_url (const char *url);
 
-extern void filter_set_default_policy(filter_policy_t policy);
+extern void filter_set_default_policy (filter_policy_t policy);
 
 #endif

@@ -26,11 +26,11 @@ typedef void signal_func (int);
 /*
  * Pass a singal integer and a function to handle the signal.
  */
-extern signal_func *set_signal_handler(int signo, signal_func *func);
+extern signal_func *set_signal_handler (int signo, signal_func * func);
 
 /*
  * Make a program a daemon process
  */
-extern void makedaemon(void);
+extern void makedaemon (void);
 
 #endif

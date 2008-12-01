@@ -58,28 +58,28 @@ typedef struct http_message_s *http_message_t;
 #define IS_HTTP_MSG_ERROR(x) (x < 0)
 
 /* Initialize the internal structure of the HTTP message */
-extern http_message_t http_message_create(int response_code,
-                                          const char *response_string);
+extern http_message_t http_message_create (int response_code,
+					   const char *response_string);
 
 /* Free up an _internal_ resources */
-extern int http_message_destroy(http_message_t msg);
+extern int http_message_destroy (http_message_t msg);
 
 /*
  * Send an HTTP message via the supplied file descriptor.  This function
  * will add the "Date" header before it's sent.
  */
-extern int http_message_send(http_message_t msg, int fd);
+extern int http_message_send (http_message_t msg, int fd);
 
 /*
  * Change the internal state of the HTTP message.  Either set the
  * body of the message, update the response information, or
  * add a new set of headers.
  */
-extern int http_message_set_body(http_message_t msg,
-                                 const char *body, size_t len);
-extern int http_message_set_response(http_message_t msg,
-                                     int response_code,
-                                     const char *response_string);
+extern int http_message_set_body (http_message_t msg,
+				  const char *body, size_t len);
+extern int http_message_set_response (http_message_t msg,
+				      int response_code,
+				      const char *response_string);
 
 /*
  * Set the headers for this HTTP message.  Each string must be NUL ('\0')
@@ -87,7 +87,7 @@ extern int http_message_set_response(http_message_t msg,
  * line-feeds (LF) since they will be included when the http_message is
  * sent.
  */
-extern int http_message_add_headers(http_message_t msg,
-                                    char **headers, int num_headers);
+extern int http_message_add_headers (http_message_t msg,
+				     char **headers, int num_headers);
 
-#endif                          /* _TINYPROXY_HTTP_MESSAGE_H_ */
+#endif /* _TINYPROXY_HTTP_MESSAGE_H_ */

@@ -26,15 +26,15 @@
  */
 #ifndef NDEBUG
 
-extern void *debugging_calloc(size_t nmemb, size_t size, const char *file,
-                              unsigned long line);
-extern void *debugging_malloc(size_t size, const char *file,
-                              unsigned long line);
-extern void debugging_free(void *ptr, const char *file, unsigned long line);
-extern void *debugging_realloc(void *ptr, size_t size, const char *file,
-                               unsigned long line);
-extern char *debugging_strdup(const char *s, const char *file,
-                              unsigned long line);
+extern void *debugging_calloc (size_t nmemb, size_t size, const char *file,
+			       unsigned long line);
+extern void *debugging_malloc (size_t size, const char *file,
+			       unsigned long line);
+extern void debugging_free (void *ptr, const char *file, unsigned long line);
+extern void *debugging_realloc (void *ptr, size_t size, const char *file,
+				unsigned long line);
+extern char *debugging_strdup (const char *s, const char *file,
+			       unsigned long line);
 
 #  define safecalloc(x, y) debugging_calloc(x, y, __FILE__, __LINE__)
 #  define safemalloc(x) debugging_malloc(x, __FILE__, __LINE__)
@@ -60,7 +60,7 @@ free(*__safefree_tmp); \
 /*
  * Allocate memory from the "shared" region of memory.
  */
-extern void *malloc_shared_memory(size_t size);
-extern void *calloc_shared_memory(size_t nmemb, size_t size);
+extern void *malloc_shared_memory (size_t size);
+extern void *calloc_shared_memory (size_t nmemb, size_t size);
 
 #endif
