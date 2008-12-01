@@ -176,18 +176,6 @@ main(int argc, char **argv)
         struct group *thisgroup = NULL;
         FILE *config_file;
 
-        /*
-         * Disable the creation of CORE files right up front.
-         */
-#if defined(HAVE_SETRLIMIT) && defined(NDEBUG)
-        struct rlimit core_limit = { 0, 0 };
-        if (setrlimit(RLIMIT_CORE, &core_limit) < 0) {
-                fprintf(stderr, "%s: Could not set the core limit to zero.\n",
-                        argv[0]);
-                exit(EX_SOFTWARE);
-        }
-#endif                          /* HAVE_SETRLIMIT */
-
         /* Only allow u+rw bits. This may be required for some versions
          * of glibc so that mkstemp() doesn't make us vulnerable.
          */
