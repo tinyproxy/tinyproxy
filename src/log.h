@@ -87,7 +87,7 @@
 #  define LOG_DEBUG   7
 #endif
 
-#define LOG_CONN      8		/* extra to log connections without the INFO stuff */
+#define LOG_CONN      8	 /* extra to log connections without the INFO stuff */
 
 /*
  * Use this for debugging. The format is specific:
@@ -95,8 +95,10 @@
  *    DEBUG2("There was a big problem: %s in connptr %p", "hello", connptr);
  */
 #ifndef NDEBUG
-# define DEBUG1(x)       log_message(LOG_DEBUG, "[%s:%d] " x, __FILE__, __LINE__)
-# define DEBUG2(x, y...) log_message(LOG_DEBUG, "[%s:%d] " x, __FILE__, __LINE__, ## y)
+# define DEBUG1(x) \
+  log_message(LOG_DEBUG, "[%s:%d] " x, __FILE__, __LINE__)
+# define DEBUG2(x, y...) \
+  log_message(LOG_DEBUG, "[%s:%d] " x, __FILE__, __LINE__, ## y)
 #else
 # define DEBUG1(x)       do { } while(0)
 # define DEBUG2(x, y...) do { } while(0)

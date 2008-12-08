@@ -65,7 +65,8 @@ showstats (struct conn_s *connptr)
 {
   static char *msg =
     "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
-    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
+    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" "
+    "\"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
     "<html>\n"
     "<head><title>%s version %s run-time statistics</title></head>\n"
     "<body>\n"

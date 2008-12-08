@@ -144,7 +144,8 @@ create_file_safely (const char *filename, unsigned int truncate_file)
       if (fstatinfo.st_nlink > 1 || !S_ISREG (lstatinfo.st_mode))
 	{
 	  fprintf (stderr,
-		   "%s: The file %s has too many links, or is not a regular file: %s\n",
+		   "%s: The file %s has too many links, "
+		   "or is not a regular file: %s\n",
 		   PACKAGE, filename, strerror (errno));
 	  close (fildes);
 	  return -EMLINK;

@@ -332,7 +332,8 @@ write_buffer (int fd, struct buffer_s * buffptr)
 	case ENOBUFS:
 	case ENOMEM:
 	  log_message (LOG_ERR,
-		       "writebuff: write() error [NOBUFS/NOMEM] \"%s\" on file descriptor %d",
+		       "writebuff: write() error [NOBUFS/NOMEM] \"%s\" on "
+		       "file descriptor %d",
 		       strerror (errno), fd);
 	  return 0;
 	default:

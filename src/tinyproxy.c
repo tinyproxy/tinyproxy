@@ -293,12 +293,14 @@ main (int argc, char **argv)
   if (!config.user)
     {
       log_message (LOG_WARNING,
-		   "You SHOULD set a UserName in the configuration file. Using current user instead.");
+		   "You SHOULD set a UserName in the configuration file. "
+		   "Using current user instead.");
     }
   if (config.idletimeout == 0)
     {
       log_message (LOG_WARNING,
-		   "Invalid idle time setting. Only values greater than zero allowed; therefore setting idle timeout to %u seconds.",
+		   "Invalid idle time setting. Only values greater than zero "
+		   "allowed; therefore setting idle timeout to %u seconds.",
 		   MAX_IDLE_TIME);
       config.idletimeout = MAX_IDLE_TIME;
     }

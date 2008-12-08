@@ -51,7 +51,8 @@ reversepath_add (const char *path, const char *url)
   if (path && *path != '/')
     {
       log_message (LOG_WARNING,
-		   "Skipping reverse proxy rule: path '%s' doesn't start with a /",
+		   "Skipping reverse proxy rule: path '%s' "
+		   "doesn't start with a /",
 		   path);
       return;
     }

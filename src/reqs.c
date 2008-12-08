@@ -67,7 +67,9 @@
 /*
  * Codify the test for the carriage return and new line characters.
  */
-#define CHECK_CRLF(header, len) ((len == 1 && header[0] == '\n') || (len == 2 && header[0] == '\r' && header[1] == '\n'))
+#define CHECK_CRLF(header, len) \
+  ((len == 1 && header[0] == '\n') || \
+   (len == 2 && header[0] == '\r' && header[1] == '\n'))
 
 /*
  * This is a global variable which stores which ports are allowed by
@@ -143,7 +145,8 @@ retry:
   if (len <= 0)
     {
       log_message (LOG_ERR,
-		   "read_request_line: Client (file descriptor: %d) closed socket before read.",
+		   "read_request_line: Client (file descriptor: %d) "
+		   "closed socket before read.",
 		   connptr->client_fd);
 
       return -1;
@@ -1124,7 +1127,8 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
       indicate_http_error (connptr, 503,
 			   "Could not send data to remote server",
 			   "detail",
-			   "A network error occurred while trying to write data to the remote web server.",
+			   "A network error occurred while "
+			   "trying to write data to the remote web server.",
 			   NULL);
       goto PULL_CLIENT_DATA;
     }
@@ -1150,7 +1154,9 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
 		  indicate_http_error (connptr, 503,
 				       "Could not send data to remote server",
 				       "detail",
-				       "A network error occurred while trying to write data to the remote web server.",
+				       "A network error occurred while "
+				       "trying to write data to the "
+				       "remote web server.",
 				       NULL);
 		  goto PULL_CLIENT_DATA;
 		}
@@ -1244,8 +1250,9 @@ retry:
       indicate_http_error (connptr, 503,
 			   "Could not retrieve all the headers",
 			   "detail",
-			   PACKAGE
-			   " was unable to retrieve and process headers from the remote web server.",
+			   PACKAGE " "
+			   "was unable to retrieve and process headers from "
+			   "the remote web server.",
 			   NULL);
       return -1;
     }
@@ -1430,7 +1437,8 @@ relay_connection (struct conn_s *connptr)
       else if (ret < 0)
 	{
 	  log_message (LOG_ERR,
-		       "relay_connection: select() error \"%s\". Closing connection (client_fd:%d, server_fd:%d)",
+		       "relay_connection: select() error \"%s\". "
+		       "Closing connection (client_fd:%d, server_fd:%d)",
 		       strerror (errno), connptr->client_fd,
 		       connptr->server_fd);
 	  return;
@@ -1532,13 +1540,15 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
       indicate_http_error (connptr, 404,
 			   "Unable to connect to upstream proxy",
 			   "detail",
-			   "A network error occurred while trying to connect to the upstream web proxy.",
+			   "A network error occurred while trying to "
+			   "connect to the upstream web proxy.",
 			   NULL);
       return -1;
     }
 
   log_message (LOG_CONN,
-	       "Established connection to upstream proxy \"%s\" using file descriptor %d.",
+	       "Established connection to upstream proxy \"%s\" "
+	       "using file descriptor %d.",
 	       cur_upstream->host, connptr->server_fd);
 
   /*
@@ -1622,7 +1632,8 @@ handle_connection (int fd)
       update_stats (STAT_DENIED);
       indicate_http_error (connptr, 403, "Access denied",
 			   "detail",
-			   "The administrator of this proxy has not configured it to service requests from your host.",
+			   "The administrator of this proxy has not configured "
+			   "it to service requests from your host.",
 			   NULL);
       send_http_error_message (connptr);
       destroy_conn (connptr);
@@ -1634,7 +1645,8 @@ handle_connection (int fd)
       update_stats (STAT_BADCONN);
       indicate_http_error (connptr, 408, "Timeout",
 			   "detail",
-			   "Server timeout waiting for the HTTP request from the client.",
+			   "Server timeout waiting for the HTTP request "
+			   "from the client.",
 			   NULL);
       send_http_error_message (connptr);
       destroy_conn (connptr);
@@ -1649,7 +1661,8 @@ handle_connection (int fd)
       update_stats (STAT_BADCONN);
       indicate_http_error (connptr, 503, "Internal error",
 			   "detail",
-			   "An internal server error occurred while processing your request.  Please contact the administrator.",
+			   "An internal server error occurred while processing "
+			   "your request. Please contact the administrator.",
 			   NULL);
       send_http_error_message (connptr);
       destroy_conn (connptr);
@@ -1698,14 +1711,15 @@ handle_connection (int fd)
 	{
 	  indicate_http_error (connptr, 500, "Unable to connect",
 			       "detail",
-			       PACKAGE
-			       " was unable to connect to the remote web server.",
+			       PACKAGE " "
+			       "was unable to connect to the remote web server.",
 			       "error", strerror (errno), NULL);
 	  goto send_error;
 	}
 
       log_message (LOG_CONN,
-		   "Established connection to host \"%s\" using file descriptor %d.",
+		   "Established connection to host \"%s\" using "
+		   "file descriptor %d.",
 		   request->host, connptr->server_fd);
 
       if (!connptr->connect_method)
@@ -1757,7 +1771,8 @@ send_error:
       if (send_ssl_response (connptr) < 0)
 	{
 	  log_message (LOG_ERR,
-		       "handle_connection: Could not send SSL greeting to client.");
+		       "handle_connection: Could not send SSL greeting "
+		       "to client.");
 	  update_stats (STAT_BADCONN);
 	  destroy_conn (connptr);
 	  return;
@@ -1767,7 +1782,8 @@ send_error:
   relay_connection (connptr);
 
   log_message (LOG_INFO,
-	       "Closed connection between local client (fd:%d) and remote client (fd:%d)",
+	       "Closed connection between local client (fd:%d) "
+	       "and remote client (fd:%d)",
 	       connptr->client_fd, connptr->server_fd);
 
   /*

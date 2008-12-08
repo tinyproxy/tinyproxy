@@ -112,7 +112,8 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
 		   connptr->client_fd);
       indicate_http_error (connptr, 400, "Bad Request",
 			   "detail",
-			   "You tried to connect to the machine the proxy is running on",
+			   "You tried to connect to the machine "
+			   "the proxy is running on",
 			   "url", url, NULL);
       return 0;
     }

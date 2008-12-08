@@ -237,7 +237,8 @@ child_main (struct child_s *ptr)
 	  if (ptr->connects == child_config.maxrequestsperchild)
 	    {
 	      log_message (LOG_NOTICE,
-			   "Child has reached MaxRequestsPerChild (%u). Killing child.",
+			   "Child has reached MaxRequestsPerChild (%u). "
+			   "Killing child.",
 			   ptr->connects);
 	      break;
 	    }
@@ -251,7 +252,8 @@ child_main (struct child_s *ptr)
 	   * off.
 	   */
 	  log_message (LOG_NOTICE,
-		       "Waiting servers (%d) exceeds MaxSpareServers (%d). Killing child.",
+		       "Waiting servers (%d) exceeds MaxSpareServers (%d). "
+		       "Killing child.",
 		       *servers_waiting, child_config.maxspareservers);
 	  SERVER_COUNT_UNLOCK ();
 
@@ -310,13 +312,15 @@ child_pool_create (void)
   if (child_config.maxclients == 0)
     {
       log_message (LOG_ERR,
-		   "child_pool_create: \"MaxClients\" must be greater than zero.");
+		   "child_pool_create: \"MaxClients\" must be "
+		   "greater than zero.");
       return -1;
     }
   if (child_config.startservers == 0)
     {
       log_message (LOG_ERR,
-		   "child_pool_create: \"StartServers\" must be greater than zero.");
+		   "child_pool_create: \"StartServers\" must be "
+		   "greater than zero.");
       return -1;
     }
 
@@ -345,7 +349,8 @@ child_pool_create (void)
   if (child_config.startservers > child_config.maxclients)
     {
       log_message (LOG_WARNING,
-		   "Can not start more than \"MaxClients\" servers. Starting %u servers instead.",
+		   "Can not start more than \"MaxClients\" servers. "
+		   "Starting %u servers instead.",
 		   child_config.maxclients);
       child_config.startservers = child_config.maxclients;
     }
@@ -404,7 +409,8 @@ child_main_loop (void)
       if (*servers_waiting < child_config.minspareservers)
 	{
 	  log_message (LOG_NOTICE,
-		       "Waiting servers (%d) is less than MinSpareServers (%d). Creating new child.",
+		       "Waiting servers (%d) is less than MinSpareServers (%d). "
+		       "Creating new child.",
 		       *servers_waiting, child_config.minspareservers);
 
 	  SERVER_COUNT_UNLOCK ();

@@ -80,7 +80,9 @@ typedef int (*CONFFILE_HANDLER) (struct config_s *, const char *,
  * The handling function must return 0 if the directive was processed
  * properly.  Any errors are reported by returning a non-zero value.
  */
-#define HANDLE_FUNC(func) int func(struct config_s* conf, const char* line, regmatch_t match[])
+#define HANDLE_FUNC(func) \
+  int func(struct config_s* conf, const char* line, \
+	   regmatch_t match[])
 
 /*
  * List all the handling functions.  These are defined later, but they need
