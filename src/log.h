@@ -87,7 +87,7 @@
 #  define LOG_DEBUG   7
 #endif
 
-#define LOG_CONN      8	 /* extra to log connections without the INFO stuff */
+#define LOG_CONN      8         /* extra to log connections without the INFO stuff */
 
 /*
  * Use this for debugging. The format is specific:

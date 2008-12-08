@@ -60,75 +60,75 @@ filter_init (void)
     {
       fd = fopen (config.filter, "r");
       if (fd)
-	{
-	  p = NULL;
+        {
+          p = NULL;
 
-	  cflags = REG_NEWLINE | REG_NOSUB;
-	  if (config.filter_extended)
-	    cflags |= REG_EXTENDED;
-	  if (!config.filter_casesensitive)
-	    cflags |= REG_ICASE;
+          cflags = REG_NEWLINE | REG_NOSUB;
+          if (config.filter_extended)
+            cflags |= REG_EXTENDED;
+          if (!config.filter_casesensitive)
+            cflags |= REG_ICASE;
 
-	  while (fgets (buf, FILTER_BUFFER_LEN, fd))
-	    {
-	      /*
-	       * Remove any trailing white space and
-	       * comments.
-	       */
-	      s = buf;
-	      while (*s)
-		{
-		  if (isspace ((unsigned char) *s))
-		    break;
-		  if (*s == '#')
-		    {
-		      /*
-		       * If the '#' char is preceeded by
-		       * an escape, it's not a comment
-		       * string.
-		       */
-		      if (s == buf || *(s - 1) != '\\')
-			break;
-		    }
-		  ++s;
-		}
-	      *s = '\0';
+          while (fgets (buf, FILTER_BUFFER_LEN, fd))
+            {
+              /*
+               * Remove any trailing white space and
+               * comments.
+               */
+              s = buf;
+              while (*s)
+                {
+                  if (isspace ((unsigned char) *s))
+                    break;
+                  if (*s == '#')
+                    {
+                      /*
+                       * If the '#' char is preceeded by
+                       * an escape, it's not a comment
+                       * string.
+                       */
+                      if (s == buf || *(s - 1) != '\\')
+                        break;
+                    }
+                  ++s;
+                }
+              *s = '\0';
 
-	      /* skip leading whitespace */
-	      s = buf;
-	      while (*s && isspace ((unsigned char) *s))
-		s++;
+              /* skip leading whitespace */
+              s = buf;
+              while (*s && isspace ((unsigned char) *s))
+                s++;
 
-	      /* skip blank lines and comments */
-	      if (*s == '\0')
-		continue;
+              /* skip blank lines and comments */
+              if (*s == '\0')
+                continue;
 
-	      if (!p)		/* head of list */
-		fl = p = safecalloc (1, sizeof (struct filter_list));
-	      else
-		{		/* next entry */
-		  p->next = safecalloc (1, sizeof (struct filter_list));
-		  p = p->next;
-		}
+              if (!p)           /* head of list */
+                fl = p = safecalloc (1, sizeof (struct filter_list));
+              else
+                {               /* next entry */
+                  p->next = safecalloc (1, sizeof (struct filter_list));
+                  p = p->next;
+                }
 
-	      p->pat = safestrdup (s);
-	      p->cpat = safemalloc (sizeof (regex_t));
-	      if ((err = regcomp (p->cpat, p->pat, cflags)) != 0)
-		{
-		  fprintf (stderr, "Bad regex in %s: %s\n",
-			   config.filter, p->pat);
-		  exit (EX_DATAERR);
-		}
-	    }
-	  if (ferror (fd))
-	    {
-	      perror ("fgets");
-	      exit (EX_DATAERR);
-	    }
-	  fclose (fd);
+              p->pat = safestrdup (s);
+              p->cpat = safemalloc (sizeof (regex_t));
+              if ((err = regcomp (p->cpat, p->pat, cflags)) != 0)
+                {
+                  fprintf (stderr, "Bad regex in %s: %s\n",
+                           config.filter, p->pat);
+                  exit (EX_DATAERR);
+                }
+            }
+          if (ferror (fd))
+            {
+              perror ("fgets");
+              exit (EX_DATAERR);
+            }
+          fclose (fd);
 
-	  already_init = 1;
-	}
+          already_init = 1;
+        }
     }
 }
 
@@ -141,13 +141,13 @@ filter_destroy (void)
   if (already_init)
     {
       for (p = q = fl; p; p = q)
-	{
-	  regfree (p->cpat);
-	  safefree (p->cpat);
-	  safefree (p->pat);
-	  q = p->next;
-	  safefree (p);
-	}
+        {
+          regfree (p->cpat);
+          safefree (p->cpat);
+          safefree (p->pat);
+          q = p->next;
+          safefree (p);
+        }
       fl = NULL;
       already_init = 0;
     }
@@ -168,12 +168,12 @@ filter_domain (const char *host)
       result = regexec (p->cpat, host, (size_t) 0, (regmatch_t *) 0, 0);
 
       if (result == 0)
-	{
-	  if (default_policy == FILTER_DEFAULT_ALLOW)
-	    return 1;
-	  else
-	    return 0;
-	}
+        {
+          if (default_policy == FILTER_DEFAULT_ALLOW)
+            return 1;
+          else
+            return 0;
+        }
     }
 
 COMMON_EXIT:
@@ -198,12 +198,12 @@ filter_url (const char *url)
       result = regexec (p->cpat, url, (size_t) 0, (regmatch_t *) 0, 0);
 
       if (result == 0)
-	{
-	  if (default_policy == FILTER_DEFAULT_ALLOW)
-	    return 1;
-	  else
-	    return 0;
-	}
+        {
+          if (default_policy == FILTER_DEFAULT_ALLOW)
+            return 1;
+          else
+            return 0;
+        }
     }
 
 COMMON_EXIT:

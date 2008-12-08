@@ -67,7 +67,7 @@
  * with the same function template as below.
  */
 typedef int (*CONFFILE_HANDLER) (struct config_s *, const char *,
-				 regmatch_t[]);
+                                 regmatch_t[]);
 
 /*
  * Define the pattern used by any directive handling function.  The
@@ -92,7 +92,7 @@ static
 HANDLE_FUNC (handle_nop)
 {
   return 0;
-}				/* do nothing function */
+}                               /* do nothing function */
 
 static HANDLE_FUNC (handle_allow);
 static HANDLE_FUNC (handle_anonymous);
@@ -228,7 +228,7 @@ struct
 #endif
     /* loglevel */
 STDCONF ("loglevel", "(critical|error|warning|notice|connect|info)",
-	     handle_loglevel)};
+             handle_loglevel)};
 const unsigned int ndirectives = sizeof (directives) / sizeof (directives[0]);
 
 /*
@@ -249,12 +249,12 @@ config_compile (void)
 
       directives[i].cre = safemalloc (sizeof (regex_t));
       if (!directives[i].cre)
-	return -1;
+        return -1;
 
       r = regcomp (directives[i].cre,
-		   directives[i].re, REG_EXTENDED | REG_ICASE | REG_NEWLINE);
+                   directives[i].re, REG_EXTENDED | REG_ICASE | REG_NEWLINE);
       if (r)
-	return r;
+        return r;
     }
   return 0;
 }
@@ -279,7 +279,7 @@ check_match (struct config_s *conf, const char *line)
     {
       assert (directives[i].cre);
       if (!regexec (directives[i].cre, line, RE_MAX_MATCHES, match, 0))
-	return (*directives[i].handler) (conf, line, match);
+        return (*directives[i].handler) (conf, line, match);
     }
 
   return -1;
@@ -291,16 +291,16 @@ check_match (struct config_s *conf, const char *line)
 int
 config_parse (struct config_s *conf, FILE * f)
 {
-  char buffer[1024];		/* 1KB lines should be plenty */
+  char buffer[1024];            /* 1KB lines should be plenty */
   unsigned long lineno = 1;
 
   while (fgets (buffer, sizeof (buffer), f))
     {
       if (check_match (conf, buffer))
-	{
-	  printf ("Syntax error on line %ld\n", lineno);
-	  return 1;
-	}
+        {
+          printf ("Syntax error on line %ld\n", lineno);
+          return 1;
+        }
       ++lineno;
     }
   return 0;
@@ -440,7 +440,7 @@ HANDLE_FUNC (handle_viaproxyname)
   if (r)
     return r;
   log_message (LOG_INFO,
-	       "Setting \"Via\" header proxy to %s", conf->via_proxy_name);
+               "Setting \"Via\" header proxy to %s", conf->via_proxy_name);
   return 0;
 }
 
@@ -474,7 +474,7 @@ HANDLE_FUNC (handle_xtinyproxy)
   return set_string_arg (&conf->my_domain, line, &match[2]);
 #else
   fprintf (stderr,
-	   "XTinyproxy NOT Enabled! Recompile with --enable-xtinyproxy\n");
+           "XTinyproxy NOT Enabled! Recompile with --enable-xtinyproxy\n");
   return 1;
 #endif
 }
@@ -596,11 +596,11 @@ HANDLE_FUNC (handle_bind)
   if (r)
     return r;
   log_message (LOG_INFO,
-	       "Outgoing connections bound to IP %s", conf->bind_address);
+               "Outgoing connections bound to IP %s", conf->bind_address);
   return 0;
 #else
   fprintf (stderr,
-	   "\"Bind\" cannot be used with transparent support enabled.\n");
+           "\"Bind\" cannot be used with transparent support enabled.\n");
   return 1;
 #endif
 }
@@ -663,11 +663,11 @@ HANDLE_FUNC (handle_loglevel)
   for (i = 0; i != nlevels; ++i)
     {
       if (!strcasecmp (arg, log_levels[i].string))
-	{
-	  set_log_level (log_levels[i].level);
-	  safefree (arg);
-	  return 0;
-	}
+        {
+          set_log_level (log_levels[i].level);
+          safefree (arg);
+          return 0;
+        }
     }
 
   safefree (arg);
@@ -745,10 +745,10 @@ HANDLE_FUNC (handle_reversepath)
     {
       arg2 = get_string_arg (line, &match[3]);
       if (!arg2)
-	{
-	  safefree (arg1);
-	  return -1;
-	}
+        {
+          safefree (arg1);
+          return -1;
+        }
       reversepath_add (arg1, arg2);
       safefree (arg1);
       safefree (arg2);
@@ -779,10 +779,10 @@ HANDLE_FUNC (handle_upstream)
     {
       domain = get_string_arg (line, &match[9]);
       if (domain)
-	{
-	  upstream_add (ip, port, domain);
-	  safefree (domain);
-	}
+        {
+          upstream_add (ip, port, domain);
+          safefree (domain);
+        }
     }
   else
     {

@@ -60,12 +60,12 @@ bind_socket (int sockfd, const char *addr)
   do
     {
       if (bind (sockfd, res->ai_addr, res->ai_addrlen) == 0)
-	break;			/* success */
+        break;                  /* success */
     }
   while ((res = res->ai_next) != NULL);
 
   freeaddrinfo (ressave);
-  if (res == NULL)		/* was not able to bind to any address */
+  if (res == NULL)              /* was not able to bind to any address */
     return -1;
 
   return sockfd;
@@ -104,28 +104,28 @@ opensock (const char *host, int port, const char *bind_to)
     {
       sockfd = socket (res->ai_family, res->ai_socktype, res->ai_protocol);
       if (sockfd < 0)
-	continue;		/* ignore this one */
+        continue;               /* ignore this one */
 
       /* Bind to the specified address */
       if (bind_to)
-	{
-	  if (bind_socket (sockfd, bind_to) < 0)
-	    {
-	      close (sockfd);
-	      continue;		/* can't bind, so try again */
-	    }
-	}
+        {
+          if (bind_socket (sockfd, bind_to) < 0)
+            {
+              close (sockfd);
+              continue;         /* can't bind, so try again */
+            }
+        }
       else if (config.bind_address)
-	{
-	  if (bind_socket (sockfd, config.bind_address) < 0)
-	    {
-	      close (sockfd);
-	      continue;		/* can't bind, so try again */
-	    }
-	}
+        {
+          if (bind_socket (sockfd, config.bind_address) < 0)
+            {
+              close (sockfd);
+              continue;         /* can't bind, so try again */
+            }
+        }
 
       if (connect (sockfd, res->ai_addr, res->ai_addrlen) == 0)
-	break;			/* success */
+        break;                  /* success */
 
       close (sockfd);
     }
@@ -135,7 +135,7 @@ opensock (const char *host, int port, const char *bind_to)
   if (res == NULL)
     {
       log_message (LOG_ERR,
-		   "opensock: Could not establish a connection to %s", host);
+                   "opensock: Could not establish a connection to %s", host);
       return -1;
     }
 
@@ -205,16 +205,16 @@ listen_sock (uint16_t port, socklen_t * addrlen)
   if (bind (listenfd, (struct sockaddr *) &addr, sizeof (addr)) < 0)
     {
       log_message (LOG_ERR,
-		   "Unable to bind listening socket because of %s",
-		   strerror (errno));
+                   "Unable to bind listening socket because of %s",
+                   strerror (errno));
       return -1;
     }
 
   if (listen (listenfd, MAXLISTEN) < 0)
     {
       log_message (LOG_ERR,
-		   "Unable to start listening socket because of %s",
-		   strerror (errno));
+                   "Unable to start listening socket because of %s",
+                   strerror (errno));
       return -1;
     }
 
@@ -237,7 +237,7 @@ getsock_ip (int fd, char *ipaddr)
   if (getsockname (fd, (struct sockaddr *) &name, &namelen) != 0)
     {
       log_message (LOG_ERR, "getsock_ip: getsockname() error: %s",
-		   strerror (errno));
+                   strerror (errno));
       return -1;
     }
 
@@ -273,5 +273,5 @@ getpeer_information (int fd, char *ipaddr, char *string_addr)
 
   /* Get the full host name */
   return getnameinfo ((struct sockaddr *) &sa, salen,
-		      string_addr, HOSTNAME_LENGTH, NULL, 0, 0);
+                      string_addr, HOSTNAME_LENGTH, NULL, 0, 0);
 }

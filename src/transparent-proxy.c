@@ -56,8 +56,8 @@ build_url (char **url, const char *host, int port, const char *path)
 
 int
 do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
-		      struct request_s *request, struct config_s *conf,
-		      char *url)
+                      struct request_s *request, struct config_s *conf,
+                      char *url)
 {
   socklen_t length;
   char *data;
@@ -68,16 +68,16 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
       struct sockaddr_in dest_addr;
 
       if (getsockname
-	  (connptr->client_fd, (struct sockaddr *) &dest_addr, &length) < 0)
-	{
-	  log_message (LOG_ERR,
-		       "process_request: cannot get destination IP for %d",
-		       connptr->client_fd);
-	  indicate_http_error (connptr, 400, "Bad Request",
-			       "detail",
-			       "Unknown destination", "url", url, NULL);
-	  return 0;
-	}
+          (connptr->client_fd, (struct sockaddr *) &dest_addr, &length) < 0)
+        {
+          log_message (LOG_ERR,
+                       "process_request: cannot get destination IP for %d",
+                       connptr->client_fd);
+          indicate_http_error (connptr, 400, "Bad Request",
+                               "detail",
+                               "Unknown destination", "url", url, NULL);
+          return 0;
+        }
       request->host = safemalloc (17);
       strcpy (request->host, inet_ntoa (dest_addr.sin_addr));
       request->port = ntohs (dest_addr.sin_port);
@@ -86,35 +86,34 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
       safefree (url);
       build_url (&url, request->host, request->port, request->path);
       log_message (LOG_INFO,
-		   "process_request: trans IP %s %s for %d",
-		   request->method, url, connptr->client_fd);
+                   "process_request: trans IP %s %s for %d",
+                   request->method, url, connptr->client_fd);
     }
   else
     {
       request->host = safemalloc (length + 1);
       if (sscanf (data, "%[^:]:%hu", request->host, &request->port) != 2)
-	{
-	  strcpy (request->host, data);
-	  request->port = HTTP_PORT;
-	}
+        {
+          strcpy (request->host, data);
+          request->port = HTTP_PORT;
+        }
       request->path = safemalloc (strlen (url) + 1);
       strcpy (request->path, url);
       safefree (url);
       build_url (&url, request->host, request->port, request->path);
       log_message (LOG_INFO,
-		   "process_request: trans Host %s %s for %d",
-		   request->method, url, connptr->client_fd);
+                   "process_request: trans Host %s %s for %d",
+                   request->method, url, connptr->client_fd);
     }
   if (conf->ipAddr && strcmp (request->host, conf->ipAddr) == 0)
     {
       log_message (LOG_ERR,
-		   "process_request: destination IP is localhost %d",
-		   connptr->client_fd);
+                   "process_request: destination IP is localhost %d",
+                   connptr->client_fd);
       indicate_http_error (connptr, 400, "Bad Request",
-			   "detail",
-			   "You tried to connect to the machine "
-			   "the proxy is running on",
-			   "url", url, NULL);
+                           "detail",
+                           "You tried to connect to the machine "
+                           "the proxy is running on", "url", url, NULL);
       return 0;
     }
 

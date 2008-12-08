@@ -48,8 +48,8 @@ RETSIGTYPE takesig (int sig);
  */
 struct config_s config;
 float load = 0.00;
-unsigned int received_sighup = FALSE;	/* boolean */
-unsigned int processed_config_file = FALSE;	/* boolean */
+unsigned int received_sighup = FALSE;   /* boolean */
+unsigned int processed_config_file = FALSE;     /* boolean */
 
 /*
  * Handle a signal
@@ -162,7 +162,7 @@ get_id (char *str)
   while (*tstr != 0)
     {
       if (!isdigit (*tstr))
-	return -1;
+        return -1;
       tstr++;
     }
 
@@ -173,7 +173,7 @@ int
 main (int argc, char **argv)
 {
   int optch;
-  unsigned int godaemon = TRUE;	/* boolean */
+  unsigned int godaemon = TRUE; /* boolean */
   struct passwd *thisuser = NULL;
   struct group *thisgroup = NULL;
   FILE *config_file;
@@ -192,29 +192,29 @@ main (int argc, char **argv)
   while ((optch = getopt (argc, argv, "c:vldh")) != EOF)
     {
       switch (optch)
-	{
-	case 'v':
-	  display_version ();
-	  exit (EX_OK);
-	case 'l':
-	  display_license ();
-	  exit (EX_OK);
-	case 'd':
-	  godaemon = FALSE;
-	  break;
-	case 'c':
-	  config.config_file = safestrdup (optarg);
-	  if (!config.config_file)
-	    {
-	      fprintf (stderr, "%s: Could not allocate memory.\n", argv[0]);
-	      exit (EX_SOFTWARE);
-	    }
-	  break;
-	case 'h':
-	default:
-	  display_usage ();
-	  exit (EX_OK);
-	}
+        {
+        case 'v':
+          display_version ();
+          exit (EX_OK);
+        case 'l':
+          display_license ();
+          exit (EX_OK);
+        case 'd':
+          godaemon = FALSE;
+          break;
+        case 'c':
+          config.config_file = safestrdup (optarg);
+          if (!config.config_file)
+            {
+              fprintf (stderr, "%s: Could not allocate memory.\n", argv[0]);
+              exit (EX_SOFTWARE);
+            }
+          break;
+        case 'h':
+        default:
+          display_usage ();
+          exit (EX_OK);
+        }
     }
 
   log_message (LOG_INFO, "Initializing " PACKAGE " ...");
@@ -232,14 +232,14 @@ main (int argc, char **argv)
   if (!config_file)
     {
       fprintf (stderr,
-	       "%s: Could not open configuration file \"%s\".\n",
-	       argv[0], config.config_file);
+               "%s: Could not open configuration file \"%s\".\n",
+               argv[0], config.config_file);
       exit (EX_SOFTWARE);
     }
   if (config_compile () || config_parse (&config, config_file))
     {
       fprintf (stderr,
-	       "Unable to parse configuration file.  Not starting.\n");
+               "Unable to parse configuration file.  Not starting.\n");
       exit (EX_SOFTWARE);
     }
   fclose (config_file);
@@ -251,24 +251,24 @@ main (int argc, char **argv)
   if (config.logf_name)
     {
       if (open_log_file (config.logf_name) < 0)
-	{
-	  fprintf (stderr, "%s: Could not create log file.\n", argv[0]);
-	  exit (EX_SOFTWARE);
-	}
-      config.syslog = FALSE;	/* disable syslog */
+        {
+          fprintf (stderr, "%s: Could not create log file.\n", argv[0]);
+          exit (EX_SOFTWARE);
+        }
+      config.syslog = FALSE;    /* disable syslog */
     }
   else if (config.syslog)
     {
       if (godaemon == TRUE)
-	openlog ("tinyproxy", LOG_PID, LOG_DAEMON);
+        openlog ("tinyproxy", LOG_PID, LOG_DAEMON);
       else
-	openlog ("tinyproxy", LOG_PID, LOG_USER);
+        openlog ("tinyproxy", LOG_PID, LOG_USER);
     }
   else
     {
       fprintf (stderr,
-	       "%s: Either define a logfile or enable syslog logging\n",
-	       argv[0]);
+               "%s: Either define a logfile or enable syslog logging\n",
+               argv[0]);
       exit (EX_SOFTWARE);
     }
 
@@ -281,8 +281,8 @@ main (int argc, char **argv)
   if (config.port == 0)
     {
       fprintf (stderr,
-	       "%s: You MUST set a Port in the configuration file.\n",
-	       argv[0]);
+               "%s: You MUST set a Port in the configuration file.\n",
+               argv[0]);
       exit (EX_SOFTWARE);
     }
   if (!config.stathost)
@@ -293,15 +293,15 @@ main (int argc, char **argv)
   if (!config.user)
     {
       log_message (LOG_WARNING,
-		   "You SHOULD set a UserName in the configuration file. "
-		   "Using current user instead.");
+                   "You SHOULD set a UserName in the configuration file. "
+                   "Using current user instead.");
     }
   if (config.idletimeout == 0)
     {
       log_message (LOG_WARNING,
-		   "Invalid idle time setting. Only values greater than zero "
-		   "allowed; therefore setting idle timeout to %u seconds.",
-		   MAX_IDLE_TIME);
+                   "Invalid idle time setting. Only values greater than zero "
+                   "allowed; therefore setting idle timeout to %u seconds.",
+                   MAX_IDLE_TIME);
       config.idletimeout = MAX_IDLE_TIME;
     }
 
@@ -326,16 +326,16 @@ main (int argc, char **argv)
   if (config.pidpath)
     {
       if (pidfile_create (config.pidpath) < 0)
-	{
-	  fprintf (stderr, "%s: Could not create PID file.\n", argv[0]);
-	  exit (EX_OSERR);
-	}
+        {
+          fprintf (stderr, "%s: Could not create PID file.\n", argv[0]);
+          exit (EX_OSERR);
+        }
     }
 
   if (set_signal_handler (SIGPIPE, SIG_IGN) == SIG_ERR)
     {
       fprintf (stderr, "%s: Could not set the \"SIGPIPE\" signal.\n",
-	       argv[0]);
+               argv[0]);
       exit (EX_OSERR);
     }
 #ifdef FILTER_ENABLE
@@ -358,59 +358,59 @@ main (int argc, char **argv)
   if (geteuid () == 0)
     {
       if (config.group && strlen (config.group) > 0)
-	{
-	  int gid = get_id (config.group);
-	  if (gid < 0)
-	    {
-	      thisgroup = getgrnam (config.group);
-	      if (!thisgroup)
-		{
-		  fprintf (stderr,
-			   "%s: Unable to find "
-			   "group \"%s\".\n", argv[0], config.group);
-		  exit (EX_NOUSER);
-		}
-	      gid = thisgroup->gr_gid;
-	    }
-	  if (setgid (gid) < 0)
-	    {
-	      fprintf (stderr,
-		       "%s: Unable to change to "
-		       "group \"%s\".\n", argv[0], config.group);
-	      exit (EX_CANTCREAT);
-	    }
-	  log_message (LOG_INFO, "Now running as group \"%s\".",
-		       config.group);
-	}
+        {
+          int gid = get_id (config.group);
+          if (gid < 0)
+            {
+              thisgroup = getgrnam (config.group);
+              if (!thisgroup)
+                {
+                  fprintf (stderr,
+                           "%s: Unable to find "
+                           "group \"%s\".\n", argv[0], config.group);
+                  exit (EX_NOUSER);
+                }
+              gid = thisgroup->gr_gid;
+            }
+          if (setgid (gid) < 0)
+            {
+              fprintf (stderr,
+                       "%s: Unable to change to "
+                       "group \"%s\".\n", argv[0], config.group);
+              exit (EX_CANTCREAT);
+            }
+          log_message (LOG_INFO, "Now running as group \"%s\".",
+                       config.group);
+        }
       if (config.user && strlen (config.user) > 0)
-	{
-	  int uid = get_id (config.user);
-	  if (uid < 0)
-	    {
-	      thisuser = getpwnam (config.user);
-	      if (!thisuser)
-		{
-		  fprintf (stderr,
-			   "%s: Unable to find "
-			   "user \"%s\".", argv[0], config.user);
-		  exit (EX_NOUSER);
-		}
-	      uid = thisuser->pw_uid;
-	    }
-	  if (setuid (uid) < 0)
-	    {
-	      fprintf (stderr,
-		       "%s: Unable to change to user \"%s\".",
-		       argv[0], config.user);
-	      exit (EX_CANTCREAT);
-	    }
-	  log_message (LOG_INFO, "Now running as user \"%s\".", config.user);
-	}
+        {
+          int uid = get_id (config.user);
+          if (uid < 0)
+            {
+              thisuser = getpwnam (config.user);
+              if (!thisuser)
+                {
+                  fprintf (stderr,
+                           "%s: Unable to find "
+                           "user \"%s\".", argv[0], config.user);
+                  exit (EX_NOUSER);
+                }
+              uid = thisuser->pw_uid;
+            }
+          if (setuid (uid) < 0)
+            {
+              fprintf (stderr,
+                       "%s: Unable to change to user \"%s\".",
+                       argv[0], config.user);
+              exit (EX_CANTCREAT);
+            }
+          log_message (LOG_INFO, "Now running as user \"%s\".", config.user);
+        }
     }
   else
     {
       log_message (LOG_WARNING,
-		   "Not running as root, so not changing UID/GID.");
+                   "Not running as root, so not changing UID/GID.");
     }
 
   if (child_pool_create () < 0)
@@ -426,13 +426,13 @@ main (int argc, char **argv)
   if (set_signal_handler (SIGCHLD, takesig) == SIG_ERR)
     {
       fprintf (stderr, "%s: Could not set the \"SIGCHLD\" signal.\n",
-	       argv[0]);
+               argv[0]);
       exit (EX_OSERR);
     }
   if (set_signal_handler (SIGTERM, takesig) == SIG_ERR)
     {
       fprintf (stderr, "%s: Could not set the \"SIGTERM\" signal.\n",
-	       argv[0]);
+               argv[0]);
       exit (EX_OSERR);
     }
   if (set_signal_handler (SIGHUP, takesig) == SIG_ERR)
@@ -459,8 +459,8 @@ main (int argc, char **argv)
   if (unlink (config.pidpath) < 0)
     {
       log_message (LOG_WARNING,
-		   "Could not remove PID file \"%s\": %s.",
-		   config.pidpath, strerror (errno));
+                   "Could not remove PID file \"%s\": %s.",
+                   config.pidpath, strerror (errno));
     }
 #ifdef FILTER_ENABLE
   if (config.filter)

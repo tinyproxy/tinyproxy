@@ -35,6 +35,6 @@ struct reversepath
 extern void reversepath_add (const char *path, const char *url);
 extern struct reversepath *reversepath_get (char *url);
 extern char *reverse_rewrite_url (struct conn_s *connptr,
-				  hashmap_t hashofheaders, char *url);
+                                  hashmap_t hashofheaders, char *url);
 
 #endif

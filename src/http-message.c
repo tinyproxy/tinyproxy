@@ -144,7 +144,7 @@ http_message_destroy (http_message_t msg)
  */
 int
 http_message_set_response (http_message_t msg,
-			   int response_code, const char *response_string)
+                           int response_code, const char *response_string)
 {
   /* Check for valid arguments */
   if (msg == NULL)
@@ -207,11 +207,11 @@ http_message_add_headers (http_message_t msg, char **headers, int num_headers)
     {
       new_headers = safecalloc (msg->headers.total * 2, sizeof (char *));
       if (new_headers == NULL)
-	return -ENOMEM;
+        return -ENOMEM;
 
       /* Copy the array */
       for (i = 0; i != msg->headers.used; ++i)
-	new_headers[i] = msg->headers.strings[i];
+        new_headers[i] = msg->headers.strings[i];
 
       /* Remove the old array and replace it with the new array */
       safefree (msg->headers.strings);
@@ -251,7 +251,7 @@ http_message_send (http_message_t msg, int fd)
 
   /* Write the response line */
   write_message (fd, "HTTP/1.0 %d %s\r\n",
-		 msg->response.code, msg->response.string);
+                 msg->response.code, msg->response.string);
 
   /* Go through all the headers */
   for (i = 0; i != msg->headers.used; ++i)
@@ -260,7 +260,7 @@ http_message_send (http_message_t msg, int fd)
   /* Output the date */
   global_time = time (NULL);
   strftime (timebuf, sizeof (timebuf), "%a, %d %b %Y %H:%M:%S GMT",
-	    gmtime (&global_time));
+            gmtime (&global_time));
   write_message (fd, "Date: %s\r\n", timebuf);
 
   /* Output the content-length */

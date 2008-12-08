@@ -95,20 +95,20 @@ showstats (struct conn_s *connptr)
     {
       message_buffer = safemalloc (MAXBUFFSIZE);
       if (!message_buffer)
-	return -1;
+        return -1;
 
       snprintf (message_buffer, MAXBUFFSIZE, msg,
-		PACKAGE, VERSION, PACKAGE, VERSION,
-		stats->num_open,
-		stats->num_reqs,
-		stats->num_badcons, stats->num_denied,
-		stats->num_refused, PACKAGE, VERSION);
+                PACKAGE, VERSION, PACKAGE, VERSION,
+                stats->num_open,
+                stats->num_reqs,
+                stats->num_badcons, stats->num_denied,
+                stats->num_refused, PACKAGE, VERSION);
 
       if (send_http_message (connptr, 200, "OK", message_buffer) < 0)
-	{
-	  safefree (message_buffer);
-	  return -1;
-	}
+        {
+          safefree (message_buffer);
+          return -1;
+        }
 
       safefree (message_buffer);
       return 0;

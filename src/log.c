@@ -118,12 +118,12 @@ log_message (int level, char *fmt, ...)
   if (log_level == LOG_CONN)
     {
       if (level == LOG_INFO)
-	return;
+        return;
     }
   else if (log_level == LOG_INFO)
     {
       if (level > LOG_INFO && level != LOG_CONN)
-	return;
+        return;
     }
   else if (level > log_level)
     return;
@@ -145,21 +145,21 @@ log_message (int level, char *fmt, ...)
       char *entry_buffer;
 
       if (!log_message_storage)
-	{
-	  log_message_storage = vector_create ();
-	  if (!log_message_storage)
-	    goto out;
-	}
+        {
+          log_message_storage = vector_create ();
+          if (!log_message_storage)
+            goto out;
+        }
 
       vsnprintf (str, STRING_LENGTH, fmt, args);
 
       entry_buffer = safemalloc (strlen (str) + 6);
       if (!entry_buffer)
-	goto out;
+        goto out;
 
       sprintf (entry_buffer, "%d %s", level, str);
       vector_append (log_message_storage, entry_buffer,
-		     strlen (entry_buffer) + 1);
+                     strlen (entry_buffer) + 1);
 
       safefree (entry_buffer);
       goto out;
@@ -180,10 +180,10 @@ log_message (int level, char *fmt, ...)
       nowtime = time (NULL);
       /* Format is month day hour:minute:second (24 time) */
       strftime (time_string, TIME_LENGTH, "%b %d %H:%M:%S",
-		localtime (&nowtime));
+                localtime (&nowtime));
 
       snprintf (str, STRING_LENGTH, "%-9s %s [%ld]: ",
-		syslog_level[level], time_string, (long int) getpid ());
+                syslog_level[level], time_string, (long int) getpid ());
 
       assert (log_file_fd >= 0);
 
@@ -223,14 +223,14 @@ send_stored_logs (void)
 
 #ifdef NDEBUG
       if (log_level == LOG_CONN && level == LOG_INFO)
-	continue;
+        continue;
       else if (log_level == LOG_INFO)
-	{
-	  if (level > LOG_INFO && level != LOG_CONN)
-	    continue;
-	}
+        {
+          if (level > LOG_INFO && level != LOG_CONN)
+            continue;
+        }
       else if (level > log_level)
-	continue;
+        continue;
 #endif
 
       log_message (level, ptr);

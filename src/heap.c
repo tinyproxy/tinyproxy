@@ -29,7 +29,7 @@
 
 void *
 debugging_calloc (size_t nmemb, size_t size, const char *file,
-		  unsigned long line)
+                  unsigned long line)
 {
   void *ptr;
 
@@ -38,7 +38,7 @@ debugging_calloc (size_t nmemb, size_t size, const char *file,
 
   ptr = calloc (nmemb, size);
   fprintf (stderr, "{calloc: %p:%zu x %zu} %s:%lu\n", ptr, nmemb, size, file,
-	   line);
+           line);
   return ptr;
 }
 
@@ -56,7 +56,7 @@ debugging_malloc (size_t size, const char *file, unsigned long line)
 
 void *
 debugging_realloc (void *ptr, size_t size, const char *file,
-		   unsigned long line)
+                   unsigned long line)
 {
   void *newptr;
 
@@ -64,7 +64,7 @@ debugging_realloc (void *ptr, size_t size, const char *file,
 
   newptr = realloc (ptr, size);
   fprintf (stderr, "{realloc: %p -> %p:%zu} %s:%lu\n", ptr, newptr, size,
-	   file, line);
+           file, line);
   return newptr;
 }
 

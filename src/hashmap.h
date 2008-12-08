@@ -52,7 +52,7 @@ extern "C"
  *          0 upon successful insert
  */
   extern int hashmap_insert (hashmap_t map, const char *key,
-			     const void *data, size_t len);
+                             const void *data, size_t len);
 
 /*
  * Get an iterator to the first entry.
@@ -88,7 +88,7 @@ extern "C"
  *          negative upon error
  */
   extern ssize_t hashmap_return_entry (hashmap_t map, hashmap_iter iter,
-				       char **key, void **data);
+                                       char **key, void **data);
 
 /*
  * Get the first entry (assuming there is more than one) for a particular
@@ -99,7 +99,7 @@ extern "C"
  *          length of data for the entry
  */
   extern ssize_t hashmap_entry_by_key (hashmap_t map, const char *key,
-				       void **data);
+                                       void **data);
 
 /*
  * Searches for _any_ occurrances of "key" within the hashmap and returns the
@@ -123,5 +123,5 @@ extern "C"
 
 #if defined(__cplusplus)
 }
-#endif				/* C++ */
-#endif				/* _HASHMAP_H */
+#endif                          /* C++ */
+#endif                          /* _HASHMAP_H */

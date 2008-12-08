@@ -89,15 +89,15 @@ add_connect_port_allowed (int port)
     {
       ports_allowed_by_connect = vector_create ();
       if (!ports_allowed_by_connect)
-	{
-	  log_message (LOG_WARNING,
-		       "Could not create a list of allowed CONNECT ports");
-	  return;
-	}
+        {
+          log_message (LOG_WARNING,
+                       "Could not create a list of allowed CONNECT ports");
+          return;
+        }
     }
 
   log_message (LOG_INFO, "Adding Port [%d] to the list allowed by CONNECT",
-	       port);
+               port);
   vector_append (ports_allowed_by_connect, (void **) &port, sizeof (port));
 }
 
@@ -124,7 +124,7 @@ check_allowed_connect_ports (int port)
     {
       data = vector_getentry (ports_allowed_by_connect, i, NULL);
       if (data && *data == port)
-	return 1;
+        return 1;
     }
 
   return 0;
@@ -145,9 +145,8 @@ retry:
   if (len <= 0)
     {
       log_message (LOG_ERR,
-		   "read_request_line: Client (file descriptor: %d) "
-		   "closed socket before read.",
-		   connptr->client_fd);
+                   "read_request_line: Client (file descriptor: %d) "
+                   "closed socket before read.", connptr->client_fd);
 
       return -1;
     }
@@ -167,7 +166,7 @@ retry:
     }
 
   log_message (LOG_CONN, "Request (file descriptor %d): %s",
-	       connptr->client_fd, connptr->request_line);
+               connptr->client_fd, connptr->request_line);
 
   return 0;
 }
@@ -232,7 +231,7 @@ strip_return_port (char *host)
     return 0;
 
   *ptr1++ = '\0';
-  if (sscanf (ptr1, "%d", &port) != 1)	/* one conversion required */
+  if (sscanf (ptr1, "%d", &port) != 1)  /* one conversion required */
     return 0;
   return port;
 }
@@ -335,94 +334,94 @@ upstream_add (const char *host, int port, const char *domain)
   if (domain == NULL)
     {
       if (!host || host[0] == '\0' || port < 1)
-	{
-	  log_message (LOG_WARNING,
-		       "Nonsense upstream rule: invalid host or port");
-	  goto upstream_cleanup;
-	}
+        {
+          log_message (LOG_WARNING,
+                       "Nonsense upstream rule: invalid host or port");
+          goto upstream_cleanup;
+        }
 
       up->host = safestrdup (host);
       up->port = port;
 
       log_message (LOG_INFO, "Added upstream %s:%d for [default]",
-		   host, port);
+                   host, port);
     }
   else if (host == NULL)
     {
       if (!domain || domain[0] == '\0')
-	{
-	  log_message (LOG_WARNING,
-		       "Nonsense no-upstream rule: empty domain");
-	  goto upstream_cleanup;
-	}
+        {
+          log_message (LOG_WARNING,
+                       "Nonsense no-upstream rule: empty domain");
+          goto upstream_cleanup;
+        }
 
       ptr = strchr (domain, '/');
       if (ptr)
-	{
-	  struct in_addr addrstruct;
+        {
+          struct in_addr addrstruct;
 
-	  *ptr = '\0';
-	  if (inet_aton (domain, &addrstruct) != 0)
-	    {
-	      up->ip = ntohl (addrstruct.s_addr);
-	      *ptr++ = '/';
+          *ptr = '\0';
+          if (inet_aton (domain, &addrstruct) != 0)
+            {
+              up->ip = ntohl (addrstruct.s_addr);
+              *ptr++ = '/';
 
-	      if (strchr (ptr, '.'))
-		{
-		  if (inet_aton (ptr, &addrstruct) != 0)
-		    up->mask = ntohl (addrstruct.s_addr);
-		}
-	      else
-		{
-		  up->mask = ~((1 << (32 - atoi (ptr))) - 1);
-		}
-	    }
-	}
+              if (strchr (ptr, '.'))
+                {
+                  if (inet_aton (ptr, &addrstruct) != 0)
+                    up->mask = ntohl (addrstruct.s_addr);
+                }
+              else
+                {
+                  up->mask = ~((1 << (32 - atoi (ptr))) - 1);
+                }
+            }
+        }
       else
-	{
-	  up->domain = safestrdup (domain);
-	}
+        {
+          up->domain = safestrdup (domain);
+        }
 
       log_message (LOG_INFO, "Added no-upstream for %s", domain);
     }
   else
     {
       if (!host || host[0] == '\0' || port < 1 || !domain || domain == '\0')
-	{
-	  log_message (LOG_WARNING,
-		       "Nonsense upstream rule: invalid parameters");
-	  goto upstream_cleanup;
-	}
+        {
+          log_message (LOG_WARNING,
+                       "Nonsense upstream rule: invalid parameters");
+          goto upstream_cleanup;
+        }
 
       up->host = safestrdup (host);
       up->port = port;
       up->domain = safestrdup (domain);
 
       log_message (LOG_INFO, "Added upstream %s:%d for %s",
-		   host, port, domain);
+                   host, port, domain);
     }
 
   if (!up->domain && !up->ip)
-    {				/* always add default to end */
+    {                           /* always add default to end */
       struct upstream *tmp = config.upstream_list;
 
       while (tmp)
-	{
-	  if (!tmp->domain && !tmp->ip)
-	    {
-	      log_message (LOG_WARNING, "Duplicate default upstream");
-	      goto upstream_cleanup;
-	    }
+        {
+          if (!tmp->domain && !tmp->ip)
+            {
+              log_message (LOG_WARNING, "Duplicate default upstream");
+              goto upstream_cleanup;
+            }
 
-	  if (!tmp->next)
-	    {
-	      up->next = NULL;
-	      tmp->next = up;
-	      return;
-	    }
+          if (!tmp->next)
+            {
+              up->next = NULL;
+              tmp->next = up;
+              return;
+            }
 
-	  tmp = tmp->next;
-	}
+          tmp = tmp->next;
+        }
     }
 
   up->next = config.upstream_list;
@@ -451,36 +450,36 @@ upstream_get (char *host)
   while (up)
     {
       if (up->domain)
-	{
-	  if (strcasecmp (host, up->domain) == 0)
-	    break;		/* exact match */
+        {
+          if (strcasecmp (host, up->domain) == 0)
+            break;              /* exact match */
 
-	  if (up->domain[0] == '.')
-	    {
-	      char *dot = strchr (host, '.');
+          if (up->domain[0] == '.')
+            {
+              char *dot = strchr (host, '.');
 
-	      if (!dot && !up->domain[1])
-		break;		/* local host matches "." */
+              if (!dot && !up->domain[1])
+                break;          /* local host matches "." */
 
-	      while (dot && strcasecmp (dot, up->domain))
-		dot = strchr (dot + 1, '.');
+              while (dot && strcasecmp (dot, up->domain))
+                dot = strchr (dot + 1, '.');
 
-	      if (dot)
-		break;		/* subdomain match */
-	    }
-	}
+              if (dot)
+                break;          /* subdomain match */
+            }
+        }
       else if (up->ip)
-	{
-	  if (my_ip == INADDR_NONE)
-	    my_ip = ntohl (inet_addr (host));
+        {
+          if (my_ip == INADDR_NONE)
+            my_ip = ntohl (inet_addr (host));
 
-	  if ((my_ip & up->mask) == up->ip)
-	    break;
-	}
+          if ((my_ip & up->mask) == up->ip)
+            break;
+        }
       else
-	{
-	  break;		/* No domain or IP, default upstream */
-	}
+        {
+          break;                /* No domain or IP, default upstream */
+        }
 
       up = up->next;
     }
@@ -490,7 +489,7 @@ upstream_get (char *host)
 
   if (up)
     log_message (LOG_INFO, "Found proxy %s:%d for %s",
-		 up->host, up->port, host);
+                 up->host, up->port, host);
   else
     log_message (LOG_INFO, "No proxy for %s", host);
 
@@ -513,11 +512,11 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
     portbuff[0] = '\0';
 
   return write_message (connptr->server_fd,
-			"%s %s HTTP/1.0\r\n"
-			"Host: %s%s\r\n"
-			"Connection: close\r\n",
-			request->method, request->path,
-			request->host, portbuff);
+                        "%s %s HTTP/1.0\r\n"
+                        "Host: %s%s\r\n"
+                        "Connection: close\r\n",
+                        request->method, request->path,
+                        request->host, portbuff);
 }
 
 /*
@@ -534,9 +533,9 @@ static inline int
 send_ssl_response (struct conn_s *connptr)
 {
   return write_message (connptr->client_fd,
-			"%s\r\n"
-			"%s\r\n"
-			"\r\n", SSL_CONNECTION_RESPONSE, PROXY_AGENT);
+                        "%s\r\n"
+                        "%s\r\n"
+                        "\r\n", SSL_CONNECTION_RESPONSE, PROXY_AGENT);
 }
 
 /*
@@ -571,7 +570,7 @@ process_request (struct conn_s *connptr, hashmap_t hashofheaders)
     }
 
   ret = sscanf (connptr->request_line, "%[^ ] %[^ ] %[^ ]",
-		request->method, url, request->protocol);
+                request->method, url, request->protocol);
   if (ret == 2 && !strcasecmp (request->method, "GET"))
     {
       request->protocol[0] = 0;
@@ -587,24 +586,24 @@ process_request (struct conn_s *connptr, hashmap_t hashofheaders)
        * structure.
        */
       ret = sscanf (request->protocol + 5, "%u.%u",
-		    &connptr->protocol.major, &connptr->protocol.minor);
+                    &connptr->protocol.major, &connptr->protocol.minor);
 
       /*
        * If the conversion doesn't succeed, drop down below and
        * send the error to the user.
        */
       if (ret != 2)
-	goto BAD_REQUEST_ERROR;
+        goto BAD_REQUEST_ERROR;
     }
   else
     {
     BAD_REQUEST_ERROR:
       log_message (LOG_ERR,
-		   "process_request: Bad Request on file descriptor %d",
-		   connptr->client_fd);
+                   "process_request: Bad Request on file descriptor %d",
+                   connptr->client_fd);
       indicate_http_error (connptr, 400, "Bad Request",
-			   "detail", "Request has an invalid format",
-			   "url", url, NULL);
+                           "detail", "Request has an invalid format",
+                           "url", url, NULL);
 
       safefree (url);
       free_request_struct (request);
@@ -615,11 +614,11 @@ process_request (struct conn_s *connptr, hashmap_t hashofheaders)
   if (!url)
     {
       log_message (LOG_ERR,
-		   "process_request: Null URL on file descriptor %d",
-		   connptr->client_fd);
+                   "process_request: Null URL on file descriptor %d",
+                   connptr->client_fd);
       indicate_http_error (connptr, 400, "Bad Request",
-			   "detail", "Request has an empty URL",
-			   "url", url, NULL);
+                           "detail", "Request has an empty URL",
+                           "url", url, NULL);
 
       safefree (url);
       free_request_struct (request);
@@ -641,14 +640,14 @@ process_request (struct conn_s *connptr, hashmap_t hashofheaders)
       safefree (url);
 
       if (!reverse_url)
-	{
-	  free_request_struct (request);
-	  return NULL;
-	}
+        {
+          free_request_struct (request);
+          return NULL;
+        }
       else
-	{
-	  url = reverse_url;
-	}
+        {
+          url = reverse_url;
+        }
     }
 #endif
 
@@ -658,47 +657,47 @@ process_request (struct conn_s *connptr, hashmap_t hashofheaders)
       char *skipped_type = strstr (url, "//") + 2;
 
       if (extract_http_url (skipped_type, request) < 0)
-	{
-	  indicate_http_error (connptr, 400, "Bad Request",
-			       "detail", "Could not parse URL",
-			       "url", url, NULL);
+        {
+          indicate_http_error (connptr, 400, "Bad Request",
+                               "detail", "Could not parse URL",
+                               "url", url, NULL);
 
-	  safefree (url);
-	  free_request_struct (request);
+          safefree (url);
+          free_request_struct (request);
 
-	  return NULL;
-	}
+          return NULL;
+        }
     }
   else if (strcmp (request->method, "CONNECT") == 0)
     {
       if (extract_ssl_url (url, request) < 0)
-	{
-	  indicate_http_error (connptr, 400, "Bad Request",
-			       "detail", "Could not parse URL",
-			       "url", url, NULL);
+        {
+          indicate_http_error (connptr, 400, "Bad Request",
+                               "detail", "Could not parse URL",
+                               "url", url, NULL);
 
-	  safefree (url);
-	  free_request_struct (request);
+          safefree (url);
+          free_request_struct (request);
 
-	  return NULL;
-	}
+          return NULL;
+        }
 
       /* Verify that the port in the CONNECT method is allowed */
       if (!check_allowed_connect_ports (request->port))
-	{
-	  indicate_http_error (connptr, 403, "Access violation",
-			       "detail",
-			       "The CONNECT method not allowed "
-			       "with the port you tried to use.",
-			       "url", url, NULL);
-	  log_message (LOG_INFO,
-		       "Refused CONNECT method on port %d", request->port);
+        {
+          indicate_http_error (connptr, 403, "Access violation",
+                               "detail",
+                               "The CONNECT method not allowed "
+                               "with the port you tried to use.",
+                               "url", url, NULL);
+          log_message (LOG_INFO,
+                       "Refused CONNECT method on port %d", request->port);
 
-	  safefree (url);
-	  free_request_struct (request);
+          safefree (url);
+          free_request_struct (request);
 
-	  return NULL;
-	}
+          return NULL;
+        }
 
       connptr->connect_method = TRUE;
     }
@@ -706,19 +705,19 @@ process_request (struct conn_s *connptr, hashmap_t hashofheaders)
     {
 #ifdef TRANSPARENT_PROXY
       if (!do_transparent_proxy
-	  (connptr, hashofheaders, request, &config, url))
-	{
-	  safefree (url);
-	  free_request_struct (request);
-	  return NULL;
-	}
+          (connptr, hashofheaders, request, &config, url))
+        {
+          safefree (url);
+          free_request_struct (request);
+          return NULL;
+        }
 #else
       indicate_http_error (connptr, 501, "Not Implemented",
-			   "detail",
-			   "Unknown method or unsupported protocol.", "url",
-			   url, NULL);
+                           "detail",
+                           "Unknown method or unsupported protocol.", "url",
+                           url, NULL);
       log_message (LOG_INFO, "Unknown method (%s) or protocol (%s)",
-		   request->method, url);
+                   request->method, url);
       safefree (url);
       free_request_struct (request);
       return NULL;
@@ -733,32 +732,32 @@ process_request (struct conn_s *connptr, hashmap_t hashofheaders)
   if (config.filter)
     {
       if (config.filter_url)
-	ret = filter_url (url);
+        ret = filter_url (url);
       else
-	ret = filter_domain (request->host);
+        ret = filter_domain (request->host);
 
       if (ret)
-	{
-	  update_stats (STAT_DENIED);
+        {
+          update_stats (STAT_DENIED);
 
-	  if (config.filter_url)
-	    log_message (LOG_NOTICE,
-			 "Proxying refused on filtered url \"%s\"", url);
-	  else
-	    log_message (LOG_NOTICE,
-			 "Proxying refused on filtered domain \"%s\"",
-			 request->host);
+          if (config.filter_url)
+            log_message (LOG_NOTICE,
+                         "Proxying refused on filtered url \"%s\"", url);
+          else
+            log_message (LOG_NOTICE,
+                         "Proxying refused on filtered domain \"%s\"",
+                         request->host);
 
-	  indicate_http_error (connptr, 403, "Filtered",
-			       "detail",
-			       "The request you made has been filtered",
-			       "url", url, NULL);
+          indicate_http_error (connptr, 403, "Filtered",
+                               "detail",
+                               "The request you made has been filtered",
+                               "url", url, NULL);
 
-	  safefree (url);
-	  free_request_struct (request);
+          safefree (url);
+          free_request_struct (request);
 
-	  return NULL;
-	}
+          return NULL;
+        }
     }
 #endif
 
@@ -799,13 +798,13 @@ pull_client_data (struct conn_s *connptr, long int length)
     {
       len = safe_read (connptr->client_fd, buffer, min (MAXBUFFSIZE, length));
       if (len <= 0)
-	goto ERROR_EXIT;
+        goto ERROR_EXIT;
 
       if (!connptr->error_variables)
-	{
-	  if (safe_write (connptr->server_fd, buffer, len) < 0)
-	    goto ERROR_EXIT;
-	}
+        {
+          if (safe_write (connptr->server_fd, buffer, len) < 0)
+            goto ERROR_EXIT;
+        }
 
       length -= len;
     }
@@ -845,7 +844,7 @@ add_xtinyproxy_header (struct conn_s *connptr)
 {
   assert (connptr && connptr->server_fd >= 0);
   return write_message (connptr->server_fd,
-			"X-Tinyproxy: %s\r\n", connptr->client_ip_addr);
+                        "X-Tinyproxy: %s\r\n", connptr->client_ip_addr);
 }
 #endif /* XTINYPROXY */
 
@@ -884,7 +883,7 @@ get_all_headers (int fd, hashmap_t hashofheaders)
 {
   char *header;
   ssize_t len;
-  unsigned int double_cgi = FALSE;	/* boolean */
+  unsigned int double_cgi = FALSE;      /* boolean */
 
   assert (fd >= 0);
   assert (hashofheaders != NULL);
@@ -892,20 +891,20 @@ get_all_headers (int fd, hashmap_t hashofheaders)
   for (;;)
     {
       if ((len = readline (fd, &header)) <= 0)
-	{
-	  safefree (header);
-	  return -1;
-	}
+        {
+          safefree (header);
+          return -1;
+        }
 
       /*
        * If we received just a CR LF on a line, the headers are
        * finished.
        */
       if (CHECK_CRLF (header, len))
-	{
-	  safefree (header);
-	  return 0;
-	}
+        {
+          safefree (header);
+          return 0;
+        }
 
       /*
        * BUG FIX: The following code detects a "Double CGI"
@@ -919,19 +918,19 @@ get_all_headers (int fd, hashmap_t hashofheaders)
        * FIXME: Might need to change this to a more robust check.
        */
       if (strncasecmp (header, "HTTP/", 5) == 0)
-	{
-	  double_cgi = TRUE;
+        {
+          double_cgi = TRUE;
 
-	  safefree (header);
-	  continue;
-	}
+          safefree (header);
+          continue;
+        }
 
       if (!double_cgi
-	  && add_header_to_connection (hashofheaders, header, len) < 0)
-	{
-	  safefree (header);
-	  return -1;
-	}
+          && add_header_to_connection (hashofheaders, header, len) < 0)
+        {
+          safefree (header);
+          return -1;
+        }
 
       safefree (header);
     }
@@ -959,7 +958,7 @@ remove_connection_headers (hashmap_t hashofheaders)
       /* Look for the connection header.  If it's not found, return. */
       len = hashmap_entry_by_key (hashofheaders, headers[i], (void **) &data);
       if (len <= 0)
-	return 0;
+        return 0;
 
       /*
        * Go through the data line and replace any special characters
@@ -967,7 +966,7 @@ remove_connection_headers (hashmap_t hashofheaders)
        */
       ptr = data;
       while ((ptr = strpbrk (ptr, "()<>@,;:\\\"/[]?={} \t")))
-	*ptr++ = '\0';
+        *ptr++ = '\0';
 
       /*
        * All the tokens are separated by NULLs.  Now go through the
@@ -975,14 +974,14 @@ remove_connection_headers (hashmap_t hashofheaders)
        */
       ptr = data;
       while (ptr < data + len)
-	{
-	  hashmap_remove (hashofheaders, ptr);
+        {
+          hashmap_remove (hashofheaders, ptr);
 
-	  /* Advance ptr to the next token */
-	  ptr += strlen (ptr) + 1;
-	  while (ptr < data + len && *ptr == '\0')
-	    ptr++;
-	}
+          /* Advance ptr to the next token */
+          ptr += strlen (ptr) + 1;
+          while (ptr < data + len && *ptr == '\0')
+            ptr++;
+        }
 
       /* Now remove the connection header it self. */
       hashmap_remove (hashofheaders, headers[i]);
@@ -1019,7 +1018,7 @@ get_content_length (hashmap_t hashofheaders)
  */
 static int
 write_via_header (int fd, hashmap_t hashofheaders,
-		  unsigned int major, unsigned int minor)
+                  unsigned int major, unsigned int minor)
 {
   ssize_t len;
   char hostname[512];
@@ -1043,16 +1042,16 @@ write_via_header (int fd, hashmap_t hashofheaders,
   if (len > 0)
     {
       ret = write_message (fd,
-			   "Via: %s, %hu.%hu %s (%s/%s)\r\n",
-			   data, major, minor, hostname, PACKAGE, VERSION);
+                           "Via: %s, %hu.%hu %s (%s/%s)\r\n",
+                           data, major, minor, hostname, PACKAGE, VERSION);
 
       hashmap_remove (hashofheaders, "via");
     }
   else
     {
       ret = write_message (fd,
-			   "Via: %hu.%hu %s (%s/%s)\r\n",
-			   major, minor, hostname, PACKAGE, VERSION);
+                           "Via: %hu.%hu %s (%s/%s)\r\n",
+                           major, minor, hostname, PACKAGE, VERSION);
     }
 
   return ret;
@@ -1121,15 +1120,15 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
 
   /* Send, or add the Via header */
   ret = write_via_header (connptr->server_fd, hashofheaders,
-			  connptr->protocol.major, connptr->protocol.minor);
+                          connptr->protocol.major, connptr->protocol.minor);
   if (ret < 0)
     {
       indicate_http_error (connptr, 503,
-			   "Could not send data to remote server",
-			   "detail",
-			   "A network error occurred while "
-			   "trying to write data to the remote web server.",
-			   NULL);
+                           "Could not send data to remote server",
+                           "detail",
+                           "A network error occurred while "
+                           "trying to write data to the remote web server.",
+                           NULL);
       goto PULL_CLIENT_DATA;
     }
 
@@ -1140,28 +1139,27 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
   if (iter >= 0)
     {
       for (; !hashmap_is_end (hashofheaders, iter); ++iter)
-	{
-	  hashmap_return_entry (hashofheaders,
-				iter, &data, (void **) &header);
+        {
+          hashmap_return_entry (hashofheaders,
+                                iter, &data, (void **) &header);
 
-	  if (!is_anonymous_enabled () || anonymous_search (data) > 0)
-	    {
-	      ret =
-		write_message (connptr->server_fd,
-			       "%s: %s\r\n", data, header);
-	      if (ret < 0)
-		{
-		  indicate_http_error (connptr, 503,
-				       "Could not send data to remote server",
-				       "detail",
-				       "A network error occurred while "
-				       "trying to write data to the "
-				       "remote web server.",
-				       NULL);
-		  goto PULL_CLIENT_DATA;
-		}
-	    }
-	}
+          if (!is_anonymous_enabled () || anonymous_search (data) > 0)
+            {
+              ret =
+                write_message (connptr->server_fd,
+                               "%s: %s\r\n", data, header);
+              if (ret < 0)
+                {
+                  indicate_http_error (connptr, 503,
+                                       "Could not send data to remote server",
+                                       "detail",
+                                       "A network error occurred while "
+                                       "trying to write data to the "
+                                       "remote web server.", NULL);
+                  goto PULL_CLIENT_DATA;
+                }
+            }
+        }
     }
 #if defined(XTINYPROXY_ENABLE)
   if (config.my_domain)
@@ -1243,17 +1241,16 @@ retry:
   if (get_all_headers (connptr->server_fd, hashofheaders) < 0)
     {
       log_message (LOG_WARNING,
-		   "Could not retrieve all the headers from the remote server.");
+                   "Could not retrieve all the headers from the remote server.");
       hashmap_delete (hashofheaders);
       safefree (response_line);
 
       indicate_http_error (connptr, 503,
-			   "Could not retrieve all the headers",
-			   "detail",
-			   PACKAGE " "
-			   "was unable to retrieve and process headers from "
-			   "the remote web server.",
-			   NULL);
+                           "Could not retrieve all the headers",
+                           "detail",
+                           PACKAGE " "
+                           "was unable to retrieve and process headers from "
+                           "the remote web server.", NULL);
       return -1;
     }
 
@@ -1298,7 +1295,7 @@ retry:
 
   /* Send, or add the Via header */
   ret = write_via_header (connptr->client_fd, hashofheaders,
-			  connptr->protocol.major, connptr->protocol.minor);
+                          connptr->protocol.major, connptr->protocol.minor);
   if (ret < 0)
     goto ERROR_EXIT;
 
@@ -1307,10 +1304,10 @@ retry:
   if (config.reversemagic && connptr->reversepath)
     {
       ret = write_message (connptr->client_fd,
-			   "Set-Cookie: " REVERSE_COOKIE
-			   "=%s; path=/\r\n", connptr->reversepath);
+                           "Set-Cookie: " REVERSE_COOKIE
+                           "=%s; path=/\r\n", connptr->reversepath);
       if (ret < 0)
-	goto ERROR_EXIT;
+        goto ERROR_EXIT;
     }
 
   /* Rewrite the HTTP redirect if needed */
@@ -1320,29 +1317,29 @@ retry:
 
       /* Look for a matching entry in the reversepath list */
       while (reverse)
-	{
-	  if (strncasecmp (header,
-			   reverse->url, (len = strlen (reverse->url))) == 0)
-	    break;
-	  reverse = reverse->next;
-	}
+        {
+          if (strncasecmp (header,
+                           reverse->url, (len = strlen (reverse->url))) == 0)
+            break;
+          reverse = reverse->next;
+        }
 
       if (reverse)
-	{
-	  ret =
-	    write_message (connptr->client_fd,
-			   "Location: %s%s%s\r\n",
-			   config.reversebaseurl,
-			   (reverse->path + 1), (header + len));
-	  if (ret < 0)
-	    goto ERROR_EXIT;
+        {
+          ret =
+            write_message (connptr->client_fd,
+                           "Location: %s%s%s\r\n",
+                           config.reversebaseurl,
+                           (reverse->path + 1), (header + len));
+          if (ret < 0)
+            goto ERROR_EXIT;
 
-	  log_message (LOG_INFO,
-		       "Rewriting HTTP redirect: %s -> %s%s%s",
-		       header, config.reversebaseurl,
-		       (reverse->path + 1), (header + len));
-	  hashmap_remove (hashofheaders, "location");
-	}
+          log_message (LOG_INFO,
+                       "Rewriting HTTP redirect: %s -> %s%s%s",
+                       header, config.reversebaseurl,
+                       (reverse->path + 1), (header + len));
+          hashmap_remove (hashofheaders, "location");
+        }
     }
 #endif
 
@@ -1353,15 +1350,15 @@ retry:
   if (iter >= 0)
     {
       for (; !hashmap_is_end (hashofheaders, iter); ++iter)
-	{
-	  hashmap_return_entry (hashofheaders,
-				iter, &data, (void **) &header);
+        {
+          hashmap_return_entry (hashofheaders,
+                                iter, &data, (void **) &header);
 
-	  ret = write_message (connptr->client_fd,
-			       "%s: %s\r\n", data, header);
-	  if (ret < 0)
-	    goto ERROR_EXIT;
-	}
+          ret = write_message (connptr->client_fd,
+                               "%s: %s\r\n", data, header);
+          if (ret < 0)
+            goto ERROR_EXIT;
+        }
     }
   hashmap_delete (hashofheaders);
 
@@ -1409,73 +1406,73 @@ relay_connection (struct conn_s *connptr)
       tv.tv_usec = 0;
 
       if (buffer_size (connptr->sbuffer) > 0)
-	FD_SET (connptr->client_fd, &wset);
+        FD_SET (connptr->client_fd, &wset);
       if (buffer_size (connptr->cbuffer) > 0)
-	FD_SET (connptr->server_fd, &wset);
+        FD_SET (connptr->server_fd, &wset);
       if (buffer_size (connptr->sbuffer) < MAXBUFFSIZE)
-	FD_SET (connptr->server_fd, &rset);
+        FD_SET (connptr->server_fd, &rset);
       if (buffer_size (connptr->cbuffer) < MAXBUFFSIZE)
-	FD_SET (connptr->client_fd, &rset);
+        FD_SET (connptr->client_fd, &rset);
 
       ret = select (maxfd, &rset, &wset, NULL, &tv);
 
       if (ret == 0)
-	{
-	  tdiff = difftime (time (NULL), last_access);
-	  if (tdiff > config.idletimeout)
-	    {
-	      log_message (LOG_INFO,
-			   "Idle Timeout (after select) as %g > %u.",
-			   tdiff, config.idletimeout);
-	      return;
-	    }
-	  else
-	    {
-	      continue;
-	    }
-	}
+        {
+          tdiff = difftime (time (NULL), last_access);
+          if (tdiff > config.idletimeout)
+            {
+              log_message (LOG_INFO,
+                           "Idle Timeout (after select) as %g > %u.",
+                           tdiff, config.idletimeout);
+              return;
+            }
+          else
+            {
+              continue;
+            }
+        }
       else if (ret < 0)
-	{
-	  log_message (LOG_ERR,
-		       "relay_connection: select() error \"%s\". "
-		       "Closing connection (client_fd:%d, server_fd:%d)",
-		       strerror (errno), connptr->client_fd,
-		       connptr->server_fd);
-	  return;
-	}
+        {
+          log_message (LOG_ERR,
+                       "relay_connection: select() error \"%s\". "
+                       "Closing connection (client_fd:%d, server_fd:%d)",
+                       strerror (errno), connptr->client_fd,
+                       connptr->server_fd);
+          return;
+        }
       else
-	{
-	  /*
-	   * All right, something was actually selected so mark it.
-	   */
-	  last_access = time (NULL);
-	}
+        {
+          /*
+           * All right, something was actually selected so mark it.
+           */
+          last_access = time (NULL);
+        }
 
       if (FD_ISSET (connptr->server_fd, &rset))
-	{
-	  bytes_received = read_buffer (connptr->server_fd, connptr->sbuffer);
-	  if (bytes_received < 0)
-	    break;
+        {
+          bytes_received = read_buffer (connptr->server_fd, connptr->sbuffer);
+          if (bytes_received < 0)
+            break;
 
-	  connptr->content_length.server -= bytes_received;
-	  if (connptr->content_length.server == 0)
-	    break;
-	}
+          connptr->content_length.server -= bytes_received;
+          if (connptr->content_length.server == 0)
+            break;
+        }
       if (FD_ISSET (connptr->client_fd, &rset)
-	  && read_buffer (connptr->client_fd, connptr->cbuffer) < 0)
-	{
-	  break;
-	}
+          && read_buffer (connptr->client_fd, connptr->cbuffer) < 0)
+        {
+          break;
+        }
       if (FD_ISSET (connptr->server_fd, &wset)
-	  && write_buffer (connptr->server_fd, connptr->cbuffer) < 0)
-	{
-	  break;
-	}
+          && write_buffer (connptr->server_fd, connptr->cbuffer) < 0)
+        {
+          break;
+        }
       if (FD_ISSET (connptr->client_fd, &wset)
-	  && write_buffer (connptr->client_fd, connptr->sbuffer) < 0)
-	{
-	  break;
-	}
+          && write_buffer (connptr->client_fd, connptr->sbuffer) < 0)
+        {
+          break;
+        }
     }
 
   /*
@@ -1486,7 +1483,7 @@ relay_connection (struct conn_s *connptr)
   while (buffer_size (connptr->sbuffer) > 0)
     {
       if (write_buffer (connptr->client_fd, connptr->sbuffer) < 0)
-	break;
+        break;
     }
   shutdown (connptr->client_fd, SHUT_WR);
 
@@ -1497,7 +1494,7 @@ relay_connection (struct conn_s *connptr)
   while (buffer_size (connptr->cbuffer) > 0)
     {
       if (write_buffer (connptr->server_fd, connptr->cbuffer) < 0)
-	break;
+        break;
     }
 
   return;
@@ -1524,32 +1521,31 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
   if (!cur_upstream)
     {
       log_message (LOG_WARNING,
-		   "No upstream proxy defined for %s.", request->host);
+                   "No upstream proxy defined for %s.", request->host);
       indicate_http_error (connptr, 404,
-			   "Unable to connect to upstream proxy.");
+                           "Unable to connect to upstream proxy.");
       return -1;
     }
 
   connptr->server_fd =
     opensock (cur_upstream->host, cur_upstream->port,
-	      connptr->server_ip_addr);
+              connptr->server_ip_addr);
 
   if (connptr->server_fd < 0)
     {
       log_message (LOG_WARNING, "Could not connect to upstream proxy.");
       indicate_http_error (connptr, 404,
-			   "Unable to connect to upstream proxy",
-			   "detail",
-			   "A network error occurred while trying to "
-			   "connect to the upstream web proxy.",
-			   NULL);
+                           "Unable to connect to upstream proxy",
+                           "detail",
+                           "A network error occurred while trying to "
+                           "connect to the upstream web proxy.", NULL);
       return -1;
     }
 
   log_message (LOG_CONN,
-	       "Established connection to upstream proxy \"%s\" "
-	       "using file descriptor %d.",
-	       cur_upstream->host, connptr->server_fd);
+               "Established connection to upstream proxy \"%s\" "
+               "using file descriptor %d.",
+               cur_upstream->host, connptr->server_fd);
 
   /*
    * We need to re-write the "path" part of the request so that we
@@ -1562,9 +1558,9 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
 
       combined_string = safemalloc (len);
       if (!combined_string)
-	{
-	  return -1;
-	}
+        {
+          return -1;
+        }
 
       snprintf (combined_string, len, "%s:%d", request->host, request->port);
     }
@@ -1573,12 +1569,12 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
       len = strlen (request->host) + strlen (request->path) + 14;
       combined_string = safemalloc (len);
       if (!combined_string)
-	{
-	  return -1;
-	}
+        {
+          return -1;
+        }
 
       snprintf (combined_string, len, "http://%s:%d%s", request->host,
-		request->port, request->path);
+                request->port, request->path);
     }
 
   if (request->path)
@@ -1615,12 +1611,12 @@ handle_connection (int fd)
     getsock_ip (fd, sock_ipaddr);
 
   log_message (LOG_CONN, config.bindsame ?
-	       "Connect (file descriptor %d): %s [%s] at [%s]" :
-	       "Connect (file descriptor %d): %s [%s]",
-	       fd, peer_string, peer_ipaddr, sock_ipaddr);
+               "Connect (file descriptor %d): %s [%s] at [%s]" :
+               "Connect (file descriptor %d): %s [%s]",
+               fd, peer_string, peer_ipaddr, sock_ipaddr);
 
   connptr = initialize_conn (fd, peer_ipaddr, peer_string,
-			     config.bindsame ? sock_ipaddr : 0);
+                             config.bindsame ? sock_ipaddr : 0);
   if (!connptr)
     {
       close (fd);
@@ -1631,10 +1627,9 @@ handle_connection (int fd)
     {
       update_stats (STAT_DENIED);
       indicate_http_error (connptr, 403, "Access denied",
-			   "detail",
-			   "The administrator of this proxy has not configured "
-			   "it to service requests from your host.",
-			   NULL);
+                           "detail",
+                           "The administrator of this proxy has not configured "
+                           "it to service requests from your host.", NULL);
       send_http_error_message (connptr);
       destroy_conn (connptr);
       return;
@@ -1644,10 +1639,9 @@ handle_connection (int fd)
     {
       update_stats (STAT_BADCONN);
       indicate_http_error (connptr, 408, "Timeout",
-			   "detail",
-			   "Server timeout waiting for the HTTP request "
-			   "from the client.",
-			   NULL);
+                           "detail",
+                           "Server timeout waiting for the HTTP request "
+                           "from the client.", NULL);
       send_http_error_message (connptr);
       destroy_conn (connptr);
       return;
@@ -1660,10 +1654,10 @@ handle_connection (int fd)
     {
       update_stats (STAT_BADCONN);
       indicate_http_error (connptr, 503, "Internal error",
-			   "detail",
-			   "An internal server error occurred while processing "
-			   "your request. Please contact the administrator.",
-			   NULL);
+                           "detail",
+                           "An internal server error occurred while processing "
+                           "your request. Please contact the administrator.",
+                           NULL);
       send_http_error_message (connptr);
       destroy_conn (connptr);
       return;
@@ -1675,7 +1669,7 @@ handle_connection (int fd)
   if (get_all_headers (connptr->client_fd, hashofheaders) < 0)
     {
       log_message (LOG_WARNING,
-		   "Could not retrieve all the headers from the client");
+                   "Could not retrieve all the headers from the client");
       hashmap_delete (hashofheaders);
       update_stats (STAT_BADCONN);
       destroy_conn (connptr);
@@ -1686,12 +1680,12 @@ handle_connection (int fd)
   if (!request)
     {
       if (!connptr->error_variables && !connptr->show_stats)
-	{
-	  update_stats (STAT_BADCONN);
-	  destroy_conn (connptr);
-	  hashmap_delete (hashofheaders);
-	  return;
-	}
+        {
+          update_stats (STAT_BADCONN);
+          destroy_conn (connptr);
+          hashmap_delete (hashofheaders);
+          return;
+        }
       goto send_error;
     }
 
@@ -1699,31 +1693,30 @@ handle_connection (int fd)
   if (connptr->upstream_proxy != NULL)
     {
       if (connect_to_upstream (connptr, request) < 0)
-	{
-	  goto send_error;
-	}
+        {
+          goto send_error;
+        }
     }
   else
     {
       connptr->server_fd = opensock (request->host, request->port,
-				     connptr->server_ip_addr);
+                                     connptr->server_ip_addr);
       if (connptr->server_fd < 0)
-	{
-	  indicate_http_error (connptr, 500, "Unable to connect",
-			       "detail",
-			       PACKAGE " "
-			       "was unable to connect to the remote web server.",
-			       "error", strerror (errno), NULL);
-	  goto send_error;
-	}
+        {
+          indicate_http_error (connptr, 500, "Unable to connect",
+                               "detail",
+                               PACKAGE " "
+                               "was unable to connect to the remote web server.",
+                               "error", strerror (errno), NULL);
+          goto send_error;
+        }
 
       log_message (LOG_CONN,
-		   "Established connection to host \"%s\" using "
-		   "file descriptor %d.",
-		   request->host, connptr->server_fd);
+                   "Established connection to host \"%s\" using "
+                   "file descriptor %d.", request->host, connptr->server_fd);
 
       if (!connptr->connect_method)
-	establish_http_connection (connptr, request);
+        establish_http_connection (connptr, request);
     }
 
 send_error:
@@ -1733,11 +1726,11 @@ send_error:
     {
       update_stats (STAT_BADCONN);
       if (!connptr->error_variables)
-	{
-	  hashmap_delete (hashofheaders);
-	  destroy_conn (connptr);
-	  return;
-	}
+        {
+          hashmap_delete (hashofheaders);
+          destroy_conn (connptr);
+          return;
+        }
     }
   hashmap_delete (hashofheaders);
 
@@ -1757,34 +1750,34 @@ send_error:
   if (!connptr->connect_method || (connptr->upstream_proxy != NULL))
     {
       if (process_server_headers (connptr) < 0)
-	{
-	  if (connptr->error_variables)
-	    send_http_error_message (connptr);
+        {
+          if (connptr->error_variables)
+            send_http_error_message (connptr);
 
-	  update_stats (STAT_BADCONN);
-	  destroy_conn (connptr);
-	  return;
-	}
+          update_stats (STAT_BADCONN);
+          destroy_conn (connptr);
+          return;
+        }
     }
   else
     {
       if (send_ssl_response (connptr) < 0)
-	{
-	  log_message (LOG_ERR,
-		       "handle_connection: Could not send SSL greeting "
-		       "to client.");
-	  update_stats (STAT_BADCONN);
-	  destroy_conn (connptr);
-	  return;
-	}
+        {
+          log_message (LOG_ERR,
+                       "handle_connection: Could not send SSL greeting "
+                       "to client.");
+          update_stats (STAT_BADCONN);
+          destroy_conn (connptr);
+          return;
+        }
     }
 
   relay_connection (connptr);
 
   log_message (LOG_INFO,
-	       "Closed connection between local client (fd:%d) "
-	       "and remote client (fd:%d)",
-	       connptr->client_fd, connptr->server_fd);
+               "Closed connection between local client (fd:%d) "
+               "and remote client (fd:%d)",
+               connptr->client_fd, connptr->server_fd);
 
   /*
    * All done... close everything and go home... :)

@@ -33,7 +33,7 @@
 /*
  * Add an error number -> filename mapping to the errorpages list.
  */
-#define ERRORNUM_BUFSIZE 8	/* this is more than required */
+#define ERRORNUM_BUFSIZE 8      /* this is more than required */
 #define ERRPAGES_BUCKETCOUNT 16
 
 int
@@ -48,7 +48,7 @@ add_new_errorpage (char *filepath, unsigned int errornum)
   snprintf (errornbuf, ERRORNUM_BUFSIZE, "%u", errornum);
 
   if (hashmap_insert (config.errorpages, errornbuf,
-		      filepath, strlen (filepath) + 1) < 0)
+                      filepath, strlen (filepath) + 1) < 0)
     return (-1);
 
   return (0);
@@ -78,7 +78,7 @@ get_html_file (unsigned int errornum)
     return (config.errorpage_undef);
 
   if (hashmap_return_entry (config.errorpages, result_iter,
-			    &key, (void **) &val) < 0)
+                            &key, (void **) &val) < 0)
     return (config.errorpage_undef);
 
   return (val);
@@ -100,7 +100,7 @@ lookup_variable (struct conn_s *connptr, char *varname)
     return (NULL);
 
   if (hashmap_return_entry (connptr->error_variables, result_iter,
-			    &key, (void **) &data) < 0)
+                            &key, (void **) &data) < 0)
     return (NULL);
 
   return (data);
@@ -121,51 +121,51 @@ send_html_file (FILE * infile, struct conn_s *connptr)
   while (fgets (inbuf, HTML_BUFSIZE, infile) != NULL)
     {
       for (p = inbuf; *p; p++)
-	{
-	  switch (*p)
-	    {
-	    case '}':
-	      if (in_variable)
-		{
-		  *p = '\0';
-		  if (!(varval = lookup_variable (connptr, varstart)))
-		    varval = "(unknown)";
-		  writeret = write_message (connptr->client_fd, "%s", varval);
-		  if (writeret)
-		    return (writeret);
-		  in_variable = 0;
-		}
-	      else
-		{
-		  writeret = write_message (connptr->client_fd, "%c", *p);
-		  if (writeret)
-		    return (writeret);
-		}
-	      break;
-	    case '{':
-	      /* a {{ will print a single {.  If we are NOT
-	       * already in a { variable, then proceed with
-	       * setup.  If we ARE already in a { variable,
-	       * this code will fallthrough to the code that
-	       * just dumps a character to the client fd.
-	       */
-	      if (!in_variable)
-		{
-		  varstart = p + 1;
-		  in_variable++;
-		}
-	      else
-		in_variable = 0;
-	    default:
-	      if (!in_variable)
-		{
-		  writeret = write_message (connptr->client_fd, "%c", *p);
-		  if (writeret)
-		    return (writeret);
-		}
+        {
+          switch (*p)
+            {
+            case '}':
+              if (in_variable)
+                {
+                  *p = '\0';
+                  if (!(varval = lookup_variable (connptr, varstart)))
+                    varval = "(unknown)";
+                  writeret = write_message (connptr->client_fd, "%s", varval);
+                  if (writeret)
+                    return (writeret);
+                  in_variable = 0;
+                }
+              else
+                {
+                  writeret = write_message (connptr->client_fd, "%c", *p);
+                  if (writeret)
+                    return (writeret);
+                }
+              break;
+            case '{':
+              /* a {{ will print a single {.  If we are NOT
+               * already in a { variable, then proceed with
+               * setup.  If we ARE already in a { variable,
+               * this code will fallthrough to the code that
+               * just dumps a character to the client fd.
+               */
+              if (!in_variable)
+                {
+                  varstart = p + 1;
+                  in_variable++;
+                }
+              else
+                in_variable = 0;
+            default:
+              if (!in_variable)
+                {
+                  writeret = write_message (connptr->client_fd, "%c", *p);
+                  if (writeret)
+                    return (writeret);
+                }
 
-	    }
-	}
+            }
+        }
       in_variable = 0;
     }
   return (0);
@@ -180,7 +180,7 @@ send_http_headers (struct conn_s *connptr, int code, char *message)
     "Content-Type: text/html\r\n" "Connection: close\r\n" "\r\n";
 
   return (write_message (connptr->client_fd, headers,
-			 code, message, PACKAGE, VERSION));
+                         code, message, PACKAGE, VERSION));
 }
 
 /*
@@ -211,10 +211,10 @@ send_http_error_message (struct conn_s *connptr)
     {
       char *detail = lookup_variable (connptr, "detail");
       return (write_message (connptr->client_fd, fallback_error,
-			     connptr->error_number,
-			     connptr->error_string,
-			     connptr->error_string,
-			     detail, PACKAGE, VERSION));
+                             connptr->error_number,
+                             connptr->error_string,
+                             connptr->error_string,
+                             detail, PACKAGE, VERSION));
     }
 
   ret = send_html_file (infile, connptr);
@@ -236,7 +236,7 @@ add_error_variable (struct conn_s *connptr, char *key, char *val)
       return (-1);
 
   return hashmap_insert (connptr->error_variables, key, val,
-			 strlen (val) + 1);
+                         strlen (val) + 1);
 }
 
 #define ADD_VAR_RET(x, y)				   \
@@ -272,7 +272,7 @@ add_standard_vars (struct conn_s *connptr)
 
   global_time = time (NULL);
   strftime (timebuf, sizeof (timebuf), "%a, %d %b %Y %H:%M:%S GMT",
-	    gmtime (&global_time));
+            gmtime (&global_time));
   add_error_variable (connptr, "date", timebuf);
 
   add_error_variable (connptr, "website", "http://www.banu.com/tinyproxy/");
@@ -298,10 +298,10 @@ indicate_http_error (struct conn_s *connptr, int number, char *message, ...)
       val = va_arg (ap, char *);
 
       if (add_error_variable (connptr, key, val) == -1)
-	{
-	  va_end (ap);
-	  return (-1);
-	}
+        {
+          va_end (ap);
+          return (-1);
+        }
     }
 
   connptr->error_number = number;

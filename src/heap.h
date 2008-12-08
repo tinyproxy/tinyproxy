@@ -27,14 +27,14 @@
 #ifndef NDEBUG
 
 extern void *debugging_calloc (size_t nmemb, size_t size, const char *file,
-			       unsigned long line);
+                               unsigned long line);
 extern void *debugging_malloc (size_t size, const char *file,
-			       unsigned long line);
+                               unsigned long line);
 extern void debugging_free (void *ptr, const char *file, unsigned long line);
 extern void *debugging_realloc (void *ptr, size_t size, const char *file,
-				unsigned long line);
+                                unsigned long line);
 extern char *debugging_strdup (const char *s, const char *file,
-			       unsigned long line);
+                               unsigned long line);
 
 #  define safecalloc(x, y) debugging_calloc(x, y, __FILE__, __LINE__)
 #  define safemalloc(x) debugging_malloc(x, __FILE__, __LINE__)

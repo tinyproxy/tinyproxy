@@ -49,15 +49,15 @@ safe_write (int fd, const char *buffer, size_t count)
       len = send (fd, buffer, bytestosend, MSG_NOSIGNAL);
 
       if (len < 0)
-	{
-	  if (errno == EINTR)
-	    continue;
-	  else
-	    return -errno;
-	}
+        {
+          if (errno == EINTR)
+            continue;
+          else
+            return -errno;
+        }
 
       if (len == bytestosend)
-	break;
+        break;
 
       buffer += len;
       bytestosend -= len;
@@ -94,7 +94,7 @@ int
 write_message (int fd, const char *fmt, ...)
 {
   ssize_t n;
-  size_t size = (1024 * 8);	/* start with 8 KB and go from there */
+  size_t size = (1024 * 8);     /* start with 8 KB and go from there */
   char *buf, *tmpbuf;
   va_list ap;
 
@@ -109,23 +109,23 @@ write_message (int fd, const char *fmt, ...)
 
       /* If that worked, break out so we can send the buffer */
       if (n > -1 && n < size)
-	break;
+        break;
 
       /* Else, try again with more space */
       if (n > -1)
-	/* precisely what is needed (glibc2.1) */
-	size = n + 1;
+        /* precisely what is needed (glibc2.1) */
+        size = n + 1;
       else
-	/* twice the old size (glibc2.0) */
-	size *= 2;
+        /* twice the old size (glibc2.0) */
+        size *= 2;
 
       if ((tmpbuf = saferealloc (buf, size)) == NULL)
-	{
-	  safefree (buf);
-	  return -1;
-	}
+        {
+          safefree (buf);
+          return -1;
+        }
       else
-	buf = tmpbuf;
+        buf = tmpbuf;
     }
 
   if (safe_write (fd, buf, n) < 0)
@@ -178,13 +178,13 @@ readline (int fd, char **whole_buffer)
     {
       ret = recv (fd, buffer, SEGMENT_LEN, MSG_PEEK);
       if (ret <= 0)
-	goto CLEANUP;
+        goto CLEANUP;
 
       ptr = memchr (buffer, '\n', ret);
       if (ptr)
-	diff = ptr - buffer + 1;
+        diff = ptr - buffer + 1;
       else
-	diff = ret;
+        diff = ret;
 
       whole_buffer_len += diff;
 
@@ -193,33 +193,33 @@ readline (int fd, char **whole_buffer)
        * get to more than MAXIMUM_BUFFER_LENGTH close.
        */
       if (whole_buffer_len > MAXIMUM_BUFFER_LENGTH)
-	{
-	  ret = -ERANGE;
-	  goto CLEANUP;
-	}
+        {
+          ret = -ERANGE;
+          goto CLEANUP;
+        }
 
       line_ptr->data = safemalloc (diff);
       if (!line_ptr->data)
-	{
-	  ret = -ENOMEM;
-	  goto CLEANUP;
-	}
+        {
+          ret = -ENOMEM;
+          goto CLEANUP;
+        }
 
       recv (fd, line_ptr->data, diff, 0);
       line_ptr->len = diff;
 
       if (ptr)
-	{
-	  line_ptr->next = NULL;
-	  break;
-	}
+        {
+          line_ptr->next = NULL;
+          break;
+        }
 
       line_ptr->next = safecalloc (sizeof (struct read_lines_s), 1);
       if (!line_ptr->next)
-	{
-	  ret = -ENOMEM;
-	  goto CLEANUP;
-	}
+        {
+          ret = -ENOMEM;
+          goto CLEANUP;
+        }
       line_ptr = line_ptr->next;
     }
 
@@ -237,7 +237,7 @@ readline (int fd, char **whole_buffer)
   while (line_ptr)
     {
       memcpy (*whole_buffer + whole_buffer_len, line_ptr->data,
-	      line_ptr->len);
+              line_ptr->len);
       whole_buffer_len += line_ptr->len;
 
       line_ptr = line_ptr->next;
@@ -250,7 +250,7 @@ CLEANUP:
     {
       line_ptr = first_line->next;
       if (first_line->data)
-	safefree (first_line->data);
+        safefree (first_line->data);
       safefree (first_line);
       first_line = line_ptr;
     }
@@ -269,23 +269,23 @@ get_ip_string (struct sockaddr *sa, char *buf, size_t buflen)
   assert (sa != NULL);
   assert (buf != NULL);
   assert (buflen != 0);
-  buf[0] = '\0';		/* start with an empty string */
+  buf[0] = '\0';                /* start with an empty string */
 
   switch (sa->sa_family)
     {
     case AF_INET:
       {
-	struct sockaddr_in *sa_in = (struct sockaddr_in *) sa;
+        struct sockaddr_in *sa_in = (struct sockaddr_in *) sa;
 
-	inet_ntop (AF_INET, &sa_in->sin_addr, buf, buflen);
-	break;
+        inet_ntop (AF_INET, &sa_in->sin_addr, buf, buflen);
+        break;
       }
     case AF_INET6:
       {
-	struct sockaddr_in6 *sa_in6 = (struct sockaddr_in6 *) sa;
+        struct sockaddr_in6 *sa_in6 = (struct sockaddr_in6 *) sa;
 
-	inet_ntop (AF_INET6, &sa_in6->sin6_addr, buf, buflen);
-	break;
+        inet_ntop (AF_INET6, &sa_in6->sin6_addr, buf, buflen);
+        break;
       }
     default:
       /* no valid family */
@@ -305,7 +305,7 @@ get_ip_string (struct sockaddr *sa, char *buf, size_t buflen)
 int
 full_inet_pton (const char *ip, void *dst)
 {
-  char buf[24], tmp[24];	/* IPv4->IPv6 = ::FFFF:xxx.xxx.xxx.xxx\0 */
+  char buf[24], tmp[24];        /* IPv4->IPv6 = ::FFFF:xxx.xxx.xxx.xxx\0 */
   int n;
 
   assert (ip != NULL && strlen (ip) != 0);
@@ -339,6 +339,6 @@ full_inet_pton (const char *ip, void *dst)
    * full string.
    */
   snprintf (buf, sizeof (buf), "::ffff:%s",
-	    inet_ntop (AF_INET, dst, tmp, sizeof (tmp)));
+            inet_ntop (AF_INET, dst, tmp, sizeof (tmp)));
   return inet_pton (AF_INET6, buf, dst);
 }

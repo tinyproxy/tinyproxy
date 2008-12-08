@@ -28,11 +28,11 @@
  */
 typedef enum
 {
-  STAT_BADCONN,			/* bad connection, for unknown reason */
-  STAT_OPEN,			/* connection opened */
-  STAT_CLOSE,			/* connection closed */
-  STAT_REFUSE,			/* connection refused (to outside world) */
-  STAT_DENIED			/* connection denied to tinyproxy itself */
+  STAT_BADCONN,                 /* bad connection, for unknown reason */
+  STAT_OPEN,                    /* connection opened */
+  STAT_CLOSE,                   /* connection closed */
+  STAT_REFUSE,                  /* connection refused (to outside world) */
+  STAT_DENIED                   /* connection denied to tinyproxy itself */
 } status_t;
 
 /*

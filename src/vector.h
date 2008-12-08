@@ -80,5 +80,5 @@ extern "C"
 
 #if defined(__cplusplus)
 }
-#endif				/* C++ */
-#endif				/* _VECTOR_H */
+#endif                          /* C++ */
+#endif                          /* _VECTOR_H */

@@ -43,17 +43,16 @@ reversepath_add (const char *path, const char *url)
   if (!strstr (url, "://"))
     {
       log_message (LOG_WARNING,
-		   "Skipping reverse proxy rule: '%s' is not a valid url",
-		   url);
+                   "Skipping reverse proxy rule: '%s' is not a valid url",
+                   url);
       return;
     }
 
   if (path && *path != '/')
     {
       log_message (LOG_WARNING,
-		   "Skipping reverse proxy rule: path '%s' "
-		   "doesn't start with a /",
-		   path);
+                   "Skipping reverse proxy rule: path '%s' "
+                   "doesn't start with a /", path);
       return;
     }
 
@@ -74,8 +73,8 @@ reversepath_add (const char *path, const char *url)
   config.reversepath_list = reverse;
 
   log_message (LOG_INFO,
-	       "Added reverse proxy rule: %s -> %s", reverse->path,
-	       reverse->url);
+               "Added reverse proxy rule: %s -> %s", reverse->path,
+               reverse->url);
 }
 
 /*
@@ -89,7 +88,7 @@ reversepath_get (char *url)
   while (reverse)
     {
       if (strstr (url, reverse->path) == url)
-	return reverse;
+        return reverse;
 
       reverse = reverse->next;
     }
@@ -102,7 +101,7 @@ reversepath_get (char *url)
  */
 char *
 reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
-		     char *url)
+                     char *url)
 {
   char *rewrite_url = NULL;
   char *cookie = NULL;
@@ -115,31 +114,31 @@ reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
       /* First try locating the reverse mapping by request url */
       reverse = reversepath_get (url);
       if (reverse)
-	{
-	  rewrite_url = safemalloc (strlen (url) + strlen (reverse->url) + 1);
-	  strcpy (rewrite_url, reverse->url);
-	  strcat (rewrite_url, url + strlen (reverse->path));
-	}
+        {
+          rewrite_url = safemalloc (strlen (url) + strlen (reverse->url) + 1);
+          strcpy (rewrite_url, reverse->url);
+          strcat (rewrite_url, url + strlen (reverse->path));
+        }
       else if (config.reversemagic
-	       && hashmap_entry_by_key (hashofheaders,
-					"cookie", (void **) &cookie) > 0)
-	{
+               && hashmap_entry_by_key (hashofheaders,
+                                        "cookie", (void **) &cookie) > 0)
+        {
 
-	  /* No match - try the magical tracking cookie next */
-	  if ((cookieval = strstr (cookie, REVERSE_COOKIE "="))
-	      && (reverse =
-		  reversepath_get (cookieval + strlen (REVERSE_COOKIE) + 1)))
-	    {
+          /* No match - try the magical tracking cookie next */
+          if ((cookieval = strstr (cookie, REVERSE_COOKIE "="))
+              && (reverse =
+                  reversepath_get (cookieval + strlen (REVERSE_COOKIE) + 1)))
+            {
 
-	      rewrite_url = safemalloc (strlen (url) +
-					strlen (reverse->url) + 1);
-	      strcpy (rewrite_url, reverse->url);
-	      strcat (rewrite_url, url + 1);
+              rewrite_url = safemalloc (strlen (url) +
+                                        strlen (reverse->url) + 1);
+              strcpy (rewrite_url, reverse->url);
+              strcat (rewrite_url, url + 1);
 
-	      log_message (LOG_INFO,
-			   "Magical tracking cookie says: %s", reverse->path);
-	    }
-	}
+              log_message (LOG_INFO,
+                           "Magical tracking cookie says: %s", reverse->path);
+            }
+        }
     }
 
   /* Forward proxy support off and no reverse path match found */
@@ -147,8 +146,8 @@ reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
     {
       log_message (LOG_ERR, "Bad request");
       indicate_http_error (connptr, 400, "Bad Request",
-			   "detail",
-			   "Request has an invalid URL", "url", url, NULL);
+                           "detail",
+                           "Request has an invalid URL", "url", url, NULL);
       return NULL;
     }
 

@@ -172,9 +172,9 @@ hashmap_delete (hashmap_t map)
   for (i = 0; i != map->size; i++)
     {
       if (map->buckets[i].head != NULL)
-	{
-	  delete_hashbucket (&map->buckets[i]);
-	}
+        {
+          delete_hashbucket (&map->buckets[i]);
+        }
     }
 
   safefree (map->buckets);
@@ -329,16 +329,16 @@ hashmap_find (hashmap_t map, const char *key)
       ptr = map->buckets[i].head;
 
       while (ptr)
-	{
-	  if (strcasecmp (ptr->key, key) == 0)
-	    {
-	      /* Found it, so return the current count */
-	      return iter;
-	    }
+        {
+          if (strcasecmp (ptr->key, key) == 0)
+            {
+              /* Found it, so return the current count */
+              return iter;
+            }
 
-	  iter++;
-	  ptr = ptr->next;
-	}
+          iter++;
+          ptr = ptr->next;
+        }
     }
 
   return iter;
@@ -352,7 +352,7 @@ hashmap_find (hashmap_t map, const char *key)
  */
 ssize_t
 hashmap_return_entry (hashmap_t map, hashmap_iter iter, char **key,
-		      void **data)
+                      void **data)
 {
   unsigned int i;
   struct hashentry_s *ptr;
@@ -371,18 +371,18 @@ hashmap_return_entry (hashmap_t map, hashmap_iter iter, char **key,
     {
       ptr = map->buckets[i].head;
       while (ptr)
-	{
-	  if (count == iter)
-	    {
-	      /* This is the data so return it */
-	      *key = ptr->key;
-	      *data = ptr->data;
-	      return ptr->len;
-	    }
+        {
+          if (count == iter)
+            {
+              /* This is the data so return it */
+              *key = ptr->key;
+              *data = ptr->data;
+              return ptr->len;
+            }
 
-	  ptr = ptr->next;
-	  count++;
-	}
+          ptr = ptr->next;
+          count++;
+        }
     }
 
   return -EFAULT;
@@ -415,7 +415,7 @@ hashmap_search (hashmap_t map, const char *key)
   while (ptr)
     {
       if (strcasecmp (ptr->key, key) == 0)
-	++count;
+        ++count;
 
       /* This entry didn't contain the key; move to the next one */
       ptr = ptr->next;
@@ -450,10 +450,10 @@ hashmap_entry_by_key (hashmap_t map, const char *key, void **data)
   while (ptr)
     {
       if (strcasecmp (ptr->key, key) == 0)
-	{
-	  *data = ptr->data;
-	  return ptr->len;
-	}
+        {
+          *data = ptr->data;
+          return ptr->len;
+        }
 
       ptr = ptr->next;
     }
@@ -487,33 +487,33 @@ hashmap_remove (hashmap_t map, const char *key)
   while (ptr)
     {
       if (strcasecmp (ptr->key, key) == 0)
-	{
-	  /*
-	   * Found the data, now need to remove everything
-	   * and update the hashmap.
-	   */
-	  next = ptr->next;
+        {
+          /*
+           * Found the data, now need to remove everything
+           * and update the hashmap.
+           */
+          next = ptr->next;
 
-	  if (ptr->prev)
-	    ptr->prev->next = ptr->next;
-	  if (ptr->next)
-	    ptr->next->prev = ptr->prev;
+          if (ptr->prev)
+            ptr->prev->next = ptr->next;
+          if (ptr->next)
+            ptr->next->prev = ptr->prev;
 
-	  if (map->buckets[hash].head == ptr)
-	    map->buckets[hash].head = ptr->next;
-	  if (map->buckets[hash].tail == ptr)
-	    map->buckets[hash].tail = ptr->prev;
+          if (map->buckets[hash].head == ptr)
+            map->buckets[hash].head = ptr->next;
+          if (map->buckets[hash].tail == ptr)
+            map->buckets[hash].tail = ptr->prev;
 
-	  safefree (ptr->key);
-	  safefree (ptr->data);
-	  safefree (ptr);
+          safefree (ptr->key);
+          safefree (ptr->data);
+          safefree (ptr);
 
-	  ++deleted;
-	  --map->end_iterator;
+          ++deleted;
+          --map->end_iterator;
 
-	  ptr = next;
-	  continue;
-	}
+          ptr = next;
+          continue;
+        }
 
       /* This entry didn't contain the key; move to the next one */
       ptr = ptr->next;

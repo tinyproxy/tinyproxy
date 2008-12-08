@@ -107,7 +107,7 @@ chomp (char *buffer, size_t length)
 
       /* Stop once we get to zero to prevent wrap-around */
       if (length-- == 0)
-	break;
+        break;
     }
 
   return chars;

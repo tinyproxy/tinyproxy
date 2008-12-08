@@ -26,6 +26,6 @@ typedef enum
 
 extern int insert_acl (char *location, acl_access_t access_type);
 extern int check_acl (int fd, const char *ip_address,
-		      const char *string_address);
+                      const char *string_address);
 
 #endif

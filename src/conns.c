@@ -32,7 +32,7 @@
 
 struct conn_s *
 initialize_conn (int client_fd, const char *ipaddr, const char *string_addr,
-		 const char *sock_ipaddr)
+                 const char *sock_ipaddr)
 {
   struct conn_s *connptr;
   struct buffer_s *cbuffer, *sbuffer;
@@ -110,11 +110,11 @@ destroy_conn (struct conn_s *connptr)
   if (connptr->client_fd != -1)
     if (close (connptr->client_fd) < 0)
       log_message (LOG_INFO, "Client (%d) close message: %s",
-		   connptr->client_fd, strerror (errno));
+                   connptr->client_fd, strerror (errno));
   if (connptr->server_fd != -1)
     if (close (connptr->server_fd) < 0)
       log_message (LOG_INFO, "Server (%d) close message: %s",
-		   connptr->server_fd, strerror (errno));
+                   connptr->server_fd, strerror (errno));
 
   if (connptr->cbuffer)
     delete_buffer (connptr->cbuffer);

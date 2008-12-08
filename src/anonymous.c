@@ -65,7 +65,7 @@ anonymous_insert (char *s)
     {
       anonymous_map = hashmap_create (32);
       if (!anonymous_map)
-	return -1;
+        return -1;
     }
 
   if (hashmap_search (anonymous_map, s) > 0)

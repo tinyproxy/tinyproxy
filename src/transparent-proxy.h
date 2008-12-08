@@ -30,9 +30,9 @@
 #include "reqs.h"
 
 extern int do_transparent_proxy (struct conn_s *connptr,
-				 hashmap_t hashofheaders,
-				 struct request_s *request,
-				 struct config_s *config, char *url);
+                                 hashmap_t hashofheaders,
+                                 struct request_s *request,
+                                 struct config_s *config, char *url);
 
 
 #endif

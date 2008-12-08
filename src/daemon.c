@@ -70,13 +70,13 @@ set_signal_handler (int signo, signal_func * func)
   if (signo == SIGALRM)
     {
 #ifdef SA_INTERRUPT
-      act.sa_flags |= SA_INTERRUPT;	/* SunOS 4.x */
+      act.sa_flags |= SA_INTERRUPT;     /* SunOS 4.x */
 #endif
     }
   else
     {
 #ifdef SA_RESTART
-      act.sa_flags |= SA_RESTART;	/* SVR4, 4.4BSD */
+      act.sa_flags |= SA_RESTART;       /* SVR4, 4.4BSD */
 #endif
     }
 

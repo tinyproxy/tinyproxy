@@ -58,7 +58,7 @@ static struct child_config_s
   int maxspareservers, minspareservers, startservers;
 } child_config;
 
-static unsigned int *servers_waiting;	/* servers waiting for a connection */
+static unsigned int *servers_waiting;   /* servers waiting for a connection */
 
 /*
  * Lock/Unlock the "servers_waiting" variable so that two children cannot
@@ -108,9 +108,9 @@ _child_lock_wait (void)
   while ((rc = fcntl (lock_fd, F_SETLKW, &lock_it)) < 0)
     {
       if (errno == EINTR)
-	continue;
+        continue;
       else
-	return;
+        return;
     }
 }
 
@@ -202,26 +202,26 @@ child_main (struct child_s *ptr)
        * want to use the GDB debugger.
        */
       if (getenv ("TINYPROXY_DEBUG"))
-	{
-	  /* Pause for 10 seconds to allow us to connect debugger */
-	  fprintf (stderr,
-		   "Process has accepted connection: %ld\n",
-		   (long int) ptr->tid);
-	  sleep (10);
-	  fprintf (stderr, "Continuing process: %ld\n", (long int) ptr->tid);
-	}
+        {
+          /* Pause for 10 seconds to allow us to connect debugger */
+          fprintf (stderr,
+                   "Process has accepted connection: %ld\n",
+                   (long int) ptr->tid);
+          sleep (10);
+          fprintf (stderr, "Continuing process: %ld\n", (long int) ptr->tid);
+        }
 #endif
 
       /*
        * Make sure no error occurred...
        */
       if (connfd < 0)
-	{
-	  log_message (LOG_ERR,
-		       "Accept returned an error (%s) ... retrying.",
-		       strerror (errno));
-	  continue;
-	}
+        {
+          log_message (LOG_ERR,
+                       "Accept returned an error (%s) ... retrying.",
+                       strerror (errno));
+          continue;
+        }
 
       ptr->status = T_CONNECTED;
 
@@ -231,38 +231,37 @@ child_main (struct child_s *ptr)
       ptr->connects++;
 
       if (child_config.maxrequestsperchild != 0)
-	{
-	  DEBUG2 ("%u connections so far...", ptr->connects);
+        {
+          DEBUG2 ("%u connections so far...", ptr->connects);
 
-	  if (ptr->connects == child_config.maxrequestsperchild)
-	    {
-	      log_message (LOG_NOTICE,
-			   "Child has reached MaxRequestsPerChild (%u). "
-			   "Killing child.",
-			   ptr->connects);
-	      break;
-	    }
-	}
+          if (ptr->connects == child_config.maxrequestsperchild)
+            {
+              log_message (LOG_NOTICE,
+                           "Child has reached MaxRequestsPerChild (%u). "
+                           "Killing child.", ptr->connects);
+              break;
+            }
+        }
 
       SERVER_COUNT_LOCK ();
       if (*servers_waiting > child_config.maxspareservers)
-	{
-	  /*
-	   * There are too many spare children, kill ourself
-	   * off.
-	   */
-	  log_message (LOG_NOTICE,
-		       "Waiting servers (%d) exceeds MaxSpareServers (%d). "
-		       "Killing child.",
-		       *servers_waiting, child_config.maxspareservers);
-	  SERVER_COUNT_UNLOCK ();
+        {
+          /*
+           * There are too many spare children, kill ourself
+           * off.
+           */
+          log_message (LOG_NOTICE,
+                       "Waiting servers (%d) exceeds MaxSpareServers (%d). "
+                       "Killing child.",
+                       *servers_waiting, child_config.maxspareservers);
+          SERVER_COUNT_UNLOCK ();
 
-	  break;
-	}
+          break;
+        }
       else
-	{
-	  SERVER_COUNT_UNLOCK ();
-	}
+        {
+          SERVER_COUNT_UNLOCK ();
+        }
 
       SERVER_INC ();
     }
@@ -283,7 +282,7 @@ child_make (struct child_s *ptr)
   pid_t pid;
 
   if ((pid = fork ()) > 0)
-    return pid;			/* parent */
+    return pid;                 /* parent */
 
   /*
    * Reset the SIGNALS so that the child can be reaped.
@@ -292,7 +291,7 @@ child_make (struct child_s *ptr)
   set_signal_handler (SIGTERM, SIG_DFL);
   set_signal_handler (SIGHUP, SIG_DFL);
 
-  child_main (ptr);		/* never returns */
+  child_main (ptr);             /* never returns */
   return -1;
 }
 
@@ -312,20 +311,20 @@ child_pool_create (void)
   if (child_config.maxclients == 0)
     {
       log_message (LOG_ERR,
-		   "child_pool_create: \"MaxClients\" must be "
-		   "greater than zero.");
+                   "child_pool_create: \"MaxClients\" must be "
+                   "greater than zero.");
       return -1;
     }
   if (child_config.startservers == 0)
     {
       log_message (LOG_ERR,
-		   "child_pool_create: \"StartServers\" must be "
-		   "greater than zero.");
+                   "child_pool_create: \"StartServers\" must be "
+                   "greater than zero.");
       return -1;
     }
 
   child_ptr = calloc_shared_memory (child_config.maxclients,
-				    sizeof (struct child_s));
+                                    sizeof (struct child_s));
   if (!child_ptr)
     {
       log_message (LOG_ERR, "Could not allocate memory for children.");
@@ -349,9 +348,8 @@ child_pool_create (void)
   if (child_config.startservers > child_config.maxclients)
     {
       log_message (LOG_WARNING,
-		   "Can not start more than \"MaxClients\" servers. "
-		   "Starting %u servers instead.",
-		   child_config.maxclients);
+                   "Can not start more than \"MaxClients\" servers. "
+                   "Starting %u servers instead.", child_config.maxclients);
       child_config.startservers = child_config.maxclients;
     }
 
@@ -364,25 +362,25 @@ child_pool_create (void)
   for (i = 0; i != child_config.startservers; i++)
     {
       DEBUG2 ("Trying to create child %d of %d", i + 1,
-	      child_config.startservers);
+              child_config.startservers);
       child_ptr[i].status = T_WAITING;
       child_ptr[i].tid = child_make (&child_ptr[i]);
 
       if (child_ptr[i].tid < 0)
-	{
-	  log_message (LOG_WARNING,
-		       "Could not create child number %d of %d",
-		       i, child_config.startservers);
-	  return -1;
-	}
+        {
+          log_message (LOG_WARNING,
+                       "Could not create child number %d of %d",
+                       i, child_config.startservers);
+          return -1;
+        }
       else
-	{
-	  log_message (LOG_INFO,
-		       "Creating child number %d of %d ...",
-		       i + 1, child_config.startservers);
+        {
+          log_message (LOG_INFO,
+                       "Creating child number %d of %d ...",
+                       i + 1, child_config.startservers);
 
-	  SERVER_INC ();
-	}
+          SERVER_INC ();
+        }
     }
 
   log_message (LOG_INFO, "Finished creating all children.");
@@ -402,62 +400,62 @@ child_main_loop (void)
   while (1)
     {
       if (config.quit)
-	return;
+        return;
 
       /* If there are not enough spare servers, create more */
       SERVER_COUNT_LOCK ();
       if (*servers_waiting < child_config.minspareservers)
-	{
-	  log_message (LOG_NOTICE,
-		       "Waiting servers (%d) is less than MinSpareServers (%d). "
-		       "Creating new child.",
-		       *servers_waiting, child_config.minspareservers);
+        {
+          log_message (LOG_NOTICE,
+                       "Waiting servers (%d) is less than MinSpareServers (%d). "
+                       "Creating new child.",
+                       *servers_waiting, child_config.minspareservers);
 
-	  SERVER_COUNT_UNLOCK ();
+          SERVER_COUNT_UNLOCK ();
 
-	  for (i = 0; i != child_config.maxclients; i++)
-	    {
-	      if (child_ptr[i].status == T_EMPTY)
-		{
-		  child_ptr[i].status = T_WAITING;
-		  child_ptr[i].tid = child_make (&child_ptr[i]);
-		  if (child_ptr[i].tid < 0)
-		    {
-		      log_message (LOG_NOTICE, "Could not create child");
+          for (i = 0; i != child_config.maxclients; i++)
+            {
+              if (child_ptr[i].status == T_EMPTY)
+                {
+                  child_ptr[i].status = T_WAITING;
+                  child_ptr[i].tid = child_make (&child_ptr[i]);
+                  if (child_ptr[i].tid < 0)
+                    {
+                      log_message (LOG_NOTICE, "Could not create child");
 
-		      child_ptr[i].status = T_EMPTY;
-		      break;
-		    }
+                      child_ptr[i].status = T_EMPTY;
+                      break;
+                    }
 
-		  SERVER_INC ();
+                  SERVER_INC ();
 
-		  break;
-		}
-	    }
-	}
+                  break;
+                }
+            }
+        }
       else
-	{
-	  SERVER_COUNT_UNLOCK ();
-	}
+        {
+          SERVER_COUNT_UNLOCK ();
+        }
 
       sleep (5);
 
       /* Handle log rotation if it was requested */
       if (received_sighup)
-	{
-	  truncate_log_file ();
+        {
+          truncate_log_file ();
 
 #ifdef FILTER_ENABLE
-	  if (config.filter)
-	    {
-	      filter_destroy ();
-	      filter_init ();
-	    }
-	  log_message (LOG_NOTICE, "Re-reading filter file.");
+          if (config.filter)
+            {
+              filter_destroy ();
+              filter_init ();
+            }
+          log_message (LOG_NOTICE, "Re-reading filter file.");
 #endif /* FILTER_ENABLE */
 
-	  received_sighup = FALSE;
-	}
+          received_sighup = FALSE;
+        }
     }
 }
 
@@ -472,7 +470,7 @@ child_kill_children (void)
   for (i = 0; i != child_config.maxclients; i++)
     {
       if (child_ptr[i].status != T_EMPTY)
-	kill (child_ptr[i].tid, SIGTERM);
+        kill (child_ptr[i].tid, SIGTERM);
     }
 }
 

@@ -36,10 +36,10 @@
 
 struct bufline_s
 {
-  unsigned char *string;	/* the actual string of data */
-  struct bufline_s *next;	/* pointer to next in linked list */
-  size_t length;		/* length of the string of data */
-  size_t pos;			/* start sending from this offset */
+  unsigned char *string;        /* the actual string of data */
+  struct bufline_s *next;       /* pointer to next in linked list */
+  size_t length;                /* length of the string of data */
+  size_t pos;                   /* start sending from this offset */
 };
 
 /*
@@ -48,9 +48,9 @@ struct bufline_s
  */
 struct buffer_s
 {
-  struct bufline_s *head;	/* top of the buffer */
-  struct bufline_s *tail;	/* bottom of the buffer */
-  size_t size;			/* total size of the buffer */
+  struct bufline_s *head;       /* top of the buffer */
+  struct bufline_s *tail;       /* bottom of the buffer */
+  size_t size;                  /* total size of the buffer */
 };
 
 /*
@@ -244,40 +244,40 @@ read_buffer (int fd, struct buffer_s * buffptr)
   if (bytesin > 0)
     {
       if (add_to_buffer (buffptr, buffer, bytesin) < 0)
-	{
-	  log_message (LOG_ERR, "readbuff: add_to_buffer() error.");
-	  bytesin = -1;
-	}
+        {
+          log_message (LOG_ERR, "readbuff: add_to_buffer() error.");
+          bytesin = -1;
+        }
     }
   else
     {
       if (bytesin == 0)
-	{
-	  /* connection was closed by client */
-	  bytesin = -1;
-	}
+        {
+          /* connection was closed by client */
+          bytesin = -1;
+        }
       else
-	{
-	  switch (errno)
-	    {
+        {
+          switch (errno)
+            {
 #ifdef EWOULDBLOCK
-	    case EWOULDBLOCK:
+            case EWOULDBLOCK:
 #else
 #  ifdef EAGAIN
-	    case EAGAIN:
+            case EAGAIN:
 #  endif
 #endif
-	    case EINTR:
-	      bytesin = 0;
-	      break;
-	    default:
-	      log_message (LOG_ERR,
-			   "readbuff: recv() error \"%s\" on file descriptor %d",
-			   strerror (errno), fd);
-	      bytesin = -1;
-	      break;
-	    }
-	}
+            case EINTR:
+              bytesin = 0;
+              break;
+            default:
+              log_message (LOG_ERR,
+                           "readbuff: recv() error \"%s\" on file descriptor %d",
+                           strerror (errno), fd);
+              bytesin = -1;
+              break;
+            }
+        }
     }
 
   safefree (buffer);
@@ -306,41 +306,40 @@ write_buffer (int fd, struct buffer_s * buffptr)
 
   bytessent =
     send (fd, line->string + line->pos, line->length - line->pos,
-	  MSG_NOSIGNAL);
+          MSG_NOSIGNAL);
 
   if (bytessent >= 0)
     {
       /* bytes sent, adjust buffer */
       line->pos += bytessent;
       if (line->pos == line->length)
-	free_line (remove_from_buffer (buffptr));
+        free_line (remove_from_buffer (buffptr));
       return bytessent;
     }
   else
     {
       switch (errno)
-	{
+        {
 #ifdef EWOULDBLOCK
-	case EWOULDBLOCK:
+        case EWOULDBLOCK:
 #else
 #  ifdef EAGAIN
-	case EAGAIN:
+        case EAGAIN:
 #  endif
 #endif
-	case EINTR:
-	  return 0;
-	case ENOBUFS:
-	case ENOMEM:
-	  log_message (LOG_ERR,
-		       "writebuff: write() error [NOBUFS/NOMEM] \"%s\" on "
-		       "file descriptor %d",
-		       strerror (errno), fd);
-	  return 0;
-	default:
-	  log_message (LOG_ERR,
-		       "writebuff: write() error \"%s\" on file descriptor %d",
-		       strerror (errno), fd);
-	  return -1;
-	}
+        case EINTR:
+          return 0;
+        case ENOBUFS:
+        case ENOMEM:
+          log_message (LOG_ERR,
+                       "writebuff: write() error [NOBUFS/NOMEM] \"%s\" on "
+                       "file descriptor %d", strerror (errno), fd);
+          return 0;
+        default:
+          log_message (LOG_ERR,
+                       "writebuff: write() error \"%s\" on file descriptor %d",
+                       strerror (errno), fd);
+          return -1;
+        }
     }
 }
