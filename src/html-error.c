@@ -275,7 +275,7 @@ add_standard_vars (struct conn_s *connptr)
 	    gmtime (&global_time));
   add_error_variable (connptr, "date", timebuf);
 
-  add_error_variable (connptr, "website", "http://tinyproxy.banu.com/");
+  add_error_variable (connptr, "website", "http://www.banu.com/tinyproxy/");
   add_error_variable (connptr, "version", VERSION);
   add_error_variable (connptr, "package", PACKAGE);
 
