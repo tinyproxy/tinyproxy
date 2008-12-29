@@ -34,7 +34,10 @@
 #define IPV6_LEN 16
 
 enum acl_type
-{ ACL_STRING, ACL_NUMERIC };
+{
+  ACL_STRING,
+  ACL_NUMERIC,
+};
 
 /*
  * Hold the information about a particular access control.  We store
