@@ -49,7 +49,7 @@ init_stats(void)
 	if (stats == MAP_FAILED)
 		return;
 
-	memset(stats, 0, sizeof(struct stat));
+	memset(stats, 0, sizeof(struct stat_s));
 }
 
 /*
