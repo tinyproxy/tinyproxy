@@ -14,9 +14,7 @@ AH_TEMPLATE([TARGET_SYSTEM],
 AC_DEFINE_UNQUOTED(TARGET_SYSTEM, ["$target"])
 
 dnl Check if we're compiling on a weird platform :)
-AC_AIX
-AC_GNU_SOURCE
-AC_MINIX
+AC_USE_SYSTEM_EXTENSIONS
 
 dnl
 dnl Command line options
