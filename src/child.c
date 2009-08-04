@@ -179,7 +179,7 @@ child_main (struct child_s *ptr)
   struct sockaddr *cliaddr;
   socklen_t clilen;
 
-  cliaddr = safemalloc (addrlen);
+  cliaddr = (struct sockaddr *)safemalloc (addrlen);
   if (!cliaddr)
     {
       log_message (LOG_CRIT, "Could not allocate memory for child address.");
