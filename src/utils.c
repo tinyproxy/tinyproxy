@@ -37,7 +37,7 @@ int
 send_http_message (struct conn_s *connptr, int http_code,
                    const char *error_title, const char *message)
 {
-  static char *headers[] = {
+  static const char *headers[] = {
     "Server: " PACKAGE "/" VERSION,
     "Content-type: text/html",
     "Connection: close"
