@@ -323,7 +323,7 @@ child_pool_create (void)
       return -1;
     }
 
-  child_ptr = calloc_shared_memory (child_config.maxclients,
+  child_ptr = (struct child_s *)calloc_shared_memory (child_config.maxclients,
                                     sizeof (struct child_s));
   if (!child_ptr)
     {
@@ -331,7 +331,7 @@ child_pool_create (void)
       return -1;
     }
 
-  servers_waiting = malloc_shared_memory (sizeof (unsigned int));
+  servers_waiting = (unsigned int *)malloc_shared_memory (sizeof (unsigned int));
   if (servers_waiting == MAP_FAILED)
     {
       log_message (LOG_ERR, "Could not allocate memory for child counting.");
