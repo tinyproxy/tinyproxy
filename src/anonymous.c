@@ -55,7 +55,7 @@ anonymous_search (const char *s)
  * successful.
  */
 int
-anonymous_insert (char *s)
+anonymous_insert (const char *s)
 {
   char data = 1;
 
