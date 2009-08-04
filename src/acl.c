@@ -324,7 +324,7 @@ check_numeric_acl (const struct acl_s *acl, const char *ip)
 }
 
 /*
- * Checks whether file descriptor is allowed.
+ * Checks whether a connection is allowed.
  *
  * Returns:
  *     1 if allowed
