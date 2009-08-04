@@ -40,7 +40,7 @@ is_anonymous_enabled (void)
  * zero if the string was found, zero if it wasn't and negative upon error.
  */
 int
-anonymous_search (char *s)
+anonymous_search (const char *s)
 {
   assert (s != NULL);
   assert (anonymous_map != NULL);
