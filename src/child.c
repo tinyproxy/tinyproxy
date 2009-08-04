@@ -54,8 +54,8 @@ static struct child_s *child_ptr;
 
 static struct child_config_s
 {
-  int maxclients, maxrequestsperchild;
-  int maxspareservers, minspareservers, startservers;
+  unsigned int maxclients, maxrequestsperchild;
+  unsigned int maxspareservers, minspareservers, startservers;
 } child_config;
 
 static unsigned int *servers_waiting;   /* servers waiting for a connection */
@@ -142,7 +142,7 @@ _child_lock_release (void)
  * Set the configuration values for the various child related settings.
  */
 short int
-child_configure (child_config_t type, int val)
+child_configure (child_config_t type, unsigned int val)
 {
   switch (type)
     {

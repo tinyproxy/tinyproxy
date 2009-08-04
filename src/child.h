@@ -36,6 +36,6 @@ extern void child_close_sock (void);
 extern void child_main_loop (void);
 extern void child_kill_children (void);
 
-extern short int child_configure (child_config_t type, int val);
+extern short int child_configure (child_config_t type, unsigned int val);
 
 #endif
