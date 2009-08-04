@@ -60,7 +60,7 @@ vector_create (void)
 {
   vector_t vector;
 
-  vector = safemalloc (sizeof (struct vector_s));
+  vector = (vector_t)safemalloc (sizeof (struct vector_s));
   if (!vector)
     return NULL;
 
