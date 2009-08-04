@@ -241,7 +241,7 @@ const unsigned int ndirectives = sizeof (directives) / sizeof (directives[0]);
 int
 config_compile (void)
 {
-  int i, r;
+  unsigned int i, r;
 
   for (i = 0; i != ndirectives; ++i)
     {
