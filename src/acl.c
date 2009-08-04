@@ -334,7 +334,7 @@ int
 check_acl (const char *ip, const char *host)
 {
   struct acl_s *acl;
-  int perm;
+  int perm = 0;
   size_t i;
 
   assert (ip != NULL);
