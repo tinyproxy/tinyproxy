@@ -108,7 +108,7 @@ extern int open_log_file (const char *file);
 extern void close_log_file (void);
 extern void truncate_log_file (void);
 
-extern void log_message (int level, char *fmt, ...);
+extern void log_message (int level, const char *fmt, ...);
 extern void set_log_level (int level);
 extern void send_stored_logs (void);
 

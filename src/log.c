@@ -103,7 +103,7 @@ set_log_level (int level)
  * This routine logs messages to either the log file or the syslog function.
  */
 void
-log_message (int level, char *fmt, ...)
+log_message (int level, const char *fmt, ...)
 {
   va_list args;
   time_t nowtime;
