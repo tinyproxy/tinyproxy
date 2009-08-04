@@ -113,7 +113,7 @@ vector_delete (vector_t vector)
 #define INSERT_APPEND 1
 
 static int
-vector_insert (vector_t vector, void *data, ssize_t len, int pos)
+vector_insert (vector_t vector, void *data, size_t len, int pos)
 {
   struct vectorentry_s *entry;
 
