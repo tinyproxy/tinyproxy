@@ -248,7 +248,7 @@ config_compile (void)
       assert (directives[i].handler);
       assert (!directives[i].cre);
 
-      directives[i].cre = safemalloc (sizeof (regex_t));
+      directives[i].cre = (regex_t *)safemalloc (sizeof (regex_t));
       if (!directives[i].cre)
         return -1;
 
