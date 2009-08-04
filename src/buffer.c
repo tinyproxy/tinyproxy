@@ -236,7 +236,7 @@ read_buffer (int fd, struct buffer_s * buffptr)
   if (buffptr->size >= MAXBUFFSIZE)
     return 0;
 
-  buffer = safemalloc (READ_BUFFER_SIZE);
+  buffer = (unsigned char *)safemalloc (READ_BUFFER_SIZE);
   if (!buffer)
     {
       return -ENOMEM;
