@@ -1623,7 +1623,7 @@ handle_connection (int fd)
       return;
     }
 
-  if (check_acl (fd, peer_ipaddr, peer_string) <= 0)
+  if (check_acl (peer_ipaddr, peer_string) <= 0)
     {
       update_stats (STAT_DENIED);
       indicate_http_error (connptr, 403, "Access denied",

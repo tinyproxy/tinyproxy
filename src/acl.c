@@ -331,13 +331,12 @@ check_numeric_acl (const struct acl_s *acl, const char *ip)
  *     0 if denied
  */
 int
-check_acl (int fd, const char *ip, const char *host)
+check_acl (const char *ip, const char *host)
 {
   struct acl_s *acl;
   int perm;
   size_t i;
 
-  assert (fd >= 0);
   assert (ip != NULL);
   assert (host != NULL);
 
