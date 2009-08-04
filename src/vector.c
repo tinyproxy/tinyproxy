@@ -121,7 +121,7 @@ vector_insert (vector_t vector, void *data, size_t len, int pos)
       (pos != INSERT_PREPEND && pos != INSERT_APPEND))
     return -EINVAL;
 
-  entry = safemalloc (sizeof (struct vectorentry_s));
+  entry = (struct vectorentry_s *)safemalloc (sizeof (struct vectorentry_s));
   if (!entry)
     return -ENOMEM;
 
