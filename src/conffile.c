@@ -323,7 +323,7 @@ get_string_arg (const char *line, regmatch_t * match)
   assert (line);
   assert (len > 0);
 
-  p = safemalloc (len + 1);
+  p = (char *)safemalloc (len + 1);
   if (!p)
     return NULL;
 
