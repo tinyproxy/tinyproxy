@@ -163,7 +163,7 @@ vector_insert (vector_t vector, void *data, size_t len, int pos)
  * arguments.
  */
 int
-vector_append (vector_t vector, void *data, ssize_t len)
+vector_append (vector_t vector, void *data, size_t len)
 {
   return vector_insert (vector, data, len, INSERT_APPEND);
 }

@@ -49,7 +49,7 @@ extern "C"
  * Returns: negative on error
  *          0 upon successful insert.
  */
-  extern int vector_append (vector_t vector, void *data, ssize_t len);
+  extern int vector_append (vector_t vector, void *data, size_t len);
   extern int vector_prepend (vector_t vector, void *data, ssize_t len);
 
 /*
