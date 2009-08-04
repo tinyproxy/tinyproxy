@@ -167,11 +167,9 @@ struct
 } directives[] =
 {
   /* comments */
-  {
-  BEGIN "#", handle_nop},
-    /* blank lines */
-  {
-  "^[[:space:]]+$", handle_nop},
+  { BEGIN "#", handle_nop },
+  /* blank lines */
+  { "^[[:space:]]+$", handle_nop },
     /* string arguments */
     STDCONF ("logfile", STR, handle_logfile),
     STDCONF ("pidfile", STR, handle_pidfile),
@@ -219,12 +217,12 @@ struct
     STDCONF ("reversepath", STR WS "(" STR ")?", handle_reversepath),
 #endif
 #ifdef UPSTREAM_SUPPORT
-    /* upstream is rather complicated */
+  /* upstream is rather complicated */
+  { BEGIN "(no" WS "upstream)" WS STR END, handle_upstream_no },
   {
-  BEGIN "(no" WS "upstream)" WS STR END, handle_upstream_no},
-  {
-  BEGIN "(upstream)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR ")?" END,
-      handle_upstream},
+    BEGIN "(upstream)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR ")?" END,
+    handle_upstream
+  },
 #endif
     /* loglevel */
 STDCONF ("loglevel", "(critical|error|warning|notice|connect|info)",
