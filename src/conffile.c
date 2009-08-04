@@ -370,17 +370,17 @@ set_bool_arg (unsigned int *var, const char *line, regmatch_t * match)
   return 0;
 }
 
-static inline long int
+static inline unsigned long int
 get_int_arg (const char *line, regmatch_t * match)
 {
   assert (line);
   assert (match && match->rm_so != -1);
 
-  return strtol (line + match->rm_so, NULL, 0);
+  return strtoul (line + match->rm_so, NULL, 0);
 }
 
 static int
-set_int_arg (int long *var, const char *line, regmatch_t * match)
+set_int_arg (unsigned long int *var, const char *line, regmatch_t * match)
 {
   assert (var);
   assert (line);
@@ -505,7 +505,7 @@ HANDLE_FUNC (handle_bindsame)
 static
 HANDLE_FUNC (handle_port)
 {
-  return set_int_arg ((long int *) &conf->port, line, &match[2]);
+  return set_int_arg ((unsigned long int *) &conf->port, line, &match[2]);
 }
 
 static
@@ -546,7 +546,7 @@ HANDLE_FUNC (handle_maxrequestsperchild)
 static
 HANDLE_FUNC (handle_timeout)
 {
-  return set_int_arg ((long int *) &conf->idletimeout, line, &match[2]);
+  return set_int_arg ((unsigned long int *) &conf->idletimeout, line, &match[2]);
 }
 
 static
@@ -627,7 +627,7 @@ HANDLE_FUNC (handle_errorfile)
    * present.  This is why the "string" is located at
    * match[4] (rather than the more intuitive match[3].
    */
-  long int err = get_int_arg (line, &match[2]);
+  unsigned long int err = get_int_arg (line, &match[2]);
   char *page = get_string_arg (line, &match[4]);
 
   add_new_errorpage (page, err);
@@ -774,7 +774,7 @@ HANDLE_FUNC (handle_upstream)
   ip = get_string_arg (line, &match[2]);
   if (!ip)
     return -1;
-  port = get_int_arg (line, &match[7]);
+  port = (int)get_int_arg (line, &match[7]);
 
   if (match[9].rm_so != -1)
     {
