@@ -66,10 +66,12 @@ makenewline (unsigned char *data, size_t length)
   assert (data != NULL);
   assert (length > 0);
 
-  if (!(newline = safemalloc (sizeof (struct bufline_s))))
+  newline = safemalloc (sizeof (struct bufline_s));
+  if (!newline)
     return NULL;
 
-  if (!(newline->string = safemalloc (length)))
+  newline->string = safemalloc (length);
+  if (!newline->string)
     {
       safefree (newline);
       return NULL;
