@@ -347,7 +347,7 @@ check_acl (int fd, const char *ip, const char *host)
   if (!access_list)
     return 1;
 
-  for (i = 0; i != vector_length (access_list); ++i)
+  for (i = 0; i != (size_t)vector_length (access_list); ++i)
     {
       acl = vector_getentry (access_list, i, NULL);
       switch (acl->type)
