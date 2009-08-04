@@ -246,6 +246,7 @@ if test x"$debug_enabled" = x"yes" ; then
         CFLAGS="-Wshadow -Wcast-qual -Wcast-align -Wstrict-prototypes $CFLAGS"
         CFLAGS="-Wmissing-prototypes -Wmissing-declarations $CFLAGS"
         CFLAGS="-Wpointer-arith -Waggregate-return -Wnested-externs $CFLAGS"
+        CFLAGS="-Wwrite-strings -Wcomment -Wextra -Wc++-compat $CFLAGS"
     fi
     CFLAGS="-Wall -g $CFLAGS"
 else
