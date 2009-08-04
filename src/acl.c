@@ -349,7 +349,7 @@ check_acl (int fd, const char *ip, const char *host)
 
   for (i = 0; i != (size_t)vector_length (access_list); ++i)
     {
-      acl = vector_getentry (access_list, i, NULL);
+      acl = (struct acl_s *)vector_getentry (access_list, i, NULL);
       switch (acl->type)
         {
         case ACL_STRING:
