@@ -104,15 +104,17 @@ filter_init (void)
                 continue;
 
               if (!p)           /* head of list */
-                fl = p = safecalloc (1, sizeof (struct filter_list));
+                fl = p = (struct filter_list *)safecalloc (1,
+                                                   sizeof (struct filter_list));
               else
                 {               /* next entry */
-                  p->next = safecalloc (1, sizeof (struct filter_list));
+                  p->next = (struct filter_list *)safecalloc (1,
+                                                   sizeof (struct filter_list));
                   p = p->next;
                 }
 
               p->pat = safestrdup (s);
-              p->cpat = safemalloc (sizeof (regex_t));
+              p->cpat = (regex_t *)safemalloc (sizeof (regex_t));
               if ((err = regcomp (p->cpat, p->pat, cflags)) != 0)
                 {
                   fprintf (stderr, "Bad regex in %s: %s\n",
