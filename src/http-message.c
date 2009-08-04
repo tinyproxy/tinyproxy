@@ -186,7 +186,8 @@ http_message_set_body (http_message_t msg, const char *body, size_t len)
  * Add headers to the structure.
  */
 int
-http_message_add_headers (http_message_t msg, char **headers, int num_headers)
+http_message_add_headers (http_message_t msg, const char **headers,
+                          int num_headers)
 {
   char **new_headers;
   int i;
