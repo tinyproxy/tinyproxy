@@ -170,51 +170,51 @@ struct
   { BEGIN "#", handle_nop, NULL },
   /* blank lines */
   { "^[[:space:]]+$", handle_nop, NULL },
-    /* string arguments */
-    STDCONF ("logfile", STR, handle_logfile),
-    STDCONF ("pidfile", STR, handle_pidfile),
-    STDCONF ("anonymous", STR, handle_anonymous),
-    STDCONF ("viaproxyname", STR, handle_viaproxyname),
-    STDCONF ("defaulterrorfile", STR, handle_defaulterrorfile),
-    STDCONF ("statfile", STR, handle_statfile),
-    STDCONF ("stathost", STR, handle_stathost),
-    STDCONF ("xtinyproxy", STR, handle_xtinyproxy),
-    /* boolean arguments */
-    STDCONF ("syslog", BOOL, handle_syslog),
-    STDCONF ("bindsame", BOOL, handle_bindsame),
-    /* integer arguments */
-    STDCONF ("port", INT, handle_port),
-    STDCONF ("maxclients", INT, handle_maxclients),
-    STDCONF ("maxspareservers", INT, handle_maxspareservers),
-    STDCONF ("minspareservers", INT, handle_minspareservers),
-    STDCONF ("startservers", INT, handle_startservers),
-    STDCONF ("maxrequestsperchild", INT, handle_maxrequestsperchild),
-    STDCONF ("timeout", INT, handle_timeout),
-    STDCONF ("connectport", INT, handle_connectport),
-    /* alphanumeric arguments */
-    STDCONF ("user", ALNUM, handle_user),
-    STDCONF ("group", ALNUM, handle_group),
-    /* ip arguments */
-    STDCONF ("listen", IP, handle_listen),
-    STDCONF ("allow", "(" IPMASK "|" ALNUM ")", handle_allow),
-    STDCONF ("deny", "(" IPMASK "|" ALNUM ")", handle_deny),
-    STDCONF ("bind", IP, handle_bind),
-    /* error files */
-    STDCONF ("errorfile", INT WS STR, handle_errorfile),
+  /* string arguments */
+  STDCONF ("logfile", STR, handle_logfile),
+  STDCONF ("pidfile", STR, handle_pidfile),
+  STDCONF ("anonymous", STR, handle_anonymous),
+  STDCONF ("viaproxyname", STR, handle_viaproxyname),
+  STDCONF ("defaulterrorfile", STR, handle_defaulterrorfile),
+  STDCONF ("statfile", STR, handle_statfile),
+  STDCONF ("stathost", STR, handle_stathost),
+  STDCONF ("xtinyproxy", STR, handle_xtinyproxy),
+  /* boolean arguments */
+  STDCONF ("syslog", BOOL, handle_syslog),
+  STDCONF ("bindsame", BOOL, handle_bindsame),
+  /* integer arguments */
+  STDCONF ("port", INT, handle_port),
+  STDCONF ("maxclients", INT, handle_maxclients),
+  STDCONF ("maxspareservers", INT, handle_maxspareservers),
+  STDCONF ("minspareservers", INT, handle_minspareservers),
+  STDCONF ("startservers", INT, handle_startservers),
+  STDCONF ("maxrequestsperchild", INT, handle_maxrequestsperchild),
+  STDCONF ("timeout", INT, handle_timeout),
+  STDCONF ("connectport", INT, handle_connectport),
+  /* alphanumeric arguments */
+  STDCONF ("user", ALNUM, handle_user),
+  STDCONF ("group", ALNUM, handle_group),
+  /* ip arguments */
+  STDCONF ("listen", IP, handle_listen),
+  STDCONF ("allow", "(" IPMASK "|" ALNUM ")", handle_allow),
+  STDCONF ("deny", "(" IPMASK "|" ALNUM ")", handle_deny),
+  STDCONF ("bind", IP, handle_bind),
+  /* error files */
+  STDCONF ("errorfile", INT WS STR, handle_errorfile),
 #ifdef FILTER_ENABLE
-    /* filtering */
-    STDCONF ("filter", STR, handle_filter),
-    STDCONF ("filterurls", BOOL, handle_filterurls),
-    STDCONF ("filterextended", BOOL, handle_filterextended),
-    STDCONF ("filterdefaultdeny", BOOL, handle_filterdefaultdeny),
-    STDCONF ("filtercasesensitive", BOOL, handle_filtercasesensitive),
+  /* filtering */
+  STDCONF ("filter", STR, handle_filter),
+  STDCONF ("filterurls", BOOL, handle_filterurls),
+  STDCONF ("filterextended", BOOL, handle_filterextended),
+  STDCONF ("filterdefaultdeny", BOOL, handle_filterdefaultdeny),
+  STDCONF ("filtercasesensitive", BOOL, handle_filtercasesensitive),
 #endif
 #ifdef REVERSE_SUPPORT
-    /* Reverse proxy arguments */
-    STDCONF ("reversebaseurl", STR, handle_reversebaseurl),
-    STDCONF ("reverseonly", BOOL, handle_reverseonly),
-    STDCONF ("reversemagic", BOOL, handle_reversemagic),
-    STDCONF ("reversepath", STR WS "(" STR ")?", handle_reversepath),
+  /* Reverse proxy arguments */
+  STDCONF ("reversebaseurl", STR, handle_reversebaseurl),
+  STDCONF ("reverseonly", BOOL, handle_reverseonly),
+  STDCONF ("reversemagic", BOOL, handle_reversemagic),
+  STDCONF ("reversepath", STR WS "(" STR ")?", handle_reversepath),
 #endif
 #ifdef UPSTREAM_SUPPORT
   /* upstream is rather complicated */
@@ -225,9 +225,11 @@ struct
     NULL
   },
 #endif
-    /* loglevel */
-STDCONF ("loglevel", "(critical|error|warning|notice|connect|info)",
-             handle_loglevel)};
+   /* loglevel */
+  STDCONF ("loglevel", "(critical|error|warning|notice|connect|info)",
+           handle_loglevel)
+};
+
 const unsigned int ndirectives = sizeof (directives) / sizeof (directives[0]);
 
 /*
