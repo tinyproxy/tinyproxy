@@ -113,7 +113,8 @@ new_buffer (void)
 {
   struct buffer_s *buffptr;
 
-  if (!(buffptr = safemalloc (sizeof (struct buffer_s))))
+  buffptr = safemalloc (sizeof (struct buffer_s));
+  if (!buffptr)
     return NULL;
 
   /*
