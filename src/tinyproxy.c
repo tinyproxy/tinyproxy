@@ -267,7 +267,7 @@ main (int argc, char **argv)
   else
     {
       fprintf (stderr,
-               "%s: Either define a logfile or enable syslog logging\n",
+               "%s: Either define a logfile or enable syslog logging.\n",
                argv[0]);
       exit (EX_SOFTWARE);
     }
@@ -392,7 +392,7 @@ main (int argc, char **argv)
                 {
                   fprintf (stderr,
                            "%s: Unable to find "
-                           "user \"%s\".", argv[0], config.user);
+                           "user \"%s\".\n", argv[0], config.user);
                   exit (EX_NOUSER);
                 }
               uid = thisuser->pw_uid;
@@ -400,7 +400,7 @@ main (int argc, char **argv)
           if (setuid (uid) < 0)
             {
               fprintf (stderr,
-                       "%s: Unable to change to user \"%s\".",
+                       "%s: Unable to change to user \"%s\".\n",
                        argv[0], config.user);
               exit (EX_CANTCREAT);
             }
@@ -415,7 +415,7 @@ main (int argc, char **argv)
 
   if (child_pool_create () < 0)
     {
-      fprintf (stderr, "%s: Could not create the pool of children.", argv[0]);
+      fprintf (stderr, "%s: Could not create the pool of children.\n", argv[0]);
       exit (EX_SOFTWARE);
     }
 
