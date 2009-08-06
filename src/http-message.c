@@ -46,7 +46,7 @@ struct http_message_s
    */
   struct
   {
-    char **strings;
+    const char **strings;
     unsigned int total;
     unsigned int used;
   } headers;
@@ -189,7 +189,7 @@ int
 http_message_add_headers (http_message_t msg, const char **headers,
                           int num_headers)
 {
-  char **new_headers;
+  const char **new_headers;
   int i;
 
   /* Check for valid arguments */
