@@ -67,15 +67,15 @@
 /*
  * Codify the test for the carriage return and new line characters.
  */
-#define CHECK_CRLF(header, len) \
-  ((len == 1 && header[0] == '\n') || \
-   (len == 2 && header[0] == '\r' && header[1] == '\n'))
+#define CHECK_CRLF(header, len)                                 \
+  (((len) == 1 && header[0] == '\n') ||                         \
+   ((len) == 2 && header[0] == '\r' && header[1] == '\n'))
 
 /*
  * Codify the test for header fields folded over multiple lines.
  */
-#define CHECK_LWS(header, len) \
-  (len >= 1 && (header[0] == ' ' || header[0] == '\t'))
+#define CHECK_LWS(header, len)                                  \
+  ((len) > 0 && (header[0] == ' ' || header[0] == '\t'))
 
 /*
  * This is a global variable which stores which ports are allowed by
