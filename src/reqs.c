@@ -72,6 +72,12 @@
    (len == 2 && header[0] == '\r' && header[1] == '\n'))
 
 /*
+ * Codify the test for header fields folded over multiple lines.
+ */
+#define CHECK_LWS(header, len) \
+  (len >= 1 && (header[0] == ' ' || header[0] == '\t'))
+
+/*
  * This is a global variable which stores which ports are allowed by
  * the CONNECT method.  It's a security thing.
  */
@@ -881,8 +887,11 @@ add_header_to_connection (hashmap_t hashofheaders, char *header, size_t len)
 static int
 get_all_headers (int fd, hashmap_t hashofheaders)
 {
-  char *header;
-  ssize_t len;
+  char *line = NULL;
+  char *header = NULL;
+  char *tmp;
+  ssize_t linelen;
+  ssize_t len = 0;
   unsigned int double_cgi = FALSE;      /* boolean */
 
   assert (fd >= 0);
@@ -890,19 +899,40 @@ get_all_headers (int fd, hashmap_t hashofheaders)
 
   for (;;)
     {
-      if ((len = readline (fd, &header)) <= 0)
+      if ((linelen = readline (fd, &line)) <= 0)
         {
           safefree (header);
+          safefree (line);
           return -1;
+        }
+
+      /*
+       * If we received a CR LF or a non-continuation line, then add
+       * the accumulated header field, if any, to the hashmap, and
+       * reset it.
+       */
+      if (CHECK_CRLF (line, linelen) || !CHECK_LWS (line, linelen))
+        {
+          if (!double_cgi
+              && len > 0
+              && add_header_to_connection (hashofheaders, header, len) < 0)
+            {
+              safefree (header);
+              safefree (line);
+              return -1;
+            }
+
+          len = 0;
         }
 
       /*
        * If we received just a CR LF on a line, the headers are
        * finished.
        */
-      if (CHECK_CRLF (header, len))
+      if (CHECK_CRLF (line, linelen))
         {
           safefree (header);
+          safefree (line);
           return 0;
         }
 
@@ -917,22 +947,26 @@ get_all_headers (int fd, hashmap_t hashofheaders)
        *
        * FIXME: Might need to change this to a more robust check.
        */
-      if (strncasecmp (header, "HTTP/", 5) == 0)
+      if (linelen >= 5 && strncasecmp (line, "HTTP/", 5) == 0)
         {
           double_cgi = TRUE;
-
-          safefree (header);
-          continue;
         }
 
-      if (!double_cgi
-          && add_header_to_connection (hashofheaders, header, len) < 0)
+      /*
+       * Append the new line to the current header field.
+       */
+      if ((tmp = saferealloc (header, len + linelen)) == NULL)
         {
           safefree (header);
+          safefree (line);
           return -1;
         }
 
-      safefree (header);
+      header = tmp;
+      memcpy (header + len, line, linelen);
+      len += linelen;
+
+      safefree (line);
     }
 }
 
