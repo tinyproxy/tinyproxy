@@ -22,7 +22,7 @@
  * connection structure definition.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "buffer.h"
 #include "conns.h"

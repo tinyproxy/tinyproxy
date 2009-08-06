@@ -20,7 +20,7 @@
  * HTML error pages with variable substitution.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "common.h"
 #include "buffer.h"

@@ -18,7 +18,7 @@
 
 /* Allow tinyproxy to be used as a reverse proxy. */
 
-#include "tinyproxy.h"
+#include "main.h"
 #include "reverse-proxy.h"
 
 #include "conns.h"

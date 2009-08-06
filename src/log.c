@@ -21,7 +21,7 @@
  * or the syslog daemon. Not much to it...
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "heap.h"
 #include "log.h"

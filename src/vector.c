@@ -21,7 +21,7 @@
  * vector.)
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "heap.h"
 #include "vector.h"

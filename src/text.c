@@ -22,7 +22,7 @@
  * with the standard C string library.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "text.h"
 

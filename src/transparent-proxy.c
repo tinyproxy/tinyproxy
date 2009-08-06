@@ -23,7 +23,7 @@
  * traffic to tinyproxy for this to work properly.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "transparent-proxy.h"
 #include "conns.h"

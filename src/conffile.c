@@ -22,7 +22,7 @@
  * add new directives to.  Who knows if I'm right though.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "conffile.h"
 

@@ -25,7 +25,7 @@
  * actually is.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "log.h"
 #include "heap.h"

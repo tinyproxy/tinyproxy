@@ -23,7 +23,7 @@
  * it, so it's in here.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "conns.h"
 #include "heap.h"

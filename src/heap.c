@@ -23,7 +23,7 @@
  * format of the log message is standardized.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 #include "heap.h"
 #include "text.h"
 

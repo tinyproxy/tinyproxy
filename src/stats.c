@@ -25,7 +25,7 @@
  * and the switch statement in update_stats().
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "log.h"
 #include "heap.h"

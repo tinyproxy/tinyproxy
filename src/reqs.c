@@ -25,7 +25,7 @@
  * and then relays the bytes between the two.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "acl.h"
 #include "anonymous.h"

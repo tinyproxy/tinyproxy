@@ -20,7 +20,7 @@
  * when the anonymous feature is turned on.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "anonymous.h"
 #include "hashmap.h"

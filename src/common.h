@@ -17,7 +17,7 @@
  */
 
 /* This file groups all the headers required throughout the tinyproxy
- * system.  All this information use to be in the "tinyproxy.h" header,
+ * system.  All this information use to be in the "main.h" header,
  * but various other "libraries" in the program need the same information,
  * without the tinyproxy specific defines.
  */

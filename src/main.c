@@ -26,7 +26,7 @@
  * elsewhere.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "anonymous.h"
 #include "buffer.h"

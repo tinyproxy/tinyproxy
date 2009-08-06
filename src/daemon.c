@@ -21,7 +21,7 @@
  * a function to portably set a signal handler.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "daemon.h"
 

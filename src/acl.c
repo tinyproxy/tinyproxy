@@ -21,7 +21,7 @@
  * which is then used to compare incoming connections.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "acl.h"
 #include "heap.h"

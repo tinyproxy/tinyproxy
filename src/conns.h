@@ -21,7 +21,7 @@
 #ifndef TINYPROXY_CONNS_H
 #define TINYPROXY_CONNS_H
 
-#include "tinyproxy.h"
+#include "main.h"
 #include "hashmap.h"
 
 /*

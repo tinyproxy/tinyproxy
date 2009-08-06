@@ -20,7 +20,7 @@
  * processing incoming connections.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "child.h"
 #include "daemon.h"

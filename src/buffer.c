@@ -25,7 +25,7 @@
  * the ends of an array. :)
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "buffer.h"
 #include "heap.h"

@@ -36,7 +36,7 @@ tinyproxy_SOURCES = \
 	sock.c sock.h \
 	stats.c stats.h \
 	text.c text.h \
-	tinyproxy.c tinyproxy.h \
+	main.c main.h \
 	utils.c utils.h \
 	vector.c vector.h
 

@@ -25,7 +25,7 @@
  * don't try to free the data, or realloc the memory. :)
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "hashmap.h"
 #include "heap.h"

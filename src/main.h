@@ -17,10 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* See 'tinyproxy.c' for detailed information. */
+/* See 'main.c' for detailed information. */
 
-#ifndef TINYPROXY_TINYPROXY_H
-#define TINYPROXY_TINYPROXY_H
+#ifndef __MAIN_H__
+#define __MAIN_H__
 
 #include "common.h"
 #include "hashmap.h"
@@ -106,4 +106,4 @@ extern struct config_s config;
 extern unsigned int received_sighup;    /* boolean */
 extern unsigned int processed_config_file;      /* boolean */
 
-#endif
+#endif /* __MAIN_H__ */

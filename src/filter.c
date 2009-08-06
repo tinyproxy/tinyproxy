@@ -22,7 +22,7 @@
  * pointed at by DEFAULT_FILTER.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "filter.h"
 #include "heap.h"

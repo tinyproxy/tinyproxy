@@ -23,7 +23,7 @@
  * to write an arbitrary amount of data to the network.
  */
 
-#include "tinyproxy.h"
+#include "main.h"
 
 #include "heap.h"
 #include "network.h"
