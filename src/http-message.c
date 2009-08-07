@@ -92,11 +92,12 @@ http_message_create (int response_code, const char *response_string)
   http_message_t msg;
   int ret;
 
-  msg = safecalloc (1, sizeof (struct http_message_s));
+  msg = (struct http_message_s *)safecalloc (1, sizeof (struct http_message_s));
   if (msg == NULL)
     return NULL;
 
-  msg->headers.strings = safecalloc (NUMBER_OF_HEADERS, sizeof (char *));
+  msg->headers.strings = (const char **)safecalloc (NUMBER_OF_HEADERS,
+                                                    sizeof (char *));
   if (msg->headers.strings == NULL)
     {
       safefree (msg);
