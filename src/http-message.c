@@ -207,7 +207,8 @@ http_message_add_headers (http_message_t msg, const char **headers,
    */
   if (msg->headers.used + num_headers > msg->headers.total)
     {
-      new_headers = safecalloc (msg->headers.total * 2, sizeof (char *));
+      new_headers = (const char **)safecalloc (msg->headers.total * 2,
+                                               sizeof (char *));
       if (new_headers == NULL)
         return -ENOMEM;
 
