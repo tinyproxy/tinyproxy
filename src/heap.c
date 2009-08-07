@@ -111,7 +111,7 @@ malloc_shared_memory (size_t size)
   void *ptr;
   char buffer[32];
 
-  static char *shared_file = "/tmp/tinyproxy.shared.XXXXXX";
+  static const char *shared_file = "/tmp/tinyproxy.shared.XXXXXX";
 
   assert (size > 0);
 
