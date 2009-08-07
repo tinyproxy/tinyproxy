@@ -98,7 +98,7 @@ write_message (int fd, const char *fmt, ...)
   char *buf, *tmpbuf;
   va_list ap;
 
-  if ((buf = safemalloc (size)) == NULL)
+  if ((buf = (char *)safemalloc (size)) == NULL)
     return -1;
 
   while (1)
@@ -119,7 +119,7 @@ write_message (int fd, const char *fmt, ...)
         /* twice the old size (glibc2.0) */
         size *= 2;
 
-      if ((tmpbuf = saferealloc (buf, size)) == NULL)
+      if ((tmpbuf = (char *)saferealloc (buf, size)) == NULL)
         {
           safefree (buf);
           return -1;
