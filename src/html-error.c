@@ -115,7 +115,7 @@ int
 send_html_file (FILE * infile, struct conn_s *connptr)
 {
   char inbuf[HTML_BUFSIZE], *varstart = NULL, *p;
-  char *varval;
+  const char *varval;
   int in_variable = 0, writeret;
 
   while (fgets (inbuf, HTML_BUFSIZE, infile) != NULL)
@@ -128,7 +128,8 @@ send_html_file (FILE * infile, struct conn_s *connptr)
               if (in_variable)
                 {
                   *p = '\0';
-                  if (!(varval = lookup_variable (connptr, varstart)))
+                  varval = (const char *)lookup_variable (connptr, varstart);
+                  if (!varval)
                     varval = "(unknown)";
                   writeret = write_message (connptr->client_fd, "%s", varval);
                   if (writeret)
