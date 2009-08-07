@@ -93,7 +93,7 @@ showstats (struct conn_s *connptr)
 
   if (!config.statpage || (!(statfile = fopen (config.statpage, "r"))))
     {
-      message_buffer = safemalloc (MAXBUFFSIZE);
+      message_buffer = (char *)safemalloc (MAXBUFFSIZE);
       if (!message_buffer)
         return -1;
 
