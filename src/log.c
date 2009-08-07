@@ -153,7 +153,7 @@ log_message (int level, const char *fmt, ...)
 
       vsnprintf (str, STRING_LENGTH, fmt, args);
 
-      entry_buffer = safemalloc (strlen (str) + 6);
+      entry_buffer = (char *)safemalloc (strlen (str) + 6);
       if (!entry_buffer)
         goto out;
 
