@@ -51,7 +51,7 @@ initialize_conn (int client_fd, const char *ipaddr, const char *string_addr,
   /*
    * Allocate the space for the conn_s structure itself.
    */
-  connptr = safemalloc (sizeof (struct conn_s));
+  connptr = (struct conn_s *)safemalloc (sizeof (struct conn_s));
   if (!connptr)
     goto error_exit;
 
