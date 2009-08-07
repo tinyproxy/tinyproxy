@@ -88,7 +88,7 @@ get_html_file (unsigned int errornum)
  * Look up the value for a variable.
  */
 static char *
-lookup_variable (struct conn_s *connptr, char *varname)
+lookup_variable (struct conn_s *connptr, const char *varname)
 {
   hashmap_iter result_iter;
   char *key;
