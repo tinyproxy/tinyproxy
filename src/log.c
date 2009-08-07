@@ -214,7 +214,7 @@ send_stored_logs (void)
 
   size_t i;
 
-  for (i = 0; i != vector_length (log_message_storage); ++i)
+  for (i = 0; (ssize_t)i != vector_length (log_message_storage); ++i)
     {
       string = vector_getentry (log_message_storage, i, NULL);
 
