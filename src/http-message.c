@@ -188,17 +188,15 @@ http_message_set_body (http_message_t msg, const char *body, size_t len)
  */
 int
 http_message_add_headers (http_message_t msg, const char **headers,
-                          int num_headers)
+                          unsigned int num_headers)
 {
   const char **new_headers;
-  int i;
+  unsigned int i;
 
   /* Check for valid arguments */
   if (msg == NULL)
     return -EFAULT;
   if (headers == NULL)
-    return -EINVAL;
-  if (num_headers < 1)
     return -EINVAL;
 
   /*

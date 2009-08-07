@@ -88,6 +88,7 @@ extern int http_message_set_response (http_message_t msg,
  * sent.
  */
 extern int http_message_add_headers (http_message_t msg,
-                                     const char **headers, int num_headers);
+                                     const char **headers,
+                                     unsigned int num_headers);
 
 #endif /* _TINYPROXY_HTTP_MESSAGE_H_ */
