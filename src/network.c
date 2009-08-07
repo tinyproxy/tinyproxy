@@ -108,7 +108,7 @@ write_message (int fd, const char *fmt, ...)
       va_end (ap);
 
       /* If that worked, break out so we can send the buffer */
-      if (n > -1 && n < size)
+      if (n > -1 && (size_t)n < size)
         break;
 
       /* Else, try again with more space */
