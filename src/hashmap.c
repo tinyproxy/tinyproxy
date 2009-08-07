@@ -106,12 +106,13 @@ hashmap_create (unsigned int nbuckets)
   if (nbuckets == 0)
     return NULL;
 
-  ptr = safecalloc (1, sizeof (struct hashmap_s));
+  ptr = (struct hashmap_s *)safecalloc (1, sizeof (struct hashmap_s));
   if (!ptr)
     return NULL;
 
   ptr->size = nbuckets;
-  ptr->buckets = safecalloc (nbuckets, sizeof (struct hashbucket_s));
+  ptr->buckets = (struct hashbucket_s *)safecalloc (nbuckets,
+                                               sizeof (struct hashbucket_s));
   if (!ptr->buckets)
     {
       safefree (ptr);
@@ -231,7 +232,7 @@ hashmap_insert (hashmap_t map, const char *key, const void *data, size_t len)
     }
   memcpy (data_copy, data, len);
 
-  ptr = safemalloc (sizeof (struct hashentry_s));
+  ptr = (struct hashentry_s *)safemalloc (sizeof (struct hashentry_s));
   if (!ptr)
     {
       safefree (key_copy);
