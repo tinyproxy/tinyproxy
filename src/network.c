@@ -56,7 +56,7 @@ safe_write (int fd, const char *buffer, size_t count)
             return -errno;
         }
 
-      if (len == bytestosend)
+      if ((size_t)len == bytestosend)
         break;
 
       buffer += len;
