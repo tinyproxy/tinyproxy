@@ -50,7 +50,7 @@ static struct stat_s *stats;
 void
 init_stats (void)
 {
-  stats = malloc_shared_memory (sizeof (struct stat_s));
+  stats = (struct stat_s *)malloc_shared_memory (sizeof (struct stat_s));
   if (stats == MAP_FAILED)
     return;
 
