@@ -286,7 +286,8 @@ add_standard_vars (struct conn_s *connptr)
  * Add the error information to the conn structure.
  */
 int
-indicate_http_error (struct conn_s *connptr, int number, char *message, ...)
+indicate_http_error (struct conn_s *connptr, int number,
+                     const char *message, ...)
 {
   va_list ap;
   char *key, *val;
