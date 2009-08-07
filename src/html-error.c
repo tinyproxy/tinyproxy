@@ -172,7 +172,7 @@ send_html_file (FILE * infile, struct conn_s *connptr)
 }
 
 int
-send_http_headers (struct conn_s *connptr, int code, char *message)
+send_http_headers (struct conn_s *connptr, int code, const char *message)
 {
   char *headers =
     "HTTP/1.0 %d %s\r\n"
