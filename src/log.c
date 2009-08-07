@@ -28,7 +28,7 @@
 #include "utils.h"
 #include "vector.h"
 
-static char *syslog_level[] = {
+static const char *syslog_level[] = {
   NULL,
   NULL,
   "CRITICAL",
