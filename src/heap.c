@@ -87,7 +87,7 @@ debugging_strdup (const char *s, const char *file, unsigned long line)
   assert (s != NULL);
 
   len = strlen (s) + 1;
-  ptr = malloc (len);
+  ptr = (char *)malloc (len);
   if (!ptr)
     return NULL;
   memcpy (ptr, s, len);
