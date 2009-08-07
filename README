@@ -54,9 +54,10 @@ INSTALLATION
 
 SUPPORT
 
- If you are having problems with tinyproxy, please submit a bug at:
+ If you are having problems with Tinyproxy, please submit a bug report
+ using Tinyproxy as the component at:
 
-	https://www.banu.com/tinyproxy/newticket
+	https://www.banu.com/bugzilla/
 
  You may also wish to subscribe to the tinyproxy mailing lists. To
  do so please visit:
