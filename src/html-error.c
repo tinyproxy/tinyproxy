@@ -229,7 +229,7 @@ send_http_error_message (struct conn_s *connptr)
 #define ERRVAR_BUCKETCOUNT 16
 
 int
-add_error_variable (struct conn_s *connptr, char *key, char *val)
+add_error_variable (struct conn_s *connptr, const char *key, const char *val)
 {
   if (!connptr->error_variables)
     if (!(connptr->error_variables = hashmap_create (ERRVAR_BUCKETCOUNT)))
