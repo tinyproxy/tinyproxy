@@ -296,7 +296,7 @@ ERROR_EXIT:
 static int
 extract_ssl_url (const char *url, struct request_s *request)
 {
-  request->host = safemalloc (strlen (url) + 1);
+  request->host = (char *)safemalloc (strlen (url) + 1);
   if (!request->host)
     return -1;
 
