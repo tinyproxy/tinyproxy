@@ -956,7 +956,8 @@ get_all_headers (int fd, hashmap_t hashofheaders)
       /*
        * Append the new line to the current header field.
        */
-      if ((tmp = saferealloc (header, len + linelen)) == NULL)
+      tmp = (char *)saferealloc (header, len + linelen);
+      if (tmp == NULL)
         {
           safefree (header);
           safefree (line);
