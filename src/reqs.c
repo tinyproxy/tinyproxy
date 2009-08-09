@@ -326,7 +326,7 @@ void
 upstream_add (const char *host, int port, const char *domain)
 {
   char *ptr;
-  struct upstream *up = safemalloc (sizeof (struct upstream));
+  struct upstream *up = (struct upstream *)safemalloc(sizeof (struct upstream));
 
   if (!up)
     {
