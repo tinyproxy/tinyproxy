@@ -557,15 +557,15 @@ process_request (struct conn_s *connptr, hashmap_t hashofheaders)
   size_t request_len;
 
   /* NULL out all the fields so frees don't cause segfaults. */
-  request = safecalloc (1, sizeof (struct request_s));
+  request = (struct request_s *)safecalloc (1, sizeof (struct request_s));
   if (!request)
     return NULL;
 
   request_len = strlen (connptr->request_line) + 1;
 
-  request->method = safemalloc (request_len);
-  url = safemalloc (request_len);
-  request->protocol = safemalloc (request_len);
+  request->method = (char *)safemalloc (request_len);
+  url = (char *)safemalloc (request_len);
+  request->protocol = (char *)safemalloc (request_len);
 
   if (!request->method || !url || !request->protocol)
     {
