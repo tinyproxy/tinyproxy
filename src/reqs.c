@@ -128,7 +128,7 @@ check_allowed_connect_ports (int port)
 
   for (i = 0; i != (size_t)vector_length (ports_allowed_by_connect); ++i)
     {
-      data = vector_getentry (ports_allowed_by_connect, i, NULL);
+      data = (int *)vector_getentry (ports_allowed_by_connect, i, NULL);
       if (data && *data == port)
         return 1;
     }
