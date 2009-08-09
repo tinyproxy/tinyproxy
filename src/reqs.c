@@ -796,13 +796,14 @@ pull_client_data (struct conn_s *connptr, long int length)
   char *buffer;
   ssize_t len;
 
-  buffer = safemalloc (min (MAXBUFFSIZE, length));
+  buffer = (char *)safemalloc (min (MAXBUFFSIZE, (unsigned long int)length));
   if (!buffer)
     return -1;
 
   do
     {
-      len = safe_read (connptr->client_fd, buffer, min (MAXBUFFSIZE, length));
+      len = safe_read (connptr->client_fd, buffer,
+                       min (MAXBUFFSIZE, (unsigned long int)length));
       if (len <= 0)
         goto ERROR_EXIT;
 
