@@ -258,7 +258,7 @@ extract_http_url (const char *url, struct request_s *request)
   if (p != NULL)
     {
       len = p - url;
-      request->host = safemalloc (len + 1);
+      request->host = (char *)safemalloc (len + 1);
       memcpy (request->host, url, len);
       request->host[len] = '\0';
       request->path = safestrdup (p);
