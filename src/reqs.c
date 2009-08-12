@@ -979,7 +979,7 @@ get_all_headers (int fd, hashmap_t hashofheaders)
 static int
 remove_connection_headers (hashmap_t hashofheaders)
 {
-  static char *headers[] = {
+  static const char *headers[] = {
     "connection",
     "proxy-connection"
   };
