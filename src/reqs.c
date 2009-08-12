@@ -1107,7 +1107,7 @@ write_via_header (int fd, hashmap_t hashofheaders,
 static int
 process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
 {
-  static char *skipheaders[] = {
+  static const char *skipheaders[] = {
     "host",
     "keep-alive",
     "proxy-connection",
