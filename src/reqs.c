@@ -1223,7 +1223,7 @@ PULL_CLIENT_DATA:
 static int
 process_server_headers (struct conn_s *connptr)
 {
-  static char *skipheaders[] = {
+  static const char *skipheaders[] = {
     "keep-alive",
     "proxy-authenticate",
     "proxy-authorization",
