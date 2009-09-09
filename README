@@ -96,5 +96,19 @@ CONTRIBUTING
  If you would like to contribute a feature, or a bug fix to the
  tinyproxy source, please send a patch (preferably as a unified
  diff. i.e. "diff -u") against the "master" branch of the tinyproxy
- repository. Please include a description of what your patch does.
+ source code git repository to the tinyproxy-developers mailing list.
+ Please include a description of what your patch does.
 
+ Tinyproxy's git repository is git://www.banu.com/tinyproxy.git .
+ The command "git clone git://www.banu.com/tinyproxy.git" creates
+ a local copy.
+
+ The easiest and preferred way to create a patch for submission
+ is to check in your changes locally and use the command
+ "git format-patch" to generate a mbox-style commit file that
+ contains the diff along with the commit message and author information.
+ Such a format-patch file can be integrated into the upstream repository,
+ automatically keeping the commit message and author information.
+
+ You can also meet developers and discuss development issues and
+ patches in the #tinyproxy IRC channel on freenode (irc.freenode.net).
