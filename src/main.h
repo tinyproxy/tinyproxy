@@ -48,7 +48,7 @@ struct upstream
 struct config_s
 {
   char *logf_name;
-  char *config_file;
+  const char *config_file;
   unsigned int syslog;          /* boolean */
   int port;
   char *stathost;
