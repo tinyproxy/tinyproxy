@@ -94,7 +94,7 @@ EOF
 
 start_tinyproxy() {
 	echo -n "starting tinyproxy..."
-	$TINYPROXY_BIN -c $TINYPROXY_CONF_FILE 2> $TINYPROXY_STDERR_LOG
+	$VALGRIND $TINYPROXY_BIN -c $TINYPROXY_CONF_FILE 2> $TINYPROXY_STDERR_LOG
 	echo " done"
 }
 
