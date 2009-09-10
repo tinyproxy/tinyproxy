@@ -1592,7 +1592,7 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
     {
       len = strlen (request->host) + 7;
 
-      combined_string = safemalloc (len);
+      combined_string = (char *)safemalloc (len);
       if (!combined_string)
         {
           return -1;
@@ -1603,7 +1603,7 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
   else
     {
       len = strlen (request->host) + strlen (request->path) + 14;
-      combined_string = safemalloc (len);
+      combined_string = (char *)safemalloc (len);
       if (!combined_string)
         {
           return -1;
