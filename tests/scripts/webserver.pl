@@ -23,11 +23,11 @@ my $EOL = "\015\012";
 
 my $port = 2345;
 my $proto = getprotobyname('tcp');
-my $pid_file = "./webserver.pid";
-my $log_dir = "./";
+my $pid_file = "/tmp/webserver.pid";
+my $log_dir = "/tmp";
 my $access_log_file;
 my $error_log_file;
-my $document_root = "./";
+my $document_root = "/tmp";
 my $help = 0;
 
 sub create_child($$$);
