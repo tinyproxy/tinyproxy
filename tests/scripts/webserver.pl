@@ -154,10 +154,6 @@ sub daemonize() {
 	chdir "/" or die "daemonize: can't chdir to /: $!";
 	open STDIN, "/dev/null" or
 		die "daemonize: Can't read from /dev/null: $!";
-	open STDOUT, ">> $access_log_file" or
-		die "daemonize: Can't write to '$access_log_file': $!";
-	open STDERR, ">> $error_log_file" or
-		die "daemonize: Can't write to '$error_log_file': $!";
 
 	my $pid = fork();
 	die "daemonize: can't fork: $!" if not defined($pid);
@@ -165,6 +161,13 @@ sub daemonize() {
 
 	# child (daemon)
 	setsid or die "damonize: Can't create a new session: $!";
+}
+
+sub reopen_logs() {
+	open STDOUT, ">> $access_log_file" or
+		die "daemonize: Can't write to '$access_log_file': $!";
+	open STDERR, ">> $error_log_file" or
+		die "daemonize: Can't write to '$error_log_file': $!";
 }
 
 sub get_pid_lock() {
@@ -191,8 +194,8 @@ $|=1; # autoflush
 process_options();
 
 daemonize();
-
 get_pid_lock();
+reopen_logs();
 
 $SIG{CHLD} = \&REAPER;
 
