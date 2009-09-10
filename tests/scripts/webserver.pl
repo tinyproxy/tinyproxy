@@ -171,15 +171,37 @@ sub reopen_logs() {
 }
 
 sub get_pid_lock() {
-	open LOCKFILE, "> $pid_file" or
-		die "Error opening pid-file $pid_file: $!";
+	# first make sure the file exists
+	open(LOCKFILE_W, ">> $pid_file") or
+		die "Error opening pid file '$pid_file' for writing: $!";
+
+	# open for reading and try to lock:
+	open(LOCKFILE, "< $pid_file") or
+		die "Error opening pid file '$pid_file' for reading: $!";
 	unless (flock(LOCKFILE, LOCK_EX|LOCK_NB)) {
-		my $other_pid = qx(cat $pid_file);
-		print "Webserver is already running (pid $other_pid)";
+		print "pid file '$pid_file' is already locked.\n";
+		my $other_pid = <LOCKFILE>;
+		if (!defined($other_pid)) {
+			print "Error reading from pid file.\n";
+		} else {
+			chomp($other_pid);
+			if (!$other_pid) {
+				print "pid file is empty.\n";
+			} else {
+				print "Webserver is already running  with pid '$other_pid'.\n";
+			}
+		}
+		close LOCKFILE;
 		exit(0);
 	}
 
-	print LOCKFILE "$$";
+	# now re-open for recreating the file and write our pid
+	close(LOCKFILE_W);
+	open(LOCKFILE_W, "> $pid_file") or
+		die "Error opening pid file '$pid_file' for writing: $!";
+	LOCKFILE_W->autoflush(1);
+	print LOCKFILE_W "$$";
+	close(LOCKFILE_W);
 }
 
 sub release_pid_lock() {
