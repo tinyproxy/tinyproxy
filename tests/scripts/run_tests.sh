@@ -61,9 +61,9 @@ provision_initial() {
 
 provision_tinyproxy() {
 	mkdir -p $TINYPROXY_DATA_DIR
-	cp $BASEDIR/doc/default.html $TINYPROXY_DATA_DIR
-	cp $BASEDIR/doc/debug.html $TINYPROXY_DATA_DIR
-	cp $BASEDIR/doc/stats.html $TINYPROXY_DATA_DIR
+	cp $BASEDIR/data/templates/default.html $TINYPROXY_DATA_DIR
+	cp $BASEDIR/data/templates/debug.html $TINYPROXY_DATA_DIR
+	cp $BASEDIR/data/templates/stats.html $TINYPROXY_DATA_DIR
 	mkdir -p $TINYPROXY_PID_DIR
 	mkdir -p $TINYPROXY_LOG_DIR
 	mkdir -p $TINYPROXY_CONF_DIR
