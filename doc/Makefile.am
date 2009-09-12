@@ -4,7 +4,7 @@ SUBDIRS = \
 EXTRA_DIST = \
 	tinyproxy.conf \
 	HTML_VARIABLES \
-	HTTP_ERROR_CODES \
-	RFC_INFO \
+	http-error-codes.txt \
+	http-rfcs.txt \
 	filter-howto.txt
 
