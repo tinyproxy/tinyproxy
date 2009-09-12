@@ -331,6 +331,7 @@ data/templates/Makefile
 etc/Makefile
 doc/Makefile
 doc/man8/Makefile
+m4macros/Makefile
 packaging/Makefile
 packaging/fedora/tinyproxy.spec
 packaging/fedora/Makefile

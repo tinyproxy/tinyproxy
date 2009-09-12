@@ -1,8 +1,4 @@
 
-# The following files are required for the build process
-CONFIG_FILES = \
-  m4macros/typecheck.m4 m4macros/argenable.m4
-
-EXTRA_DIST = $(CONFIG_FILES) TODO autogen.sh
-SUBDIRS = src data etc doc packaging
+EXTRA_DIST = TODO autogen.sh
+SUBDIRS = src data etc doc m4macros packaging
 
