@@ -95,7 +95,7 @@ EOF
 start_tinyproxy() {
 	echo -n "starting tinyproxy..."
 	$VALGRIND $TINYPROXY_BIN -c $TINYPROXY_CONF_FILE 2> $TINYPROXY_STDERR_LOG
-	echo " done"
+	echo " done (listening on $TINYPROXY_IP:$TINYPROXY_PORT)"
 }
 
 stop_tinyproxy() {
@@ -116,7 +116,7 @@ provision_webserver() {
 start_webserver() {
 	echo -n "starting web server..."
 	$WEBSERVER_BIN --port $WEBSERVER_PORT --log-dir $WEBSERVER_LOG_DIR --pid-file $WEBSERVER_PID_FILE
-	echo " done"
+	echo " done (listening on $WEBSERVER_IP:$WEBSERVER_PORT)"
 }
 
 stop_webserver() {
