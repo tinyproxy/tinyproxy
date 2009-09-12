@@ -326,6 +326,8 @@ AM_CONDITIONAL(HAVE_A2X, test "x$A2X" != "xno")
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
+data/Makefile
+data/templates/Makefile
 doc/Makefile
 doc/man8/Makefile
 packaging/Makefile
