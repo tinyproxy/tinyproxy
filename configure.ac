@@ -328,6 +328,7 @@ Makefile
 src/Makefile
 data/Makefile
 data/templates/Makefile
+etc/Makefile
 doc/Makefile
 doc/man8/Makefile
 packaging/Makefile
