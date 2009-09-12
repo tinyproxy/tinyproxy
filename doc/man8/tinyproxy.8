@@ -62,6 +62,52 @@ In addition to command\-line options, there are also several signals that can be
 .RS 4
 Force Tinyproxy to do a garbage collection on the current connections linked list\&. This is usually done automatically after a certain number of connections have been handled\&.
 .RE
+.SH "TEMPLATE VARIABLES"
+.sp
+There are several standard HTML variables that are available in every template file:
+.PP
+\fBrequest\fR
+.RS 4
+The full HTTP request line\&.
+.RE
+.PP
+\fBcause\fR
+.RS 4
+The abbreviated cause of the error condition\&.
+.RE
+.PP
+\fBclientip\fR
+.RS 4
+The IP address of the client making the request\&.
+.RE
+.PP
+\fBclienthost\fR
+.RS 4
+The hostname of the client making the request\&.
+.RE
+.PP
+\fBversion\fR
+.RS 4
+The version of tinyproxy\&.
+.RE
+.PP
+\fBpackage\fR
+.RS 4
+The package name\&. Presently, resolves to
+\fItinyproxy\fR\&.
+.RE
+.PP
+\fBdate\fR
+.RS 4
+The current date/time in HTTP format\&.
+.RE
+.sp
+In addition, almost all templates support:
+.PP
+\fBdetail\fR
+.RS 4
+A detailed, plain English explanation of the error and possible causes\&.
+.RE
 .SH "FILES"
 .sp
 /etc/tinyproxy/tinyproxy\&.conf, /var/run/tinyproxy\&.pid, /var/log/tinyproxy\&.log
