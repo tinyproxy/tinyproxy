@@ -19,4 +19,4 @@ tinyproxy-html-files:
 	  test -f $(DESTDIR)$(datadir)/tinyproxy/$$file.html || \
 	    $(INSTALL) -m 644 $(srcdir)/data/templates/$$file.html $(DESTDIR)$(datadir)/tinyproxy/$$file.html ; \
 	done
-	$(INSTALL) -m 644 $(srcdir)/doc/HTML_VARIABLES $(DESTDIR)$(datadir)/tinyproxy/HTML_VARIABLES
+
