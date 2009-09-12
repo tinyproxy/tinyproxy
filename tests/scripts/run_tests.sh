@@ -178,6 +178,9 @@ run_basic_webclient_request "$WEBSERVER_IP:$WEBSERVER_PORT" /
 echo -n "testing connection through tinyproxy..."
 run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
 
+echo -n "requesting statspage via stathost url..."
+run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$TINYPROXY_STATHOST_IP"
+
 echo "You can continue using the webserver and tinyproxy."
 echo -n "hit <enter> to stop the servers and exit: "
 read READ
