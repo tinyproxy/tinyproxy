@@ -1,0 +1,75 @@
+'\" t
+.\"     Title: tinyproxy
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.74.3 <http://docbook.sf.net/>
+.\"      Date: 09/13/2009
+.\"    Manual: [FIXME: manual]
+.\"    Source: [FIXME: source]
+.\"  Language: English
+.\"
+.TH "TINYPROXY" "8" "09/13/2009" "[FIXME: source]" "[FIXME: manual]"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+tinyproxy \- A light\-weight HTTP proxy daemon
+.SH "SYNOPSIS"
+.sp
+\fBtinyproxy\fR [\-vldch]
+.SH "DESCRIPTION"
+.sp
+\fBtinyproxy\fR is a light\-weight HTTP proxy daemon designed to consume a minimum amount of system resources\&. It listens on a given TCP port and handles HTTP proxy requests\&. Designed from the ground up to be fast and yet small, it is an ideal solution for use cases such as embedded deployments where a full featured HTTP proxy is required, but the system resources for a larger proxy are unavailable\&.
+.SH "OPTIONS"
+.sp
+\fBtinyproxy\fR accepts the following options:
+.PP
+\fB\-c <config\-file>\fR
+.RS 4
+Use an alternate configuration file\&.
+.RE
+.PP
+\fB\-d\fR
+.RS 4
+Don\'t daemonize and stay in the foreground\&. Useful for debugging purposes\&.
+.RE
+.PP
+\fB\-h\fR
+.RS 4
+Display a short help screen of command line arguments and exit\&.
+.RE
+.PP
+\fB\-l\fR
+.RS 4
+Display the licensing agreement\&.
+.RE
+.PP
+\fB\-v\fR
+.RS 4
+Display version information and exit\&.
+.RE
+.SH "SIGNALS"
+.sp
+In addition to command\-line options, there are also several signals that can be sent to \fBtinyproxy\fR while it is running to generate debugging information and to force certain events\&.
+.PP
+\fBSIGHUP\fR
+.RS 4
+Force Tinyproxy to do a garbage collection on the current connections linked list\&. This is usually done automatically after a certain number of connections have been handled\&.
+.RE
+.SH "FILES"
+.sp
+/etc/tinyproxy/tinyproxy\&.conf, /var/run/tinyproxy\&.pid, /var/log/tinyproxy\&.log
+.SH "BUGS"
+.sp
+To report bugs in Tinyproxy, please visit <https://www\&.banu\&.com/tinyproxy/support/>\&.
+.SH "COPYRIGHT"
+.sp
+Copyright (c) 1998\-2000 Steven Young; Copyright (c) 2000\-2001 Robert James Kaes; Copyright (c) 2009 Mukund Sivaraman\&.
+.sp
+This program is distributed under the terms of the GNU General Public License version 2 or above\&. See the COPYING file for additional information\&.

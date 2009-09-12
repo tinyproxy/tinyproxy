@@ -1,0 +1,82 @@
+TINYPROXY(8)
+============
+
+NAME
+----
+
+tinyproxy - A light-weight HTTP proxy daemon
+
+
+SYNOPSIS
+--------
+
+*tinyproxy* [-vldch]
+
+
+DESCRIPTION
+-----------
+
+*tinyproxy* is a light-weight HTTP proxy daemon designed to consume a
+minimum amount of system resources. It listens on a given TCP port and
+handles HTTP proxy requests. Designed from the ground up to be fast and
+yet small, it is an ideal solution for use cases such as embedded
+deployments where a full featured HTTP proxy is required, but the system
+resources for a larger proxy are unavailable.
+
+
+OPTIONS
+-------
+
+*tinyproxy* accepts the following options:
+
+*-c <config-file>*::
+    Use an alternate configuration file.
+
+*-d*::
+    Don't daemonize and stay in the foreground. Useful for debugging purposes.
+
+*-h*::
+    Display a short help screen of command line arguments and exit.
+
+*-l*::
+    Display the licensing agreement.
+
+*-v*::
+    Display version information and exit.
+
+
+SIGNALS
+-------
+
+In addition to command-line options, there are also several signals that
+can be sent to *tinyproxy* while it is running to generate debugging
+information and to force certain events.
+
+*SIGHUP*::
+    Force Tinyproxy to do a garbage collection on the current
+    connections linked list. This is usually done automatically after a
+    certain number of connections have been handled.
+
+
+FILES
+-----
+
+`/etc/tinyproxy/tinyproxy.conf`, `/var/run/tinyproxy.pid`, `/var/log/tinyproxy.log`
+
+BUGS
+----
+
+To report bugs in Tinyproxy, please visit
+<https://www.banu.com/tinyproxy/support/[https://www.banu.com/tinyproxy/support/]>.
+
+
+COPYRIGHT
+---------
+
+Copyright (c) 1998-2000 Steven Young; 
+Copyright (c) 2000-2001 Robert James Kaes;
+Copyright (c) 2009 Mukund Sivaraman.
+
+This program is distributed under the terms of the GNU General Public
+License version 2 or above. See the COPYING file for additional
+information.

@@ -319,10 +319,15 @@ AC_SUBST(ADDITIONAL_OBJECTS)
 AC_SUBST(TINYPROXY_CONFIG_DIR)
 AC_SUBST(TINYPROXY_CONFIG_FILE)
 
+# Check for asciidoc
+AC_PATH_PROG(A2X, a2x, no)
+AM_CONDITIONAL(HAVE_A2X, test "x$A2X" != "xno")
+
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
 doc/Makefile
+doc/man8/Makefile
 packaging/Makefile
 packaging/fedora/tinyproxy.spec
 packaging/fedora/Makefile
