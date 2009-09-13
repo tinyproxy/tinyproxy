@@ -4,7 +4,7 @@
 Name:           tinyproxy
 Version:        @VERSION@
 Release:        2%{?dist}
-Summary:        A small, efficient HTTP/SSL proxy daemon
+Summary:        A light-weight HTTP proxy daemon
 
 Group:          System Environment/Daemons
 License:        GPLv2+
@@ -20,10 +20,13 @@ Requires(preun):    chkconfig
 Requires(preun):    initscripts
 
 %description
-tinyproxy is a small, efficient HTTP/SSL proxy daemon released under the
-GNU General Public License (GPL).  tinyproxy is very useful in a small
-network setting, where a larger proxy like Squid would either be too
-resource intensive, or a security risk.  
+Tinyproxy is a light-weight HTTP proxy daemon designed to consume a
+minimum amount of system resources. It listens on a given TCP port and
+handles HTTP proxy requests. Designed from the ground up to be fast and
+yet small, it is an ideal solution for use cases such as embedded
+deployments where a full featured HTTP proxy is required, but the system
+resources for a larger proxy are unavailable.
+
 
 %prep
 %setup -q
