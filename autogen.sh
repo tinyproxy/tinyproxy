@@ -7,7 +7,7 @@
 #
 
 set -x
-aclocal \
+aclocal -I m4macros \
   && autoheader \
   && automake --gnu --add-missing \
   && autoconf
