@@ -49,7 +49,7 @@ struct config_s {
         const char *config_file;
         unsigned int syslog;    /* boolean */
         int port;
-        char *stathost;
+        const char *stathost;
         unsigned int godaemon;  /* boolean */
         unsigned int quit;      /* boolean */
         char *user;
