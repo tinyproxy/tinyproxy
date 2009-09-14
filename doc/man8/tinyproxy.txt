@@ -1,5 +1,6 @@
 TINYPROXY(8)
 ============
+:Author: The Tinyproxy Team
 
 NAME
 ----
@@ -64,9 +65,9 @@ TEMPLATE FILES
 There are two occasions when tinyproxy delivers HTML pages to
 the client on it's own right:
 
-1. When an error occurred, a corresponding error page is returned.
-2. When a request for the stathost is made, a page summarizing the
-   connection statistics is returned. (See STATHOST below.)
+. When an error occurred, a corresponding error page is returned.
+. When a request for the stathost is made, a page summarizing the
+  connection statistics is returned. (See STATHOST below.)
 
 The layout of both error pages and the statistics page can be
 controlled via configurable HTML template files that are plain
