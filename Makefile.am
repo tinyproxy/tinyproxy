@@ -2,7 +2,7 @@ SUBDIRS = \
 	src \
 	data \
 	etc \
-	doc \
+	docs \
 	m4macros \
 	packaging
 

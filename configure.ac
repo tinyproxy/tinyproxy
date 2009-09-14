@@ -330,9 +330,9 @@ src/Makefile
 data/Makefile
 data/templates/Makefile
 etc/Makefile
-doc/Makefile
-doc/man8/Makefile
-doc/man8/tinyproxy.txt
+docs/Makefile
+docs/man8/Makefile
+docs/man8/tinyproxy.txt
 m4macros/Makefile
 packaging/Makefile
 packaging/fedora/tinyproxy.spec
