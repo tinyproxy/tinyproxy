@@ -77,16 +77,85 @@ sub REAPER {
 
 sub parse_request($) {
 	my $client = shift;
+	my $request = {};
 
-	my $request = "";
-	while (my $request_line = <$client>) {
-		$request .= $request_line;
-		last if ($request_line eq $EOL);
+
+	# parse the request line
+
+	my $request_line = <$client>;
+	if (!$request_line) {
+		$request->{error} = "emtpy request";
+		return $request;
 	}
 
+	chomp ($request_line);
+
+	my ($method, $object, $version) = split(" ", $request_line);
+	unless (defined($version) and $version) {
+		$request->{version} = "0.9";
+	} else {
+		if ($version !~ /HTTP\/(\d\.\d)/gi) {
+			$request->{error} = "illegal version ($version)";
+			return $request;
+		}
+		$request->{version} = $1;
+	}
+	$request->{method} = uc($method);
+	$request->{object} = $object;
+
+	# parse the request headers
+
+	my $current_header_line;
+	$request->{headers} = [];
+	while ($request_line = <$client>) {
+		if ($request_line =~ /^[ \t]/) {
+			# continued header line
+			chomp $request_line;
+			$current_header_line .= $request_line;
+			next;
+		}
+
+		if ($current_header_line) {
+			# finish current header line
+			my ($name, $value) = split(": ", $current_header_line);
+			push(@{$request->{headers}},
+			     { name => lc($name), value => $value });
+		}
+
+		last if ($request_line eq $EOL);
+
+		chomp $request_line;
+		$current_header_line = $request_line;
+	}
+
+
+	# parse entity (body)
+
+	$request->{entity} = "";
+
+	# skip for now, don't block...
+	# if ($request_line) {
+	# 	while ($request_line = <$client>) {
+	# 		logmsg "got line '$request_line'";
+	# 		$request->{entity} .= $request_line;
+	# 	}
+	# }
+
+	my @print_headers = ();
+	foreach my $header (@{$request->{headers}}) {
+		push @print_headers, $header->{name} . ": " . $header->{value};
+	}
 	logmsg  "request:\n" .
 		"------------------------------\n" .
-		"$request" .
+		"Method:  " . $request->{method} . "\n" .
+		"Object:  " . $request->{object} . "\n" .
+		"Version: " . $request->{version} . "\n" .
+		"\n" .
+		"Headers:\n" .
+		join("\n", @print_headers) . "\n" .
+		#"\n" .
+		#"Body:\n" .
+		#"'" . $request->{entity} . "'\n" .
 		"------------------------------";
 
 	return $request;
@@ -121,8 +190,22 @@ sub child_action($) {
 	} else {
 		print $client "Sorry, no $fortune_bin not found.$EOL";
 	}
+
+	my @print_headers = ();
+	foreach my $header (@{$request->{headers}}) {
+		push @print_headers, $header->{name} . ": " . $header->{value};
+	}
 	print $client "<h2>Your request:</h2>$EOL";
-	print $client "<pre>$request<pre>$EOL";
+	print $client "<pre>$EOL";
+	print $client "Method:  " . $request->{method} . "\n" .
+		"Object:  " . $request->{object} . "\n" .
+		"Version: " . $request->{version} . "\n" .
+		"\n" .
+		join("\n", @print_headers) .
+		"\n" .
+		"entity (body):\n" .
+		$request->{entity} . "\n";
+	print $client "</pre>$EOL";
 	print $client "</html>$EOL";
 
 	close $client;
