@@ -228,7 +228,7 @@ change_user (const char *program)
                         fprintf (stderr,
                                  "%s: Unable to change to group \"%s\".\n",
                                  program, config.group);
-                        exit (EX_CANTCREAT);
+                        exit (EX_NOPERM);
                 }
 
                 log_message (LOG_INFO, "Now running as group \"%s\".",
@@ -255,7 +255,7 @@ change_user (const char *program)
                         fprintf (stderr,
                                  "%s: Unable to change to user \"%s\".\n",
                                  program, config.user);
-                        exit (EX_CANTCREAT);
+                        exit (EX_NOPERM);
                 }
 
                 log_message (LOG_INFO, "Now running as user \"%s\".",
