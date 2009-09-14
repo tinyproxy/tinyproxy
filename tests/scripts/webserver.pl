@@ -75,6 +75,23 @@ sub REAPER {
 	$SIG{CHLD} = \&REAPER;
 }
 
+sub parse_request($) {
+	my $client = shift;
+
+	my $request = "";
+	while (my $request_line = <$client>) {
+		$request .= $request_line;
+		last if ($request_line eq $EOL);
+	}
+
+	logmsg  "request:\n" .
+		"------------------------------\n" .
+		"$request" .
+		"------------------------------";
+
+	return $request;
+}
+
 sub child_action($) {
 	my $client = shift;
 	my $client_ip = shift;
@@ -90,16 +107,7 @@ sub child_action($) {
 		$fortune =~ s/\n/$EOL/g;
 	}
 
-	my $request = "";
-	while (my $request_line = <$client>) {
-		$request .= $request_line;
-		last if ($request_line eq $EOL);
-	}
-
-	logmsg  "request:\n" .
-		"------------------------------\n" .
-		"$request" .
-		"------------------------------";
+	my $request = parse_request($client);
 
 	print $client "HTTP/1.0 200 OK$EOL";
 	print $client "Server: Tinyproxy-Test-Web-Server/$VERSION$EOL";
