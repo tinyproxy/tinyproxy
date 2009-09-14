@@ -53,7 +53,8 @@ unsigned int processed_config_file = FALSE;     /* boolean */
 /*
  * Handle a signal
  */
-RETSIGTYPE takesig (int sig)
+RETSIGTYPE
+takesig (int sig)
 {
         pid_t pid;
         int status;
@@ -78,7 +79,8 @@ RETSIGTYPE takesig (int sig)
 /*
  * Display the version information for the user.
  */
-static void display_version (void)
+static void
+display_version (void)
 {
         printf ("%s %s (%s)\n", PACKAGE, VERSION, TARGET_SYSTEM);
 }
@@ -86,7 +88,8 @@ static void display_version (void)
 /*
  * Display the copyright and license for this program.
  */
-static void display_license (void)
+static void
+display_license (void)
 {
         display_version ();
 
@@ -114,7 +117,8 @@ static void display_license (void)
 /*
  * Display usage to the user.
  */
-static void display_usage (void)
+static void
+display_usage (void)
 {
         printf ("Usage: %s [options]\n", PACKAGE);
         printf ("\
@@ -144,7 +148,8 @@ Options:\n\
 #endif /* REVERSE_SUPPORT */
 }
 
-static int get_id (char *str)
+static int
+get_id (char *str)
 {
         char *tstr;
 
