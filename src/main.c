@@ -198,9 +198,12 @@ process_cmdline (int argc, char **argv)
                         break;
 
                 case 'h':
-                default:
                         display_usage ();
                         exit (EX_OK);
+
+                default:
+                        display_usage ();
+                        exit (EX_USAGE);
                 }
         }
 }
