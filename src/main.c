@@ -161,36 +161,32 @@ static int get_id (char *str)
         return atoi (str);
 }
 
-int main (int argc, char **argv)
+/**
+ * process_cmdline:
+ * @argc: argc as passed to main()
+ * @argv: argv as passed to main()
+ *
+ * This function parses command line arguments.
+ **/
+static void
+process_cmdline (int argc, char **argv)
 {
-        int optch;
-        unsigned int godaemon = TRUE;   /* boolean */
-        struct passwd *thisuser = NULL;
-        struct group *thisgroup = NULL;
-        FILE *config_file;
+        int opt;
 
-        /* Only allow u+rw bits. This may be required for some versions
-         * of glibc so that mkstemp() doesn't make us vulnerable.
-         */
-        umask (0177);
-
-        /* Default configuration file location */
-        config.config_file = DEFAULT_CONF_FILE;
-
-        /*
-         * Process the various options
-         */
-        while ((optch = getopt (argc, argv, "c:vldh")) != EOF) {
-                switch (optch) {
+        while ((opt = getopt (argc, argv, "c:vldh")) != EOF) {
+                switch (opt) {
                 case 'v':
                         display_version ();
                         exit (EX_OK);
+
                 case 'l':
                         display_license ();
                         exit (EX_OK);
+
                 case 'd':
-                        godaemon = FALSE;
+                        config.godaemon = FALSE;
                         break;
+
                 case 'c':
                         config.config_file = safestrdup (optarg);
                         if (!config.config_file) {
@@ -200,12 +196,31 @@ int main (int argc, char **argv)
                                 exit (EX_SOFTWARE);
                         }
                         break;
+
                 case 'h':
                 default:
                         display_usage ();
                         exit (EX_OK);
                 }
         }
+}
+
+int
+main (int argc, char **argv)
+{
+        struct passwd *thisuser = NULL;
+        struct group *thisgroup = NULL;
+        FILE *config_file;
+
+        /* Only allow u+rw bits. This may be required for some versions
+         * of glibc so that mkstemp() doesn't make us vulnerable.
+         */
+        umask (0177);
+
+        config.config_file = DEFAULT_CONF_FILE;
+        config.godaemon = TRUE;
+
+        process_cmdline (argc, argv);
 
         log_message (LOG_INFO, "Initializing " PACKAGE " ...");
 
@@ -244,7 +259,7 @@ int main (int argc, char **argv)
                 }
                 config.syslog = FALSE;  /* disable syslog */
         } else if (config.syslog) {
-                if (godaemon == TRUE)
+                if (config.godaemon == TRUE)
                         openlog ("tinyproxy", LOG_PID, LOG_DAEMON);
                 else
                         openlog ("tinyproxy", LOG_PID, LOG_USER);
@@ -299,7 +314,7 @@ int main (int argc, char **argv)
                 anonymous_insert ("Content-Type");
         }
 
-        if (godaemon == TRUE)
+        if (config.godaemon == TRUE)
                 makedaemon ();
 
         if (config.pidpath) {

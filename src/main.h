@@ -50,6 +50,7 @@ struct config_s {
         unsigned int syslog;    /* boolean */
         int port;
         char *stathost;
+        unsigned int godaemon;  /* boolean */
         unsigned int quit;      /* boolean */
         char *user;
         char *group;
