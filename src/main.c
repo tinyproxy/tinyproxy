@@ -205,6 +205,14 @@ process_cmdline (int argc, char **argv)
         }
 }
 
+/**
+ * change_user:
+ * @program: The name of the program. Pass argv[0] here.
+ *
+ * This function tries to change UID and GID to the ones specified in
+ * the config file. This function is typically called during
+ * initialization when the effective user is root.
+ **/
 static void
 change_user (const char *program)
 {
