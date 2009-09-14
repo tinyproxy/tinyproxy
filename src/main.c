@@ -479,5 +479,5 @@ main (int argc, char **argv)
         else
                 close_log_file ();
 
-        exit (EX_OK);
+        return EXIT_SUCCESS;
 }
