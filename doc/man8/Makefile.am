@@ -16,7 +16,6 @@ else
 endif
 
 EXTRA_DIST = \
-        $(MAN8_FILES) \
         $(man_MANS)
 
 CLEANFILES = \
