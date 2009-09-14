@@ -142,7 +142,8 @@ COPYRIGHT
 
 Copyright (c) 1998-2000 Steven Young; 
 Copyright (c) 2000-2001 Robert James Kaes;
-Copyright (c) 2009 Mukund Sivaraman.
+Copyright (c) 2009 Mukund Sivaraman;
+Copyright (c) 2009 Michael Adam.
 
 This program is distributed under the terms of the GNU General Public
 License version 2 or above. See the COPYING file for additional
