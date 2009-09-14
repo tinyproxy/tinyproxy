@@ -205,11 +205,67 @@ process_cmdline (int argc, char **argv)
         }
 }
 
+static void
+change_user (const char *program)
+{
+        if (config.group && strlen (config.group) > 0) {
+                int gid = get_id (config.group);
+
+                if (gid < 0) {
+                        struct group *thisgroup = getgrnam (config.group);
+
+                        if (!thisgroup) {
+                                fprintf (stderr,
+                                         "%s: Unable to find group \"%s\".\n",
+                                         program, config.group);
+                                exit (EX_NOUSER);
+                        }
+
+                        gid = thisgroup->gr_gid;
+                }
+
+                if (setgid (gid) < 0) {
+                        fprintf (stderr,
+                                 "%s: Unable to change to group \"%s\".\n",
+                                 program, config.group);
+                        exit (EX_CANTCREAT);
+                }
+
+                log_message (LOG_INFO, "Now running as group \"%s\".",
+                             config.group);
+        }
+
+        if (config.user && strlen (config.user) > 0) {
+                int uid = get_id (config.user);
+
+                if (uid < 0) {
+                        struct passwd *thisuser = getpwnam (config.user);
+
+                        if (!thisuser) {
+                                fprintf (stderr,
+                                         "%s: Unable to find user \"%s\".\n",
+                                         program, config.user);
+                                exit (EX_NOUSER);
+                        }
+
+                        uid = thisuser->pw_uid;
+                }
+
+                if (setuid (uid) < 0) {
+                        fprintf (stderr,
+                                 "%s: Unable to change to user \"%s\".\n",
+                                 program, config.user);
+                        exit (EX_CANTCREAT);
+                }
+
+                log_message (LOG_INFO, "Now running as user \"%s\".",
+                             config.user);
+        }
+}
+
 int
 main (int argc, char **argv)
 {
-        struct passwd *thisuser = NULL;
-        struct group *thisgroup = NULL;
         FILE *config_file;
 
         /* Only allow u+rw bits. This may be required for some versions
@@ -344,59 +400,12 @@ main (int argc, char **argv)
                 exit (EX_OSERR);
         }
 
-        /*
-         * Switch to a different user.
-         */
-        if (geteuid () == 0) {
-                if (config.group && strlen (config.group) > 0) {
-                        int gid = get_id (config.group);
-                        if (gid < 0) {
-                                thisgroup = getgrnam (config.group);
-                                if (!thisgroup) {
-                                        fprintf (stderr,
-                                                 "%s: Unable to find "
-                                                 "group \"%s\".\n", argv[0],
-                                                 config.group);
-                                        exit (EX_NOUSER);
-                                }
-                                gid = thisgroup->gr_gid;
-                        }
-                        if (setgid (gid) < 0) {
-                                fprintf (stderr,
-                                         "%s: Unable to change to "
-                                         "group \"%s\".\n", argv[0],
-                                         config.group);
-                                exit (EX_CANTCREAT);
-                        }
-                        log_message (LOG_INFO, "Now running as group \"%s\".",
-                                     config.group);
-                }
-                if (config.user && strlen (config.user) > 0) {
-                        int uid = get_id (config.user);
-                        if (uid < 0) {
-                                thisuser = getpwnam (config.user);
-                                if (!thisuser) {
-                                        fprintf (stderr,
-                                                 "%s: Unable to find "
-                                                 "user \"%s\".\n", argv[0],
-                                                 config.user);
-                                        exit (EX_NOUSER);
-                                }
-                                uid = thisuser->pw_uid;
-                        }
-                        if (setuid (uid) < 0) {
-                                fprintf (stderr,
-                                         "%s: Unable to change to user \"%s\".\n",
-                                         argv[0], config.user);
-                                exit (EX_CANTCREAT);
-                        }
-                        log_message (LOG_INFO, "Now running as user \"%s\".",
-                                     config.user);
-                }
-        } else {
+        /* Switch to a different user if we're running as root */
+        if (geteuid () == 0)
+                change_user (argv[0]);
+        else
                 log_message (LOG_WARNING,
                              "Not running as root, so not changing UID/GID.");
-        }
 
         if (child_pool_create () < 0) {
                 fprintf (stderr, "%s: Could not create the pool of children.\n",
