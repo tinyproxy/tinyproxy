@@ -115,8 +115,8 @@ void filter_init (void)
                                 p->pat = safestrdup (s);
                                 p->cpat =
                                     (regex_t *) safemalloc (sizeof (regex_t));
-                                if ((err =
-                                     regcomp (p->cpat, p->pat, cflags)) != 0) {
+                                err = regcomp (p->cpat, p->pat, cflags);
+                                if (err != 0) {
                                         fprintf (stderr,
                                                  "Bad regex in %s: %s\n",
                                                  config.filter, p->pat);
