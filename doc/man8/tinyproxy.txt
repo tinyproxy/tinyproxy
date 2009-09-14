@@ -58,6 +58,22 @@ information and to force certain events.
     certain number of connections have been handled.
 
 
+TEMPLATE FILES
+--------------
+
+There are two occasions when tinyproxy delivers HTML pages to
+the client on it's own right:
+
+1. When an error occurred, a corresponding error page is returned.
+2. When a request for the stathost is made, a page summarizing the
+   connection statistics is returned. (See STATHOST below.)
+
+The layout of both error pages and the statistics page can be
+controlled via configurable HTML template files that are plain
+HTML files that additionally understand a couple of template
+variables.
+
+
 TEMPLATE VARIABLES
 ------------------
 
@@ -90,6 +106,23 @@ In addition, almost all templates support:
 *detail*::
     A detailed, plain English explanation of the error and possible
     causes.
+
+When tinyproxy finds a variable name enclosed in braces, e.g.
+"\{request}", then this is replaced by the value of the corresponding
+variable before delivery of the page.
+
+
+STATHOST
+--------
+
+Tinyproxy returns an html page with connection statistics when it
+receives a HTTP request for a certain host -- the stathost.
+The stathost name defaults to tinyproxy.stats and can be changed
+at compile-time with the configure switch `--with-stathost` to any
+name or IP address.
+
+The stat file template can be changed at runtime through the configuration
+variable StatFile.
 
 
 FILES
