@@ -33,11 +33,10 @@
 
 static int err;
 
-struct filter_list
-{
-  struct filter_list *next;
-  char *pat;
-  regex_t *cpat;
+struct filter_list {
+        struct filter_list *next;
+        char *pat;
+        regex_t *cpat;
 };
 
 static struct filter_list *fl = NULL;
@@ -47,179 +46,172 @@ static filter_policy_t default_policy = FILTER_DEFAULT_ALLOW;
 /*
  * Initializes a linked list of strings containing hosts/urls to be filtered
  */
-void
-filter_init (void)
+void filter_init (void)
 {
-  FILE *fd;
-  struct filter_list *p;
-  char buf[FILTER_BUFFER_LEN];
-  char *s;
-  int cflags;
+        FILE *fd;
+        struct filter_list *p;
+        char buf[FILTER_BUFFER_LEN];
+        char *s;
+        int cflags;
 
-  if (!fl && !already_init)
-    {
-      fd = fopen (config.filter, "r");
-      if (fd)
-        {
-          p = NULL;
+        if (!fl && !already_init) {
+                fd = fopen (config.filter, "r");
+                if (fd) {
+                        p = NULL;
 
-          cflags = REG_NEWLINE | REG_NOSUB;
-          if (config.filter_extended)
-            cflags |= REG_EXTENDED;
-          if (!config.filter_casesensitive)
-            cflags |= REG_ICASE;
+                        cflags = REG_NEWLINE | REG_NOSUB;
+                        if (config.filter_extended)
+                                cflags |= REG_EXTENDED;
+                        if (!config.filter_casesensitive)
+                                cflags |= REG_ICASE;
 
-          while (fgets (buf, FILTER_BUFFER_LEN, fd))
-            {
-              /*
-               * Remove any trailing white space and
-               * comments.
-               */
-              s = buf;
-              while (*s)
-                {
-                  if (isspace ((unsigned char) *s))
-                    break;
-                  if (*s == '#')
-                    {
-                      /*
-                       * If the '#' char is preceeded by
-                       * an escape, it's not a comment
-                       * string.
-                       */
-                      if (s == buf || *(s - 1) != '\\')
-                        break;
-                    }
-                  ++s;
+                        while (fgets (buf, FILTER_BUFFER_LEN, fd)) {
+                                /*
+                                 * Remove any trailing white space and
+                                 * comments.
+                                 */
+                                s = buf;
+                                while (*s) {
+                                        if (isspace ((unsigned char) *s))
+                                                break;
+                                        if (*s == '#') {
+                                                /*
+                                                 * If the '#' char is preceeded by
+                                                 * an escape, it's not a comment
+                                                 * string.
+                                                 */
+                                                if (s == buf
+                                                    || *(s - 1) != '\\')
+                                                        break;
+                                        }
+                                        ++s;
+                                }
+                                *s = '\0';
+
+                                /* skip leading whitespace */
+                                s = buf;
+                                while (*s && isspace ((unsigned char) *s))
+                                        s++;
+
+                                /* skip blank lines and comments */
+                                if (*s == '\0')
+                                        continue;
+
+                                if (!p) /* head of list */
+                                        fl = p =
+                                            (struct filter_list *)
+                                            safecalloc (1,
+                                                        sizeof (struct
+                                                                filter_list));
+                                else {  /* next entry */
+                                        p->next =
+                                            (struct filter_list *)
+                                            safecalloc (1,
+                                                        sizeof (struct
+                                                                filter_list));
+                                        p = p->next;
+                                }
+
+                                p->pat = safestrdup (s);
+                                p->cpat =
+                                    (regex_t *) safemalloc (sizeof (regex_t));
+                                if ((err =
+                                     regcomp (p->cpat, p->pat, cflags)) != 0) {
+                                        fprintf (stderr,
+                                                 "Bad regex in %s: %s\n",
+                                                 config.filter, p->pat);
+                                        exit (EX_DATAERR);
+                                }
+                        }
+                        if (ferror (fd)) {
+                                perror ("fgets");
+                                exit (EX_DATAERR);
+                        }
+                        fclose (fd);
+
+                        already_init = 1;
                 }
-              *s = '\0';
-
-              /* skip leading whitespace */
-              s = buf;
-              while (*s && isspace ((unsigned char) *s))
-                s++;
-
-              /* skip blank lines and comments */
-              if (*s == '\0')
-                continue;
-
-              if (!p)           /* head of list */
-                fl = p = (struct filter_list *)safecalloc (1,
-                                                   sizeof (struct filter_list));
-              else
-                {               /* next entry */
-                  p->next = (struct filter_list *)safecalloc (1,
-                                                   sizeof (struct filter_list));
-                  p = p->next;
-                }
-
-              p->pat = safestrdup (s);
-              p->cpat = (regex_t *)safemalloc (sizeof (regex_t));
-              if ((err = regcomp (p->cpat, p->pat, cflags)) != 0)
-                {
-                  fprintf (stderr, "Bad regex in %s: %s\n",
-                           config.filter, p->pat);
-                  exit (EX_DATAERR);
-                }
-            }
-          if (ferror (fd))
-            {
-              perror ("fgets");
-              exit (EX_DATAERR);
-            }
-          fclose (fd);
-
-          already_init = 1;
         }
-    }
 }
 
 /* unlink the list */
-void
-filter_destroy (void)
+void filter_destroy (void)
 {
-  struct filter_list *p, *q;
+        struct filter_list *p, *q;
 
-  if (already_init)
-    {
-      for (p = q = fl; p; p = q)
-        {
-          regfree (p->cpat);
-          safefree (p->cpat);
-          safefree (p->pat);
-          q = p->next;
-          safefree (p);
+        if (already_init) {
+                for (p = q = fl; p; p = q) {
+                        regfree (p->cpat);
+                        safefree (p->cpat);
+                        safefree (p->pat);
+                        q = p->next;
+                        safefree (p);
+                }
+                fl = NULL;
+                already_init = 0;
         }
-      fl = NULL;
-      already_init = 0;
-    }
 }
 
 /* Return 0 to allow, non-zero to block */
-int
-filter_domain (const char *host)
+int filter_domain (const char *host)
 {
-  struct filter_list *p;
-  int result;
+        struct filter_list *p;
+        int result;
 
-  if (!fl || !already_init)
-    goto COMMON_EXIT;
+        if (!fl || !already_init)
+                goto COMMON_EXIT;
 
-  for (p = fl; p; p = p->next)
-    {
-      result = regexec (p->cpat, host, (size_t) 0, (regmatch_t *) 0, 0);
+        for (p = fl; p; p = p->next) {
+                result =
+                    regexec (p->cpat, host, (size_t) 0, (regmatch_t *) 0, 0);
 
-      if (result == 0)
-        {
-          if (default_policy == FILTER_DEFAULT_ALLOW)
-            return 1;
-          else
-            return 0;
+                if (result == 0) {
+                        if (default_policy == FILTER_DEFAULT_ALLOW)
+                                return 1;
+                        else
+                                return 0;
+                }
         }
-    }
 
 COMMON_EXIT:
-  if (default_policy == FILTER_DEFAULT_ALLOW)
-    return 0;
-  else
-    return 1;
+        if (default_policy == FILTER_DEFAULT_ALLOW)
+                return 0;
+        else
+                return 1;
 }
 
 /* returns 0 to allow, non-zero to block */
-int
-filter_url (const char *url)
+int filter_url (const char *url)
 {
-  struct filter_list *p;
-  int result;
+        struct filter_list *p;
+        int result;
 
-  if (!fl || !already_init)
-    goto COMMON_EXIT;
+        if (!fl || !already_init)
+                goto COMMON_EXIT;
 
-  for (p = fl; p; p = p->next)
-    {
-      result = regexec (p->cpat, url, (size_t) 0, (regmatch_t *) 0, 0);
+        for (p = fl; p; p = p->next) {
+                result =
+                    regexec (p->cpat, url, (size_t) 0, (regmatch_t *) 0, 0);
 
-      if (result == 0)
-        {
-          if (default_policy == FILTER_DEFAULT_ALLOW)
-            return 1;
-          else
-            return 0;
+                if (result == 0) {
+                        if (default_policy == FILTER_DEFAULT_ALLOW)
+                                return 1;
+                        else
+                                return 0;
+                }
         }
-    }
 
 COMMON_EXIT:
-  if (default_policy == FILTER_DEFAULT_ALLOW)
-    return 0;
-  else
-    return 1;
+        if (default_policy == FILTER_DEFAULT_ALLOW)
+                return 0;
+        else
+                return 1;
 }
 
 /*
  * Set the default filtering policy
  */
-void
-filter_set_default_policy (filter_policy_t policy)
+void filter_set_default_policy (filter_policy_t policy)
 {
-  default_policy = policy;
+        default_policy = policy;
 }

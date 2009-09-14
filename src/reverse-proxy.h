@@ -23,11 +23,10 @@
 
 #include "conns.h"
 
-struct reversepath
-{
-  struct reversepath *next;
-  char *path;
-  char *url;
+struct reversepath {
+        struct reversepath *next;
+        char *path;
+        char *url;
 };
 
 #define REVERSE_COOKIE "yummy_magical_cookie"

@@ -33,72 +33,70 @@
  * Even if upstream support is not compiled into tinyproxy, this
  * structure still needs to be defined.
  */
-struct upstream
-{
-  struct upstream *next;
-  char *domain;                 /* optional */
-  char *host;
-  int port;
-  in_addr_t ip, mask;
+struct upstream {
+        struct upstream *next;
+        char *domain;           /* optional */
+        char *host;
+        int port;
+        in_addr_t ip, mask;
 };
 
 /*
  * Hold all the configuration time information.
  */
-struct config_s
-{
-  char *logf_name;
-  const char *config_file;
-  unsigned int syslog;          /* boolean */
-  int port;
-  char *stathost;
-  unsigned int quit;            /* boolean */
-  char *user;
-  char *group;
-  char *ipAddr;
+struct config_s {
+        char *logf_name;
+        const char *config_file;
+        unsigned int syslog;    /* boolean */
+        int port;
+        char *stathost;
+        unsigned int quit;      /* boolean */
+        char *user;
+        char *group;
+        char *ipAddr;
 #ifdef FILTER_ENABLE
-  char *filter;
-  unsigned int filter_url;      /* boolean */
-  unsigned int filter_extended; /* boolean */
-  unsigned int filter_casesensitive;    /* boolean */
+        char *filter;
+        unsigned int filter_url;        /* boolean */
+        unsigned int filter_extended;   /* boolean */
+        unsigned int filter_casesensitive;      /* boolean */
 #endif                          /* FILTER_ENABLE */
 #ifdef XTINYPROXY_ENABLE
-  char *my_domain;
+        char *my_domain;
 #endif
 #ifdef REVERSE_SUPPORT
-  struct reversepath *reversepath_list;
-  unsigned int reverseonly;     /* boolean */
-  unsigned int reversemagic;    /* boolean */
-  char *reversebaseurl;
+        struct reversepath *reversepath_list;
+        unsigned int reverseonly;       /* boolean */
+        unsigned int reversemagic;      /* boolean */
+        char *reversebaseurl;
 #endif
 #ifdef UPSTREAM_SUPPORT
-  struct upstream *upstream_list;
+        struct upstream *upstream_list;
 #endif                          /* UPSTREAM_SUPPORT */
-  char *pidpath;
-  unsigned int idletimeout;
-  char *bind_address;
-  unsigned int bindsame;
+        char *pidpath;
+        unsigned int idletimeout;
+        char *bind_address;
+        unsigned int bindsame;
 
-  /*
-   * The configured name to use in the HTTP "Via" header field.
-   */
-  char *via_proxy_name;
+        /*
+         * The configured name to use in the HTTP "Via" header field.
+         */
+        char *via_proxy_name;
 
-  /*
-   * Error page support.  Map error numbers to file paths.
-   */
-  hashmap_t errorpages;
+        /*
+         * Error page support.  Map error numbers to file paths.
+         */
+        hashmap_t errorpages;
 
-  /*
-   * Error page to be displayed if appropriate page cannot be located
-   * in the errorpages structure.
-   */
-  char *errorpage_undef;
+        /*
+         * Error page to be displayed if appropriate page cannot be located
+         * in the errorpages structure.
+         */
+        char *errorpage_undef;
 
-  /*
-   * The HTML statistics page.
-   */
-  char *statpage;
+        /*
+         * The HTML statistics page.
+         */
+        char *statpage;
 };
 
 /* Global Structures used in the program */

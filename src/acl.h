@@ -21,8 +21,7 @@
 #ifndef TINYPROXY_ACL_H
 #define TINYPROXY_ACL_H
 
-typedef enum
-{ ACL_ALLOW, ACL_DENY } acl_access_t;
+typedef enum { ACL_ALLOW, ACL_DENY } acl_access_t;
 
 extern int insert_acl (char *location, acl_access_t access_type);
 extern int check_acl (const char *ip_address, const char *string_address);

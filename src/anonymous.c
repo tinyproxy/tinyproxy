@@ -29,23 +29,21 @@
 
 static hashmap_t anonymous_map = NULL;
 
-short int
-is_anonymous_enabled (void)
+short int is_anonymous_enabled (void)
 {
-  return (anonymous_map != NULL) ? 1 : 0;
+        return (anonymous_map != NULL) ? 1 : 0;
 }
 
 /*
  * Search for the header.  This function returns a positive value greater than
  * zero if the string was found, zero if it wasn't and negative upon error.
  */
-int
-anonymous_search (const char *s)
+int anonymous_search (const char *s)
 {
-  assert (s != NULL);
-  assert (anonymous_map != NULL);
+        assert (s != NULL);
+        assert (anonymous_map != NULL);
 
-  return hashmap_search (anonymous_map, s);
+        return hashmap_search (anonymous_map, s);
 }
 
 /*
@@ -54,26 +52,23 @@ anonymous_search (const char *s)
  * Return -1 if there is an error, otherwise a 0 is returned if the insert was
  * successful.
  */
-int
-anonymous_insert (const char *s)
+int anonymous_insert (const char *s)
 {
-  char data = 1;
+        char data = 1;
 
-  assert (s != NULL);
+        assert (s != NULL);
 
-  if (!anonymous_map)
-    {
-      anonymous_map = hashmap_create (32);
-      if (!anonymous_map)
-        return -1;
-    }
+        if (!anonymous_map) {
+                anonymous_map = hashmap_create (32);
+                if (!anonymous_map)
+                        return -1;
+        }
 
-  if (hashmap_search (anonymous_map, s) > 0)
-    {
-      /* The key was already found, so return a positive number. */
-      return 0;
-    }
+        if (hashmap_search (anonymous_map, s) > 0) {
+                /* The key was already found, so return a positive number. */
+                return 0;
+        }
 
-  /* Insert the new key */
-  return hashmap_insert (anonymous_map, s, &data, sizeof (data));
+        /* Insert the new key */
+        return hashmap_insert (anonymous_map, s, &data, sizeof (data));
 }

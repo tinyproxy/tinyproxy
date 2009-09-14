@@ -29,133 +29,129 @@
 /*
  * Add entry to the reversepath list
  */
-void
-reversepath_add (const char *path, const char *url)
+void reversepath_add (const char *path, const char *url)
 {
-  struct reversepath *reverse;
+        struct reversepath *reverse;
 
-  if (url == NULL)
-    {
-      log_message (LOG_WARNING, "Illegal reverse proxy rule: missing url");
-      return;
-    }
+        if (url == NULL) {
+                log_message (LOG_WARNING,
+                             "Illegal reverse proxy rule: missing url");
+                return;
+        }
 
-  if (!strstr (url, "://"))
-    {
-      log_message (LOG_WARNING,
-                   "Skipping reverse proxy rule: '%s' is not a valid url",
-                   url);
-      return;
-    }
+        if (!strstr (url, "://")) {
+                log_message (LOG_WARNING,
+                             "Skipping reverse proxy rule: '%s' is not a valid url",
+                             url);
+                return;
+        }
 
-  if (path && *path != '/')
-    {
-      log_message (LOG_WARNING,
-                   "Skipping reverse proxy rule: path '%s' "
-                   "doesn't start with a /", path);
-      return;
-    }
+        if (path && *path != '/') {
+                log_message (LOG_WARNING,
+                             "Skipping reverse proxy rule: path '%s' "
+                             "doesn't start with a /", path);
+                return;
+        }
 
-  if (!(reverse = safemalloc (sizeof (struct reversepath))))
-    {
-      log_message (LOG_ERR, "Unable to allocate memory in reversepath_add()");
-      return;
-    }
+        if (!(reverse = safemalloc (sizeof (struct reversepath)))) {
+                log_message (LOG_ERR,
+                             "Unable to allocate memory in reversepath_add()");
+                return;
+        }
 
-  if (!path)
-    reverse->path = safestrdup ("/");
-  else
-    reverse->path = safestrdup (path);
+        if (!path)
+                reverse->path = safestrdup ("/");
+        else
+                reverse->path = safestrdup (path);
 
-  reverse->url = safestrdup (url);
+        reverse->url = safestrdup (url);
 
-  reverse->next = config.reversepath_list;
-  config.reversepath_list = reverse;
+        reverse->next = config.reversepath_list;
+        config.reversepath_list = reverse;
 
-  log_message (LOG_INFO,
-               "Added reverse proxy rule: %s -> %s", reverse->path,
-               reverse->url);
+        log_message (LOG_INFO,
+                     "Added reverse proxy rule: %s -> %s", reverse->path,
+                     reverse->url);
 }
 
 /*
  * Check if a request url is in the reversepath list
  */
-struct reversepath *
-reversepath_get (char *url)
+struct reversepath *reversepath_get (char *url)
 {
-  struct reversepath *reverse = config.reversepath_list;
+        struct reversepath *reverse = config.reversepath_list;
 
-  while (reverse)
-    {
-      if (strstr (url, reverse->path) == url)
-        return reverse;
+        while (reverse) {
+                if (strstr (url, reverse->path) == url)
+                        return reverse;
 
-      reverse = reverse->next;
-    }
+                reverse = reverse->next;
+        }
 
-  return NULL;
+        return NULL;
 }
 
 /*
  * Rewrite the URL for reverse proxying.
  */
-char *
-reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
-                     char *url)
+char *reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
+                           char *url)
 {
-  char *rewrite_url = NULL;
-  char *cookie = NULL;
-  char *cookieval;
-  struct reversepath *reverse;
+        char *rewrite_url = NULL;
+        char *cookie = NULL;
+        char *cookieval;
+        struct reversepath *reverse;
 
-  /* Reverse requests always start with a slash */
-  if (*url == '/')
-    {
-      /* First try locating the reverse mapping by request url */
-      reverse = reversepath_get (url);
-      if (reverse)
-        {
-          rewrite_url = safemalloc (strlen (url) + strlen (reverse->url) + 1);
-          strcpy (rewrite_url, reverse->url);
-          strcat (rewrite_url, url + strlen (reverse->path));
+        /* Reverse requests always start with a slash */
+        if (*url == '/') {
+                /* First try locating the reverse mapping by request url */
+                reverse = reversepath_get (url);
+                if (reverse) {
+                        rewrite_url =
+                            safemalloc (strlen (url) + strlen (reverse->url) +
+                                        1);
+                        strcpy (rewrite_url, reverse->url);
+                        strcat (rewrite_url, url + strlen (reverse->path));
+                } else if (config.reversemagic
+                           && hashmap_entry_by_key (hashofheaders,
+                                                    "cookie",
+                                                    (void **) &cookie) > 0) {
+
+                        /* No match - try the magical tracking cookie next */
+                        if ((cookieval = strstr (cookie, REVERSE_COOKIE "="))
+                            && (reverse =
+                                reversepath_get (cookieval +
+                                                 strlen (REVERSE_COOKIE) +
+                                                 1))) {
+
+                                rewrite_url = safemalloc (strlen (url) +
+                                                          strlen (reverse->
+                                                                  url) + 1);
+                                strcpy (rewrite_url, reverse->url);
+                                strcat (rewrite_url, url + 1);
+
+                                log_message (LOG_INFO,
+                                             "Magical tracking cookie says: %s",
+                                             reverse->path);
+                        }
+                }
         }
-      else if (config.reversemagic
-               && hashmap_entry_by_key (hashofheaders,
-                                        "cookie", (void **) &cookie) > 0)
-        {
 
-          /* No match - try the magical tracking cookie next */
-          if ((cookieval = strstr (cookie, REVERSE_COOKIE "="))
-              && (reverse =
-                  reversepath_get (cookieval + strlen (REVERSE_COOKIE) + 1)))
-            {
-
-              rewrite_url = safemalloc (strlen (url) +
-                                        strlen (reverse->url) + 1);
-              strcpy (rewrite_url, reverse->url);
-              strcat (rewrite_url, url + 1);
-
-              log_message (LOG_INFO,
-                           "Magical tracking cookie says: %s", reverse->path);
-            }
+        /* Forward proxy support off and no reverse path match found */
+        if (config.reverseonly && !rewrite_url) {
+                log_message (LOG_ERR, "Bad request");
+                indicate_http_error (connptr, 400, "Bad Request",
+                                     "detail",
+                                     "Request has an invalid URL", "url", url,
+                                     NULL);
+                return NULL;
         }
-    }
 
-  /* Forward proxy support off and no reverse path match found */
-  if (config.reverseonly && !rewrite_url)
-    {
-      log_message (LOG_ERR, "Bad request");
-      indicate_http_error (connptr, 400, "Bad Request",
-                           "detail",
-                           "Request has an invalid URL", "url", url, NULL);
-      return NULL;
-    }
+        log_message (LOG_CONN, "Rewriting URL: %s -> %s", url, rewrite_url);
 
-  log_message (LOG_CONN, "Rewriting URL: %s -> %s", url, rewrite_url);
+        /* Store reverse path so that the magical tracking cookie can be set */
+        if (config.reversemagic)
+                connptr->reversepath = safestrdup (reverse->path);
 
-  /* Store reverse path so that the magical tracking cookie can be set */
-  if (config.reversemagic)
-    connptr->reversepath = safestrdup (reverse->path);
-
-  return rewrite_url;
+        return rewrite_url;
 }
