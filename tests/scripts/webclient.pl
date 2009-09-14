@@ -23,7 +23,10 @@ use strict;
 use IO::Socket;
 
 my $EOL = "\015\012";
-my $BLANK = $EOL x 2;
+
+my $VERSION = "0.1";
+my $NAME = "Tinyproxy-Web-Client";
+my $user_agent = "$NAME/$VERSION";
 
 unless (@ARGV > 1) {
 	die "usage: $0 host[:port] document ...";
@@ -49,9 +52,13 @@ foreach my $document (@ARGV) {
 
 	$remote->autoflush(1);
 
-	print $remote "GET $document HTTP/1.0" . $BLANK;
+	print $remote "GET $document HTTP/1.0" . $EOL .
+		      "User-Agent: $user_agent$EOL" .
+		      $EOL;
+
 	while (<$remote>) {
 		print;
 	}
+
 	close $remote;
 }
