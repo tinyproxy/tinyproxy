@@ -19,5 +19,6 @@ EXTRA_DIST = \
         $(MAN8_FILES) \
         $(man_MANS)
 
-clean-local:
-	rm -f $(MAN8_FILES:.txt=.8) $(MAN1_FILES:.txt=.xml)
+CLEANFILES = \
+	$(MAN8_FILES:.txt=.8) \
+	$(MAN8_FILES:.txt=.xml)

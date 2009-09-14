@@ -1,6 +1,7 @@
 TINYPROXY(8)
 ============
-:Author: The Tinyproxy Team
+:man source:   Version @VERSION@
+:man manual:   Tinyproxy manual
 
 NAME
 ----
@@ -141,7 +142,7 @@ To report bugs in Tinyproxy, please visit
 COPYRIGHT
 ---------
 
-Copyright (c) 1998-2000 Steven Young; 
+Copyright (c) 1998-2000 Steven Young;
 Copyright (c) 2000-2001 Robert James Kaes;
 Copyright (c) 2009 Mukund Sivaraman;
 Copyright (c) 2009 Michael Adam.
