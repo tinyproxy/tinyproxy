@@ -1,33 +1,24 @@
-'\" t
 .\"     Title: tinyproxy
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.74.3 <http://docbook.sf.net/>
-.\"      Date: 09/13/2009
-.\"    Manual: [FIXME: manual]
-.\"    Source: [FIXME: source]
-.\"  Language: English
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 09/14/2009
+.\"    Manual: 
+.\"    Source: 
 .\"
-.TH "TINYPROXY" "8" "09/13/2009" "[FIXME: source]" "[FIXME: manual]"
-.\" -----------------------------------------------------------------
-.\" * set default formatting
-.\" -----------------------------------------------------------------
+.TH "TINYPROXY" "8" "09/14/2009" "" ""
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
-.\" -----------------------------------------------------------------
-.\" * MAIN CONTENT STARTS HERE *
-.\" -----------------------------------------------------------------
 .SH "NAME"
-tinyproxy \- A light\-weight HTTP proxy daemon
+tinyproxy \- A light-weight HTTP proxy daemon
 .SH "SYNOPSIS"
-.sp
 \fBtinyproxy\fR [\-vldch]
+.sp
 .SH "DESCRIPTION"
-.sp
 \fBtinyproxy\fR is a light\-weight HTTP proxy daemon designed to consume a minimum amount of system resources\&. It listens on a given TCP port and handles HTTP proxy requests\&. Designed from the ground up to be fast and yet small, it is an ideal solution for use cases such as embedded deployments where a full featured HTTP proxy is required, but the system resources for a larger proxy are unavailable\&.
-.SH "OPTIONS"
 .sp
+.SH "OPTIONS"
 \fBtinyproxy\fR accepts the following options:
 .PP
 \fB\-c <config\-file>\fR
@@ -55,15 +46,26 @@ Display the licensing agreement\&.
 Display version information and exit\&.
 .RE
 .SH "SIGNALS"
-.sp
 In addition to command\-line options, there are also several signals that can be sent to \fBtinyproxy\fR while it is running to generate debugging information and to force certain events\&.
 .PP
 \fBSIGHUP\fR
 .RS 4
 Force Tinyproxy to do a garbage collection on the current connections linked list\&. This is usually done automatically after a certain number of connections have been handled\&.
 .RE
-.SH "TEMPLATE VARIABLES"
+.SH "TEMPLATE FILES"
+There are two occasions when tinyproxy delivers HTML pages to the client on it\'s own right:
 .sp
+.sp
+.RS 4
+\h'-04' 1.\h'+02'When an error occurred, a corresponding error page is returned\&.
+.RE
+.sp
+.RS 4
+\h'-04' 2.\h'+02'When a request for the stathost is made, a page summarizing the connection statistics is returned\&. (See STATHOST below\&.)
+.RE
+The layout of both error pages and the statistics page can be controlled via configurable HTML template files that are plain HTML files that additionally understand a couple of template variables\&.
+.sp
+.SH "TEMPLATE VARIABLES"
 There are several standard HTML variables that are available in every template file:
 .PP
 \fBrequest\fR
@@ -101,21 +103,27 @@ The package name\&. Presently, resolves to
 .RS 4
 The current date/time in HTTP format\&.
 .RE
-.sp
 In addition, almost all templates support:
 .PP
 \fBdetail\fR
 .RS 4
 A detailed, plain English explanation of the error and possible causes\&.
 .RE
+When tinyproxy finds a variable name enclosed in braces, e\&.g\&. "{request}", then this is replaced by the value of the corresponding variable before delivery of the page\&.
+.sp
+.SH "STATHOST"
+Tinyproxy returns an html page with connection statistics when it receives a HTTP request for a certain host \(em the stathost\&. The stathost name defaults to tinyproxy\&.stats and can be changed at compile\-time with the configure switch \-\-with\-stathost to any name or IP address\&.
+.sp
+The stat file template can be changed at runtime through the configuration variable StatFile\&.
+.sp
 .SH "FILES"
-.sp
 /etc/tinyproxy/tinyproxy\&.conf, /var/run/tinyproxy\&.pid, /var/log/tinyproxy\&.log
+.sp
 .SH "BUGS"
-.sp
 To report bugs in Tinyproxy, please visit <https://www\&.banu\&.com/tinyproxy/support/>\&.
-.SH "COPYRIGHT"
 .sp
-Copyright (c) 1998\-2000 Steven Young; Copyright (c) 2000\-2001 Robert James Kaes; Copyright (c) 2009 Mukund Sivaraman\&.
+.SH "COPYRIGHT"
+Copyright (c) 1998\-2000 Steven Young; Copyright (c) 2000\-2001 Robert James Kaes; Copyright (c) 2009 Mukund Sivaraman; Copyright (c) 2009 Michael Adam\&.
 .sp
 This program is distributed under the terms of the GNU General Public License version 2 or above\&. See the COPYING file for additional information\&.
+.sp
