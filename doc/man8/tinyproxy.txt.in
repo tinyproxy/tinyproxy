@@ -72,7 +72,7 @@ the client on it's own right:
 
 The layout of both error pages and the statistics page can be
 controlled via configurable HTML template files that are plain
-HTML files that additionally understand a couple of template
+HTML files that additionally understand a few template
 variables.
 
 
