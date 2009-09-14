@@ -41,8 +41,6 @@
 #include "stats.h"
 #include "utils.h"
 
-RETSIGTYPE takesig (int sig);
-
 /*
  * Global Structures
  */
@@ -53,7 +51,7 @@ unsigned int processed_config_file = FALSE;     /* boolean */
 /*
  * Handle a signal
  */
-RETSIGTYPE
+static RETSIGTYPE
 takesig (int sig)
 {
         pid_t pid;
