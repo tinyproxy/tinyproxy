@@ -47,7 +47,6 @@ RETSIGTYPE takesig (int sig);
  * Global Structures
  */
 struct config_s config;
-float load = 0.00;
 unsigned int received_sighup = FALSE;   /* boolean */
 unsigned int processed_config_file = FALSE;     /* boolean */
 
