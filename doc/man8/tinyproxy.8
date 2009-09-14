@@ -64,7 +64,7 @@ Force Tinyproxy to do a garbage collection on the current connections linked lis
 .RE
 .SH "TEMPLATE FILES"
 .sp
-There are two occasions when tinyproxy delivers HTML pages to the client on it\(cqs own right:
+There are two occasions when Tinyproxy delivers HTML pages to the client on it\(cqs own right:
 .sp
 .RS 4
 .ie n \{\
@@ -115,7 +115,7 @@ The hostname of the client making the request\&.
 .PP
 \fBversion\fR
 .RS 4
-The version of tinyproxy\&.
+The version of Tinyproxy\&.
 .RE
 .PP
 \fBpackage\fR
@@ -136,10 +136,10 @@ In addition, almost all templates support:
 A detailed, plain English explanation of the error and possible causes\&.
 .RE
 .sp
-When tinyproxy finds a variable name enclosed in braces, e\&.g\&. "{request}", then this is replaced by the value of the corresponding variable before delivery of the page\&.
+When Tinyproxy finds a variable name enclosed in braces, e\&.g\&. "{request}", then this is replaced by the value of the corresponding variable before delivery of the page\&.
 .SH "STATHOST"
 .sp
-Tinyproxy returns an html page with connection statistics when it receives a HTTP request for a certain host \(em the stathost\&. The stathost name defaults to tinyproxy\&.stats and can be changed at compile\-time with the configure switch \-\-with\-stathost to any name or IP address\&.
+Tinyproxy returns a HTML page with connection statistics when it receives a HTTP request for a certain host \(em the stathost\&. The stathost name defaults to tinyproxy\&.stats and can be changed at compile\-time with the configure switch \-\-with\-stathost to any name or IP address\&.
 .sp
 The stat file template can be changed at runtime through the configuration variable StatFile\&.
 .SH "FILES"
