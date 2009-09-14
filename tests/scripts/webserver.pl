@@ -32,6 +32,8 @@ use Pod::Usage;
 use Fcntl ':flock'; # import LOCK_* constants
 
 my $VERSION = "0.1";
+my $NAME = "Tinyproxy-Test-Web-Server";
+my $server_header = "Server: $NAME/$VERSION";
 
 my $EOL = "\015\012";
 
@@ -180,7 +182,7 @@ sub child_action($) {
 
 	if ($request->{error}) {
 		print $client "HTTP/1.0 400 Bad Request$EOL";
-		print $client "Server: Tinyproxy-Test-Web-Server/$VERSION$EOL";
+		print $client "$server_header$EOL";
 		print $client "Content-Type: text/html$EOL";
 		print $client "$EOL";
 		print $client "<html>$EOL";
@@ -192,7 +194,7 @@ sub child_action($) {
 	}
 
 	print $client "HTTP/1.0 200 OK$EOL";
-	print $client "Server: Tinyproxy-Test-Web-Server/$VERSION$EOL";
+	print $client "$server_header$EOL";
 	print $client "Content-Type: text/html$EOL";
 	print $client "$EOL";
 	print $client "<html>$EOL";
