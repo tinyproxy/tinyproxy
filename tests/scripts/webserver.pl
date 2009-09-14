@@ -178,6 +178,19 @@ sub child_action($) {
 
 	my $request = parse_request($client);
 
+	if ($request->{error}) {
+		print $client "HTTP/1.0 400 Bad Request$EOL";
+		print $client "Server: Tinyproxy-Test-Web-Server/$VERSION$EOL";
+		print $client "Content-Type: text/html$EOL";
+		print $client "$EOL";
+		print $client "<html>$EOL";
+		print $client "<h1>400 Bad Request</h1>$EOL";
+		print $client "<p>Error: " . $request->{error} . "</p>$EOL";
+		print $client "</html>$EOL";
+		close $client;
+		return;
+	}
+
 	print $client "HTTP/1.0 200 OK$EOL";
 	print $client "Server: Tinyproxy-Test-Web-Server/$VERSION$EOL";
 	print $client "Content-Type: text/html$EOL";
