@@ -11,4 +11,5 @@ ACLOCAL_AMFLAGS = -I m4macros
 
 EXTRA_DIST = \
 	autogen.sh \
+	tinyproxy-indent.sh \
 	TODO
