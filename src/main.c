@@ -302,31 +302,29 @@ main (int argc, char **argv)
          */
         config.errorpages = NULL;
 
-        /*
-         * Read in the settings from the config file.
-         */
+        /* Read in the settings from the config file */
         config_file = fopen (config.config_file, "r");
         if (!config_file) {
                 fprintf (stderr,
-                         "%s: Could not open configuration file \"%s\".\n",
+                         "%s: Could not open config file \"%s\".\n",
                          argv[0], config.config_file);
                 exit (EX_SOFTWARE);
         }
+
         if (config_compile () || config_parse (&config, config_file)) {
-                fprintf (stderr,
-                         "Unable to parse configuration file.  Not starting.\n");
+                fprintf (stderr, "Unable to parse config file. "
+                         "Not starting.\n");
                 exit (EX_SOFTWARE);
         }
+
         fclose (config_file);
 
-        /*
-         * Write to a user supplied log file if it's defined.  This
-         * will override using the syslog even if syslog is defined.
-         */
+        /* Write to a user supplied log file if it's defined.  This will
+         * override using the syslog even if syslog is defined. */
         if (config.logf_name) {
                 if (open_log_file (config.logf_name) < 0) {
-                        fprintf (stderr, "%s: Could not create log file.\n",
-                                 argv[0]);
+                        fprintf (stderr,
+                                 "%s: Could not create log file.\n", argv[0]);
                         exit (EX_SOFTWARE);
                 }
                 config.syslog = FALSE;  /* disable syslog */
@@ -336,51 +334,47 @@ main (int argc, char **argv)
                 else
                         openlog ("tinyproxy", LOG_PID, LOG_USER);
         } else {
-                fprintf (stderr,
-                         "%s: Either define a logfile or enable syslog logging.\n",
-                         argv[0]);
+                fprintf (stderr, "%s: Either define a logfile or "
+                         "enable syslog logging.\n", argv[0]);
                 exit (EX_SOFTWARE);
         }
 
         processed_config_file = TRUE;
         send_stored_logs ();
 
-        /*
-         * Set the default values if they were not set in the config file.
-         */
+        /* Set the default values if they were not set in the config
+         * file. */
         if (config.port == 0) {
-                fprintf (stderr,
-                         "%s: You MUST set a Port in the configuration file.\n",
-                         argv[0]);
+                fprintf (stderr, "%s: You MUST set a Port in the "
+                         "config file.\n", argv[0]);
                 exit (EX_SOFTWARE);
         }
+
         if (!config.stathost) {
                 log_message (LOG_INFO, "Setting stathost to \"%s\".",
                              DEFAULT_STATHOST);
                 config.stathost = DEFAULT_STATHOST;
         }
+
         if (!config.user) {
-                log_message (LOG_WARNING,
-                             "You SHOULD set a UserName in the configuration file. "
-                             "Using current user instead.");
+                log_message (LOG_WARNING, "You SHOULD set a UserName in the "
+                             "config file. Using current user instead.");
         }
+
         if (config.idletimeout == 0) {
-                log_message (LOG_WARNING,
-                             "Invalid idle time setting. Only values greater than zero "
-                             "allowed; therefore setting idle timeout to %u seconds.",
+                log_message (LOG_WARNING, "Invalid idle time setting. "
+                             "Only values greater than zero are allowed. "
+                             "Therefore setting idle timeout to %u seconds.",
                              MAX_IDLE_TIME);
                 config.idletimeout = MAX_IDLE_TIME;
         }
 
         init_stats ();
 
-        /*
-         * If ANONYMOUS is turned on, make sure that Content-Length is
+        /* If ANONYMOUS is turned on, make sure that Content-Length is
          * in the list of allowed headers, since it is required in a
-         * HTTP/1.0 request. Also add the Content-Type header since it goes
-         * hand in hand with Content-Length.
-         *     - rjkaes
-         */
+         * HTTP/1.0 request. Also add the Content-Type header since it
+         * goes hand in hand with Content-Length. */
         if (is_anonymous_enabled ()) {
                 anonymous_insert ("Content-Length");
                 anonymous_insert ("Content-Type");
@@ -402,14 +396,13 @@ main (int argc, char **argv)
                          argv[0]);
                 exit (EX_OSERR);
         }
+
 #ifdef FILTER_ENABLE
         if (config.filter)
                 filter_init ();
 #endif /* FILTER_ENABLE */
 
-        /*
-         * Start listening on the selected port.
-         */
+        /* Start listening on the selected port. */
         if (child_listening_sock (config.port) < 0) {
                 fprintf (stderr, "%s: Could not create listening socket.\n",
                          argv[0]);
@@ -424,34 +417,34 @@ main (int argc, char **argv)
                              "Not running as root, so not changing UID/GID.");
 
         if (child_pool_create () < 0) {
-                fprintf (stderr, "%s: Could not create the pool of children.\n",
+                fprintf (stderr,
+                         "%s: Could not create the pool of children.\n",
                          argv[0]);
                 exit (EX_SOFTWARE);
         }
 
-        /*
-         * These signals are only for the parent process.
-         */
+        /* These signals are only for the parent process. */
         log_message (LOG_INFO, "Setting the various signals.");
+
         if (set_signal_handler (SIGCHLD, takesig) == SIG_ERR) {
                 fprintf (stderr, "%s: Could not set the \"SIGCHLD\" signal.\n",
                          argv[0]);
                 exit (EX_OSERR);
         }
+
         if (set_signal_handler (SIGTERM, takesig) == SIG_ERR) {
                 fprintf (stderr, "%s: Could not set the \"SIGTERM\" signal.\n",
                          argv[0]);
                 exit (EX_OSERR);
         }
+
         if (set_signal_handler (SIGHUP, takesig) == SIG_ERR) {
                 fprintf (stderr, "%s: Could not set the \"SIGHUP\" signal.\n",
                          argv[0]);
                 exit (EX_OSERR);
         }
 
-        /*
-         * Start the main loop.
-         */
+        /* Start the main loop */
         log_message (LOG_INFO, "Starting main loop. Accepting connections.");
 
         child_main_loop ();
@@ -461,14 +454,13 @@ main (int argc, char **argv)
         child_kill_children ();
         child_close_sock ();
 
-        /*
-         * Remove the PID file.
-         */
+        /* Remove the PID file */
         if (unlink (config.pidpath) < 0) {
                 log_message (LOG_WARNING,
                              "Could not remove PID file \"%s\": %s.",
                              config.pidpath, strerror (errno));
         }
+
 #ifdef FILTER_ENABLE
         if (config.filter)
                 filter_destroy ();
