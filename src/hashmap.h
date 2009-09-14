@@ -21,12 +21,6 @@
 #ifndef _HASHMAP_H
 #define _HASHMAP_H
 
-/* Allow the use in C++ code. */
-#if defined(__cplusplus)
-extern "C"
-{
-#endif
-
 /*
  * We're using a typedef here to "hide" the implementation details of the
  * hash map.  Sure, it's a pointer, but the struct is hidden in the C file.
@@ -121,7 +115,4 @@ extern "C"
  */
   extern ssize_t hashmap_remove (hashmap_t map, const char *key);
 
-#if defined(__cplusplus)
-}
-#endif                          /* C++ */
 #endif                          /* _HASHMAP_H */

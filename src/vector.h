@@ -21,12 +21,6 @@
 #ifndef _VECTOR_H
 #define _VECTOR_H
 
-/* Allow the use in C++ code. */
-#if defined(__cplusplus)
-extern "C"
-{
-#endif
-
 /*
  * We're using a typedef here to "hide" the implementation details of the
  * vector.  Sure, it's a pointer, but the struct is hidden in the C file.
@@ -78,7 +72,4 @@ extern "C"
  */
   extern ssize_t vector_length (vector_t vector);
 
-#if defined(__cplusplus)
-}
-#endif                          /* C++ */
 #endif                          /* _VECTOR_H */
