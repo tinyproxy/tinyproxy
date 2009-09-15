@@ -86,8 +86,7 @@ void filter_init (void)
                                  * an escape, it's not a comment
                                  * string.
                                  */
-                                if (s == buf
-                                    || *(s - 1) != '\\')
+                                if (s == buf || *(s - 1) != '\\')
                                         break;
                         }
                         ++s;
@@ -106,21 +105,16 @@ void filter_init (void)
                 if (!p) /* head of list */
                         fl = p =
                             (struct filter_list *)
-                            safecalloc (1,
-                                        sizeof (struct
-                                                filter_list));
+                            safecalloc (1, sizeof (struct filter_list));
                 else {  /* next entry */
                         p->next =
                             (struct filter_list *)
-                            safecalloc (1,
-                                        sizeof (struct
-                                                filter_list));
+                            safecalloc (1, sizeof (struct filter_list));
                         p = p->next;
                 }
 
                 p->pat = safestrdup (s);
-                p->cpat =
-                    (regex_t *) safemalloc (sizeof (regex_t));
+                p->cpat = (regex_t *) safemalloc (sizeof (regex_t));
                 err = regcomp (p->cpat, p->pat, cflags);
                 if (err != 0) {
                         fprintf (stderr,
