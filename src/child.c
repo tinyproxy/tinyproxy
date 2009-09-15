@@ -418,10 +418,11 @@ void child_main_loop (void)
 
 #ifdef FILTER_ENABLE
                         if (config.filter) {
+                                log_message (LOG_NOTICE,
+                                             "Re-reading filter file.");
                                 filter_destroy ();
                                 filter_init ();
                         }
-                        log_message (LOG_NOTICE, "Re-reading filter file.");
 #endif /* FILTER_ENABLE */
 
                         received_sighup = FALSE;
