@@ -4,7 +4,8 @@ SUBDIRS = \
 	etc \
 	docs \
 	m4macros \
-	packaging
+	packaging \
+	tests
 
 # tools want this on a single line
 ACLOCAL_AMFLAGS = -I m4macros

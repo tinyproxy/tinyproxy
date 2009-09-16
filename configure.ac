@@ -337,6 +337,8 @@ m4macros/Makefile
 packaging/Makefile
 packaging/fedora/tinyproxy.spec
 packaging/fedora/Makefile
+tests/Makefile
+tests/scripts/Makefile
 ])
 
 AC_OUTPUT
