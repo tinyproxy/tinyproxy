@@ -418,4 +418,11 @@ This is a very simple web server. It currently does not deliver the specific web
 page requested, but constructs the same kind of answer for each request, citing
 a fortune if fortune is available, and printing the originating request.
 
+=head1 COPYRIGHT
+
+Copyright (C) 2009 Michael Adam <obnox@samba.org>
+
+This program is distributed under the terms of the GNU General Public License
+version 2 or above. See the COPYING file for additional information.
+
 =cut
