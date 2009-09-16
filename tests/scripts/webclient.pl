@@ -21,19 +21,77 @@
 use strict;
 
 use IO::Socket;
+use Getopt::Long;
+use Pod::Usage;
 
 my $EOL = "\015\012";
 
 my $VERSION = "0.1";
 my $NAME = "Tinyproxy-Web-Client";
 my $user_agent = "$NAME/$VERSION";
+my $user_agent_header = "User-Agent: $user_agent$EOL";
+my $http_version = 1.0;
+my $method = "GET";
+my $help = 0;
 
-unless (@ARGV > 1) {
-	die "usage: $0 host[:port] document ...";
+my $default_port = "80";
+my $port = $default_port;
+
+sub process_options() {
+	my $result = GetOptions("help|?" => \$help,
+				"http-version=s" => \$http_version,
+				"method=s" => \$method);
+	die "Error reading cmdline options! $!" unless $result;
+
+	pod2usage(1) if $help;
+
+	# some post-processing:
 }
 
-my $host = shift(@ARGV);
-my $port = "http(80)";
+
+sub build_request($$$$$)
+{
+	my ( $host, $port, $version, $method, $document ) = @_;
+	my $request = "";
+
+	$method = uc($method);
+
+	if ($version eq '0.9') {
+		if ($method ne 'GET') {
+			die "invalid method '$method'";
+		}
+		$request = "$method $document$EOL"
+			 . "$EOL";
+	} elsif ($version eq '1.0') {
+		if ($method ne 'GET') {
+			die "invalid method '$method'";
+		}
+		$request = "$method $document HTTP/$version$EOL"
+			 . $user_agent_header
+			 . "$EOL";
+	} elsif ($version eq '1.1') {
+		$request = "$method $document HTTP/$version$EOL"
+			 . "Host: $host" . (($port and ($port ne $default_port))?":$port":"") . "$EOL"
+			 . $user_agent_header
+			 . "Connection: close$EOL"
+			 . "$EOL";
+	} else {
+		die "invalid version '$version'";
+	}
+
+	return $request;
+}
+
+# main
+
+process_options();
+
+unless (@ARGV > 1) {
+	pod2usage(1);
+}
+
+my $hostarg = shift(@ARGV);
+my $host = $hostarg;
 
 if ($host =~ /^([^:]+):(.*)/) {
 	$port = $2;
@@ -52,9 +110,7 @@ foreach my $document (@ARGV) {
 
 	$remote->autoflush(1);
 
-	print $remote "GET $document HTTP/1.0" . $EOL .
-		      "User-Agent: $user_agent$EOL" .
-		      $EOL;
+	print $remote build_request($host, $port, $http_version, $method, $document);
 
 	while (<$remote>) {
 		print;
@@ -62,3 +118,42 @@ foreach my $document (@ARGV) {
 
 	close $remote;
 }
+
+exit(0);
+
+__END__
+
+=head1 webclient.pl
+
+A simple WEB client written in perl.
+
+=head1 SYNOPSIS
+
+webclient.pl [options] host[:port] document [document ...]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--help>
+
+Print a brief help message and exit.
+
+=item B<--http-version>
+
+Specify the HTTP protocol version to use (0.9, 1.0, 1.1). Default is 1.0.
+
+=item B<--method>
+
+Specify the HTTP request method ('GET', 'CONNECT', ...). Default is 'GET'.
+
+=back
+
+=head1 DESCRIPTION
+
+This is a basic web client. It permits to send http request messages to
+web servers or web proxy servers. The result is printed as is to standard output,
+including headers. This is meant as a tool for diagnosing and testing
+web servers and proxy servers.
+
+=cut
