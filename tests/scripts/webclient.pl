@@ -167,4 +167,11 @@ web servers or web proxy servers. The result is printed as is to standard output
 including headers. This is meant as a tool for diagnosing and testing
 web servers and proxy servers.
 
+=head1 COPYRIGHT
+
+Copyright (C) 2009 Michael Adam <obnox@samba.org>
+
+This program is distributed under the terms of the GNU General Public License
+version 2 or above. See the COPYING file for additional information.
+
 =cut
