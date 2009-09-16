@@ -32,6 +32,7 @@ my $user_agent = "$NAME/$VERSION";
 my $user_agent_header = "User-Agent: $user_agent$EOL";
 my $http_version = 1.0;
 my $method = "GET";
+my $dry_run = 0;
 my $help = 0;
 
 my $default_port = "80";
@@ -40,7 +41,8 @@ my $port = $default_port;
 sub process_options() {
 	my $result = GetOptions("help|?" => \$help,
 				"http-version=s" => \$http_version,
-				"method=s" => \$method);
+				"method=s" => \$method,
+				"dry-run" => \$dry_run);
 	die "Error reading cmdline options! $!" unless $result;
 
 	pod2usage(1) if $help;
@@ -99,6 +101,12 @@ if ($host =~ /^([^:]+):(.*)/) {
 }
 
 foreach my $document (@ARGV) {
+	my $request = build_request($host, $port, $http_version, $method, $document);
+	if ($dry_run) {
+		print $request;
+		exit(0);
+	}
+
 	my $remote = IO::Socket::INET->new(
 						Proto     => "tcp",
 						PeerAddr  => $host,
@@ -110,7 +118,7 @@ foreach my $document (@ARGV) {
 
 	$remote->autoflush(1);
 
-	print $remote build_request($host, $port, $http_version, $method, $document);
+	print $remote $request;
 
 	while (<$remote>) {
 		print;
@@ -146,6 +154,10 @@ Specify the HTTP protocol version to use (0.9, 1.0, 1.1). Default is 1.0.
 =item B<--method>
 
 Specify the HTTP request method ('GET', 'CONNECT', ...). Default is 'GET'.
+
+=item B<--dry-run>
+
+Don't actually connect to the server but print the request that would be sent.
 
 =back
 
