@@ -62,24 +62,23 @@ sub build_request($$$$$)
 		if ($method ne 'GET') {
 			die "invalid method '$method'";
 		}
-		$request = "$method $document$EOL"
-			 . "$EOL";
+		$request = "$method $document$EOL";
 	} elsif ($version eq '1.0') {
 		if ($method ne 'GET') {
 			die "invalid method '$method'";
 		}
 		$request = "$method $document HTTP/$version$EOL"
-			 . $user_agent_header
-			 . "$EOL";
+			 . $user_agent_header;
 	} elsif ($version eq '1.1') {
 		$request = "$method $document HTTP/$version$EOL"
 			 . "Host: $host" . (($port and ($port ne $default_port))?":$port":"") . "$EOL"
 			 . $user_agent_header
-			 . "Connection: close$EOL"
-			 . "$EOL";
+			 . "Connection: close$EOL";
 	} else {
 		die "invalid version '$version'";
 	}
+
+	$request .= $EOL;
 
 	return $request;
 }
