@@ -331,6 +331,8 @@ data/Makefile
 data/templates/Makefile
 etc/Makefile
 docs/Makefile
+docs/man5/Makefile
+docs/man5/tinyproxy.conf.txt
 docs/man8/Makefile
 docs/man8/tinyproxy.txt
 m4macros/Makefile

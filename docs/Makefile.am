@@ -1,4 +1,5 @@
 SUBDIRS = \
+	man5 \
 	man8
 
 EXTRA_DIST = \
