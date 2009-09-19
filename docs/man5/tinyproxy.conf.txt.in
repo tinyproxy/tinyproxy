@@ -51,6 +51,28 @@ The possible keywords and their descriptions are as follows:
     less than 1024, you will need to start the Tinyproxy process as the
     root user.
 
+*Listen*::
+
+    By default, Tinyproxy listens for connections on all available
+    interfaces (i.e. it listens on the wildcard address `0.0.0.0`).
+    With this configuration parameter, Tinyproxy can be told to listen
+    only on one specific address.
+
+*Bind*::
+
+    This allows you to specify which address Tinyproxy will bind
+    to for outgoing connections to web servers or upstream proxies.
+
+*BindSame*::
+
+    If this boolean parameter is set to `yes`, then Tinyproxy will
+    bind the outgoing connection to the IP address of the incoming
+    connection that triggered the outgoing request.
+
+*Timeout*::
+
+    The maximum number of seconds of inactivity a connection is
+    allowed to have before it is closed by Tinyproxy.
 
 BUGS
 ----
