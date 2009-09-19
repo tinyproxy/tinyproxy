@@ -18,7 +18,34 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-Put text here about tinyproxy.conf.
+`tinyproxy(8)` reads its configuration file, typically stored in
+`/etc/tinyproxy/tinyproxy.conf` (or passed to Tinyproxy with -c on the
+command line). This manpage describes the syntax and contents of the
+configuration file.
+
+The Tinyproxy configuration file contains key-value pairs, one per
+line. Lines starting with `#` and empty lines are comments and are
+ignored. Keywords are case-insensitive, whereas values are
+case-sensitive. Values may be enclosed in double-quotes (") if they
+contain spaces.
+
+The possible keywords and their descriptions are as follows:
+
+*User*::
+
+    The user which the Tinyproxy process should run as, after the
+    initial port-binding has been done as the root user.
+
+*Group*::
+
+    The group which the Tinyproxy process should run as, after the
+    initial port-binding has been done as the root user.
+
+*Port*::
+
+    The port which the Tinyproxy service will listen on. If the port is
+    less than 1024, you will need to start the Tinyproxy process as the
+    root user.
 
 
 BUGS
