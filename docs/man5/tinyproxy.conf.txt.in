@@ -35,11 +35,15 @@ The possible keywords and their descriptions are as follows:
 
     The user which the Tinyproxy process should run as, after the
     initial port-binding has been done as the root user.
+    Note that you need to specify the user name here and may not
+    use the UID number.
 
 *Group*::
 
     The group which the Tinyproxy process should run as, after the
     initial port-binding has been done as the root user.
+    Note that you need to specify the group name here and may
+    not use the GID number.
 
 *Port*::
 
