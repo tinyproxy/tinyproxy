@@ -57,17 +57,14 @@ AM_CONDITIONAL(TINYPROXY_UNSTABLE, test "x$TINYPROXY_UNSTABLE" = "xyes")
 dnl Check if we're compiling on a weird platform :)
 AC_USE_SYSTEM_EXTENSIONS
 
-dnl
-dnl Command line options
-dnl
 
-dnl Set the URL name for find the statistics of tinyproxy
-AH_TEMPLATE([DEFAULT_STATHOST],
+dnl Set the domain name for find the statistics of tinyproxy
+AH_TEMPLATE([TINYPROXY_STATHOST],
 	[This controls remote proxy stats display.])
 AC_ARG_WITH(stathost,
             [AC_HELP_STRING([--with-stathost=HOST], [Default status host])],
-            [AC_DEFINE_UNQUOTED(DEFAULT_STATHOST, "$withval")],
-	    [AC_DEFINE_UNQUOTED(DEFAULT_STATHOST, "tinyproxy.stats")])
+            [AC_DEFINE_UNQUOTED(TINYPROXY_STATHOST, "$withval")],
+	    [AC_DEFINE_UNQUOTED(TINYPROXY_STATHOST, "tinyproxy.stats")])
 
 dnl Add compiler-specific optimization flags
 TP_ARG_ENABLE(debug,
