@@ -190,7 +190,6 @@ AC_UNP_CHECK_TYPE(in_addr_t, uint32_t)
 dnl
 dnl Checks for libary functions
 dnl
-AC_FUNC_FORK
 AC_FUNC_LSTAT
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC

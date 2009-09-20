@@ -152,9 +152,6 @@
 #ifdef HAVE_UNISTD_H
 #  include      <unistd.h>
 #endif
-#ifdef HAVE_VFORK_H
-#  include	<vfork.h>
-#endif
 #ifdef HAVE_WCHAR_H
 #  include	<wchar.h>
 #endif
