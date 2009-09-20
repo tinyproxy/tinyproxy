@@ -126,14 +126,8 @@ if test x"$transparent_enabled" = x"yes"; then
    AC_DEFINE(TRANSPARENT_PROXY)
 fi
 
-dnl
-dnl Checks for programs
-dnl
-
-AC_PROG_MAKE_SET
+# This is required to build test programs below
 AC_PROG_CC
-AC_ISC_POSIX
-AC_PROG_INSTALL
 
 dnl
 dnl Checks for libraries
@@ -181,8 +175,6 @@ esac
 dnl
 dnl Checks for types
 dnl
-AM_C_PROTOTYPES
-AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_TYPE_PID_T
