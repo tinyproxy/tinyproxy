@@ -1597,6 +1597,11 @@ void handle_connection (int fd)
         if (get_all_headers (connptr->client_fd, hashofheaders) < 0) {
                 log_message (LOG_WARNING,
                              "Could not retrieve all the headers from the client");
+                indicate_http_error (connptr, 400, "Bad Request",
+                                     "detail",
+                                     "Could not retrieve all the headers from "
+                                     "the client.", NULL);
+                send_http_error_message (connptr);
                 hashmap_delete (hashofheaders);
                 update_stats (STAT_BADCONN);
                 destroy_conn (connptr);
