@@ -80,7 +80,7 @@ takesig (int sig)
 static void
 display_version (void)
 {
-        printf ("%s %s (%s)\n", PACKAGE, VERSION, TARGET_SYSTEM);
+        printf ("%s %s\n", PACKAGE, VERSION);
 }
 
 /*

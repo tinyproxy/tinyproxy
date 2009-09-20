@@ -54,10 +54,6 @@ fi
 AM_CONDITIONAL(TINYPROXY_UNSTABLE, test "x$TINYPROXY_UNSTABLE" = "xyes")
 
 
-AH_TEMPLATE([TARGET_SYSTEM],
-	    [A string containing the target system for which tinyproxy was built.])
-AC_DEFINE_UNQUOTED(TARGET_SYSTEM, ["$target"])
-
 dnl Check if we're compiling on a weird platform :)
 AC_USE_SYSTEM_EXTENSIONS
 
