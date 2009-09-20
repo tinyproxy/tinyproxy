@@ -78,7 +78,7 @@ Port $TINYPROXY_PORT
 Listen $TINYPROXY_IP
 Timeout 600
 StatHost "$TINYPROXY_STATHOST_IP"
-DefaultErrorFile "$TINYPROXY_DATA_DIR/default.html"
+DefaultErrorFile "$TINYPROXY_DATA_DIR/debug.html"
 StatFile "$TINYPROXY_DATA_DIR/stats.html"
 Logfile "$TINYPROXY_LOG_DIR/tinyproxy.log"
 PidFile "$TINYPROXY_PID_FILE"
