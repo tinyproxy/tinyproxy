@@ -76,32 +76,6 @@ AC_ARG_WITH(stathost,
 dnl Set the default configuration file location
 test "$prefix" = "NONE" && prefix=/usr/local
 
-AH_TEMPLATE([DEFAULT_CONF_FILE],
-	[This is the default file name for the configuration file.])
-AC_ARG_WITH(config,
-            [AC_HELP_STRING([--with-config=FILE],
-                            [Set the default location of the config file])],
-	    [tp_config_file="$withval"],
-	    [tp_config_file="tinyproxy.conf"])
-
-# If the first character is a slash, it's an absolute path
-if [[ `echo $tp_config_file | cut -c1` = "/" ]]; then
-	TINYPROXY_CONFIG_DIR=`echo "$tp_config_file" | sed 's/^\(.*\)\/[[^\/]]*$/\1/'`
-        TINYPROXY_CONFIG_FILE=`echo "$tp_config_file" | sed 's/^.*\/\([[^\/]]*\)$/\1/'`
-else
-	# If sysconfdir is /usr/etc, change it to /etc (since /usr/etc doesn't exist)
-	if [[ "/usr/etc" = `eval echo $sysconfdir` -a "/usr" = "$prefix" ]]; then
-		TINYPROXY_CONFIG_DIR="/etc/tinyproxy"
-	else
-		TINYPROXY_CONFIG_DIR=`eval echo $sysconfdir/tinyproxy`
-	fi
-        TINYPROXY_CONFIG_FILE="$tp_config_file"
-fi
-
-AC_DEFINE_UNQUOTED(DEFAULT_CONF_FILE, "$TINYPROXY_CONFIG_DIR/$TINYPROXY_CONFIG_FILE")
-
-AC_MSG_NOTICE([Default config location and file is: $TINYPROXY_CONFIG_DIR/$TINYPROXY_CONFIG_FILE])
-
 dnl Add compiler-specific optimization flags
 TP_ARG_ENABLE(debug,
               [Enable debugging support code and methods (default is NO)],
@@ -343,8 +317,6 @@ AC_SUBST(LDFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(ADDITIONAL_OBJECTS)
-AC_SUBST(TINYPROXY_CONFIG_DIR)
-AC_SUBST(TINYPROXY_CONFIG_FILE)
 
 # Check for asciidoc
 AC_PATH_PROG(A2X, a2x, no)

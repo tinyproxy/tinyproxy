@@ -287,7 +287,7 @@ main (int argc, char **argv)
          */
         umask (0177);
 
-        config.config_file = DEFAULT_CONF_FILE;
+        config.config_file = SYSCONFDIR "/tinyproxy.conf";
         config.godaemon = TRUE;
 
         process_cmdline (argc, argv);

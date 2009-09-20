@@ -17,6 +17,9 @@
 
 sbin_PROGRAMS = tinyproxy
 
+AM_CPPFLAGS = \
+	-DSYSCONFDIR=\"${sysconfdir}\"
+
 tinyproxy_SOURCES = \
 	acl.c acl.h \
 	anonymous.c anonymous.h \

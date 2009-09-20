@@ -46,8 +46,6 @@ INSTALLATION
 
      Options for file locations etc.
         --with-stathost=HOST	Set the default name of the stats host
-	--with-config=FILE	Set the default location of the
-				configuration file
 
 
 SUPPORT
