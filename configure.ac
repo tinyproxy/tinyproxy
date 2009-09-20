@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.54)
 
-m4_define([tinyproxy_major_version], [0])
+m4_define([tinyproxy_major_version], [1])
 m4_define([tinyproxy_minor_version], [7])
 m4_define([tinyproxy_micro_version], [1])
 m4_define([tinyproxy_real_version],
