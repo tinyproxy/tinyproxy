@@ -506,8 +506,8 @@ static int send_ssl_response (struct conn_s *connptr)
  * Break the request line apart and figure out where to connect and
  * build a new request line. Finally connect to the remote server.
  */
-static struct request_s *
-process_request (struct conn_s *connptr)
+static struct request_s *process_request (struct conn_s *connptr,
+                                          hashmap_t hashofheaders)
 {
         char *url;
         struct request_s *request;
@@ -1603,7 +1603,7 @@ void handle_connection (int fd)
                 return;
         }
 
-        request = process_request (connptr);
+        request = process_request (connptr, hashofheaders);
         if (!request) {
                 if (!connptr->error_variables && !connptr->show_stats) {
                         update_stats (STAT_BADCONN);
