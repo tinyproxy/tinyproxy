@@ -74,11 +74,6 @@ TP_ARG_ENABLE(debug,
               [Enable debugging support code and methods (default is NO)],
               no)
 
-dnl Add in profiling information
-TP_ARG_ENABLE(profiling,
-              [Enable profiling information (default is NO)],
-              no)
-
 dnl Check to see if the XTinyproxy header is to be included
 AH_TEMPLATE([XTINYPROXY_ENABLE],
 	    [Define if you want to have the peer's IP address included in a XTinyproxy header sent to the server.])
@@ -222,15 +217,6 @@ AC_CHECK_FUNCS([gethostname inet_ntoa memchr memset select socket strcasecmp \
 AC_CHECK_FUNCS([isascii memcpy setrlimit ftruncate regcomp regexec])
 AC_CHECK_FUNCS([strlcpy strlcat])
 
-dnl
-dnl Compiler characteristics
-dnl
-
-dnl If profiling is enabled, then enable the debugging code
-if test x"$profiling_enabled" = x"yes" ; then
-    AC_MSG_NOTICE([profiling is enabled, therefore enabling debugging code.])
-    debug_enabled=yes
-fi
 
 dnl Enable extra warnings
 DESIRED_FLAGS="-fdiagnostics-show-option -Wall -Wextra -Wno-unused-parameter -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wfloat-equal -Wundef -Wformat=2 -Wlogical-op -Wmissing-include-dirs -Wformat-nonliteral -Wold-style-definition -Wpointer-arith -Waggregate-return -Winit-self -Wpacked -pedantic -Wc++-compat -Wno-long-long -Wno-overlength-strings -Wdeclaration-after-statement -Wredundant-decls -Wmissing-noreturn -Wshadow -Wendif-labels -Wcast-qual -Wcast-align -Wwrite-strings -Wp,-D_FORTIFY_SOURCE=2 -fno-common"
@@ -243,11 +229,6 @@ LDFLAGS="-Wl,-z,defs"
 dnl Enable the debugging flags (by checking for the GCC compiler)
 if test x"$debug_enabled" = x"yes" ; then
     dnl Add the warnings if we have the GCC compiler
-    if test x"$GCC" = x"yes" ; then
-        if test x"$profiling_enabled" = x"yes" ; then
-	    CFLAGS="-pg -fprofile-arcs $CFLAGS"
-        fi
-    fi
     CFLAGS="-Wall -g $CFLAGS"
 else
     dnl No debugging information, include the optimizations
