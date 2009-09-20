@@ -69,9 +69,6 @@ AC_ARG_WITH(stathost,
             [AC_DEFINE_UNQUOTED(DEFAULT_STATHOST, "$withval")],
 	    [AC_DEFINE_UNQUOTED(DEFAULT_STATHOST, "tinyproxy.stats")])
 
-dnl Set the default configuration file location
-test "$prefix" = "NONE" && prefix=/usr/local
-
 dnl Add compiler-specific optimization flags
 TP_ARG_ENABLE(debug,
               [Enable debugging support code and methods (default is NO)],
