@@ -220,20 +220,17 @@ AC_CHECK_FUNCS([strlcpy strlcat])
 
 dnl Enable extra warnings
 DESIRED_FLAGS="-fdiagnostics-show-option -Wall -Wextra -Wno-unused-parameter -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wfloat-equal -Wundef -Wformat=2 -Wlogical-op -Wmissing-include-dirs -Wformat-nonliteral -Wold-style-definition -Wpointer-arith -Waggregate-return -Winit-self -Wpacked -pedantic -Wc++-compat -Wno-long-long -Wno-overlength-strings -Wdeclaration-after-statement -Wredundant-decls -Wmissing-noreturn -Wshadow -Wendif-labels -Wcast-qual -Wcast-align -Wwrite-strings -Wp,-D_FORTIFY_SOURCE=2 -fno-common"
+
 for flag in $DESIRED_FLAGS ; do
   AS_COMPILER_FLAG([$flag], [CFLAGS="$CFLAGS $flag"])
 done
 
-LDFLAGS="-Wl,-z,defs"
-
-dnl Enable the debugging flags (by checking for the GCC compiler)
-if test x"$debug_enabled" = x"yes" ; then
-    dnl Add the warnings if we have the GCC compiler
-    CFLAGS="-Wall -g $CFLAGS"
-else
-    dnl No debugging information, include the optimizations
-    CFLAGS="-O2 -DNDEBUG $CFLAGS"
+dnl Disable debugging if it's not specified
+if test x"$debug_enabled" != x"yes" ; then
+    CFLAGS="-DNDEBUG $CFLAGS"
 fi
+
+LDFLAGS="-Wl,-z,defs"
 
 dnl
 dnl Make sure we can actually handle the "--with-*" and "--enable-*" stuff.
