@@ -172,9 +172,7 @@ case "$target" in
 esac
 
 
-dnl
 dnl Checks for types
-dnl
 AC_TYPE_SIZE_T
 AC_TYPE_PID_T
 AC_UNP_CHECK_TYPE(uint8_t, unsigned char)
@@ -187,16 +185,10 @@ AC_UNP_CHECK_TYPE(socklen_t, unsigned int)
 AC_UNP_CHECK_TYPE(in_addr_t, uint32_t)
 
 
-dnl
 dnl Checks for libary functions
-dnl
-AC_FUNC_LSTAT
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
-AC_FUNC_MMAP
 AC_FUNC_REALLOC
-AC_FUNC_SELECT_ARGTYPES
-AC_FUNC_STRFTIME
 
 AC_CHECK_FUNCS([gethostname inet_ntoa memchr memset select socket strcasecmp \
                 strchr strdup strerror strncasecmp strpbrk strstr strtol])
