@@ -143,14 +143,6 @@ AC_PROG_CC
 AC_ISC_POSIX
 AC_PROG_INSTALL
 
-dnl If a CFLAGS variable was passed during configure, set the initial
-dnl CFLAGS variable to it; otherwise, start with an empty CFLAGS
-if test x"$ac_env_CFLAGS_set" = x"set" ; then
-    CFLAGS=$ac_env_CFLAGS_value
-else
-    CFLAGS=""
-fi
-
 dnl
 dnl Checks for libraries
 dnl
