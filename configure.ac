@@ -1,6 +1,27 @@
+# Process this file with autoconf to produce a configure script.
+# Portions of this file were adapted from GIMP.
+
 AC_PREREQ(2.54)
 
-AC_INIT([Tinyproxy], [1.7.1], [https://www.banu.com/bugzilla/enter_bug.cgi?product=Tinyproxy], [tinyproxy])
+m4_define([tinyproxy_major_version], [0])
+m4_define([tinyproxy_minor_version], [7])
+m4_define([tinyproxy_micro_version], [1])
+m4_define([tinyproxy_real_version],
+          [tinyproxy_major_version.tinyproxy_minor_version.tinyproxy_micro_version])
+m4_define([tinyproxy_version], [tinyproxy_real_version])
+
+# For overriding the version string. Comment out if not needed.
+# m4_define([tinyproxy_version], [0.7.0])
+
+m4_define([tinyproxy_unstable],
+          m4_if(m4_eval(tinyproxy_minor_version % 2), [1], [yes], [no]))
+m4_define([tinyproxy_stable],
+          m4_if(m4_eval(tinyproxy_minor_version % 2), [0], [yes], [no]))
+
+AC_INIT([Tinyproxy], [tinyproxy_version],
+	[https://www.banu.com/bugzilla/enter_bug.cgi?product=Tinyproxy],
+	[tinyproxy])
+
 dnl AC_CONFIG_AUX_DIR(config)
 dnl AC_CONFIG_MACRO_DIR(config)
 
@@ -9,6 +30,32 @@ AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4macros])
 AM_MAINTAINER_MODE
+
+TINYPROXY_MAJOR_VERSION=tinyproxy_major_version
+TINYPROXY_MINOR_VERSION=tinyproxy_minor_version
+TINYPROXY_MICRO_VERSION=tinyproxy_micro_version
+TINYPROXY_REAL_VERSION=tinyproxy_real_version
+TINYPROXY_VERSION=tinyproxy_version
+TINYPROXY_UNSTABLE=tinyproxy_unstable
+AC_SUBST(TINYPROXY_MAJOR_VERSION)
+AC_SUBST(TINYPROXY_MINOR_VERSION)
+AC_SUBST(TINYPROXY_MICRO_VERSION)
+AC_SUBST(TINYPROXY_REAL_VERSION)
+AC_SUBST(TINYPROXY_VERSION)
+AC_SUBST(TINYPROXY_UNSTABLE)
+
+dnl Temporarily defined here until we get tinyproxy-version.h
+AC_DEFINE(TINYPROXY_VERSION, "tinyproxy_version", [Tinyproxy version number])
+
+# The symbol TINYPROXY_UNSTABLE is defined above for substitution in
+# Makefiles and conditionally defined here as a preprocessor symbol
+# and automake conditional.
+if test "x$TINYPROXY_UNSTABLE" = "xyes"; then
+  AC_DEFINE(TINYPROXY_UNSTABLE, 1,
+            [Define to 1 if this is an unstable version of Tinyproxy])
+fi
+AM_CONDITIONAL(TINYPROXY_UNSTABLE, test "x$TINYPROXY_UNSTABLE" = "xyes")
+
 
 AH_TEMPLATE([TARGET_SYSTEM],
 	    [A string containing the target system for which tinyproxy was built.])
