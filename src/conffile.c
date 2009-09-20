@@ -362,7 +362,7 @@ set_bool_arg (unsigned int *var, const char *line, regmatch_t * match)
         return 0;
 }
 
-static inline unsigned long int
+static unsigned long int
 get_int_arg (const char *line, regmatch_t * match)
 {
         assert (line);

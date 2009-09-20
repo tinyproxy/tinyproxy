@@ -175,7 +175,6 @@ esac
 dnl
 dnl Checks for types
 dnl
-AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_TYPE_PID_T
 AC_TYPE_SIGNAL

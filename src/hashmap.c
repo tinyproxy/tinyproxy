@@ -126,7 +126,7 @@ hashmap_t hashmap_create (unsigned int nbuckets)
  * Returns: 0 if the function completed successfully
  *          negative number is returned if "entry" was NULL
  */
-static inline int delete_hashbucket (struct hashbucket_s *bucket)
+static int delete_hashbucket (struct hashbucket_s *bucket)
 {
         struct hashentry_s *nextptr;
         struct hashentry_s *ptr;

@@ -494,7 +494,7 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
  * Send the appropriate response to the client to establish a SSL
  * connection.
  */
-static inline int send_ssl_response (struct conn_s *connptr)
+static int send_ssl_response (struct conn_s *connptr)
 {
         return write_message (connptr->client_fd,
                               "%s\r\n"
@@ -783,7 +783,7 @@ ERROR_EXIT:
  * the server.
  *	-rjkaes
  */
-static inline int add_xtinyproxy_header (struct conn_s *connptr)
+static int add_xtinyproxy_header (struct conn_s *connptr)
 {
         assert (connptr && connptr->server_fd >= 0);
         return write_message (connptr->server_fd,
@@ -796,7 +796,7 @@ static inline int add_xtinyproxy_header (struct conn_s *connptr)
  * Now insert this information into the hashmap for the connection so it
  * can be retrieved and manipulated later.
  */
-static inline int
+static int
 add_header_to_connection (hashmap_t hashofheaders, char *header, size_t len)
 {
         char *sep;

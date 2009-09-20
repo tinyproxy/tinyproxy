@@ -68,7 +68,7 @@ static vector_t access_list = NULL;
  *  -1 on failure (invalid mask value)
  *
  */
-inline static int
+static int
 fill_netmask_array (char *bitmask_string, unsigned char array[],
                     unsigned int len)
 {
