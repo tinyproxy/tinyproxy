@@ -31,8 +31,6 @@ INSTALLATION
 
 	--enable-debug		If you would like to turn on full
 				debugging support
-	--enable-socks		This turns on SOCKS support for using
-				tinyproxy across a fire wall.
 	--enable-xtinyproxy	Compile in support for the XTinyproxy
 				header, which is sent to any web
 				server in your domain.

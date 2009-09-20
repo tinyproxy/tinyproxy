@@ -112,11 +112,6 @@ TP_ARG_ENABLE(profiling,
               [Enable profiling information (default is NO)],
               no)
 
-dnl Include SOCKS support
-TP_ARG_ENABLE(socks,
-              [Enable SOCKS support (default is NO)],
-              no)
-
 dnl Check to see if the XTinyproxy header is to be included
 AH_TEMPLATE([XTINYPROXY_ENABLE],
 	    [Define if you want to have the peer's IP address included in a XTinyproxy header sent to the server.])
@@ -209,7 +204,6 @@ if test x"$tinyproxy_no_nsl_checks" != x"yes"; then
 fi
 
 AC_CHECK_LIB(resolv, inet_aton)
-AC_CHECK_LIB(socks, main, socks_library=yes, socks_library=no)
 
 dnl
 dnl Checks for headers
@@ -231,8 +225,6 @@ case "$target" in
     *-openbsd*) ;;
     *)         AC_CHECK_HEADER(malloc.h);;
 esac
-
-AC_CHECK_HEADER(socks.h, socks_header=yes, socks_header=no)
 
 
 dnl
@@ -302,16 +294,6 @@ fi
 dnl
 dnl Make sure we can actually handle the "--with-*" and "--enable-*" stuff.
 dnl
-
-dnl Handle the SOCKS support
-if test x"$socks_enabled" = x"yes"; then
-    if test x"$socks_header" = x"yes" -a x"$socks_library" = x"yes"; then
-        CFLAGS="-I/usr/include/sock.h -DSOCKS $CFLAGS"
-        LIBS="-lsocks $LIBS"
-    else
-        AC_MSG_ERROR([Could not include the SOCKS library or header])
-    fi
-fi
 
 dnl Handle the REGEX library
 if test x"$ac_cv_func_regexec" != x"yes"; then
