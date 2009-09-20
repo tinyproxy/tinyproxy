@@ -34,20 +34,20 @@ The possible keywords and their descriptions are as follows:
 *User*::
 
     The user which the Tinyproxy process should run as, after the
-    initial port-binding has been done as the root user. Either the user
-    name or the UID may be specified.
+    initial port-binding has been done as the `root` user. Either the
+    user name or the UID may be specified.
 
 *Group*::
 
     The group which the Tinyproxy process should run as, after the
-    initial port-binding has been done as the root user. Either the
+    initial port-binding has been done as the `root` user. Either the
     group name or the GID may be specified.
 
 *Port*::
 
     The port which the Tinyproxy service will listen on. If the port is
     less than 1024, you will need to start the Tinyproxy process as the
-    root user.
+    `root` user.
 
 *Listen*::
 
