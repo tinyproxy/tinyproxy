@@ -22,9 +22,6 @@ AC_INIT([Tinyproxy], [tinyproxy_version],
 	[https://www.banu.com/bugzilla/enter_bug.cgi?product=Tinyproxy],
 	[tinyproxy])
 
-dnl AC_CONFIG_AUX_DIR(config)
-dnl AC_CONFIG_MACRO_DIR(config)
-
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
