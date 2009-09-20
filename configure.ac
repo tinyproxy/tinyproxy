@@ -232,6 +232,14 @@ if test x"$profiling_enabled" = x"yes" ; then
     debug_enabled=yes
 fi
 
+dnl Enable extra warnings
+DESIRED_FLAGS="-fdiagnostics-show-option -Wall -Wextra -Wno-unused-parameter -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wfloat-equal -Wundef -Wformat=2 -Wlogical-op -Wmissing-include-dirs -Wformat-nonliteral -Wold-style-definition -Wpointer-arith -Waggregate-return -Winit-self -Wpacked -pedantic -Wc++-compat -Wno-long-long -Wno-overlength-strings -Wdeclaration-after-statement -Wredundant-decls -Wmissing-noreturn -Wshadow -Wendif-labels -Wcast-qual -Wcast-align -Wwrite-strings -Wp,-D_FORTIFY_SOURCE=2 -fno-common"
+for flag in $DESIRED_FLAGS ; do
+  AS_COMPILER_FLAG([$flag], [CFLAGS="$CFLAGS $flag"])
+done
+
+LDFLAGS="-Wl,-z,defs"
+
 dnl Enable the debugging flags (by checking for the GCC compiler)
 if test x"$debug_enabled" = x"yes" ; then
     dnl Add the warnings if we have the GCC compiler
@@ -239,10 +247,6 @@ if test x"$debug_enabled" = x"yes" ; then
         if test x"$profiling_enabled" = x"yes" ; then
 	    CFLAGS="-pg -fprofile-arcs $CFLAGS"
         fi
-        CFLAGS="-Wshadow -Wcast-qual -Wcast-align -Wstrict-prototypes $CFLAGS"
-        CFLAGS="-Wmissing-prototypes -Wmissing-declarations $CFLAGS"
-        CFLAGS="-Wpointer-arith -Waggregate-return -Wnested-externs $CFLAGS"
-        CFLAGS="-Wwrite-strings -Wcomment -Wextra -Wc++-compat $CFLAGS"
     fi
     CFLAGS="-Wall -g $CFLAGS"
 else
@@ -269,6 +273,9 @@ else
 #endif
 #if HAVE_REGEX_H
 # include <regex.h>
+#endif
+#if HAVE_STDLIB_H
+# include <stdlib.h>
 #endif
 int main(void)
 {
