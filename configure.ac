@@ -177,7 +177,6 @@ dnl Checks for types
 dnl
 AC_TYPE_SIZE_T
 AC_TYPE_PID_T
-AC_TYPE_SIGNAL
 AC_UNP_CHECK_TYPE(uint8_t, unsigned char)
 AC_UNP_CHECK_TYPE(int16_t, short)
 AC_UNP_CHECK_TYPE(uint16_t, unsigned short)

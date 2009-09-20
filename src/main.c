@@ -51,7 +51,7 @@ unsigned int processed_config_file = FALSE;     /* boolean */
 /*
  * Handle a signal
  */
-static RETSIGTYPE
+static void
 takesig (int sig)
 {
         pid_t pid;
