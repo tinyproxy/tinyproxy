@@ -30,7 +30,7 @@
 
 #include "anonymous.h"
 #include "buffer.h"
-#include "conffile.h"
+#include "conf.h"
 #include "daemon.h"
 #include "heap.h"
 #include "filter.h"

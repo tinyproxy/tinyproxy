@@ -26,7 +26,7 @@ tinyproxy_SOURCES = \
 	buffer.c buffer.h \
 	child.c child.h \
 	common.h \
-	conffile.c conffile.h \
+	conf.c conf.h \
 	conns.c conns.h \
 	daemon.c daemon.h \
 	hashmap.c hashmap.h \

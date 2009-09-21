@@ -24,7 +24,7 @@
 
 #include "main.h"
 
-#include "conffile.h"
+#include "conf.h"
 
 #include "acl.h"
 #include "anonymous.h"

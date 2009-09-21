@@ -16,10 +16,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* See 'conffile.c' for detailed information. */
+/* See 'conf.c' for detailed information. */
 
-#ifndef TINYPROXY_CONFFILE_H
-#define TINYPROXY_CONFFILE_H
+#ifndef TINYPROXY_CONF_H
+#define TINYPROXY_CONF_H
 
 extern int config_compile (void);
 extern int config_parse (struct config_s *conf, FILE * f);
