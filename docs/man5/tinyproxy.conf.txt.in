@@ -128,6 +128,11 @@ The possible keywords and their descriptions are as follows:
     Warning to Critical would be output, but Notice and below would be
     suppressed.
 
+*PidFile*::
+
+    This option controls the location of the file where the main
+    Tinyproxy process stores its process ID for signalling purposes.
+
 BUGS
 ----
 
