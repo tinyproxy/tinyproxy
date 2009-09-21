@@ -89,6 +89,11 @@
 
 #define LOG_CONN      8         /* extra to log connections without the INFO stuff */
 
+/* Suppress warnings when GCC is in -pedantic mode and not -std=c99 */
+#if (__GNUC__ >= 3 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96))
+#pragma GCC system_header
+#endif
+
 /*
  * Use this for debugging. The format is specific:
  *    DEBUG1("There was a major problem");
