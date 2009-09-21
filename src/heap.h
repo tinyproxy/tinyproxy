@@ -37,21 +37,16 @@ extern char *debugging_strdup(const char* s, const char* file,
 #  define safemalloc(x) debugging_malloc(x, __FILE__, __LINE__)
 #  define saferealloc(x, y) debugging_realloc(x, y, __FILE__, __LINE__)
 #  define safestrdup(x) debugging_strdup(x, __FILE__, __LINE__)
-#  define safefree(x) do { \
-void **__safefree_tmp = (void *)&(x); \
-debugging_free(*__safefree_tmp, __FILE__, __LINE__); \
-*__safefree_tmp = NULL; \
-} while (0)
+#  define safefree(x) (debugging_free(x, __FILE__, __LINE__), *(&(x)) = NULL)
+
 #else
+
 #  define safecalloc(x, y) calloc(x, y)
 #  define safemalloc(x) malloc(x)
 #  define saferealloc(x, y) realloc(x, y)
-#  define safefree(x) do { \
-void **__safefree_tmp = (void *)&(x); \
-free(*__safefree_tmp); \
-*__safefree_tmp = NULL; \
-} while (0)
+#  define safefree(x) (free (x), *(&(x)) = NULL)
 #  define safestrdup(x) strdup(x)
+
 #endif
 
 /*
