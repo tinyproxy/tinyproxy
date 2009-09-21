@@ -100,6 +100,34 @@ The possible keywords and their descriptions are as follows:
     "\{detail}" for a datiled error message.  The `tinyproxy(8)`
     manual page contains a description of all template variables.
 
+*LogFile*::
+
+    This controls the location of the file to which Tinyproxy
+    writes its debug output. Alternatively, Tinyproxy can log
+    to syslog -- see the Syslog option.
+
+*Syslog*::
+
+    When set to `On`, this options tell Tinyproxy to write its
+    debug messages to syslog instead of to a log file configured
+    with `LogFile`. These two options are mutually exclusive.
+
+*LogLevel*::
+
+    This sets the log level. Allowed values are:
+
+    * Critical (least verbose)
+    * Error
+    * Warning
+    * Notice
+    * Connect (log connections without Info's noise)
+    * Info (most verbose)
+
+    The LogLevel logs from the set level and above. For example, if
+    the LogLevel was set to Warning, than all log messages from
+    Warning to Critical would be output, but Notice and below would be
+    suppressed.
+
 BUGS
 ----
 
