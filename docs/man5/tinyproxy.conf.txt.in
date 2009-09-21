@@ -72,6 +72,34 @@ The possible keywords and their descriptions are as follows:
     The maximum number of seconds of inactivity a connection is
     allowed to have before it is closed by Tinyproxy.
 
+*ErrorFile*::
+
+    This parameter controls which HTML file Tinyproxy returns when a
+    given HTTP error occurs. It takes two arguments, the error number
+    and the location of the HTML error file.
+
+*DefaultErrorFile*::
+
+    This parameter controls the HTML template file returned when an
+    error occurs for which no specific error file has been set.
+
+
+*StatFile*::
+
+    This configures the HTML file that Tinyproxy sends when
+    a request for the stathost is received. If this parameter is
+    not set, Tinyproxy returns a hardcoded basic statistics page.
+    See the STATHOST section in the `tinyproxy(8)` manual page
+    for details.
+
+
+    Note that the StatFile and the error files configured with ErrorFile
+    and DefaultErrorFile are template files that can contain a few
+    template variables that Tinyproxy expands prior to delivery.
+    Examples are "\{cause}" for an abbreviated error description and
+    "\{detail}" for a datiled error message.  The `tinyproxy(8)`
+    manual page contains a description of all template variables.
+
 BUGS
 ----
 
