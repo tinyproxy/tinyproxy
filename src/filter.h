@@ -23,7 +23,7 @@
 
 typedef enum {
         FILTER_DEFAULT_ALLOW,
-        FILTER_DEFAULT_DENY,
+        FILTER_DEFAULT_DENY
 } filter_policy_t;
 
 extern void filter_init (void);
