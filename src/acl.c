@@ -35,7 +35,7 @@
 
 enum acl_type {
         ACL_STRING,
-        ACL_NUMERIC,
+        ACL_NUMERIC
 };
 
 /*
