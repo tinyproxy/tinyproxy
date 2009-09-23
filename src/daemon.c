@@ -24,6 +24,7 @@
 #include "main.h"
 
 #include "daemon.h"
+#include "log.h"
 
 /*
  * Fork a child process and then kill the parent so make the calling
@@ -40,7 +41,11 @@ void makedaemon (void)
         if (fork () != 0)
                 exit (0);
 
-        chdir ("/");
+	if (chdir ("/") != 0) {
+                log_message (LOG_WARNING,
+                             "Could not change directory to /");
+	}
+
         umask (0177);
 
 #if NDEBUG
