@@ -27,6 +27,8 @@
 #include "heap.h"
 #include "text.h"
 
+#ifndef NDEBUG
+
 void *debugging_calloc (size_t nmemb, size_t size, const char *file,
                         unsigned long line)
 {
@@ -90,6 +92,8 @@ char *debugging_strdup (const char *s, const char *file, unsigned long line)
         fprintf (stderr, "{strdup: %p:%zu} %s:%lu\n", ptr, len, file, line);
         return ptr;
 }
+
+#endif /* !NDEBUG */
 
 /*
  * Allocate a block of memory in the "shared" memory region.
