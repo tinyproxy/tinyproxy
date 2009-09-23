@@ -45,7 +45,7 @@ static int build_url (char **url, const char *host, int port, const char *path)
         assert (path != NULL);
 
         len = strlen (host) + strlen (path) + 14;
-        *url = safemalloc (len);
+        *url = (char *) safemalloc (len);
         if (*url == NULL)
                 return -1;
 
@@ -75,10 +75,10 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                                              "url", url, NULL);
                         return 0;
                 }
-                request->host = safemalloc (17);
+                request->host = (char *) safemalloc (17);
                 strcpy (request->host, inet_ntoa (dest_addr.sin_addr));
                 request->port = ntohs (dest_addr.sin_port);
-                request->path = safemalloc (strlen (url) + 1);
+                request->path = (char *) safemalloc (strlen (url) + 1);
                 strcpy (request->path, url);
                 safefree (url);
                 build_url (&url, request->host, request->port, request->path);
@@ -86,13 +86,13 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                              "process_request: trans IP %s %s for %d",
                              request->method, url, connptr->client_fd);
         } else {
-                request->host = safemalloc (length + 1);
+                request->host = (char *) safemalloc (length + 1);
                 if (sscanf (data, "%[^:]:%hu", request->host, &request->port) !=
                     2) {
                         strcpy (request->host, data);
                         request->port = HTTP_PORT;
                 }
-                request->path = safemalloc (strlen (url) + 1);
+                request->path = (char *) safemalloc (strlen (url) + 1);
                 strcpy (request->path, url);
                 safefree (url);
                 build_url (&url, request->host, request->port, request->path);
