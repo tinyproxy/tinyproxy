@@ -84,7 +84,10 @@ void close_log_file (void)
 void truncate_log_file (void)
 {
         lseek (log_file_fd, 0, SEEK_SET);
-        ftruncate (log_file_fd, 0);
+        if (ftruncate (log_file_fd, 0) != 0) {
+                log_message (LOG_WARNING,
+                             "Unable to truncate log file to zero length");
+	}
 }
 
 /*
