@@ -109,6 +109,8 @@ void log_message (int level, const char *fmt, ...)
         char time_string[TIME_LENGTH];
         char str[STRING_LENGTH];
 
+        ssize_t ret;
+
 #ifdef NDEBUG
         /*
          * Figure out if we should write the message or not.
@@ -177,10 +179,25 @@ void log_message (int level, const char *fmt, ...)
 
                 assert (log_file_fd >= 0);
 
-                write (log_file_fd, str, strlen (str));
+                ret = write (log_file_fd, str, strlen (str));
+                if (ret == -1) {
+                        log_message (LOG_WARNING,
+                                     "Could not write to log file");
+                }
+
                 vsnprintf (str, STRING_LENGTH, fmt, args);
-                write (log_file_fd, str, strlen (str));
-                write (log_file_fd, "\n", 1);
+                ret = write (log_file_fd, str, strlen (str));
+                if (ret == -1) {
+                        log_message (LOG_WARNING,
+                                     "Could not write to log file");
+                }
+
+                ret = write (log_file_fd, "\n", 1);
+                if (ret == -1) {
+                        log_message (LOG_WARNING,
+                                     "Could not write to log file");
+                }
+
                 fsync (log_file_fd);
 
 #ifdef HAVE_SYSLOG_H
