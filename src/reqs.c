@@ -766,8 +766,16 @@ static int pull_client_data (struct conn_s *connptr, long int length)
         if (len < 0 && errno != EAGAIN)
                 goto ERROR_EXIT;
 
-        if (len == 2 && CHECK_CRLF (buffer, len))
-                read (connptr->client_fd, buffer, 2);
+        if ((len == 2) && CHECK_CRLF (buffer, len)) {
+                ssize_t ret;
+
+                ret = read (connptr->client_fd, buffer, 2);
+                if (ret == -1) {
+                        log_message
+                                (LOG_WARNING,
+                                 "Could not read two bytes from POST message");
+                }
+        }
 
         safefree (buffer);
         return 0;
