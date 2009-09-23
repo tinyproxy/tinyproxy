@@ -28,6 +28,7 @@
 #include "conns.h"
 #include "heap.h"
 #include "http-message.h"
+#include "log.h"
 #include "utils.h"
 
 /*
@@ -158,7 +159,10 @@ int create_file_safely (const char *filename, unsigned int truncate_file)
                  * ("Little sympathy has been extended")
                  */
 #ifdef HAVE_FTRUNCATE
-                ftruncate (fildes, 0);
+                if (ftruncate (fildes, 0) != 0) {
+                        log_message (LOG_WARNING,
+                                     "Unable to truncate file '%s'", filename);
+                }
 #else
                 close (fildes);
                 if ((fildes =
