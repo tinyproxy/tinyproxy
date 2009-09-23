@@ -53,7 +53,9 @@ void reversepath_add (const char *path, const char *url)
                 return;
         }
 
-        if (!(reverse = safemalloc (sizeof (struct reversepath)))) {
+        reverse = (struct reversepath *) safemalloc (sizeof
+                                                     (struct reversepath));
+        if (!reverse) {
                 log_message (LOG_ERR,
                              "Unable to allocate memory in reversepath_add()");
                 return;
@@ -107,7 +109,7 @@ char *reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
                 /* First try locating the reverse mapping by request url */
                 reverse = reversepath_get (url);
                 if (reverse) {
-                        rewrite_url =
+                        rewrite_url = (char *)
                             safemalloc (strlen (url) + strlen (reverse->url) +
                                         1);
                         strcpy (rewrite_url, reverse->url);
@@ -124,9 +126,10 @@ char *reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
                                                  strlen (REVERSE_COOKIE) +
                                                  1))) {
 
-                                rewrite_url = safemalloc (strlen (url) +
-                                                          strlen (reverse->
-                                                                  url) + 1);
+                                rewrite_url = (char *) safemalloc
+                                        (strlen (url) +
+                                         strlen (reverse->url) +
+                                         1);
                                 strcpy (rewrite_url, reverse->url);
                                 strcat (rewrite_url, url + 1);
 
