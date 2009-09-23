@@ -351,7 +351,7 @@ main (int argc, char **argv)
         if (!config.stathost) {
                 log_message (LOG_INFO, "Setting stathost to \"%s\".",
                              TINYPROXY_STATHOST);
-                config.stathost = TINYPROXY_STATHOST;
+                config.stathost = strdup (TINYPROXY_STATHOST);
         }
 
         if (!config.user) {
