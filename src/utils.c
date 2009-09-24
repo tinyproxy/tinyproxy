@@ -177,10 +177,16 @@ int create_file_safely (const char *filename, unsigned int truncate_file)
         return fildes;
 }
 
-/*
- * Write the PID of the program to the specified file.
- */
-int pidfile_create (const char *filename)
+/**
+ * pidfile_create:
+ * @filename: The name of the file which should be created.
+ *
+ * Creates a file with the PID of the Tinyproxy process.
+ *
+ * Returns: %0 on success, non-zero values on errors.
+ **/
+int
+pidfile_create (const char *filename)
 {
         int fildes;
         FILE *fd;
@@ -203,7 +209,7 @@ int pidfile_create (const char *filename)
                 return -EIO;
         }
 
-        fprintf (fd, "%ld\n", (long) getpid ());
+        fprintf (fd, "%d\n", getpid ());
         fclose (fd);
         return 0;
 }
