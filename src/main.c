@@ -118,32 +118,51 @@ display_license (void)
 static void
 display_usage (void)
 {
+        int features = 0;
+
         printf ("Usage: %s [options]\n", PACKAGE);
-        printf ("\
-Options:\n\
-  -d		Operate in DEBUG mode.\n\
-  -c FILE	Use an alternate configuration file.\n\
-  -h		Display this usage information.\n\
-  -l            Display the license.\n\
-  -v            Display the version number.\n");
+        printf ("\n"
+                "Options are:\n"
+                "  -d        Do not daemonize (run in foreground).\n"
+                "  -c FILE   Use an alternate configuration file.\n"
+                "  -h        Display this usage information.\n"
+                "  -l        Display the license.\n"
+                "  -v        Display version information.\n");
 
         /* Display the modes compiled into tinyproxy */
         printf ("\nFeatures compiled in:\n");
+
 #ifdef XTINYPROXY_ENABLE
         printf ("    XTinyproxy header\n");
+        features++;
 #endif /* XTINYPROXY */
+
 #ifdef FILTER_ENABLE
         printf ("    Filtering\n");
+        features++;
 #endif /* FILTER_ENABLE */
+
 #ifndef NDEBUG
         printf ("    Debugging code\n");
+        features++;
 #endif /* NDEBUG */
+
 #ifdef TRANSPARENT_PROXY
         printf ("    Transparent proxy support\n");
+        features++;
 #endif /* TRANSPARENT_PROXY */
+
 #ifdef REVERSE_SUPPORT
         printf ("    Reverse proxy support\n");
+        features++;
 #endif /* REVERSE_SUPPORT */
+
+        if (0 == features)
+                printf ("    None\n");
+
+        printf ("\n"
+                "For bug reporting instructions, please see:\n"
+                "<https://www.banu.com/tinyproxy/support/>.\n");
 }
 
 static int
