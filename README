@@ -69,27 +69,6 @@ please visit:
 
 for more information on how to subscribe and post messages to the lists.
 
-Please recompile Tinyproxy with full debug support (--enable-debug) and
-include a copy of the log file, and any assert errors reported by
-Tinyproxy.  Note that Tinyproxy will output memory statistics to
-standard error if compiled with debugging support so you might want to
-redirect the output to a file for later examination.  Also, if you feel
-up to it, try running Tinyproxy under your debugger and report the error
-your received and a context listing of the location.  Under gdb you
-would run Tinyproxy like so:
-
-	 gdb tinyproxy
-
-	 (gdb) run -c location_of_tinyproxy_conf -d 2>/dev/null
-
-Now access the port Tinyproxy is on until you receive a break in the
-gdb. You can now type:
-
-	 (gbd) l
-
-to produce a context listing of the location of the error.  Send a
-copy to the authors.
-
 
 Contributing
 ------------
