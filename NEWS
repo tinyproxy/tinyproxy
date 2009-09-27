@@ -1,14 +1,14 @@
 Tinyproxy NEWS
 ==============
 
-Version 0.7.1
+Version 1.7.1
 -------------
 
  * Fixed all warnings reported by GCC
  * Wrote improved asciidoc manpages
  * Fixed various other bugs
 
-Bugs fixed since version 0.7.0
+Bugs fixed since version 1.7.0
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  * BB#8: Update README, INSTALL, NEWS and the manpage
