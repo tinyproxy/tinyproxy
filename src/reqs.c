@@ -1044,7 +1044,6 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
                 "proxy-connection",
                 "te",
                 "trailers",
-                "transfer-encoding",
                 "upgrade"
         };
         int i;
@@ -1156,7 +1155,6 @@ static int process_server_headers (struct conn_s *connptr)
                 "proxy-authenticate",
                 "proxy-authorization",
                 "proxy-connection",
-                "transfer-encoding",
         };
 
         char *response_line;
