@@ -133,6 +133,11 @@ The possible keywords and their descriptions are as follows:
     This option controls the location of the file where the main
     Tinyproxy process stores its process ID for signalling purposes.
 
+*XTinyproxy*::
+
+    Setting this option to `Yes` tells Tinyproxy to add a header
+    `X-Tinyproxy` containing the client's IP address to the request.
+
 BUGS
 ----
 
