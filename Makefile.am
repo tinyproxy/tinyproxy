@@ -14,3 +14,9 @@ EXTRA_DIST = \
 	autogen.sh \
 	tinyproxy-indent.sh \
 	TODO
+
+test: all
+	./tests/scripts/run_tests.sh
+
+valgrind-test: all
+	./tests/scripts/run_tests_valgrind.sh
