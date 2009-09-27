@@ -144,11 +144,9 @@ wait_for_some_seconds() {
 
 	echo -n "waiting for $SECONDS seconds."
 
-	COUNT=0
-	while test $COUNT -lt $SECONDS ; do
+	for COUNT in $(seq 1 $SECONDS) ; do
 		sleep 1
 		echo -n "."
-		COUNT=$(($COUNT + 1))
 	done
 	echo " done"
 }
