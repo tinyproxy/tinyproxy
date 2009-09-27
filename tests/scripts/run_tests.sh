@@ -94,6 +94,7 @@ ConnectPort 443
 ConnectPort 563
 FilterURLs On
 Filter "$TINYPROXY_FILTER_FILE"
+XTinyproxy Yes
 EOF
 
 	touch $TINYPROXY_FILTER_FILE
