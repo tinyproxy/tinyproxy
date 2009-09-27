@@ -64,9 +64,6 @@ sub build_request($$$$$)
 		}
 		$request = "$method $document$EOL";
 	} elsif ($version eq '1.0') {
-		if ($method ne 'GET') {
-			die "invalid method '$method'";
-		}
 		$request = "$method $document HTTP/$version$EOL"
 			 . $user_agent_header;
 	} elsif ($version eq '1.1') {
