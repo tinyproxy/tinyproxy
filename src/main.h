@@ -62,7 +62,7 @@ struct config_s {
         unsigned int filter_casesensitive;      /* boolean */
 #endif                          /* FILTER_ENABLE */
 #ifdef XTINYPROXY_ENABLE
-        char *my_domain;
+        unsigned int add_xtinyproxy; /* boolean */
 #endif
 #ifdef REVERSE_SUPPORT
         struct reversepath *reversepath_list;

@@ -457,7 +457,7 @@ static HANDLE_FUNC (handle_stathost)
 static HANDLE_FUNC (handle_xtinyproxy)
 {
 #ifdef XTINYPROXY_ENABLE
-        return set_string_arg (&conf->my_domain, line, &match[2]);
+        return set_bool_arg (&conf->add_xtinyproxy, line, &match[2]);
 #else
         fprintf (stderr,
                  "XTinyproxy NOT Enabled! Recompile with --enable-xtinyproxy\n");

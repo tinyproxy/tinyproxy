@@ -1126,7 +1126,7 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
                 }
         }
 #if defined(XTINYPROXY_ENABLE)
-        if (config.my_domain)
+        if (config.add_xtinyproxy)
                 add_xtinyproxy_header (connptr);
 #endif
 
