@@ -108,7 +108,7 @@ The possible keywords and their descriptions are as follows:
 
 *Syslog*::
 
-    When set to `On`, this options tell Tinyproxy to write its
+    When set to `On`, this option tells Tinyproxy to write its
     debug messages to syslog instead of to a log file configured
     with `LogFile`. These two options are mutually exclusive.
 
