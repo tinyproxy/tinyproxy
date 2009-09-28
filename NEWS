@@ -1,0 +1,22 @@
+Tinyproxy NEWS
+==============
+
+Version 1.6.5
+-------------
+
+ * Fixed memset bug where wrong buffer size was being passed
+ * Updated Tinyproxy website URLs
+ * Fixed various other bugs
+
+Bugs fixed since version 1.6.4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * BB#10: Do not filter out transfer-encoding header
+ * BB#14: Do not change order of HTTP headers
+ * BB#18: Fix pointer aliasing issues
+ * BB#53: Add a GPLv2 COPYING file
+
+Contributors
+~~~~~~~~~~~~
+
+Michael Adam, Mukund Sivaraman, Robert James Kaes.
