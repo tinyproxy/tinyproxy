@@ -282,7 +282,7 @@ The possible keywords and their descriptions are as follows:
     support. With reverse proxying it's possible to make a number of
     sites appear as if they were part of a single site.
 
-    If you uncomment the following two directives and run tinyproxy
+    If you uncomment the following two directives and run Tinyproxy
     on your own computer at port 8888, you can access example.com,
     using http://localhost:8888/example/.
 
@@ -290,7 +290,7 @@ The possible keywords and their descriptions are as follows:
 
 *ReverseOnly*::
 
-    When using tinyproxy as a reverse proxy, it is STRONGLY
+    When using Tinyproxy as a reverse proxy, it is STRONGLY
     recommended that the normal proxy is turned off by setting
     this boolean option to `Yes`.
 
