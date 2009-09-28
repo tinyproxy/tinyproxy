@@ -1674,7 +1674,7 @@ send_error:
                 return;
         }
 
-        if (!connptr->connect_method || (connptr->upstream_proxy != NULL)) {
+        if (!(connptr->connect_method && (connptr->upstream_proxy == NULL))) {
                 if (process_server_headers (connptr) < 0) {
                         if (connptr->error_variables)
                                 send_http_error_message (connptr);
