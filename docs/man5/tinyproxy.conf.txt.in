@@ -171,6 +171,18 @@ The possible keywords and their descriptions are as follows:
     will be created. With other words, only MaxClients clients can be
     connected to Tinyproxy simultaneously.
 
+*MinSpareServers*::
+*MaxSpareServers*::
+
+    Tinyproxy always keeps a certain number of idle child processes
+    so that it can handle new incoming client requests quickly.
+    `MinSpareServer` and `MaxSpareServers` control the lower and upper
+    limits for the number of spare processes. I.e. when the number of
+    spare servers drops below `MinSpareServers` then Tinyproxy will
+    start forking new spare processes in the background and when the
+    number of spare processes exceeds `MaxSpareServers` then Tinyproxy
+    will kill off extra processes.
+
 
 BUGS
 ----
