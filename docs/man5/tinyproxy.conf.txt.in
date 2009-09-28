@@ -252,6 +252,24 @@ The possible keywords and their descriptions are as follows:
     to `Yes` changes the policy do deny everything but the domains
     or URLs matched by the filtering rules.
 
+*Anonymous*::
+
+    If an `Anonymous` keyword is present, then anonymous proxying
+    is enabled.  The headers listed with `Anonymous` are allowed
+    through, while all others are denied. If no Anonymous keyword
+    is present, then all headers are allowed through.  You must
+    include quotes around the headers.
+
+    Most sites require cookies to be enabled for them to work correctly, so
+    you will need to allow Cookies through if you access those sites.
+
+    Example:
+
+    Anonymous "Host"
+    Anonymous "Authorization"
+    Anonymous "Cookie"
+
+
 
 BUGS
 ----
