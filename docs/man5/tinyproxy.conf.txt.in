@@ -269,6 +269,12 @@ The possible keywords and their descriptions are as follows:
     Anonymous "Authorization"
     Anonymous "Cookie"
 
+*ConnectPort*::
+
+    This option can be used to specify the ports allowed for the
+    CONNECT method. If no `ConnectPort` line is found, then all
+    ports are allowed. To disable CONNECT altogether, include a
+    single ConnectPort line with a value of `0`.
 
 
 BUGS
