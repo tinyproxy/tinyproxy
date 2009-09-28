@@ -88,7 +88,7 @@ The possible keywords and their descriptions are as follows:
 
     This configures the HTML file that Tinyproxy sends when
     a request for the stathost is received. If this parameter is
-    not set, Tinyproxy returns a hardcoded basic statistics page.
+    not set, Tinyproxy returns a hard-coded basic statistics page.
     See the STATHOST section in the `tinyproxy(8)` manual page
     for details.
 
@@ -97,7 +97,7 @@ The possible keywords and their descriptions are as follows:
     and DefaultErrorFile are template files that can contain a few
     template variables that Tinyproxy expands prior to delivery.
     Examples are "\{cause}" for an abbreviated error description and
-    "\{detail}" for a datiled error message.  The `tinyproxy(8)`
+    "\{detail}" for a detailed error message.  The `tinyproxy(8)`
     manual page contains a description of all template variables.
 
 *LogFile*::
@@ -131,7 +131,7 @@ The possible keywords and their descriptions are as follows:
 *PidFile*::
 
     This option controls the location of the file where the main
-    Tinyproxy process stores its process ID for signalling purposes.
+    Tinyproxy process stores its process ID for signaling purposes.
 
 *XTinyproxy*::
 
@@ -145,7 +145,7 @@ The possible keywords and their descriptions are as follows:
     host or domain of the site being accessed. The rules are stored
     in the order encountered in the configuration file and the
     LAST matching rule wins. There are three possible forms for
-    spcifying upstream rules:
+    specifying upstream rules:
 
     * 'upstream host:port' turns proxy upstream support on generally.
 
@@ -206,7 +206,7 @@ The possible keywords and their descriptions are as follows:
     list for Tinyproxy. The order in the config file is important.
     If there are no `Access` or `Deny` lines, then all clients are
     allowed. Otherwise, the default action is to deny access.
-    The argument to `Access` or `Deny` can ba a single IP address
+    The argument to `Access` or `Deny` can be a single IP address
     of a client host, like `127.0.0.1`, an IP address range, like
     `192.168.0.1/24` or a string that will be matched against the
     end of the client host name, i.e, this can be a full host name
