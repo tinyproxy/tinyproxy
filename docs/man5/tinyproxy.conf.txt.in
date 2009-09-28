@@ -183,6 +183,11 @@ The possible keywords and their descriptions are as follows:
     number of spare processes exceeds `MaxSpareServers` then Tinyproxy
     will kill off extra processes.
 
+*StartServers*::
+
+    The number of servers to start initially. This should usually be
+    set to a value between MinSpareServers and MaxSpareServers.
+
 
 BUGS
 ----
