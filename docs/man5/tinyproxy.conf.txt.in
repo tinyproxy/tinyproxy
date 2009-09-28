@@ -213,6 +213,14 @@ The possible keywords and their descriptions are as follows:
     like `host.example.com` or a domain name like `.example.com` or
     even a top level domain name like `.com`.
 
+*ViaProxyName*::
+
+    RFC 2616 requires proxies to add a `Via` header to the HTTP
+    requests, but using the real host name can be a security
+    concern. If the `ViaProxyname` option is present, than its
+    string value will be used as the host name in the Via header.
+    Otherwise, the server's host name will be used.
+
 
 BUGS
 ----
