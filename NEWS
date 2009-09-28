@@ -6,6 +6,7 @@ Version 1.7.1
 
  * Fixed all warnings reported by GCC
  * Wrote improved asciidoc manpages
+ * Cleaned up build system
  * Fixed various other bugs
 
 Bugs fixed since version 1.7.0
