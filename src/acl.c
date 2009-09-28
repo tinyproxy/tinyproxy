@@ -30,6 +30,8 @@
 #include "sock.h"
 #include "vector.h"
 
+#include <limits.h>
+
 /* Define how long an IPv6 address is in bytes (128 bits, 16 bytes) */
 #define IPV6_LEN 16
 
