@@ -188,6 +188,15 @@ The possible keywords and their descriptions are as follows:
     The number of servers to start initially. This should usually be
     set to a value between MinSpareServers and MaxSpareServers.
 
+*MaxRequestsPerChild*::
+
+    This limits the number of connections that a child process
+    will handle before it is killed. The default value is `0`
+    which disables this feature.  This option is meant as an
+    emergency measure in the case of problems with memory leakage.
+    In that case, setting `MaxRequestsPerChild` to a value of e.g.
+    1000, or 10000 can be useful.
+
 
 BUGS
 ----
