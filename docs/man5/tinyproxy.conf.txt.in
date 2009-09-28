@@ -164,6 +164,12 @@ The possible keywords and their descriptions are as follows:
     * 'IP/bits'  matches network/mask
     * 'IP/mask'  matches network/mask
 
+*MaxClients*::
+
+    Tinyproxy creates one child process for each connected client.
+    This options specifies the absolute highest number processes that
+    will be created. With other words, only MaxClients clients can be
+    connected to Tinyproxy simultaneously.
 
 
 BUGS
