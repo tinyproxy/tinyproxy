@@ -223,7 +223,8 @@ struct {
         },
         {
                 BEGIN "(upstream)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR
-                      ")?" END, handle_upstream, NULL},
+                      ")?" END, handle_upstream, NULL
+        },
 #endif
         /* loglevel */
         STDCONF ("loglevel", "(critical|error|warning|notice|connect|info)",
