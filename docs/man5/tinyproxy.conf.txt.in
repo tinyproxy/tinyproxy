@@ -138,6 +138,34 @@ The possible keywords and their descriptions are as follows:
     Setting this option to `Yes` tells Tinyproxy to add a header
     `X-Tinyproxy` containing the client's IP address to the request.
 
+*[No] Upstream*::
+
+    This option allows you to set up a set of rules for deciding
+    whether an upstream a proxy server is to be used, based on the
+    host or domain of the site being accessed. The rules are stored
+    in the order encountered in the configuration file and the
+    LAST matching rule wins. There are three possible forms for
+    spcifying upstream rules:
+
+    * 'upstream host:port' turns proxy upstream support on generally.
+
+    * 'upstream host:port "site_spec"' turns on the upstream proxy for
+    the sites matching `site_spec`.
+
+    * 'no upstream "site_spec"' turns off upstream support for sites
+    matching `site_spec`.
+
+    The site can be specified in various forms as a hostname, domain
+    name or as an IP range:
+
+    * 'name'     matches host exactly
+    * '.name'    matches any host in domain "name"
+    * '.'        matches any host with no domain (in 'empty' domain)
+    * 'IP/bits'  matches network/mask
+    * 'IP/mask'  matches network/mask
+
+
+
 BUGS
 ----
 
