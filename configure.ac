@@ -1,6 +1,6 @@
 AC_PREREQ(2.54)
 
-AC_INIT([Tinyproxy], [1.6.4], [https://www.banu.com/tinyproxy/newticket], [tinyproxy])
+AC_INIT([Tinyproxy], [1.6.4], [https://www.banu.com/bugzilla/enter_bug.cgi?product=Tinyproxy], [tinyproxy])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
