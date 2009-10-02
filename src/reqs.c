@@ -669,7 +669,6 @@ BAD_REQUEST_ERROR:
                 safefree (url);
                 free_request_struct (request);
                 return NULL;
-
 #endif
         }
 
@@ -1000,7 +999,7 @@ write_via_header (int fd, hashmap_t hashofheaders,
         if (config.via_proxy_name) {
                 strlcpy (hostname, config.via_proxy_name, sizeof (hostname));
         } else if (gethostname (hostname, sizeof (hostname)) < 0) {
-                strcpy (hostname, "unknown");
+                strlcpy (hostname, "unknown", 512);
         }
 
         /*
