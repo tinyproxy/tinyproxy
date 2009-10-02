@@ -103,42 +103,42 @@ static char *lookup_variable (struct conn_s *connptr, const char *varname)
         return (data);
 }
 
-#define HTML_BUFSIZE 4096
-
 /*
  * Send an already-opened file to the client with variable substitution.
  */
-int send_html_file (FILE * infile, struct conn_s *connptr)
+int
+send_html_file (FILE *infile, struct conn_s *connptr)
 {
-        char inbuf[HTML_BUFSIZE], *varstart = NULL, *p;
+        char *inbuf;
+        char *varstart = NULL;
+        char *p;
         const char *varval;
-        int in_variable = 0, writeret;
+        int in_variable = 0;
+        int r = 0;
 
-        while (fgets (inbuf, HTML_BUFSIZE, infile) != NULL) {
+        inbuf = (char *) safemalloc (4096);
+
+        while (fgets (inbuf, 4096, infile) != NULL) {
                 for (p = inbuf; *p; p++) {
                         switch (*p) {
                         case '}':
                                 if (in_variable) {
                                         *p = '\0';
-                                        varval =
-                                            (const char *)
-                                            lookup_variable (connptr, varstart);
+                                        varval = (const char *)
+                                                lookup_variable (connptr,
+                                                                 varstart);
                                         if (!varval)
                                                 varval = "(unknown)";
-                                        writeret =
-                                            write_message (connptr->client_fd,
+                                        r = write_message (connptr->client_fd,
                                                            "%s", varval);
-                                        if (writeret)
-                                                return (writeret);
                                         in_variable = 0;
                                 } else {
-                                        writeret =
-                                            write_message (connptr->client_fd,
+                                        r = write_message (connptr->client_fd,
                                                            "%c", *p);
-                                        if (writeret)
-                                                return (writeret);
                                 }
+
                                 break;
+
                         case '{':
                                 /* a {{ will print a single {.  If we are NOT
                                  * already in a { variable, then proceed with
@@ -151,20 +151,27 @@ int send_html_file (FILE * infile, struct conn_s *connptr)
                                         in_variable++;
                                 } else
                                         in_variable = 0;
+
                         default:
                                 if (!in_variable) {
-                                        writeret =
-                                            write_message (connptr->client_fd,
+                                        r = write_message (connptr->client_fd,
                                                            "%c", *p);
-                                        if (writeret)
-                                                return (writeret);
                                 }
-
                         }
+
+                        if (r)
+                                break;
                 }
+
+                if (r)
+                        break;
+
                 in_variable = 0;
         }
-        return (0);
+
+        safefree (inbuf);
+
+        return r;
 }
 
 int send_http_headers (struct conn_s *connptr, int code, const char *message)
