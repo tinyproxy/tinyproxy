@@ -39,3 +39,18 @@ against the current tree and I'll integrate it if possible.
    Administrators should be allowed to selectively allow certain users
    access to tinyproxy via a user name/password pair.  Check the
    HTTP/1.1 RFC for more information.  [Suggested: Tyrone Tranmer]
+
+ * Fix paths inside etc/tinyproxy.conf
+
+ * Finish manpages
+
+ * Move defaults handling to conf.c
+
+ * Remove common.h and fix order of headers
+
+ * Remove memory debugging functions (Valgrind is good enough)
+
+ * Make all functions return from one place (the end of the function)
+
+ * Move TODO items to Banu Bugzilla
+
