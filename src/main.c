@@ -1,7 +1,10 @@
 /* tinyproxy - A fast light-weight HTTP proxy
+ *
  * Copyright (C) 1998 Steven Young <sdyoung@miranda.org>
  * Copyright (C) 1998-2002 Robert James Kaes <rjkaes@users.sourceforge.net>
  * Copyright (C) 2000 Chris Lightfoot <chris@ex-parrot.com>
+ * Copyright (C) 2009 Mukund Sivaraman <muks@banu.com>
+ * Copyright (C) 2009 Michael Adam <obnox@samba.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
