@@ -72,7 +72,7 @@ static vector_t access_list = NULL;
  */
 static int
 fill_netmask_array (char *bitmask_string, unsigned char array[],
-                    unsigned int len)
+                    ssize_t len)
 {
         unsigned int i;
         long int mask;
