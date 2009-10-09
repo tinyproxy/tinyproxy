@@ -75,19 +75,19 @@ fill_netmask_array (char *bitmask_string, unsigned char array[],
                     size_t len)
 {
         unsigned int i;
-        long int mask;
+        unsigned long int mask;
         char *endptr;
 
         errno = 0;              /* to distinguish success/failure after call */
-        mask = strtol (bitmask_string, &endptr, 10);
+        mask = strtoul (bitmask_string, &endptr, 10);
 
         /* check for various conversion errors */
-        if ((errno == ERANGE && (mask == LONG_MIN || mask == LONG_MAX))
+        if ((errno == ERANGE && mask == ULONG_MAX)
             || (errno != 0 && mask == 0) || (endptr == bitmask_string))
                 return -1;
 
         /* valid range for a bit mask */
-        if (mask < 0 || mask > (8 * len))
+        if (mask > (8 * len))
                 return -1;
 
         /* we have a valid range to fill in the array */
