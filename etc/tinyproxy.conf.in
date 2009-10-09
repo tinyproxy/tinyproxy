@@ -56,25 +56,25 @@ Timeout 600
 #   /usr/share/tinyproxy
 #   /etc/tinyproxy
 #
-#ErrorFile 404 "/usr/share/tinyproxy/404.html"
-#ErrorFile 400 "/usr/share/tinyproxy/400.html"
-#ErrorFile 503 "/usr/share/tinyproxy/503.html"
-#ErrorFile 403 "/usr/share/tinyproxy/403.html"
-#ErrorFile 408 "/usr/share/tinyproxy/408.html"
+#ErrorFile 404 "@datadir@/404.html"
+#ErrorFile 400 "@datadir@/400.html"
+#ErrorFile 503 "@datadir@/503.html"
+#ErrorFile 403 "@datadir@/403.html"
+#ErrorFile 408 "@datadir@/408.html"
 
 #
 # DefaultErrorFile: The HTML file that gets sent if there is no
 # HTML file defined with an ErrorFile keyword for the HTTP error
 # that has occured.
 #
-DefaultErrorFile "/usr/share/tinyproxy/default.html"
+DefaultErrorFile "@datadir@/default.html"
 
 #
 # StatFile: The HTML file that gets sent when a request is made
 # for the stathost.  If this file doesn't exist a basic page is
 # hardcoded in tinyproxy.
 #
-StatFile "/usr/share/tinyproxy/stats.html"
+StatFile "@datadir@/stats.html"
 
 #
 # Logfile: Allows you to specify the location where information should
@@ -82,7 +82,7 @@ StatFile "/usr/share/tinyproxy/stats.html"
 # and enable the Syslog directive.  These directives are mutually
 # exclusive.
 #
-Logfile "/var/log/tinyproxy.log"
+Logfile "@localstatedir@/log/tinyproxy.log"
 
 #
 # Syslog: Tell tinyproxy to use syslog instead of a logfile.  This
@@ -112,7 +112,7 @@ LogLevel Info
 # PidFile: Write the PID of the main tinyproxy thread to this file so it
 # can be used for signalling purposes.
 #
-PidFile "/var/run/tinyproxy.pid"
+PidFile "@localstatedir@/run/tinyproxy.pid"
 
 #
 # XTinyproxy: Tell Tinyproxy to include the X-Tinyproxy header, which
@@ -210,7 +210,7 @@ ViaProxyName "tinyproxy"
 #
 # Filter: This allows you to specify the location of the filter file.
 #
-#Filter "/etc/tinyproxy/filter"
+#Filter "@sysconfdir@/filter"
 
 #
 # FilterURLs: Filter based on URLs rather than domains.
