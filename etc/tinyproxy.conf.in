@@ -103,7 +103,7 @@ Logfile "@localstatedir@/log/tinyproxy.log"
 #	Info		(most verbose)
 #
 # The LogLevel logs from the set level and above. For example, if the
-# LogLevel was set to Warning, than all log messages from Warning to
+# LogLevel was set to Warning, then all log messages from Warning to
 # Critical would be output, but Notice and below would be suppressed.
 #
 LogLevel Info
