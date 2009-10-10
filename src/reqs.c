@@ -996,6 +996,11 @@ write_via_header (int fd, hashmap_t hashofheaders,
         char *data;
         int ret;
 
+        if (config.disable_viaheader) {
+                ret = 0;
+                goto done;
+        }
+
         if (config.via_proxy_name) {
                 strlcpy (hostname, config.via_proxy_name, sizeof (hostname));
         } else if (gethostname (hostname, sizeof (hostname)) < 0) {
@@ -1020,6 +1025,7 @@ write_via_header (int fd, hashmap_t hashofheaders,
                                      major, minor, hostname, PACKAGE, VERSION);
         }
 
+done:
         return ret;
 }
 
