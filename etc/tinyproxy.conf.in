@@ -208,6 +208,15 @@ Allow 127.0.0.1
 ViaProxyName "tinyproxy"
 
 #
+# DisableViaHeader: When this is set to yes, Tinyproxy does NOT add
+# the Via header to the requests. This virtually puts Tinyproxy into
+# stealth mode. Note that RFC 2616 requires proxies to set the Via
+# header, so by enabling this option, you break compliance.
+# Don't disable the Via header unless you know what you are doing...
+#
+#DisableViaHeader Yes
+
+#
 # Filter: This allows you to specify the location of the filter file.
 #
 #Filter "@sysconfdir@/filter"
