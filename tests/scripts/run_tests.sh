@@ -90,6 +90,7 @@ StartServers 10
 MaxRequestsPerChild 0
 Allow 127.0.0.0/8
 ViaProxyName "tinyproxy"
+#DisableViaHeader Yes
 ConnectPort 443
 ConnectPort 563
 FilterURLs On
