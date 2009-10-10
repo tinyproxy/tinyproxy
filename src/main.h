@@ -83,6 +83,8 @@ struct config_s {
          */
         char *via_proxy_name;
 
+        unsigned int disable_viaheader; /* boolean */
+
         /*
          * Error page support.  Map error numbers to file paths.
          */

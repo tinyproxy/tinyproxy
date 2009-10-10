@@ -131,6 +131,7 @@ static HANDLE_FUNC (handle_timeout);
 
 static HANDLE_FUNC (handle_user);
 static HANDLE_FUNC (handle_viaproxyname);
+static HANDLE_FUNC (handle_disableviaheader);
 static HANDLE_FUNC (handle_xtinyproxy);
 
 #ifdef UPSTREAM_SUPPORT
@@ -182,6 +183,7 @@ struct {
         /* boolean arguments */
         STDCONF ("syslog", BOOL, handle_syslog),
         STDCONF ("bindsame", BOOL, handle_bindsame),
+        STDCONF ("disableviaheader", BOOL, handle_disableviaheader),
         /* integer arguments */
         STDCONF ("port", INT, handle_port),
         STDCONF ("maxclients", INT, handle_maxclients),
@@ -432,6 +434,19 @@ static HANDLE_FUNC (handle_viaproxyname)
         log_message (LOG_INFO,
                      "Setting \"Via\" header proxy to %s",
                      conf->via_proxy_name);
+        return 0;
+}
+
+static HANDLE_FUNC (handle_disableviaheader)
+{
+        int r = set_bool_arg (&conf->disable_viaheader, line, &match[2]);
+
+        if (r) {
+                return r;
+        }
+
+        log_message (LOG_INFO,
+                     "Disabling transmission of the \"Via\" header.");
         return 0;
 }
 
