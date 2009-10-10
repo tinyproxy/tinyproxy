@@ -221,6 +221,14 @@ The possible keywords and their descriptions are as follows:
     string value will be used as the host name in the Via header.
     Otherwise, the server's host name will be used.
 
+*DisableViaHeader*::
+
+    When this is set to yes, Tinyproxy does NOT add the `Via` header
+    to the requests. This virtually puts Tinyproxy into stealth mode.
+    Note that RFC 2616 requires proxies to set the `Via` header, so by
+    enabling this option, you break compliance.
+    Don't disable the `Via` header unless you know what you are doing...
+
 *Filter*::
 
     Tinyproxy supports filtering of web sites based on URLs or
