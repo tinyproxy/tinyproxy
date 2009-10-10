@@ -193,10 +193,13 @@ sub child_action($) {
 		return;
 	}
 
-	print $client "HTTP/1.0 200 OK$EOL";
-	print $client "$server_header$EOL";
-	print $client "Content-Type: text/html$EOL";
-	print $client "$EOL";
+	if ($request->{version} ne "0.9") {
+		print $client "HTTP/1.0 200 OK$EOL";
+		print $client "$server_header$EOL";
+		print $client "Content-Type: text/html$EOL";
+		print $client "$EOL";
+	}
+
 	print $client "<html>$EOL";
 	print $client "<h1>Tinyproxy test WEB server</h1>$EOL";
 	print $client "<h2>Fortune</h2>$EOL";
