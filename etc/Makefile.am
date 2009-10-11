@@ -2,7 +2,7 @@ sysconf_DATA = \
 	tinyproxy.conf
 
 EXTRA_DIST = \
-	$(sysconf_DATA)
+	tinyproxy.conf.in
 
 edit = sed \
 	-e 's|@bindir[@]|$(bindir)|g' \
@@ -13,8 +13,8 @@ edit = sed \
 	-e 's|@pkgdatadir[@]|$(pkgdatadir)|g' \
 	-e 's|@prefix[@]|$(prefix)|g'
 
-tinyproxy.conf: tinyproxy.conf.in
+tinyproxy.conf: $(top_srcdir)/etc/tinyproxy.conf.in Makefile
 	rm -f $@ $@.tmp
-	$(edit) $@.in >$@.tmp
+	$(edit) $(top_srcdir)/etc/$@.in > $@.tmp
 	mv $@.tmp $@
 
