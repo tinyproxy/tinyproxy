@@ -34,6 +34,7 @@ my $http_version = "1.0";
 my $method = "GET";
 my $dry_run = 0;
 my $help = 0;
+my $entity = undef;
 
 my $default_port = "80";
 my $port = $default_port;
@@ -42,7 +43,8 @@ sub process_options() {
 	my $result = GetOptions("help|?" => \$help,
 				"http-version=s" => \$http_version,
 				"method=s" => \$method,
-				"dry-run" => \$dry_run);
+				"dry-run" => \$dry_run,
+				"entity=s" => \$entity);
 	die "Error reading cmdline options! $!" unless $result;
 
 	pod2usage(1) if $help;
@@ -51,9 +53,9 @@ sub process_options() {
 }
 
 
-sub build_request($$$$$)
+sub build_request($$$$$$)
 {
-	my ( $host, $port, $version, $method, $document ) = @_;
+	my ( $host, $port, $version, $method, $document, $entity ) = @_;
 	my $request = "";
 
 	$method = uc($method);
@@ -77,6 +79,10 @@ sub build_request($$$$$)
 
 	$request .= $EOL;
 
+	if ($entity) {
+		$request .= $entity;
+	}
+
 	return $request;
 }
 
@@ -97,7 +103,7 @@ if ($host =~ /^([^:]+):(.*)/) {
 }
 
 foreach my $document (@ARGV) {
-	my $request = build_request($host, $port, $http_version, $method, $document);
+	my $request = build_request($host, $port, $http_version, $method, $document, $entity);
 	if ($dry_run) {
 		print $request;
 		exit(0);
@@ -150,6 +156,10 @@ Specify the HTTP protocol version to use (0.9, 1.0, 1.1). Default is 1.0.
 =item B<--method>
 
 Specify the HTTP request method ('GET', 'CONNECT', ...). Default is 'GET'.
+
+=item B<--entity>
+
+Add the provided string as entity (i.e. body) to the request.
 
 =item B<--dry-run>
 
