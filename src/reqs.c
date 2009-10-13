@@ -1289,6 +1289,50 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
 #endif
 }
 
+static int
+get_request_entity(struct conn_s *connptr)
+{
+        int ret;
+        fd_set rset;
+        struct timeval tv;
+
+        FD_ZERO (&rset);
+        FD_SET (connptr->client_fd, &rset);
+        tv.tv_sec = 0;
+        tv.tv_usec = 0;
+        ret = select (connptr->client_fd + 1, &rset, NULL, NULL, &tv);
+
+        if (ret == -1) {
+                log_message (LOG_ERR,
+                             "Error calling select on client fd %d: %s",
+                             connptr->client_fd, strerror(errno));
+        } else if (ret == 0) {
+               log_message (LOG_INFO, "no entity");
+        } else if (ret == 1 && FD_ISSET (connptr->client_fd, &rset)) {
+                ssize_t nread;
+                nread = read_buffer (connptr->client_fd, connptr->cbuffer);
+                if (nread < 0) {
+                        log_message (LOG_ERR,
+                                     "Error reading readble client_fd %d",
+                                     connptr->client_fd);
+                        ret = -1;
+                } else {
+                        log_message (LOG_INFO,
+                                     "Read request entity of %d bytes",
+                                     nread);
+                        ret = 0;
+                }
+        } else {
+                log_message (LOG_ERR, "strange situation after select: "
+                             "ret = %d, but client_fd (%d) is not readable...",
+                             ret, connptr->client_fd);
+                ret = -1;
+        }
+
+        return ret;
+}
+
+
 /*
  * This is the main drive for each connection. As you can tell, for the
  * first few steps we are using a blocking socket. If you remember the
@@ -1333,9 +1377,7 @@ void handle_connection (int fd)
                                      "The administrator of this proxy has not configured "
                                      "it to service requests from your host.",
                                      NULL);
-                send_http_error_message (connptr);
-                destroy_conn (connptr);
-                return;
+                goto fail;
         }
 
         if (read_request_line (connptr) < 0) {
@@ -1344,9 +1386,7 @@ void handle_connection (int fd)
                                      "detail",
                                      "Server timeout waiting for the HTTP request "
                                      "from the client.", NULL);
-                send_http_error_message (connptr);
-                destroy_conn (connptr);
-                return;
+                goto fail;
         }
 
         /*
@@ -1360,9 +1400,7 @@ void handle_connection (int fd)
                                      "An internal server error occurred while processing "
                                      "your request. Please contact the administrator.",
                                      NULL);
-                send_http_error_message (connptr);
-                destroy_conn (connptr);
-                return;
+                goto fail;
         }
 
         /*
@@ -1375,11 +1413,8 @@ void handle_connection (int fd)
                                      "detail",
                                      "Could not retrieve all the headers from "
                                      "the client.", NULL);
-                send_http_error_message (connptr);
-                hashmap_delete (hashofheaders);
                 update_stats (STAT_BADCONN);
-                destroy_conn (connptr);
-                return;
+                goto fail;
         }
 
         /*
@@ -1397,19 +1432,16 @@ void handle_connection (int fd)
 
         request = process_request (connptr, hashofheaders);
         if (!request) {
-                if (!connptr->error_variables && !connptr->show_stats) {
+                if (!connptr->show_stats) {
                         update_stats (STAT_BADCONN);
-                        destroy_conn (connptr);
-                        hashmap_delete (hashofheaders);
-                        return;
                 }
-                goto send_error;
+                goto fail;
         }
 
         connptr->upstream_proxy = UPSTREAM_HOST (request->host);
         if (connptr->upstream_proxy != NULL) {
                 if (connect_to_upstream (connptr, request) < 0) {
-                        goto send_error;
+                        goto fail;
                 }
         } else {
                 connptr->server_fd = opensock (request->host, request->port,
@@ -1420,7 +1452,7 @@ void handle_connection (int fd)
                                              PACKAGE_NAME " "
                                              "was unable to connect to the remote web server.",
                                              "error", strerror (errno), NULL);
-                        goto send_error;
+                        goto fail;
                 }
 
                 log_message (LOG_CONN,
@@ -1432,37 +1464,15 @@ void handle_connection (int fd)
                         establish_http_connection (connptr, request);
         }
 
-send_error:
-        free_request_struct (request);
-
         if (process_client_headers (connptr, hashofheaders) < 0) {
                 update_stats (STAT_BADCONN);
-                if (!connptr->error_variables) {
-                        hashmap_delete (hashofheaders);
-                        destroy_conn (connptr);
-                        return;
-                }
-        }
-        hashmap_delete (hashofheaders);
-
-        if (connptr->error_variables) {
-                send_http_error_message (connptr);
-                destroy_conn (connptr);
-                return;
-        } else if (connptr->show_stats) {
-                showstats (connptr);
-                destroy_conn (connptr);
-                return;
+                goto fail;
         }
 
         if (!(connptr->connect_method && (connptr->upstream_proxy == NULL))) {
                 if (process_server_headers (connptr) < 0) {
-                        if (connptr->error_variables)
-                                send_http_error_message (connptr);
-
                         update_stats (STAT_BADCONN);
-                        destroy_conn (connptr);
-                        return;
+                        goto fail;
                 }
         } else {
                 if (send_ssl_response (connptr) < 0) {
@@ -1470,8 +1480,7 @@ send_error:
                                      "handle_connection: Could not send SSL greeting "
                                      "to client.");
                         update_stats (STAT_BADCONN);
-                        destroy_conn (connptr);
-                        return;
+                        goto fail;
                 }
         }
 
@@ -1482,9 +1491,34 @@ send_error:
                      "and remote client (fd:%d)",
                      connptr->client_fd, connptr->server_fd);
 
+        goto done;
+
+fail:
         /*
-         * All done... close everything and go home... :)
+         * First, get the body if there is one.
+         * If we don't read all there is from the socket first,
+         * it is still marked for reading and we won't be able
+         * to send our data properly.
          */
+        if (get_request_entity (connptr) < 0) {
+                log_message (LOG_WARNING,
+                             "Could not retrieve request entity");
+                indicate_http_error (connptr, 400, "Bad Request",
+                                     "detail",
+                                     "Could not retrieve the request entity "
+                                     "the client.", NULL);
+                update_stats (STAT_BADCONN);
+        }
+
+        if (connptr->error_variables) {
+                send_http_error_message (connptr);
+        } else if (connptr->show_stats) {
+                showstats (connptr);
+        }
+
+done:
+        free_request_struct (request);
+        hashmap_delete (hashofheaders);
         destroy_conn (connptr);
         return;
 }
