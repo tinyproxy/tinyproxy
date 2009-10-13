@@ -40,6 +40,8 @@ against the current tree and I'll integrate it if possible.
    access to tinyproxy via a user name/password pair.  Check the
    HTTP/1.1 RFC for more information.  [Suggested: Tyrone Tranmer]
 
+   ==> https://www.banu.com/bugzilla/show_bug.cgi?id=13
+
  * Fix paths inside etc/tinyproxy.conf
 
  * Finish manpages
