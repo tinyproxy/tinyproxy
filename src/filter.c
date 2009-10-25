@@ -150,6 +150,18 @@ void filter_destroy (void)
         }
 }
 
+/**
+ * reload the filter file if filtering is enabled
+ */
+void filter_reload (void)
+{
+        if (config.filter) {
+                log_message (LOG_NOTICE, "Re-reading filter file.");
+                filter_destroy ();
+                filter_init ();
+        }
+}
+
 /* Return 0 to allow, non-zero to block */
 int filter_domain (const char *host)
 {

@@ -28,6 +28,7 @@ typedef enum {
 
 extern void filter_init (void);
 extern void filter_destroy (void);
+extern void filter_reload (void);
 extern int filter_domain (const char *host);
 extern int filter_url (const char *url);
 
