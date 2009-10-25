@@ -432,6 +432,9 @@ void child_main_loop (void)
                         filter_reload ();
 #endif /* FILTER_ENABLE */
 
+                        /* propagate filter reload to all children */
+                        child_kill_children (SIGHUP);
+
                         received_sighup = FALSE;
                 }
         }
