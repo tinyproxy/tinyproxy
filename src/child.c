@@ -160,6 +160,18 @@ short int child_configure (child_config_t type, unsigned int val)
         return 0;
 }
 
+/**
+ * child signal handler for sighup
+ */
+static void child_sighup_handler (int sig)
+{
+        if (sig == SIGHUP) {
+#ifdef FILTER_ENABLE
+                filter_reload ();
+#endif /* FILTER_ENABLE */
+        }
+}
+
 /*
  * This is the main (per child) loop.
  */
@@ -272,7 +284,7 @@ static pid_t child_make (struct child_s *ptr)
          */
         set_signal_handler (SIGCHLD, SIG_DFL);
         set_signal_handler (SIGTERM, SIG_DFL);
-        set_signal_handler (SIGHUP, SIG_DFL);
+        set_signal_handler (SIGHUP, child_sighup_handler);
 
         child_main (ptr);       /* never returns */
         return -1;
