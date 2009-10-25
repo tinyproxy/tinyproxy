@@ -440,13 +440,13 @@ void child_main_loop (void)
 /*
  * Go through all the non-empty children and cancel them.
  */
-void child_kill_children (void)
+void child_kill_children (int sig)
 {
         unsigned int i;
 
         for (i = 0; i != child_config.maxclients; i++) {
                 if (child_ptr[i].status != T_EMPTY)
-                        kill (child_ptr[i].tid, SIGTERM);
+                        kill (child_ptr[i].tid, sig);
         }
 }
 

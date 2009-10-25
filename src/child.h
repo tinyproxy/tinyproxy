@@ -33,7 +33,7 @@ extern short int child_pool_create (void);
 extern int child_listening_sock (uint16_t port);
 extern void child_close_sock (void);
 extern void child_main_loop (void);
-extern void child_kill_children (void);
+extern void child_kill_children (int sig);
 
 extern short int child_configure (child_config_t type, unsigned int val);
 

@@ -473,7 +473,7 @@ main (int argc, char **argv)
 
         log_message (LOG_INFO, "Shutting down.");
 
-        child_kill_children ();
+        child_kill_children (SIGTERM);
         child_close_sock ();
 
         /* Remove the PID file */
