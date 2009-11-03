@@ -305,6 +305,7 @@ int
 main (int argc, char **argv)
 {
         FILE *config_file;
+        int ret;
 
         /* Only allow u+rw bits. This may be required for some versions
          * of glibc so that mkstemp() doesn't make us vulnerable.
@@ -340,23 +341,8 @@ main (int argc, char **argv)
 
         fclose (config_file);
 
-        /* Write to a user supplied log file if it's defined.  This will
-         * override using the syslog even if syslog is defined. */
-        if (config.logf_name) {
-                if (open_log_file (config.logf_name) < 0) {
-                        fprintf (stderr,
-                                 "%s: Could not create log file.\n", argv[0]);
-                        exit (EX_SOFTWARE);
-                }
-                config.syslog = FALSE;  /* disable syslog */
-        } else if (config.syslog) {
-                if (config.godaemon == TRUE)
-                        openlog ("tinyproxy", LOG_PID, LOG_DAEMON);
-                else
-                        openlog ("tinyproxy", LOG_PID, LOG_USER);
-        } else {
-                fprintf (stderr, "%s: Either define a logfile or "
-                         "enable syslog logging.\n", argv[0]);
+        ret = setup_logging ();
+        if (ret != 0) {
                 exit (EX_SOFTWARE);
         }
 

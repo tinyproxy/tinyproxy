@@ -243,3 +243,40 @@ void send_stored_logs (void)
         vector_delete (log_message_storage);
         log_message_storage = NULL;
 }
+
+/**
+ * Initialize the logging subsystem, based on the configuration.
+ * Returns 0 upon success, -1 upon failure.
+ *
+ * This function uses fprintf() instead of log_message(), since
+ * the logging is not yet set up...
+ */
+int setup_logging (void)
+{
+        int ret = -1;
+
+        /* Write to a user supplied log file if it's defined.  This will
+         * override using the syslog even if syslog is defined. */
+        if (config.logf_name) {
+                if (open_log_file (config.logf_name) < 0) {
+                        fprintf (stderr,
+                                 "%s: Could not create log file.\n", PACKAGE);
+                        goto done;
+                }
+                config.syslog = FALSE;  /* disable syslog */
+        } else if (config.syslog) {
+                if (config.godaemon == TRUE)
+                        openlog ("tinyproxy", LOG_PID, LOG_DAEMON);
+                else
+                        openlog ("tinyproxy", LOG_PID, LOG_USER);
+        } else {
+                fprintf (stderr, "%s: Either define a logfile or "
+                         "enable syslog logging.\n", PACKAGE);
+                goto done;
+        }
+
+        ret = 0;
+
+done:
+        return ret;
+}

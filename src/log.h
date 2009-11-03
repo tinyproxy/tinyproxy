@@ -117,4 +117,6 @@ extern void log_message (int level, const char *fmt, ...);
 extern void set_log_level (int level);
 extern void send_stored_logs (void);
 
+extern int setup_logging (void);
+
 #endif
