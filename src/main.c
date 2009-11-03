@@ -313,16 +313,15 @@ main (int argc, char **argv)
 
         config.config_file = SYSCONFDIR "/tinyproxy.conf";
         config.godaemon = TRUE;
-
-        process_cmdline (argc, argv);
-
-        log_message (LOG_INFO, "Initializing " PACKAGE " ...");
-
         /*
          * Make sure the HTML error pages array is NULL to begin with.
          * (FIXME: Should have a better API for all this)
          */
         config.errorpages = NULL;
+
+        process_cmdline (argc, argv);
+
+        log_message (LOG_INFO, "Initializing " PACKAGE " ...");
 
         /* Read in the settings from the config file */
         config_file = fopen (config.config_file, "r");
