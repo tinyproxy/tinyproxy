@@ -87,7 +87,7 @@ void truncate_log_file (void)
         if (ftruncate (log_file_fd, 0) != 0) {
                 log_message (LOG_WARNING,
                              "Unable to truncate log file to zero length");
-	}
+        }
 }
 
 /*
