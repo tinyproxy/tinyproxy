@@ -301,10 +301,22 @@ change_user (const char *program)
         }
 }
 
+static void initialize_config_defaults (struct config_s *conf)
+{
+        memset (conf, 0, sizeof(*conf));
+
+        conf->config_file = SYSCONFDIR "/tinyproxy.conf";
+        conf->godaemon = TRUE;
+        /*
+         * Make sure the HTML error pages array is NULL to begin with.
+         * (FIXME: Should have a better API for all this)
+         */
+        conf->errorpages = NULL;
+}
+
 int
 main (int argc, char **argv)
 {
-        FILE *config_file;
         int ret;
 
         /* Only allow u+rw bits. This may be required for some versions
@@ -312,14 +324,7 @@ main (int argc, char **argv)
          */
         umask (0177);
 
-        config.config_file = SYSCONFDIR "/tinyproxy.conf";
-        config.godaemon = TRUE;
-        /*
-         * Make sure the HTML error pages array is NULL to begin with.
-         * (FIXME: Should have a better API for all this)
-         */
-        config.errorpages = NULL;
-
+        initialize_config_defaults (&config);
         process_cmdline (argc, argv);
 
         log_message (LOG_INFO, "Initializing " PACKAGE " ...");
