@@ -196,7 +196,7 @@ get_id (char *str)
  * This function parses command line arguments.
  **/
 static void
-process_cmdline (int argc, char **argv)
+process_cmdline (int argc, char **argv, struct config_s *conf)
 {
         int opt;
 
@@ -211,12 +211,12 @@ process_cmdline (int argc, char **argv)
                         exit (EX_OK);
 
                 case 'd':
-                        config.godaemon = FALSE;
+                        conf->godaemon = FALSE;
                         break;
 
                 case 'c':
-                        config.config_file = safestrdup (optarg);
-                        if (!config.config_file) {
+                        conf->config_file = safestrdup (optarg);
+                        if (!conf->config_file) {
                                 fprintf (stderr,
                                          "%s: Could not allocate memory.\n",
                                          argv[0]);
@@ -325,7 +325,7 @@ main (int argc, char **argv)
         umask (0177);
 
         initialize_config_defaults (&config);
-        process_cmdline (argc, argv);
+        process_cmdline (argc, argv, &config);
 
         log_message (LOG_INFO, "Initializing " PACKAGE " ...");
 
