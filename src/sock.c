@@ -166,41 +166,61 @@ int socket_blocking (int sock)
  */
 int listen_sock (uint16_t port, socklen_t * addrlen)
 {
+        struct addrinfo hints, *result, *rp;
+        char portstr[32];
         int listenfd;
         const int on = 1;
-        struct sockaddr_in addr;
 
         assert (port > 0);
         assert (addrlen != NULL);
 
-        listenfd = socket (AF_INET, SOCK_STREAM, 0);
-        setsockopt (listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on));
+        memset (&hints, 0, sizeof (struct addrinfo));
+        hints.ai_family = AF_UNSPEC;
+        hints.ai_socktype = SOCK_STREAM;
 
-        memset (&addr, 0, sizeof (addr));
-        addr.sin_family = AF_INET;
-        addr.sin_port = htons (port);
+        sprintf (portstr, "%6d", port);
 
-        if (config.ipAddr) {
-                addr.sin_addr.s_addr = inet_addr (config.ipAddr);
-        } else {
-                addr.sin_addr.s_addr = inet_addr ("0.0.0.0");
-        }
-
-        if (bind (listenfd, (struct sockaddr *) &addr, sizeof (addr)) < 0) {
+        if (getaddrinfo (config.ipAddr, portstr, &hints, &result) != 0) {
                 log_message (LOG_ERR,
-                             "Unable to bind listening socket because of %s",
+                             "Unable to getaddrinfo() because of %s",
                              strerror (errno));
                 return -1;
         }
+
+        for (rp = result; rp != NULL; rp = rp->ai_next) {
+                listenfd = socket (rp->ai_family, rp->ai_socktype,
+                                   rp->ai_protocol);
+                if (listenfd == -1)
+                        continue;
+
+                if (bind (listenfd, rp->ai_addr, rp->ai_addrlen) == 0)
+                        break;  /* success */
+        }
+
+        if (rp == NULL) {
+                /* was not able to bind to any address */
+                log_message (LOG_ERR,
+                             "Unable to bind listening socket "
+                             "to any address.");
+
+                freeaddrinfo (result);
+                return -1;
+        }
+
+        setsockopt (listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on));
 
         if (listen (listenfd, MAXLISTEN) < 0) {
                 log_message (LOG_ERR,
                              "Unable to start listening socket because of %s",
                              strerror (errno));
+
+                freeaddrinfo (result);
                 return -1;
         }
 
-        *addrlen = sizeof (addr);
+        *addrlen = rp->ai_addrlen;
+
+        freeaddrinfo (result);
 
         return listenfd;
 }
