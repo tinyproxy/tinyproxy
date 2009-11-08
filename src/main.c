@@ -329,22 +329,10 @@ main (int argc, char **argv)
 
         log_message (LOG_INFO, "Initializing " PACKAGE " ...");
 
-        /* Read in the settings from the config file */
-        config_file = fopen (config.config_file, "r");
-        if (!config_file) {
-                fprintf (stderr,
-                         "%s: Could not open config file \"%s\".\n",
-                         argv[0], config.config_file);
+	ret = load_config_file(config.config_file, &config);
+        if (ret != 0) {
                 exit (EX_SOFTWARE);
         }
-
-        if (config_compile () || config_parse (&config, config_file)) {
-                fprintf (stderr, "Unable to parse config file. "
-                         "Not starting.\n");
-                exit (EX_SOFTWARE);
-        }
-
-        fclose (config_file);
 
         ret = setup_logging ();
         if (ret != 0) {

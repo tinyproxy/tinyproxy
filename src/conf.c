@@ -265,7 +265,7 @@ const unsigned int ndirectives = sizeof (directives) / sizeof (directives[0]);
  *
  * Returns 0 on success; negative upon failure.
  */
-int config_compile (void)
+static int config_compile (void)
 {
         unsigned int i, r;
 
@@ -314,7 +314,7 @@ static int check_match (struct config_s *conf, const char *line)
 /*
  * Parse the previously opened configuration stream.
  */
-int config_parse (struct config_s *conf, FILE * f)
+static int config_parse (struct config_s *conf, FILE * f)
 {
         char buffer[1024];      /* 1KB lines should be plenty */
         unsigned long lineno = 1;
@@ -326,6 +326,31 @@ int config_parse (struct config_s *conf, FILE * f)
                 }
                 ++lineno;
         }
+        return 0;
+}
+
+/**
+ * Read the settings from a config file.
+ */
+int load_config_file (const char *config_fname, struct config_s *conf)
+{
+        FILE *config_file;
+
+        config_file = fopen (config_fname, "r");
+        if (!config_file) {
+                fprintf (stderr,
+                         "%s: Could not open config file \"%s\".\n",
+                         PACKAGE, config_fname);
+                return -1;
+        }
+
+        if (config_compile () || config_parse (&config, config_file)) {
+                fprintf (stderr, "Unable to parse config file. "
+                         "Not starting.\n");
+                return -1;
+        }
+
+        fclose (config_file);
         return 0;
 }
 
