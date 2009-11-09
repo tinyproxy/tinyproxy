@@ -179,11 +179,7 @@ int insert_acl (char *location, acl_access_t access_type)
                 }
         }
 
-        /*
-         * Add the entry and then clean up.
-         */
         ret = vector_append (access_list, &acl, sizeof (struct acl_s));
-        safefree (acl.address.string);
         return ret;
 }
 
