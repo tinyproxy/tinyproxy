@@ -195,6 +195,8 @@ int listen_sock (uint16_t port, socklen_t * addrlen)
 
                 if (bind (listenfd, rp->ai_addr, rp->ai_addrlen) == 0)
                         break;  /* success */
+
+                close (listenfd);
         }
 
         if (rp == NULL) {
@@ -214,6 +216,7 @@ int listen_sock (uint16_t port, socklen_t * addrlen)
                              "Unable to start listening socket because of %s",
                              strerror (errno));
 
+                close (listenfd);
                 freeaddrinfo (result);
                 return -1;
         }
