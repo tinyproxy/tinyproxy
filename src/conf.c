@@ -739,8 +739,8 @@ static HANDLE_FUNC (handle_reversepath)
         if (!arg1)
                 return -1;
 
-        if (match[3].rm_so != -1) {
-                arg2 = get_string_arg (line, &match[3]);
+        if (match[4].rm_so != -1) {
+                arg2 = get_string_arg (line, &match[4]);
                 if (!arg2) {
                         safefree (arg1);
                         return -1;
