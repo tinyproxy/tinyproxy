@@ -119,9 +119,9 @@ STATHOST
 
 Tinyproxy returns a HTML page with connection statistics when it
 receives a HTTP request for a certain host -- the stathost.  The
-stathost name defaults to `tinyproxy.stats` and can be changed at
-compile-time with the configure switch `--with-stathost` to any name or
-IP address.
+stathost name defaults to `@TINYPROXY_STATHOST@` and can be changed at
+runtime to any name or IP address with the configuration variable
+`StatHost`.
 
 The stat file template can be changed at runtime through the
 configuration variable `StatFile`.
