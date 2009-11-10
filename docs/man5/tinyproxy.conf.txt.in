@@ -83,6 +83,14 @@ The possible keywords and their descriptions are as follows:
     This parameter controls the HTML template file returned when an
     error occurs for which no specific error file has been set.
 
+*StatHost*::
+
+    This configures the host name or IP address that is treated
+    as the `stat host`: Whenever a request for this host is received,
+    Tinyproxy will return an internal statistics page instead of
+    forwarding the request to that host. The template for this
+    page can be configured with the `StatFile` configuration option.
+    The default value of `StatHost` is `@TINYPROXY_STATHOST@`.
 
 *StatFile*::
 
