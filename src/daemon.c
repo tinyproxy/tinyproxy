@@ -48,7 +48,7 @@ void makedaemon (void)
 
         umask (0177);
 
-#if NDEBUG
+#ifdef NDEBUG
         /*
          * When not in debugging mode, close the standard file
          * descriptors.
