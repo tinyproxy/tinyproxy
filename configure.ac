@@ -65,8 +65,12 @@ AH_TEMPLATE([TINYPROXY_STATHOST],
 	[This controls remote proxy stats display.])
 AC_ARG_WITH(stathost,
             [AC_HELP_STRING([--with-stathost=HOST], [Default status host])],
-            [AC_DEFINE_UNQUOTED(TINYPROXY_STATHOST, "$withval")],
-	    [AC_DEFINE_UNQUOTED(TINYPROXY_STATHOST, "tinyproxy.stats")])
+            [AC_DEFINE_UNQUOTED(TINYPROXY_STATHOST, "$withval")
+	     TINYPROXY_STATHOST="$withval"],
+	    [AC_DEFINE_UNQUOTED(TINYPROXY_STATHOST, "tinyproxy.stats")
+	     TINYPROXY_STATHOST="tinyproxy.stats"])
+
+AC_SUBST(TINYPROXY_STATHOST)
 
 dnl Add compiler-specific optimization flags
 TP_ARG_ENABLE(debug,
