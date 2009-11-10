@@ -11,7 +11,8 @@ edit = sed \
 	-e 's|@sysconfdir[@]|$(sysconfdir)|g' \
 	-e 's|@localstatedir[@]|$(localstatedir)|g' \
 	-e 's|@pkgdatadir[@]|$(pkgdatadir)|g' \
-	-e 's|@prefix[@]|$(prefix)|g'
+	-e 's|@prefix[@]|$(prefix)|g' \
+	-e 's|@TINYPROXY_STATHOST[@]|$(TINYPROXY_STATHOST)|g'
 
 tinyproxy.conf: $(top_srcdir)/etc/tinyproxy.conf.in Makefile
 	rm -f $@ $@.tmp
