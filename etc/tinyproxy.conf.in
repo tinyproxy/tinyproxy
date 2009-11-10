@@ -70,6 +70,16 @@ Timeout 600
 DefaultErrorFile "@datadir@/default.html"
 
 #
+# StatHost: This configures the host name or IP address that is treated
+# as the stat host: Whenever a request for this host is received,
+# Tinyproxy will return an internal statistics page instead of
+# forwarding the request to that host.  The default value of StatHost is
+# @TINYPROXY_STATHOST@.
+#
+#StatHost "@TINYPROXY_STATHOST@"
+#
+
+#
 # StatFile: The HTML file that gets sent when a request is made
 # for the stathost.  If this file doesn't exist a basic page is
 # hardcoded in tinyproxy.
