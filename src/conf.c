@@ -240,7 +240,7 @@ struct {
         STDCONF ("reversebaseurl", STR, handle_reversebaseurl),
         STDCONF ("reverseonly", BOOL, handle_reverseonly),
         STDCONF ("reversemagic", BOOL, handle_reversemagic),
-        STDCONF ("reversepath", STR WS "(" STR ")?", handle_reversepath),
+        STDCONF ("reversepath", STR "(" WS STR ")?", handle_reversepath),
 #endif
 #ifdef UPSTREAM_SUPPORT
         /* upstream is rather complicated */
