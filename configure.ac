@@ -28,7 +28,7 @@ AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4macros])
 AM_MAINTAINER_MODE
 
-m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([no])])
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 TINYPROXY_MAJOR_VERSION=tinyproxy_major_version
 TINYPROXY_MINOR_VERSION=tinyproxy_minor_version
