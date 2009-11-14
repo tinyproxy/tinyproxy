@@ -4,7 +4,6 @@ SUBDIRS = \
 	etc \
 	docs \
 	m4macros \
-	packaging \
 	tests
 
 # tools want this on a single line
