@@ -15,9 +15,9 @@ edit = sed \
 	-e 's|@TINYPROXY_STATHOST[@]|$(TINYPROXY_STATHOST)|g'
 
 tinyproxy.conf: $(top_srcdir)/etc/tinyproxy.conf.in Makefile
-	rm -f $@ $@.tmp
-	$(edit) $(top_srcdir)/etc/$@.in > $@.tmp
-	mv $@.tmp $@
+	@rm -f $@ $@.tmp
+	$(AM_V_GEN) $(edit) $(top_srcdir)/etc/$@.in > $@.tmp
+	@mv $@.tmp $@
 
 CLEANFILES = \
 	tinyproxy.conf

@@ -10,7 +10,7 @@ man_MANS = \
 
 .txt.5:
 if HAVE_A2X
-	a2x $(A2X_ARGS) $<
+	$(AM_V_GEN) a2x $(A2X_ARGS) $<
 else
 	@echo "*** a2x (asciidoc) is required to regenerate $(@) ***"; exit 1;
 endif
