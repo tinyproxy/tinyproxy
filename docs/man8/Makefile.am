@@ -15,9 +15,6 @@ else
 	@echo "*** a2x (asciidoc) is required to regenerate $(@) ***"; exit 1;
 endif
 
-EXTRA_DIST = \
-        $(man_MANS)
-
 CLEANFILES = \
 	$(MAN8_FILES:.txt=.8) \
 	$(MAN8_FILES:.txt=.xml)
