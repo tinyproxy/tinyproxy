@@ -649,7 +649,7 @@ static HANDLE_FUNC (handle_listen)
 
         if (r)
                 return r;
-        log_message (LOG_INFO, "Listing on IP %s", conf->ipAddr);
+        log_message (LOG_INFO, "Listening on IP %s", conf->ipAddr);
         return 0;
 }
 
