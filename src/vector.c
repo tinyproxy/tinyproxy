@@ -104,10 +104,17 @@ int vector_delete (vector_t vector)
  * Returns: 0 on success
  *          negative number if there are errors
  */
-#define INSERT_PREPEND 0
-#define INSERT_APPEND 1
 
-static int vector_insert (vector_t vector, void *data, size_t len, int pos)
+typedef enum {
+        INSERT_PREPEND,
+        INSERT_APPEND
+} vector_pos_t;
+
+static int
+vector_insert (vector_t      vector,
+               void         *data,
+               size_t        len,
+               vector_pos_t  pos)
 {
         struct vectorentry_s *entry;
 
@@ -133,7 +140,7 @@ static int vector_insert (vector_t vector, void *data, size_t len, int pos)
         /* If there is no head or tail, create them */
         if (!vector->head && !vector->tail)
                 vector->head = vector->tail = entry;
-        else if (pos == 0) {
+        else if (pos == INSERT_PREPEND) {
                 /* prepend the entry */
                 entry->next = vector->head;
                 vector->head = entry;
