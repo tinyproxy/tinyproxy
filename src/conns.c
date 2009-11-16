@@ -76,7 +76,8 @@ struct conn_s *initialize_conn (int client_fd, const char *ipaddr,
         /* There is _no_ content length initially */
         connptr->content_length.server = connptr->content_length.client = -1;
 
-        connptr->server_ip_addr = sock_ipaddr ? safestrdup (sock_ipaddr) : 0;
+        connptr->server_ip_addr = (sock_ipaddr ?
+                                   safestrdup (sock_ipaddr) : NULL);
         connptr->client_ip_addr = safestrdup (ipaddr);
         connptr->client_string_addr = safestrdup (string_addr);
 
