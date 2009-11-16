@@ -384,8 +384,9 @@ static int set_string_arg (char **var, const char *line, regmatch_t * match)
 
         if (!arg)
                 return -1;
-        *var = safestrdup (arg);
-        safefree (arg);
+
+        *var = arg;
+
         return *var ? 0 : -1;
 }
 
