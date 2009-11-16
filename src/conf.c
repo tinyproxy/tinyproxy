@@ -387,7 +387,7 @@ static int set_string_arg (char **var, const char *line, regmatch_t * match)
 
         *var = arg;
 
-        return *var ? 0 : -1;
+        return 0;
 }
 
 static int get_bool_arg (const char *line, regmatch_t * match)
