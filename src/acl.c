@@ -357,3 +357,27 @@ int check_acl (const char *ip, const char *host)
                      host, ip);
         return 0;
 }
+
+void flush_access_list (void)
+{
+        struct acl_s *acl;
+        size_t i;
+
+        if (!access_list) {
+                return;
+        }
+
+        /*
+         * We need to free allocated data hanging off the acl entries
+         * before we can free the acl entries themselves.
+         * A hierarchical memory system would be great...
+         */
+        for (i = 0; i != (size_t) vector_length (access_list); ++i) {
+                acl = (struct acl_s *) vector_getentry (access_list, i, NULL);
+                if (acl->type == ACL_STRING) {
+                        safefree (acl->address.string);
+                }
+        }
+
+        vector_delete (access_list);
+}
