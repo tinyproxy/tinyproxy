@@ -39,7 +39,8 @@
  * returned if the bind succeeded.  Otherwise, -1 is returned
  * to indicate an error.
  */
-static int bind_socket (int sockfd, const char *addr)
+static int
+bind_socket (int sockfd, const char *addr, int family)
 {
         struct addrinfo hints, *res, *ressave;
 
@@ -47,7 +48,7 @@ static int bind_socket (int sockfd, const char *addr)
         assert (addr != NULL && strlen (addr) != 0);
 
         memset (&hints, 0, sizeof (struct addrinfo));
-        hints.ai_family = AF_UNSPEC;
+        hints.ai_family = family;
         hints.ai_socktype = SOCK_STREAM;
 
         /* The local port it not important */
@@ -105,12 +106,14 @@ int opensock (const char *host, int port, const char *bind_to)
 
                 /* Bind to the specified address */
                 if (bind_to) {
-                        if (bind_socket (sockfd, bind_to) < 0) {
+                        if (bind_socket (sockfd, bind_to,
+                                         res->ai_family) < 0) {
                                 close (sockfd);
                                 continue;       /* can't bind, so try again */
                         }
                 } else if (config.bind_address) {
-                        if (bind_socket (sockfd, config.bind_address) < 0) {
+                        if (bind_socket (sockfd, config.bind_address,
+                                         res->ai_family) < 0) {
                                 close (sockfd);
                                 continue;       /* can't bind, so try again */
                         }
