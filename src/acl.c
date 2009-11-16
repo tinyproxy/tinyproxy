@@ -106,6 +106,23 @@ fill_netmask_array (char *bitmask_string, unsigned char array[],
         return 0;
 }
 
+/**
+ * If the access list has not been set up, create it.
+ */
+static int init_access_list(void)
+{
+        if (!access_list) {
+                access_list = vector_create ();
+                if (!access_list) {
+                        log_message (LOG_ERR,
+                                     "Unable to allocate memory for access list");
+                        return -1;
+                }
+        }
+
+        return 0;
+}
+
 /*
  * Inserts a new access control into the list. The function will figure out
  * whether the location is an IP address (with optional netmask) or a
@@ -123,16 +140,9 @@ int insert_acl (char *location, acl_access_t access_type)
 
         assert (location != NULL);
 
-        /*
-         * If the access list has not been set up, create it.
-         */
-        if (!access_list) {
-                access_list = vector_create ();
-                if (!access_list) {
-                        log_message (LOG_ERR,
-                                     "Unable to allocate memory for access list");
-                        return -1;
-                }
+        ret = init_access_list();
+        if (ret != 0) {
+                return -1;
         }
 
         /*
