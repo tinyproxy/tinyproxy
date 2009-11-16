@@ -167,7 +167,7 @@ int socket_blocking (int sock)
 int listen_sock (uint16_t port, socklen_t * addrlen)
 {
         struct addrinfo hints, *result, *rp;
-        char portstr[32];
+        char portstr[6];
         int listenfd;
         const int on = 1;
 
@@ -178,7 +178,7 @@ int listen_sock (uint16_t port, socklen_t * addrlen)
         hints.ai_family = AF_UNSPEC;
         hints.ai_socktype = SOCK_STREAM;
 
-        sprintf (portstr, "%6d", port);
+        snprintf (portstr, sizeof (portstr), "%d", port);
 
         if (getaddrinfo (config.ipAddr, portstr, &hints, &result) != 0) {
                 log_message (LOG_ERR,
