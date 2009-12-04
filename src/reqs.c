@@ -1212,7 +1212,7 @@ retry:
                 indicate_http_error (connptr, 503,
                                      "Could not retrieve all the headers",
                                      "detail",
-                                     PACKAGE " "
+                                     PACKAGE_NAME " "
                                      "was unable to retrieve and process headers from "
                                      "the remote web server.", NULL);
                 return -1;
@@ -1641,7 +1641,7 @@ void handle_connection (int fd)
                 if (connptr->server_fd < 0) {
                         indicate_http_error (connptr, 500, "Unable to connect",
                                              "detail",
-                                             PACKAGE " "
+                                             PACKAGE_NAME " "
                                              "was unable to connect to the remote web server.",
                                              "error", strerror (errno), NULL);
                         goto send_error;
