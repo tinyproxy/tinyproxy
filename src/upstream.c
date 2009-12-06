@@ -26,7 +26,6 @@
 
 #include "upstream.h"
 #include "heap.h"
-#include "main.h"
 #include "log.h"
 
 #ifdef UPSTREAM_SUPPORT
@@ -165,10 +164,8 @@ upstream_cleanup:
 /*
  * Check if a host is in the upstream list
  */
-struct upstream *upstream_get (char *host)
+struct upstream *upstream_get (char *host, struct upstream *up)
 {
-        struct upstream *up = config.upstream_list;
-
         in_addr_t my_ip = INADDR_NONE;
 
         while (up) {

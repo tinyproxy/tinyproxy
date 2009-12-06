@@ -58,7 +58,7 @@
  */
 #ifdef UPSTREAM_SUPPORT
 #  define UPSTREAM_CONFIGURED() (config.upstream_list != NULL)
-#  define UPSTREAM_HOST(host) upstream_get(host)
+#  define UPSTREAM_HOST(host) upstream_get(host, config.upstream_list)
 #else
 #  define UPSTREAM_CONFIGURED() (0)
 #  define UPSTREAM_HOST(host) (NULL)

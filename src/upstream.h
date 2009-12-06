@@ -42,7 +42,7 @@ struct upstream {
 #ifdef UPSTREAM_SUPPORT
 extern void upstream_add (const char *host, int port, const char *domain,
                           struct upstream **upstream_list);
-struct upstream *upstream_get (char *host);
+extern struct upstream *upstream_get (char *host, struct upstream *up);
 #endif /* UPSTREAM_SUPPORT */
 
 #endif /* _TINYPROXY_UPSTREAM_H_ */
