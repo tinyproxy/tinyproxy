@@ -385,6 +385,10 @@ static int set_string_arg (char **var, const char *line, regmatch_t * match)
         if (!arg)
                 return -1;
 
+        if (*var != NULL) {
+                safefree (*var);
+        }
+
         *var = arg;
 
         return 0;
