@@ -209,4 +209,16 @@ struct upstream *upstream_get (char *host, struct upstream *up)
 
         return up;
 }
+
+void free_upstream_list (struct upstream *up)
+{
+        while (up) {
+                struct upstream *tmp = up;
+                up = up->next;
+                safefree (tmp->domain);
+                safefree (tmp->host);
+                safefree (tmp);
+        }
+}
+
 #endif
