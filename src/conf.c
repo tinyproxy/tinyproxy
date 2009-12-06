@@ -261,6 +261,37 @@ struct {
 
 const unsigned int ndirectives = sizeof (directives) / sizeof (directives[0]);
 
+void free_config (struct config_s *conf)
+{
+        safefree (conf->config_file);
+        safefree (conf->logf_name);
+        safefree (conf->stathost);
+        safefree (conf->user);
+        safefree (conf->group);
+        safefree (conf->ipAddr);
+#ifdef FILTER_ENABLE
+        safefree (conf->filter);
+#endif                          /* FILTER_ENABLE */
+#ifdef REVERSE_SUPPORT
+        free_reversepath_list(conf->reversepath_list);
+        safefree (conf->reversebaseurl);
+#endif
+#ifdef UPSTREAM_SUPPORT
+        free_upstream_list (conf->upstream_list);
+#endif                          /* UPSTREAM_SUPPORT */
+        safefree (conf->pidpath);
+        safefree (conf->bind_address);
+        safefree (conf->via_proxy_name);
+        hashmap_delete (conf->errorpages);
+        safefree (conf->errorpage_undef);
+        safefree (conf->statpage);
+        flush_access_list (conf->access_list);
+        free_connect_ports_list (conf->connect_ports);
+        hashmap_delete (conf->anonymous_map);
+
+        memset (conf, 0, sizeof(*conf));
+}
+
 /*
  * Compiles the regular expressions used by the configuration file.  This
  * routine MUST be called before trying to parse the configuration file.

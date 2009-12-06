@@ -22,5 +22,6 @@
 #define TINYPROXY_CONF_H
 
 extern int load_config_file (const char *config_fname, struct config_s *conf);
+void free_config (struct config_s *conf);
 
 #endif
