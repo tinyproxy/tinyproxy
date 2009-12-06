@@ -92,6 +92,21 @@ struct reversepath *reversepath_get (char *url, struct reversepath *reverse)
         return NULL;
 }
 
+/**
+ * Free a reversepath list
+ */
+
+void free_reversepath_list (struct reversepath *reverse)
+{
+        while (reverse) {
+                struct reversepath *tmp = reverse;
+                reverse = reverse->next;
+                safefree (tmp->url);
+                safefree (tmp->path);
+                safefree (tmp);
+        }
+}
+
 /*
  * Rewrite the URL for reverse proxying.
  */
