@@ -119,7 +119,8 @@ fail:
 /*
  * Add an entry to the upstream list
  */
-void upstream_add (const char *host, int port, const char *domain)
+void upstream_add (const char *host, int port, const char *domain,
+                   struct upstream **upstream_list)
 {
         struct upstream *up;
 
@@ -129,7 +130,7 @@ void upstream_add (const char *host, int port, const char *domain)
         }
 
         if (!up->domain && !up->ip) {   /* always add default to end */
-                struct upstream *tmp = config.upstream_list;
+                struct upstream *tmp = *upstream_list;
 
                 while (tmp) {
                         if (!tmp->domain && !tmp->ip) {
@@ -148,8 +149,8 @@ void upstream_add (const char *host, int port, const char *domain)
                 }
         }
 
-        up->next = config.upstream_list;
-        config.upstream_list = up;
+        up->next = *upstream_list;
+        *upstream_list = up;
 
         return;
 

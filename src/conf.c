@@ -802,11 +802,11 @@ static HANDLE_FUNC (handle_upstream)
         if (match[9].rm_so != -1) {
                 domain = get_string_arg (line, &match[9]);
                 if (domain) {
-                        upstream_add (ip, port, domain);
+                        upstream_add (ip, port, domain, &conf->upstream_list);
                         safefree (domain);
                 }
         } else {
-                upstream_add (ip, port, NULL);
+                upstream_add (ip, port, NULL, &conf->upstream_list);
         }
 
         safefree (ip);
@@ -822,7 +822,7 @@ static HANDLE_FUNC (handle_upstream_no)
         if (!domain)
                 return -1;
 
-        upstream_add (NULL, 0, domain);
+        upstream_add (NULL, 0, domain, &conf->upstream_list);
         safefree (domain);
 
         return 0;
