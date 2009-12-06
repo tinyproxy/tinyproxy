@@ -36,6 +36,7 @@
 #include "reqs.h"
 #include "reverse-proxy.h"
 #include "upstream.h"
+#include "connect-ports.h"
 
 /*
  * The configuration directives are defined in the structure below.  Each

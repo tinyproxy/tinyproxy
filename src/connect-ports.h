@@ -1,6 +1,7 @@
 /* tinyproxy - A fast light-weight HTTP proxy
  * Copyright (C) 1998 Steven Young <sdyoung@miranda.org>
  * Copyright (C) 1999 Robert James Kaes <rjkaes@users.sourceforge.net>
+ * Copyright (C) 2009 Michael Adam <obnox@samba.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,32 +18,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* See 'reqs.c' for detailed information. */
-
-#ifndef _TINYPROXY_REQS_H_
-#define _TINYPROXY_REQS_H_
+#ifndef _TINYPROXY_CONNECT_PORTS_H_
+#define _TINYPROXY_CONNECT_PORTS_H_
 
 #include "common.h"
 
-/*
- * Port constants for HTTP (80) and SSL (443)
- */
-#define HTTP_PORT 80
-#define HTTP_PORT_SSL 443
+extern void add_connect_port_allowed (int port);
+int check_allowed_connect_ports (int port);
 
-/*
- * This structure holds the information pulled from a URL request.
- */
-struct request_s {
-        char *method;
-        char *protocol;
-
-        char *host;
-        uint16_t port;
-
-        char *path;
-};
-
-extern void handle_connection (int fd);
-
-#endif
+#endif /* _TINYPROXY_CONNECT_PORTS_ */
