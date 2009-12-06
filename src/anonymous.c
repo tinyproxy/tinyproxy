@@ -27,11 +27,9 @@
 #include "heap.h"
 #include "log.h"
 
-static hashmap_t anonymous_map = NULL;
-
 short int is_anonymous_enabled (void)
 {
-        return (anonymous_map != NULL) ? 1 : 0;
+        return (config.anonymous_map != NULL) ? 1 : 0;
 }
 
 /*
@@ -41,9 +39,9 @@ short int is_anonymous_enabled (void)
 int anonymous_search (const char *s)
 {
         assert (s != NULL);
-        assert (anonymous_map != NULL);
+        assert (config.anonymous_map != NULL);
 
-        return hashmap_search (anonymous_map, s);
+        return hashmap_search (config.anonymous_map, s);
 }
 
 /*
@@ -58,17 +56,17 @@ int anonymous_insert (const char *s)
 
         assert (s != NULL);
 
-        if (!anonymous_map) {
-                anonymous_map = hashmap_create (32);
-                if (!anonymous_map)
+        if (!config.anonymous_map) {
+                config.anonymous_map = hashmap_create (32);
+                if (!config.anonymous_map)
                         return -1;
         }
 
-        if (hashmap_search (anonymous_map, s) > 0) {
+        if (hashmap_search (config.anonymous_map, s) > 0) {
                 /* The key was already found, so return a positive number. */
                 return 0;
         }
 
         /* Insert the new key */
-        return hashmap_insert (anonymous_map, s, &data, sizeof (data));
+        return hashmap_insert (config.anonymous_map, s, &data, sizeof (data));
 }

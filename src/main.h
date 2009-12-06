@@ -96,6 +96,12 @@ struct config_s {
 	 * Store the list of port allowed by CONNECT.
 	 */
 	vector_t connect_ports;
+
+	/*
+	 * Map of headers which should be let through when the
+	 * anonymous feature is turned on.
+	 */
+	hashmap_t anonymous_map;
 };
 
 /* Global Structures used in the program */
