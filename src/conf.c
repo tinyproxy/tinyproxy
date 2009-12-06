@@ -601,7 +601,8 @@ static HANDLE_FUNC (handle_timeout)
 
 static HANDLE_FUNC (handle_connectport)
 {
-        add_connect_port_allowed (get_int_arg (line, &match[2]));
+        add_connect_port_allowed (get_int_arg (line, &match[2]),
+                                  &conf->connect_ports);
         return 0;
 }
 

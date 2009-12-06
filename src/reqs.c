@@ -419,7 +419,9 @@ BAD_REQUEST_ERROR:
                 }
 
                 /* Verify that the port in the CONNECT method is allowed */
-                if (!check_allowed_connect_ports (request->port)) {
+                if (!check_allowed_connect_ports (request->port,
+                                                  config.connect_ports))
+                {
                         indicate_http_error (connptr, 403, "Access violation",
                                              "detail",
                                              "The CONNECT method not allowed "

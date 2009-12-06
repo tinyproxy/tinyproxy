@@ -22,8 +22,9 @@
 #define _TINYPROXY_CONNECT_PORTS_H_
 
 #include "common.h"
+#include "vector.h"
 
-extern void add_connect_port_allowed (int port);
-int check_allowed_connect_ports (int port);
+extern void add_connect_port_allowed (int port, vector_t *connect_ports);
+int check_allowed_connect_ports (int port, vector_t connect_ports);
 
 #endif /* _TINYPROXY_CONNECT_PORTS_ */

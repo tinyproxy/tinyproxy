@@ -91,6 +91,11 @@ struct config_s {
         char *statpage;
 
 	vector_t access_list;
+
+	/*
+	 * Store the list of port allowed by CONNECT.
+	 */
+	vector_t connect_ports;
 };
 
 /* Global Structures used in the program */

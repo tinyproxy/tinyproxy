@@ -19,24 +19,17 @@
  */
 
 #include "connect-ports.h"
-#include "vector.h"
 #include "log.h"
-
-/*
- * This is a global variable which stores which ports are allowed by
- * the CONNECT method.  It's a security thing.
- */
-static vector_t ports_allowed_by_connect = NULL;
 
 /*
  * Now, this routine adds a "port" to the list.  It also creates the list if
  * it hasn't already by done.
  */
-void add_connect_port_allowed (int port)
+void add_connect_port_allowed (int port, vector_t *connect_ports)
 {
-        if (!ports_allowed_by_connect) {
-                ports_allowed_by_connect = vector_create ();
-                if (!ports_allowed_by_connect) {
+        if (!*connect_ports) {
+                *connect_ports = vector_create ();
+                if (!*connect_ports) {
                         log_message (LOG_WARNING,
                                      "Could not create a list of allowed CONNECT ports");
                         return;
@@ -45,8 +38,7 @@ void add_connect_port_allowed (int port)
 
         log_message (LOG_INFO,
                      "Adding Port [%d] to the list allowed by CONNECT", port);
-        vector_append (ports_allowed_by_connect, (void **) &port,
-                       sizeof (port));
+        vector_append (*connect_ports, (void **) &port, sizeof (port));
 }
 
 /*
@@ -55,7 +47,7 @@ void add_connect_port_allowed (int port)
  * Returns: 1 if allowed
  *          0 if denied
  */
-int check_allowed_connect_ports (int port)
+int check_allowed_connect_ports (int port, vector_t connect_ports)
 {
         size_t i;
         int *data;
@@ -64,12 +56,11 @@ int check_allowed_connect_ports (int port)
          * A port list is REQUIRED for a CONNECT request to function
          * properly.  This closes a potential security hole.
          */
-        if (!ports_allowed_by_connect)
+        if (!connect_ports)
                 return 0;
 
-        for (i = 0; i != (size_t) vector_length (ports_allowed_by_connect); ++i) {
-                data =
-                    (int *) vector_getentry (ports_allowed_by_connect, i, NULL);
+        for (i = 0; i != (size_t) vector_length (connect_ports); ++i) {
+                data = (int *) vector_getentry (connect_ports, i, NULL);
                 if (data && *data == port)
                         return 1;
         }
