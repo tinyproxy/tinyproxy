@@ -103,7 +103,7 @@ typedef int (*CONFFILE_HANDLER) (struct config_s *, const char *, regmatch_t[]);
  */
 #define HANDLE_FUNC(func) \
   int func(struct config_s* conf, const char* line, \
-	   regmatch_t match[])
+           regmatch_t match[])
 
 /*
  * List all the handling functions.  These are defined later, but they need
