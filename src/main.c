@@ -330,7 +330,7 @@ main (int argc, char **argv)
 
         log_message (LOG_INFO, "Initializing " PACKAGE " ...");
 
-	ret = load_config_file(config.config_file, &config);
+        ret = load_config_file(config.config_file, &config);
         if (ret != 0) {
                 exit (EX_SOFTWARE);
         }
