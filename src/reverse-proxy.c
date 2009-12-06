@@ -29,7 +29,8 @@
 /*
  * Add entry to the reversepath list
  */
-void reversepath_add (const char *path, const char *url)
+void reversepath_add (const char *path, const char *url,
+                      struct reversepath **reversepath_list)
 {
         struct reversepath *reverse;
 
@@ -68,8 +69,8 @@ void reversepath_add (const char *path, const char *url)
 
         reverse->url = safestrdup (url);
 
-        reverse->next = config.reversepath_list;
-        config.reversepath_list = reverse;
+        reverse->next = *reversepath_list;
+        *reversepath_list = reverse;
 
         log_message (LOG_INFO,
                      "Added reverse proxy rule: %s -> %s", reverse->path,

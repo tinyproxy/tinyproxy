@@ -776,11 +776,11 @@ static HANDLE_FUNC (handle_reversepath)
                         safefree (arg1);
                         return -1;
                 }
-                reversepath_add (arg1, arg2);
+                reversepath_add (arg1, arg2, &conf->reversepath_list);
                 safefree (arg1);
                 safefree (arg2);
         } else {
-                reversepath_add (NULL, arg1);
+                reversepath_add (NULL, arg1, &conf->reversepath_list);
                 safefree (arg1);
         }
         return 0;
