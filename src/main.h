@@ -35,7 +35,7 @@
  */
 struct config_s {
         char *logf_name;
-        const char *config_file;
+        char *config_file;
         unsigned int syslog;    /* boolean */
         int port;
         char *stathost;

@@ -215,6 +215,9 @@ process_cmdline (int argc, char **argv, struct config_s *conf)
                         break;
 
                 case 'c':
+                        if (conf->config_file != NULL) {
+                                safefree (conf->config_file);
+                        }
                         conf->config_file = safestrdup (optarg);
                         if (!conf->config_file) {
                                 fprintf (stderr,
@@ -305,7 +308,11 @@ static void initialize_config_defaults (struct config_s *conf)
 {
         memset (conf, 0, sizeof(*conf));
 
-        conf->config_file = SYSCONFDIR "/tinyproxy.conf";
+        conf->config_file = safestrdup (SYSCONFDIR "/tinyproxy.conf");
+        if (!conf->config_file) {
+                fprintf (stderr, PACKAGE ": Could not allocate memory.\n");
+                exit (EX_SOFTWARE);
+        }
         conf->godaemon = TRUE;
         /*
          * Make sure the HTML error pages array is NULL to begin with.
