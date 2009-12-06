@@ -343,14 +343,6 @@ main (int argc, char **argv)
                 exit (EX_SOFTWARE);
         }
 
-        ret = setup_logging ();
-        if (ret != 0) {
-                exit (EX_SOFTWARE);
-        }
-
-        processed_config_file = TRUE;
-        send_stored_logs ();
-
         /* Set the default values if they were not set in the config
          * file. */
         if (config.port == 0) {
@@ -371,6 +363,14 @@ main (int argc, char **argv)
                              MAX_IDLE_TIME);
                 config.idletimeout = MAX_IDLE_TIME;
         }
+
+        ret = setup_logging ();
+        if (ret != 0) {
+                exit (EX_SOFTWARE);
+        }
+
+        processed_config_file = TRUE;
+        send_stored_logs ();
 
         init_stats ();
 
