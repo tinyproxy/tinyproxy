@@ -1,6 +1,7 @@
 /* tinyproxy - A fast light-weight HTTP proxy
  * Copyright (C) 1998 Steven Young <sdyoung@miranda.org>
  * Copyright (C) 1999 Robert James Kaes <rjkaes@users.sourceforge.net>
+ * Copyright (C) 2009 Michael Adam <obnox@samba.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,33 +18,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* See 'reqs.c' for detailed information. */
+/*
+ * Routines for handling the list of upstream proxies.
+ */
 
-#ifndef _TINYPROXY_REQS_H_
-#define _TINYPROXY_REQS_H_
+#ifndef _TINYPROXY_UPSTREAM_H_
+#define _TINYPROXY_UPSTREAM_H_
 
 #include "common.h"
 
 /*
- * Port constants for HTTP (80) and SSL (443)
+ * Even if upstream support is not compiled into tinyproxy, this
+ * structure still needs to be defined.
  */
-#define HTTP_PORT 80
-#define HTTP_PORT_SSL 443
-
-/*
- * This structure holds the information pulled from a URL request.
- */
-struct request_s {
-        char *method;
-        char *protocol;
-
+struct upstream {
+        struct upstream *next;
+        char *domain;           /* optional */
         char *host;
-        uint16_t port;
-
-        char *path;
+        int port;
+        in_addr_t ip, mask;
 };
 
-extern void handle_connection (int fd);
-extern void add_connect_port_allowed (int port);
+#ifdef UPSTREAM_SUPPORT
+extern void upstream_add (const char *host, int port, const char *domain);
+struct upstream *upstream_get (char *host);
+#endif /* UPSTREAM_SUPPORT */
 
-#endif
+#endif /* _TINYPROXY_UPSTREAM_H_ */

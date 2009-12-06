@@ -41,7 +41,8 @@ tinyproxy_SOURCES = \
 	text.c text.h \
 	main.c main.h \
 	utils.c utils.h \
-	vector.c vector.h
+	vector.c vector.h \
+	upstream.c upstream.h
 
 EXTRA_tinyproxy_SOURCES = filter.c filter.h \
 	reverse-proxy.c reverse-proxy.h \

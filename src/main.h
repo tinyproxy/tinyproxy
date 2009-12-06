@@ -30,18 +30,6 @@
 #define MAX_IDLE_TIME 	(60 * 10)       /* 10 minutes of no activity */
 
 /*
- * Even if upstream support is not compiled into tinyproxy, this
- * structure still needs to be defined.
- */
-struct upstream {
-        struct upstream *next;
-        char *domain;           /* optional */
-        char *host;
-        int port;
-        in_addr_t ip, mask;
-};
-
-/*
  * Hold all the configuration time information.
  */
 struct config_s {

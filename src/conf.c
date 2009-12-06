@@ -35,6 +35,7 @@
 #include "log.h"
 #include "reqs.h"
 #include "reverse-proxy.h"
+#include "upstream.h"
 
 /*
  * The configuration directives are defined in the structure below.  Each
