@@ -301,19 +301,19 @@ static int extract_ssl_url (const char *url, struct request_s *request)
 }
 
 #ifdef UPSTREAM_SUPPORT
-/*
- * Add an entry to the upstream list
+/**
+ * Construct an upstream struct from input data.
  */
-void upstream_add (const char *host, int port, const char *domain)
+static struct upstream *upstream_build (const char *host, int port, const char *domain)
 {
         char *ptr;
-        struct upstream *up =
-            (struct upstream *) safemalloc (sizeof (struct upstream));
+        struct upstream *up;
 
+        up = (struct upstream *) safemalloc (sizeof (struct upstream));
         if (!up) {
                 log_message (LOG_ERR,
-                             "Unable to allocate memory in upstream_add()");
-                return;
+                             "Unable to allocate memory in upstream_build()");
+                return NULL;
         }
 
         up->host = up->domain = NULL;
@@ -323,7 +323,7 @@ void upstream_add (const char *host, int port, const char *domain)
                 if (!host || host[0] == '\0' || port < 1) {
                         log_message (LOG_WARNING,
                                      "Nonsense upstream rule: invalid host or port");
-                        goto upstream_cleanup;
+                        goto fail;
                 }
 
                 up->host = safestrdup (host);
@@ -335,7 +335,7 @@ void upstream_add (const char *host, int port, const char *domain)
                 if (!domain || domain[0] == '\0') {
                         log_message (LOG_WARNING,
                                      "Nonsense no-upstream rule: empty domain");
-                        goto upstream_cleanup;
+                        goto fail;
                 }
 
                 ptr = strchr (domain, '/');
@@ -366,7 +366,7 @@ void upstream_add (const char *host, int port, const char *domain)
                     || domain == '\0') {
                         log_message (LOG_WARNING,
                                      "Nonsense upstream rule: invalid parameters");
-                        goto upstream_cleanup;
+                        goto fail;
                 }
 
                 up->host = safestrdup (host);
@@ -375,6 +375,28 @@ void upstream_add (const char *host, int port, const char *domain)
 
                 log_message (LOG_INFO, "Added upstream %s:%d for %s",
                              host, port, domain);
+        }
+
+        return up;
+
+fail:
+        safefree (up->host);
+        safefree (up->domain);
+        safefree (up);
+
+        return NULL;
+}
+
+/*
+ * Add an entry to the upstream list
+ */
+void upstream_add (const char *host, int port, const char *domain)
+{
+        struct upstream *up;
+
+        up = upstream_build (host, port, domain);
+        if (up == NULL) {
+                return;
         }
 
         if (!up->domain && !up->ip) {   /* always add default to end */
