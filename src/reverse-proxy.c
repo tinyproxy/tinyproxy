@@ -80,10 +80,8 @@ void reversepath_add (const char *path, const char *url,
 /*
  * Check if a request url is in the reversepath list
  */
-struct reversepath *reversepath_get (char *url)
+struct reversepath *reversepath_get (char *url, struct reversepath *reverse)
 {
-        struct reversepath *reverse = config.reversepath_list;
-
         while (reverse) {
                 if (strstr (url, reverse->path) == url)
                         return reverse;
@@ -108,7 +106,7 @@ char *reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
         /* Reverse requests always start with a slash */
         if (*url == '/') {
                 /* First try locating the reverse mapping by request url */
-                reverse = reversepath_get (url);
+                reverse = reversepath_get (url, config.reversepath_list);
                 if (reverse) {
                         rewrite_url = (char *)
                             safemalloc (strlen (url) + strlen (reverse->url) +
@@ -124,8 +122,9 @@ char *reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
                         if ((cookieval = strstr (cookie, REVERSE_COOKIE "="))
                             && (reverse =
                                 reversepath_get (cookieval +
-                                                 strlen (REVERSE_COOKIE) +
-                                                 1))) {
+                                                 strlen (REVERSE_COOKIE) + 1,
+                                                 config.reversepath_list)))
+                        {
 
                                 rewrite_url = (char *) safemalloc
                                         (strlen (url) +
