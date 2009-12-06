@@ -67,3 +67,11 @@ int check_allowed_connect_ports (int port, vector_t connect_ports)
 
         return 0;
 }
+
+/**
+ * Free a connect_ports list.
+ */
+void free_connect_ports_list (vector_t connect_ports)
+{
+        vector_delete (connect_ports);
+}

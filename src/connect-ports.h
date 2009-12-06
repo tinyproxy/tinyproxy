@@ -26,5 +26,6 @@
 
 extern void add_connect_port_allowed (int port, vector_t *connect_ports);
 int check_allowed_connect_ports (int port, vector_t connect_ports);
+void free_connect_ports_list (vector_t connect_ports);
 
 #endif /* _TINYPROXY_CONNECT_PORTS_ */
