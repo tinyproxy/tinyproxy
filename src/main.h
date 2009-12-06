@@ -24,6 +24,7 @@
 
 #include "common.h"
 #include "hashmap.h"
+#include "vector.h"
 
 /* Global variables for the main controls of the program */
 #define MAXBUFFSIZE	((size_t)(1024 * 96))   /* Max size of buffer */
@@ -88,6 +89,8 @@ struct config_s {
          * The HTML statistics page.
          */
         char *statpage;
+
+	vector_t access_list;
 };
 
 /* Global Structures used in the program */

@@ -58,11 +58,6 @@ struct acl_s {
 };
 
 /*
- * All the access lists are stored in a vector.
- */
-static vector_t access_list = NULL;
-
-/*
  * Fills in the netmask array given a numeric value.
  *
  * Returns:
@@ -109,11 +104,11 @@ fill_netmask_array (char *bitmask_string, unsigned char array[],
 /**
  * If the access list has not been set up, create it.
  */
-static int init_access_list(void)
+static int init_access_list(vector_t *access_list)
 {
-        if (!access_list) {
-                access_list = vector_create ();
-                if (!access_list) {
+        if (!*access_list) {
+                *access_list = vector_create ();
+                if (!*access_list) {
                         log_message (LOG_ERR,
                                      "Unable to allocate memory for access list");
                         return -1;
@@ -132,7 +127,7 @@ static int init_access_list(void)
  *    -1 on failure
  *     0 otherwise.
  */
-int insert_acl (char *location, acl_access_t access_type)
+int insert_acl (char *location, acl_access_t access_type, vector_t *access_list)
 {
         struct acl_s acl;
         int ret;
@@ -140,7 +135,7 @@ int insert_acl (char *location, acl_access_t access_type)
 
         assert (location != NULL);
 
-        ret = init_access_list();
+        ret = init_access_list(access_list);
         if (ret != 0) {
                 return -1;
         }
@@ -189,7 +184,7 @@ int insert_acl (char *location, acl_access_t access_type)
                 }
         }
 
-        ret = vector_append (access_list, &acl, sizeof (struct acl_s));
+        ret = vector_append (*access_list, &acl, sizeof (struct acl_s));
         return ret;
 }
 
@@ -311,7 +306,7 @@ static int check_numeric_acl (const struct acl_s *acl, const char *ip)
  *     1 if allowed
  *     0 if denied
  */
-int check_acl (const char *ip, const char *host)
+int check_acl (const char *ip, const char *host, vector_t access_list)
 {
         struct acl_s *acl;
         int perm = 0;
@@ -358,7 +353,7 @@ int check_acl (const char *ip, const char *host)
         return 0;
 }
 
-void flush_access_list (void)
+void flush_access_list (vector_t access_list)
 {
         struct acl_s *acl;
         size_t i;

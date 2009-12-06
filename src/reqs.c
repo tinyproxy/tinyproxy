@@ -1403,7 +1403,7 @@ void handle_connection (int fd)
                 return;
         }
 
-        if (check_acl (peer_ipaddr, peer_string) <= 0) {
+        if (check_acl (peer_ipaddr, peer_string, config.access_list) <= 0) {
                 update_stats (STAT_DENIED);
                 indicate_http_error (connptr, 403, "Access denied",
                                      "detail",

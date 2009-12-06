@@ -618,7 +618,7 @@ static HANDLE_FUNC (handle_allow)
 {
         char *arg = get_string_arg (line, &match[2]);
 
-        insert_acl (arg, ACL_ALLOW);
+        insert_acl (arg, ACL_ALLOW, &conf->access_list);
         safefree (arg);
         return 0;
 }
@@ -627,7 +627,7 @@ static HANDLE_FUNC (handle_deny)
 {
         char *arg = get_string_arg (line, &match[2]);
 
-        insert_acl (arg, ACL_DENY);
+        insert_acl (arg, ACL_DENY, &conf->access_list);
         safefree (arg);
         return 0;
 }
