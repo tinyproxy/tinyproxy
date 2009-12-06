@@ -312,6 +312,7 @@ static void initialize_config_defaults (struct config_s *conf)
          * (FIXME: Should have a better API for all this)
          */
         conf->errorpages = NULL;
+        conf->stathost = safestrdup (TINYPROXY_STATHOST);
 }
 
 int
@@ -348,12 +349,6 @@ main (int argc, char **argv)
                 fprintf (stderr, "%s: You MUST set a Port in the "
                          "config file.\n", argv[0]);
                 exit (EX_SOFTWARE);
-        }
-
-        if (!config.stathost) {
-                log_message (LOG_INFO, "Setting stathost to \"%s\".",
-                             TINYPROXY_STATHOST);
-                config.stathost = safestrdup (TINYPROXY_STATHOST);
         }
 
         if (!config.user) {
