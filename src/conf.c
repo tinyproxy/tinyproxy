@@ -377,7 +377,7 @@ int load_config_file (const char *config_fname, struct config_s *conf)
                 return -1;
         }
 
-        if (config_compile () || config_parse (&config, config_file)) {
+        if (config_compile () || config_parse (conf, config_file)) {
                 fprintf (stderr, "Unable to parse config file. "
                          "Not starting.\n");
                 return -1;
