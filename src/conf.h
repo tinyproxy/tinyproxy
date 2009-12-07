@@ -23,5 +23,7 @@
 
 extern int load_config_file (const char *config_fname, struct config_s *conf);
 void free_config (struct config_s *conf);
+int reload_config (const char *config_fname, struct config_s *conf,
+                   struct config_s *defaults);
 
 #endif

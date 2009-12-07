@@ -387,6 +387,141 @@ int load_config_file (const char *config_fname, struct config_s *conf)
         return 0;
 }
 
+static void initialize_with_defaults (struct config_s *conf,
+                                      struct config_s *defaults)
+{
+        if (defaults->logf_name) {
+                conf->logf_name = safestrdup (defaults->logf_name);
+        }
+
+        if (defaults->config_file) {
+                conf->config_file = safestrdup (defaults->config_file);
+        }
+
+        conf->syslog = defaults->syslog;
+        conf->port = defaults->port;
+
+        if (defaults->stathost) {
+                conf->stathost = safestrdup (defaults->stathost);
+        }
+
+        conf->godaemon = defaults->godaemon;
+        conf->quit = defaults->quit;
+
+        if (defaults->user) {
+                conf->user = safestrdup (defaults->user);
+        }
+
+        if (defaults->group) {
+                conf->group = safestrdup (defaults->group);
+        }
+
+        if (defaults->ipAddr) {
+                conf->ipAddr = safestrdup (defaults->ipAddr);
+        }
+
+#ifdef FILTER_ENABLE
+        if (defaults->filter) {
+                conf->filter = safestrdup (defaults->filter);
+        }
+
+        conf->filter_url = defaults->filter_url;
+        conf->filter_extended = defaults->filter_extended;
+        conf->filter_casesensitive = defaults->filter_casesensitive;
+#endif                          /* FILTER_ENABLE */
+
+#ifdef XTINYPROXY_ENABLE
+        conf->add_xtinyproxy = defaults->add_xtinyproxy;
+#endif
+
+#ifdef REVERSE_SUPPORT
+        /* struct reversepath *reversepath_list; */
+        conf->reverseonly = defaults->reverseonly;
+        conf->reversemagic = defaults->reversemagic;
+
+        if (defaults->reversebaseurl) {
+                conf->reversebaseurl = safestrdup (defaults->reversebaseurl);
+        }
+#endif
+
+#ifdef UPSTREAM_SUPPORT
+        /* struct upstream *upstream_list; */
+#endif                          /* UPSTREAM_SUPPORT */
+
+        if (defaults->pidpath) {
+                conf->pidpath = safestrdup (defaults->pidpath);
+        }
+
+        conf->idletimeout = defaults->idletimeout;
+
+        if (defaults->bind_address) {
+                conf->bind_address = safestrdup (defaults->bind_address);
+        }
+
+        conf->bindsame = defaults->bindsame;
+
+        if (defaults->via_proxy_name) {
+                conf->via_proxy_name = safestrdup (defaults->via_proxy_name);
+        }
+
+        conf->disable_viaheader = defaults->disable_viaheader;
+
+        if (defaults->errorpage_undef) {
+                conf->errorpage_undef = safestrdup (defaults->errorpage_undef);
+        }
+
+        if (defaults->statpage) {
+                conf->statpage = safestrdup (defaults->statpage);
+        }
+
+        /* vector_t access_list; */
+        /* vector_t connect_ports; */
+        /* hashmap_t anonymous_map; */
+}
+
+/**
+ * Load the configuration.
+ */
+int reload_config (const char *config_fname, struct config_s *conf,
+                   struct config_s *defaults)
+{
+        int ret;
+
+        free_config (conf);
+
+        initialize_with_defaults (conf, defaults);
+
+        ret = load_config_file (config_fname, conf);
+        if (ret != 0) {
+                goto done;
+        }
+
+        /* Set the default values if they were not set in the config file. */
+        if (conf->port == 0) {
+                /* Don't log here - logging might not be set up yet! */
+                fprintf (stderr, PACKAGE ": You MUST set a Port in the "
+                         "config file.\n");
+                ret = -1;
+                goto done;
+        }
+
+        if (!conf->user) {
+                log_message (LOG_WARNING, "You SHOULD set a UserName in the "
+                             "config file. Using current user instead.");
+        }
+
+        if (conf->idletimeout == 0) {
+                log_message (LOG_WARNING, "Invalid idle time setting. "
+                             "Only values greater than zero are allowed. "
+                             "Therefore setting idle timeout to %u seconds.",
+                             MAX_IDLE_TIME);
+                config.idletimeout = MAX_IDLE_TIME;
+        }
+
+done:
+        return ret;
+}
+
 /***********************************************************************
  *
  * The following are basic data extraction building blocks that can
