@@ -25,6 +25,7 @@
 #include "heap.h"
 #include "html-error.h"
 #include "log.h"
+#include "conf.h"
 
 /*
  * Add entry to the reversepath list
