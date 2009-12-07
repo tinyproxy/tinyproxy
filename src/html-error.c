@@ -29,6 +29,7 @@
 #include "html-error.h"
 #include "network.h"
 #include "utils.h"
+#include "conf.h"
 
 /*
  * Add an error number -> filename mapping to the errorpages list.

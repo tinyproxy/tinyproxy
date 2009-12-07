@@ -21,6 +21,8 @@
 #ifndef TINYPROXY_ACL_H
 #define TINYPROXY_ACL_H
 
+#include "vector.h"
+
 typedef enum { ACL_ALLOW, ACL_DENY } acl_access_t;
 
 extern int insert_acl (char *location, acl_access_t access_type,

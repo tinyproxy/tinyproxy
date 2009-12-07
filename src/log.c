@@ -27,6 +27,7 @@
 #include "log.h"
 #include "utils.h"
 #include "vector.h"
+#include "conf.h"
 
 static const char *syslog_level[] = {
         NULL,

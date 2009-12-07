@@ -32,6 +32,7 @@
 #include "html-error.h"
 #include "stats.h"
 #include "utils.h"
+#include "conf.h"
 
 struct stat_s {
         unsigned long int num_reqs;

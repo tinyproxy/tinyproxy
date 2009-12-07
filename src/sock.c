@@ -32,6 +32,7 @@
 #include "network.h"
 #include "sock.h"
 #include "text.h"
+#include "conf.h"
 
 /*
  * Bind the given socket to the supplied address.  The socket is

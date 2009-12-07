@@ -28,6 +28,7 @@
 #include "heap.h"
 #include "log.h"
 #include "reqs.h"
+#include "conf.h"
 
 #define FILTER_BUFFER_LEN (512)
 

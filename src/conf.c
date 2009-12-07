@@ -22,8 +22,6 @@
  * add new directives to.  Who knows if I'm right though.
  */
 
-#include "main.h"
-
 #include "conf.h"
 
 #include "acl.h"

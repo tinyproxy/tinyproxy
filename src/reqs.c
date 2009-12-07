@@ -47,6 +47,7 @@
 #include "transparent-proxy.h"
 #include "upstream.h"
 #include "connect-ports.h"
+#include "conf.h"
 
 /*
  * Maximum length of a HTTP line

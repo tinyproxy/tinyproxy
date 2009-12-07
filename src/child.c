@@ -30,6 +30,7 @@
 #include "reqs.h"
 #include "sock.h"
 #include "utils.h"
+#include "conf.h"
 
 static int listenfd;
 static socklen_t addrlen;

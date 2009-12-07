@@ -21,6 +21,8 @@
 #ifndef _HASHMAP_H
 #define _HASHMAP_H
 
+#include "common.h"
+
 /*
  * We're using a typedef here to "hide" the implementation details of the
  * hash map.  Sure, it's a pointer, but the struct is hidden in the C file.
