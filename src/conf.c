@@ -515,7 +515,7 @@ int reload_config (const char *config_fname, struct config_s *conf,
                              "Only values greater than zero are allowed. "
                              "Therefore setting idle timeout to %u seconds.",
                              MAX_IDLE_TIME);
-                config.idletimeout = MAX_IDLE_TIME;
+                conf->idletimeout = MAX_IDLE_TIME;
         }
 
 done:
