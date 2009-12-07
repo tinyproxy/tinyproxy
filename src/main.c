@@ -48,6 +48,7 @@
  * Global Structures
  */
 struct config_s config;
+struct config_s config_defaults;
 unsigned int received_sighup = FALSE;   /* boolean */
 unsigned int processed_config_file = FALSE;     /* boolean */
 
@@ -333,35 +334,15 @@ main (int argc, char **argv)
          */
         umask (0177);
 
-        initialize_config_defaults (&config);
-        process_cmdline (argc, argv, &config);
+        initialize_config_defaults (&config_defaults);
+        process_cmdline (argc, argv, &config_defaults);
 
         log_message (LOG_INFO, "Initializing " PACKAGE " ...");
 
-        ret = load_config_file(config.config_file, &config);
+        ret = reload_config(config_defaults.config_file, &config,
+                            &config_defaults);
         if (ret != 0) {
                 exit (EX_SOFTWARE);
-        }
-
-        /* Set the default values if they were not set in the config
-         * file. */
-        if (config.port == 0) {
-                fprintf (stderr, "%s: You MUST set a Port in the "
-                         "config file.\n", argv[0]);
-                exit (EX_SOFTWARE);
-        }
-
-        if (!config.user) {
-                log_message (LOG_WARNING, "You SHOULD set a UserName in the "
-                             "config file. Using current user instead.");
-        }
-
-        if (config.idletimeout == 0) {
-                log_message (LOG_WARNING, "Invalid idle time setting. "
-                             "Only values greater than zero are allowed. "
-                             "Therefore setting idle timeout to %u seconds.",
-                             MAX_IDLE_TIME);
-                config.idletimeout = MAX_IDLE_TIME;
         }
 
         ret = setup_logging ();
