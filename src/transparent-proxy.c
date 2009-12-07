@@ -23,8 +23,6 @@
  * traffic to tinyproxy for this to work properly.
  */
 
-#include "main.h"
-
 #include "transparent-proxy.h"
 #include "conns.h"
 #include "heap.h"
@@ -32,6 +30,7 @@
 #include "log.h"
 #include "reqs.h"
 #include "text.h"
+#include "conf.h"
 
 /*
  * Build a URL from parts.
