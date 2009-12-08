@@ -163,7 +163,7 @@ int socket_blocking (int sock)
  * Start listening to a socket. Create a socket with the selected port.
  * The size of the socket address will be returned to the caller through
  * the pointer, while the socket is returned as a default return.
- *	- rjkaes
+ *      - rjkaes
  */
 int listen_sock (uint16_t port, socklen_t * addrlen)
 {
@@ -194,6 +194,9 @@ int listen_sock (uint16_t port, socklen_t * addrlen)
                 if (listenfd == -1)
                         continue;
 
+                setsockopt (listenfd, SOL_SOCKET, SO_REUSEADDR, &on,
+                            sizeof (on));
+
                 if (bind (listenfd, rp->ai_addr, rp->ai_addrlen) == 0)
                         break;  /* success */
 
@@ -209,8 +212,6 @@ int listen_sock (uint16_t port, socklen_t * addrlen)
                 freeaddrinfo (result);
                 return -1;
         }
-
-        setsockopt (listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on));
 
         if (listen (listenfd, MAXLISTEN) < 0) {
                 log_message (LOG_ERR,
