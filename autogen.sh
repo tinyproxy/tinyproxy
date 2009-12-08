@@ -17,8 +17,8 @@ cd $ORIGDIR
 
 set -
 
-echo $srcdir/configure --enable-maintainer-mode "$@"
-$srcdir/configure --enable-maintainer-mode "$@"
+echo $srcdir/configure "$@"
+$srcdir/configure "$@"
 RC=$?
 if test $RC -ne 0; then
   echo
