@@ -496,7 +496,10 @@ int reload_config_file (const char *config_fname, struct config_s *conf,
 
         /* Set the default values if they were not set in the config file. */
         if (conf->port == 0) {
-                /* Don't log here - logging might not be set up yet! */
+                /*
+                 * Don't log here in error path:
+                 * logging might not be set up yet!
+                 */
                 fprintf (stderr, PACKAGE ": You MUST set a Port in the "
                          "config file.\n");
                 ret = -1;
