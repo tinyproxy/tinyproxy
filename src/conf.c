@@ -363,7 +363,7 @@ static int config_parse (struct config_s *conf, FILE * f)
 /**
  * Read the settings from a config file.
  */
-int load_config_file (const char *config_fname, struct config_s *conf)
+static int load_config_file (const char *config_fname, struct config_s *conf)
 {
         FILE *config_file;
 
