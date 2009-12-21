@@ -98,7 +98,7 @@ struct config_s {
         hashmap_t anonymous_map;
 };
 
-int reload_config_file (const char *config_fname, struct config_s *conf,
-                        struct config_s *defaults);
+extern int reload_config_file (const char *config_fname, struct config_s *conf,
+                               struct config_s *defaults);
 
 #endif
