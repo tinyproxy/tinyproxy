@@ -324,6 +324,19 @@ static void initialize_config_defaults (struct config_s *conf)
         conf->idletimeout = MAX_IDLE_TIME;
 }
 
+/**
+ * convenience wrapper around reload_config_file
+ */
+int reload_config (void)
+{
+        int ret;
+
+        ret = reload_config_file (config_defaults.config_file, &config,
+                                  &config_defaults);
+
+        return ret;
+}
+
 int
 main (int argc, char **argv)
 {
