@@ -480,8 +480,8 @@ static void initialize_with_defaults (struct config_s *conf,
 /**
  * Load the configuration.
  */
-int reload_config (const char *config_fname, struct config_s *conf,
-                   struct config_s *defaults)
+int reload_config_file (const char *config_fname, struct config_s *conf,
+                        struct config_s *defaults)
 {
         int ret;
 
