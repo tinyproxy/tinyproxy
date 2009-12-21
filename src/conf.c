@@ -259,7 +259,7 @@ struct {
 
 const unsigned int ndirectives = sizeof (directives) / sizeof (directives[0]);
 
-void free_config (struct config_s *conf)
+static void free_config (struct config_s *conf)
 {
         safefree (conf->config_file);
         safefree (conf->logf_name);
