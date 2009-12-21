@@ -652,7 +652,7 @@ static HANDLE_FUNC (handle_viaproxyname)
         if (r)
                 return r;
         log_message (LOG_INFO,
-                     "Setting \"Via\" header proxy to %s",
+                     "Setting \"Via\" header to %s",
                      conf->via_proxy_name);
         return 0;
 }
