@@ -78,7 +78,12 @@ int open_log_file (const char *log_file_name)
  */
 void close_log_file (void)
 {
+        if (log_file_fd < 0) {
+                return;
+        }
+
         close (log_file_fd);
+        log_file_fd = -1;
 }
 
 /*
