@@ -462,10 +462,7 @@ main (int argc, char **argv)
                 filter_destroy ();
 #endif /* FILTER_ENABLE */
 
-        if (config.syslog)
-                closelog ();
-        else
-                close_log_file ();
+        shutdown_logging ();
 
         return EXIT_SUCCESS;
 }
