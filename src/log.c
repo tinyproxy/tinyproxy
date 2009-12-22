@@ -62,6 +62,8 @@ static int log_level = LOG_INFO;
  */
 static vector_t log_message_storage;
 
+static unsigned int logging_initialized = FALSE;     /* boolean */
+
 /*
  * Open the log file and store the file descriptor in a global location.
  */
@@ -137,7 +139,7 @@ void log_message (int level, const char *fmt, ...)
          * If the config file hasn't been processed, then we need to store
          * the messages for later processing.
          */
-        if (!processed_config_file) {
+        if (!logging_initialized) {
                 char *entry_buffer;
 
                 if (!log_message_storage) {
@@ -276,6 +278,7 @@ int setup_logging (void)
                 goto done;
         }
 
+        logging_initialized = TRUE;
         ret = 0;
 
 done:
@@ -295,4 +298,6 @@ void shutdown_logging (void)
                 fprintf (stderr, "error - shutdown_logging called while "
                          " logging not configured yet\n");
         }
+
+        logging_initialized = FALSE;
 }
