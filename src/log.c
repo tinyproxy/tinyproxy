@@ -222,6 +222,8 @@ void send_stored_logs (void)
 
         size_t i;
 
+        log_message(LOG_DEBUG, "sending stored logs");
+
         for (i = 0; (ssize_t) i != vector_length (log_message_storage); ++i) {
                 string =
                     (char *) vector_getentry (log_message_storage, i, NULL);
@@ -244,6 +246,8 @@ void send_stored_logs (void)
 
         vector_delete (log_message_storage);
         log_message_storage = NULL;
+
+        log_message(LOG_DEBUG, "done sending stored logs");
 }
 
 /**
