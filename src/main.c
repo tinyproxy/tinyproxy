@@ -50,7 +50,6 @@
 struct config_s config;
 struct config_s config_defaults;
 unsigned int received_sighup = FALSE;   /* boolean */
-unsigned int processed_config_file = FALSE;     /* boolean */
 
 /*
  * Handle a signal
@@ -362,8 +361,6 @@ main (int argc, char **argv)
         if (ret != 0) {
                 exit (EX_SOFTWARE);
         }
-
-        processed_config_file = TRUE;
 
         init_stats ();
 
