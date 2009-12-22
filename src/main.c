@@ -325,14 +325,23 @@ static void initialize_config_defaults (struct config_s *conf)
 
 /**
  * convenience wrapper around reload_config_file
+ * that also re-initializes logging.
  */
 int reload_config (void)
 {
         int ret;
 
+        shutdown_logging ();
+
         ret = reload_config_file (config_defaults.config_file, &config,
                                   &config_defaults);
+        if (ret != 0) {
+                goto done;
+        }
 
+        ret = setup_logging ();
+
+done:
         return ret;
 }
 
