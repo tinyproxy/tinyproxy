@@ -281,3 +281,18 @@ int setup_logging (void)
 done:
         return ret;
 }
+
+/**
+ * Stop the logging subsystem.
+ */
+void shutdown_logging (void)
+{
+        if (config.logf_name) {
+                close_log_file ();
+        } else if (config.syslog) {
+                closelog ();
+        } else {
+                fprintf (stderr, "error - shutdown_logging called while "
+                         " logging not configured yet\n");
+        }
+}

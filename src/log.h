@@ -118,5 +118,6 @@ extern void set_log_level (int level);
 extern void send_stored_logs (void);
 
 extern int setup_logging (void);
+extern void shutdown_logging (void);
 
 #endif
