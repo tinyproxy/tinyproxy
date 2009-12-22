@@ -167,6 +167,10 @@ short int child_configure (child_config_t type, unsigned int val)
 static void child_sighup_handler (int sig)
 {
         if (sig == SIGHUP) {
+                /*
+                 * Ignore the return value of reload_config for now.
+                 * This should actually be handled somehow...
+                 */
                 reload_config ();
 
 #ifdef FILTER_ENABLE
@@ -429,6 +433,10 @@ void child_main_loop (void)
 
                 /* Handle log rotation if it was requested */
                 if (received_sighup) {
+                        /*
+                         * Ignore the return value of reload_config for now.
+                         * This should actually be handled somehow...
+                         */
                         reload_config ();
 
 #ifdef FILTER_ENABLE
