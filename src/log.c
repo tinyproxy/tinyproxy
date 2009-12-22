@@ -128,10 +128,8 @@ void log_message (int level, const char *fmt, ...)
                 return;
 #endif
 
-#ifdef HAVE_SYSLOG_H
         if (config.syslog && level == LOG_CONN)
                 level = LOG_INFO;
-#endif
 
         va_start (args, fmt);
 
@@ -161,16 +159,15 @@ void log_message (int level, const char *fmt, ...)
                 safefree (entry_buffer);
                 goto out;
         }
-#ifdef HAVE_SYSLOG_H
+
         if (config.syslog) {
-#  ifdef HAVE_VSYSLOG_H
+#ifdef HAVE_VSYSLOG_H
                 vsyslog (level, fmt, args);
-#  else
+#else
                 vsnprintf (str, STRING_LENGTH, fmt, args);
                 syslog (level, "%s", str);
-#  endif
-        } else {
 #endif
+        } else {
                 nowtime = time (NULL);
                 /* Format is month day hour:minute:second (24 time) */
                 strftime (time_string, TIME_LENGTH, "%b %d %H:%M:%S",
@@ -202,10 +199,7 @@ void log_message (int level, const char *fmt, ...)
                 }
 
                 fsync (log_file_fd);
-
-#ifdef HAVE_SYSLOG_H
         }
-#endif
 
 out:
         va_end (args);
