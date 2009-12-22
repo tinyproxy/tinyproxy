@@ -429,8 +429,6 @@ void child_main_loop (void)
 
                 /* Handle log rotation if it was requested */
                 if (received_sighup) {
-                        truncate_log_file ();
-
                         reload_config ();
 
 #ifdef FILTER_ENABLE
