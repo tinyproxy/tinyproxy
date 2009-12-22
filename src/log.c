@@ -173,6 +173,8 @@ void log_message (int level, const char *fmt, ...)
                 syslog (level, "%s", str);
 #endif
         } else {
+                char *p;
+
                 nowtime = time (NULL);
                 /* Format is month day hour:minute:second (24 time) */
                 strftime (time_string, TIME_LENGTH, "%b %d %H:%M:%S",
@@ -182,22 +184,20 @@ void log_message (int level, const char *fmt, ...)
                           syslog_level[level], time_string,
                           (long int) getpid ());
 
+                /*
+                 * Overwrite the '\0' and leave room for a trailing '\n'
+                 * be added next.
+                 */
+                p = str + strlen(str);
+                vsnprintf (p, STRING_LENGTH - strlen(str) - 1, fmt, args);
+
+                p = str + strlen(str);
+                *p = '\n';
+                *(p+1) = '\0';
+
                 assert (log_file_fd >= 0);
 
                 ret = write (log_file_fd, str, strlen (str));
-                if (ret == -1) {
-                        log_message (LOG_WARNING,
-                                     "Could not write to log file");
-                }
-
-                vsnprintf (str, STRING_LENGTH, fmt, args);
-                ret = write (log_file_fd, str, strlen (str));
-                if (ret == -1) {
-                        log_message (LOG_WARNING,
-                                     "Could not write to log file");
-                }
-
-                ret = write (log_file_fd, "\n", 1);
                 if (ret == -1) {
                         log_message (LOG_WARNING,
                                      "Could not write to log file");
