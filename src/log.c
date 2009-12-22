@@ -87,18 +87,6 @@ void close_log_file (void)
 }
 
 /*
- * Truncate log file to a zero length.
- */
-void truncate_log_file (void)
-{
-        lseek (log_file_fd, 0, SEEK_SET);
-        if (ftruncate (log_file_fd, 0) != 0) {
-                log_message (LOG_WARNING,
-                             "Unable to truncate log file to zero length");
-        }
-}
-
-/*
  * Set the log level for writing to the log file.
  */
 void set_log_level (int level)
