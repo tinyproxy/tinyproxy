@@ -364,7 +364,6 @@ main (int argc, char **argv)
         }
 
         processed_config_file = TRUE;
-        send_stored_logs ();
 
         init_stats ();
 

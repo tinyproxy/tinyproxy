@@ -279,6 +279,8 @@ int setup_logging (void)
         }
 
         logging_initialized = TRUE;
+        send_stored_logs ();
+
         ret = 0;
 
 done:
