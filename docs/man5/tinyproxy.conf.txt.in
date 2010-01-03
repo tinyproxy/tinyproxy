@@ -143,7 +143,8 @@ The possible keywords and their descriptions are as follows:
     Setting this option to `Yes` tells Tinyproxy to add a header
     `X-Tinyproxy` containing the client's IP address to the request.
 
-*[No] Upstream*::
+*Upstream*::
+*No Upstream*::
 
     This option allows you to set up a set of rules for deciding
     whether an upstream a proxy server is to be used, based on the
