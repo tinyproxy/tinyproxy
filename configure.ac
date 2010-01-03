@@ -227,10 +227,10 @@ dnl Handle the REGEX library
 if test x"$ac_cv_func_regexec" != x"yes"; then
     AC_MSG_ERROR([Could not locate the regexec() function])
 else
-	if test x"$i_know_my_regex_works" != x"yes"; then
-    AC_MSG_CHECKING([whether the system's regex library is broken])
-    AC_CACHE_VAL(tinyproxy_cv_regex_broken,
-                 [AC_TRY_RUN([
+    if test x"$i_know_my_regex_works" != x"yes"; then
+        AC_MSG_CHECKING([whether the system's regex library is broken])
+        AC_CACHE_VAL(tinyproxy_cv_regex_broken,
+                     [AC_TRY_RUN([
 #if HAVE_SYS_TYPES_H
 #  include <sys/types.h>
 #endif
@@ -255,16 +255,16 @@ int main(void)
 
 	return 0;
 }
-                            ],
-                            tinyproxy_cv_regex_broken=no,
-                            tinyproxy_cv_regex_broken=yes,
-                            tinyproxy_cv_regex_broken=yes)])
+                     ],
+                     tinyproxy_cv_regex_broken=no,
+                     tinyproxy_cv_regex_broken=yes,
+                     tinyproxy_cv_regex_broken=yes)])
 
-    AC_MSG_RESULT([$tinyproxy_cv_regex_broken])
+        AC_MSG_RESULT([$tinyproxy_cv_regex_broken])
 
-    if test x"$tinyproxy_cv_regex_broken" = x"yes" ; then
-        AC_MSG_ERROR([Your system's regexec() function is broken.])
-    fi
+        if test x"$tinyproxy_cv_regex_broken" = x"yes" ; then
+            AC_MSG_ERROR([Your system's regexec() function is broken.])
+        fi
     fi
 fi
 
