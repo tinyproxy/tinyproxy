@@ -99,8 +99,7 @@ The possible keywords and their descriptions are as follows:
     not set, Tinyproxy returns a hard-coded basic statistics page.
     See the STATHOST section in the `tinyproxy(8)` manual page
     for details.
-
-
+    +
     Note that the StatFile and the error files configured with ErrorFile
     and DefaultErrorFile are template files that can contain a few
     template variables that Tinyproxy expands prior to delivery.
@@ -275,15 +274,17 @@ The possible keywords and their descriptions are as follows:
     through, while all others are denied. If no Anonymous keyword
     is present, then all headers are allowed through.  You must
     include quotes around the headers.
-
+    +
     Most sites require cookies to be enabled for them to work correctly, so
     you will need to allow cookies through if you access those sites.
-
+    +
     Example:
-
-    Anonymous "Host"
-    Anonymous "Authorization"
-    Anonymous "Cookie"
+    +
+----
+Anonymous "Host"
+Anonymous "Authorization"
+Anonymous "Cookie"
+----
 
 *ConnectPort*::
 
@@ -297,12 +298,14 @@ The possible keywords and their descriptions are as follows:
     Configure one or more ReversePath directives to enable reverse proxy
     support. With reverse proxying it's possible to make a number of
     sites appear as if they were part of a single site.
-
+    +
     If you uncomment the following two directives and run Tinyproxy
     on your own computer at port 8888, you can access example.com,
     using http://localhost:8888/example/.
-
-    ReversePath "/example/" "http://www.example.com/"
+    +
+----
+ReversePath "/example/" "http://www.example.com/"
+----
 
 *ReverseOnly*::
 
