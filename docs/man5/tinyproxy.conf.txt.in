@@ -121,7 +121,10 @@ The possible keywords and their descriptions are as follows:
 
 *LogLevel*::
 
-    This sets the log level. Allowed values are:
+    Sets the log level. Messages from the set level and above are
+    logged. For example, if the LogLevel was set to Warning, then all
+    log messages from Warning to Critical would be output, but Notice
+    and below would be suppressed. Allowed values are:
 
     * Critical (least verbose)
     * Error
@@ -129,11 +132,6 @@ The possible keywords and their descriptions are as follows:
     * Notice
     * Connect (log connections without Info's noise)
     * Info (most verbose)
-
-    The LogLevel logs from the set level and above. For example, if
-    the LogLevel was set to Warning, then all log messages from
-    Warning to Critical would be output, but Notice and below would be
-    suppressed.
 
 *PidFile*::
 
