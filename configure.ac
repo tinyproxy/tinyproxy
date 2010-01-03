@@ -131,6 +131,11 @@ if test x"$transparent_enabled" = x"yes"; then
    AC_DEFINE(TRANSPARENT_PROXY)
 fi
 
+dnl Check for broken regex library
+TP_ARG_ENABLE(regexcheck,
+              [Check for working regex library (default is YES)],
+              yes)
+
 # This is required to build test programs below
 AC_PROG_CC
 
@@ -227,7 +232,7 @@ dnl Handle the REGEX library
 if test x"$ac_cv_func_regexec" != x"yes"; then
     AC_MSG_ERROR([Could not locate the regexec() function])
 else
-    if test x"$i_know_my_regex_works" != x"yes"; then
+    if test x"$regexcheck_enabled" = x"yes" ; then
         AC_MSG_CHECKING([whether the system's regex library is broken])
         AC_CACHE_VAL(tinyproxy_cv_regex_broken,
                      [AC_TRY_RUN([
