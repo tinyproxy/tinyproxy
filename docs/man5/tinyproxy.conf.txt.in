@@ -219,6 +219,17 @@ The possible keywords and their descriptions are as follows:
     like `host.example.com` or a domain name like `.example.com` or
     even a top level domain name like `.com`.
 
+*AddHeader*::
+
+    Configure one or more HTTP request headers to be added to outgoing
+    HTTP requests that Tinyproxy makes. Note that this option will not
+    work for HTTPS traffic, as Tinyproxy has no control over what
+    headers are exchanged.
+    +
+----
+AddHeader "X-My-Header" "Powered by Tinyproxy"
+----
+
 *ViaProxyName*::
 
     RFC 2616 requires proxies to add a `Via` header to the HTTP

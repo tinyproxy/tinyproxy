@@ -1327,6 +1327,7 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
  */
 void handle_connection (int fd)
 {
+        ssize_t i;
         struct conn_s *connptr;
         struct request_s *request = NULL;
         hashmap_t hashofheaders = NULL;
@@ -1405,6 +1406,19 @@ void handle_connection (int fd)
                 update_stats (STAT_BADCONN);
                 destroy_conn (connptr);
                 return;
+        }
+
+        /*
+         * Add any user-specified headers (AddHeader directive) to the
+         * outgoing HTTP request.
+         */
+        for (i = 0; i < vector_length (config.add_headers); i++) {
+                http_header_t *header = (http_header_t *)
+                        vector_getentry (config.add_headers, i, NULL);
+
+                hashmap_insert (hashofheaders,
+                                header->name,
+                                header->value, strlen (header->value) + 1);
         }
 
         request = process_request (connptr, hashofheaders);

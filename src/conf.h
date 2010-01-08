@@ -26,6 +26,14 @@
 #include "vector.h"
 
 /*
+ * Stores a HTTP header created using the AddHeader directive.
+ */
+typedef struct {
+        char *name;
+        char *value;
+} http_header_t;
+
+/*
  * Hold all the configuration time information.
  */
 struct config_s {
@@ -97,6 +105,11 @@ struct config_s {
          * anonymous feature is turned on.
          */
         hashmap_t anonymous_map;
+
+        /*
+         * Extra headers to be added to outgoing HTTP requests.
+         */
+        vector_t add_headers;
 };
 
 extern int reload_config_file (const char *config_fname, struct config_s *conf,

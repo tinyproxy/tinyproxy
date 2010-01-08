@@ -123,6 +123,7 @@ static HANDLE_FUNC (handle_connectport);
 static HANDLE_FUNC (handle_defaulterrorfile);
 static HANDLE_FUNC (handle_deny);
 static HANDLE_FUNC (handle_errorfile);
+static HANDLE_FUNC (handle_addheader);
 #ifdef FILTER_ENABLE
 static HANDLE_FUNC (handle_filter);
 static HANDLE_FUNC (handle_filtercasesensitive);
@@ -226,8 +227,10 @@ struct {
         STDCONF ("deny", "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
                  handle_deny),
         STDCONF ("bind", "(" IP "|" IPV6 ")", handle_bind),
-        /* error files */
+        /* other */
         STDCONF ("errorfile", INT WS STR, handle_errorfile),
+        STDCONF ("addheader",  STR WS STR, handle_addheader),
+
 #ifdef FILTER_ENABLE
         /* filtering */
         STDCONF ("filter", STR, handle_filter),
@@ -260,6 +263,22 @@ struct {
 
 const unsigned int ndirectives = sizeof (directives) / sizeof (directives[0]);
 
+static void
+free_added_headers (vector_t add_headers)
+{
+        ssize_t i;
+
+        for (i = 0; i < vector_length (add_headers); i++) {
+                http_header_t *header = (http_header_t *)
+                        vector_getentry (add_headers, i, NULL);
+
+                safefree (header->name);
+                safefree (header->value);
+        }
+
+        vector_delete (add_headers);
+}
+
 static void free_config (struct config_s *conf)
 {
         safefree (conf->config_file);
@@ -282,6 +301,7 @@ static void free_config (struct config_s *conf)
         safefree (conf->bind_address);
         safefree (conf->via_proxy_name);
         hashmap_delete (conf->errorpages);
+        free_added_headers (conf->add_headers);
         safefree (conf->errorpage_undef);
         safefree (conf->statpage);
         flush_access_list (conf->access_list);
@@ -845,6 +865,30 @@ static HANDLE_FUNC (handle_errorfile)
 
         add_new_errorpage (page, err);
         safefree (page);
+        return 0;
+}
+
+static HANDLE_FUNC (handle_addheader)
+{
+        char *name = get_string_arg (line, &match[2]);
+        char *value = get_string_arg (line, &match[3]);
+        http_header_t *header;
+
+        if (!conf->add_headers) {
+                conf->add_headers = vector_create ();
+        }
+
+        header = (http_header_t *) safemalloc (sizeof (http_header_t));
+        header->name = name;
+        header->value = value;
+
+        vector_prepend (conf->add_headers, header, sizeof *header);
+
+        safefree (header);
+
+        /* Don't free name or value here, as they are referenced in the
+         * struct inserted into the vector. */
+
         return 0;
 }
 

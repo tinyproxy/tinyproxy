@@ -210,6 +210,13 @@ MaxRequestsPerChild 0
 Allow 127.0.0.1
 
 #
+# AddHeader: Adds the specified headers to outgoing HTTP requests that
+# Tinyproxy makes. Note that this option will not work for HTTPS
+# traffic, as Tinyproxy has no control over what headers are exchanged.
+#
+#AddHeader "X-My-Header" "Powered by Tinyproxy"
+
+#
 # ViaProxyName: The "Via" header is required by the HTTP RFC, but using
 # the real host name is a security concern.  If the following directive
 # is enabled, the string supplied will be used as the host name in the
