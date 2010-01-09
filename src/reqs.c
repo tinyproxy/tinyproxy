@@ -1352,7 +1352,8 @@ void handle_connection (int fd)
         /*
          * The "hashofheaders" store the client's headers.
          */
-        if (!(hashofheaders = hashmap_create (HEADER_BUCKETS))) {
+        hashofheaders = hashmap_create (HEADER_BUCKETS);
+        if (hashofheaders == NULL) {
                 update_stats (STAT_BADCONN);
                 indicate_http_error (connptr, 503, "Internal error",
                                      "detail",
