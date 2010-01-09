@@ -902,11 +902,12 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
          * Spin here pulling the data from the client.
          */
 PULL_CLIENT_DATA:
-        if (connptr->content_length.client > 0)
-                return pull_client_data (connptr,
-                                         connptr->content_length.client);
-        else
-                return ret;
+        if (connptr->content_length.client > 0) {
+                ret = pull_client_data (connptr,
+                                        connptr->content_length.client);
+        }
+
+        return ret;
 }
 
 /*
