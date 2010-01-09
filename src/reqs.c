@@ -313,10 +313,7 @@ static struct request_s *process_request (struct conn_s *connptr,
         request->protocol = (char *) safemalloc (request_len);
 
         if (!request->method || !url || !request->protocol) {
-                safefree (url);
-                free_request_struct (request);
-
-                return NULL;
+                goto fail;
         }
 
         ret = sscanf (connptr->request_line, "%[^ ] %[^ ] %[^ ]",
@@ -350,11 +347,7 @@ BAD_REQUEST_ERROR:
                 indicate_http_error (connptr, 400, "Bad Request",
                                      "detail", "Request has an invalid format",
                                      "url", url, NULL);
-
-                safefree (url);
-                free_request_struct (request);
-
-                return NULL;
+                goto fail;
         }
 
         if (!url) {
@@ -364,11 +357,7 @@ BAD_REQUEST_ERROR:
                 indicate_http_error (connptr, 400, "Bad Request",
                                      "detail", "Request has an empty URL",
                                      "url", url, NULL);
-
-                safefree (url);
-                free_request_struct (request);
-
-                return NULL;
+                goto fail;
         }
 #ifdef REVERSE_SUPPORT
         if (config.reversepath_list != NULL) {
@@ -381,14 +370,13 @@ BAD_REQUEST_ERROR:
                 char *reverse_url;
 
                 reverse_url = reverse_rewrite_url (connptr, hashofheaders, url);
-                safefree (url);
 
                 if (!reverse_url) {
-                        free_request_struct (request);
-                        return NULL;
-                } else {
-                        url = reverse_url;
+                        goto fail;
                 }
+
+                safefree (url);
+                url = reverse_url;
         }
 #endif
 
@@ -401,22 +389,14 @@ BAD_REQUEST_ERROR:
                         indicate_http_error (connptr, 400, "Bad Request",
                                              "detail", "Could not parse URL",
                                              "url", url, NULL);
-
-                        safefree (url);
-                        free_request_struct (request);
-
-                        return NULL;
+                        goto fail;
                 }
         } else if (strcmp (request->method, "CONNECT") == 0) {
                 if (extract_ssl_url (url, request) < 0) {
                         indicate_http_error (connptr, 400, "Bad Request",
                                              "detail", "Could not parse URL",
                                              "url", url, NULL);
-
-                        safefree (url);
-                        free_request_struct (request);
-
-                        return NULL;
+                        goto fail;
                 }
 
                 /* Verify that the port in the CONNECT method is allowed */
@@ -431,11 +411,7 @@ BAD_REQUEST_ERROR:
                         log_message (LOG_INFO,
                                      "Refused CONNECT method on port %d",
                                      request->port);
-
-                        safefree (url);
-                        free_request_struct (request);
-
-                        return NULL;
+                        goto fail;
                 }
 
                 connptr->connect_method = TRUE;
@@ -443,9 +419,7 @@ BAD_REQUEST_ERROR:
 #ifdef TRANSPARENT_PROXY
                 if (!do_transparent_proxy
                     (connptr, hashofheaders, request, &config, url)) {
-                        safefree (url);
-                        free_request_struct (request);
-                        return NULL;
+                        goto fail;
                 }
 #else
                 indicate_http_error (connptr, 501, "Not Implemented",
@@ -454,9 +428,7 @@ BAD_REQUEST_ERROR:
                                      "url", url, NULL);
                 log_message (LOG_INFO, "Unknown method (%s) or protocol (%s)",
                              request->method, url);
-                safefree (url);
-                free_request_struct (request);
-                return NULL;
+                goto fail;
 #endif
         }
 
@@ -486,16 +458,11 @@ BAD_REQUEST_ERROR:
                                              "detail",
                                              "The request you made has been filtered",
                                              "url", url, NULL);
-
-                        safefree (url);
-                        free_request_struct (request);
-
-                        return NULL;
+                        goto fail;
                 }
         }
 #endif
 
-        safefree (url);
 
         /*
          * Check to see if they're requesting the stat host
@@ -503,12 +470,17 @@ BAD_REQUEST_ERROR:
         if (config.stathost && strcmp (config.stathost, request->host) == 0) {
                 log_message (LOG_NOTICE, "Request for the stathost.");
                 connptr->show_stats = TRUE;
-
-                free_request_struct (request);
-                return NULL;
+                goto fail;
         }
 
+        safefree (url);
+
         return request;
+
+fail:
+        safefree (url);
+        free_request_struct (request);
+        return NULL;
 }
 
 /*
