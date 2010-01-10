@@ -284,6 +284,10 @@ done:
  */
 void shutdown_logging (void)
 {
+	if (!logging_initialized) {
+		return;
+	}
+
         if (config.logf_name) {
                 close_log_file ();
         } else if (config.syslog) {
