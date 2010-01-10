@@ -292,9 +292,6 @@ void shutdown_logging (void)
                 close_log_file ();
         } else if (config.syslog) {
                 closelog ();
-        } else {
-                fprintf (stderr, "error - shutdown_logging called while "
-                         " logging not configured yet\n");
         }
 
         logging_initialized = FALSE;
