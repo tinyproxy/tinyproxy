@@ -3,8 +3,8 @@
  * Copyright (C) 1998 Steven Young <sdyoung@miranda.org>
  * Copyright (C) 1998-2002 Robert James Kaes <rjkaes@users.sourceforge.net>
  * Copyright (C) 2000 Chris Lightfoot <chris@ex-parrot.com>
- * Copyright (C) 2009 Mukund Sivaraman <muks@banu.com>
- * Copyright (C) 2009 Michael Adam <obnox@samba.org>
+ * Copyright (C) 2009-2010 Mukund Sivaraman <muks@banu.com>
+ * Copyright (C) 2009-2010 Michael Adam <obnox@samba.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,8 +99,8 @@ display_license (void)
   Copyright 1998-2002  Robert James Kaes (rjkaes@users.sourceforge.net)\n\
   Copyright 1999       George Talusan (gstalusan@uwaterloo.ca)\n\
   Copyright 2000       Chris Lightfoot (chris@ex-parrot.com)\n\
-  Copyright 2009       Mukund Sivaraman (muks@banu.com)\n\
-  Copyright 2009       Michael Adam (obnox@samba.org)\n\
+  Copyright 2009-2010  Mukund Sivaraman (muks@banu.com)\n\
+  Copyright 2009-2010  Michael Adam (obnox@samba.org)\n\
 \n\
   This program is free software; you can redistribute it and/or modify\n\
   it under the terms of the GNU General Public License as published by\n\
