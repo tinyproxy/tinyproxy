@@ -321,6 +321,7 @@ static void initialize_config_defaults (struct config_s *conf)
         conf->errorpages = NULL;
         conf->stathost = safestrdup (TINYPROXY_STATHOST);
         conf->idletimeout = MAX_IDLE_TIME;
+	conf->logf_name = safestrdup (LOCALSTATEDIR "/log/tinyproxy.log");
 }
 
 /**
