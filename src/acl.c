@@ -292,7 +292,7 @@ static int check_numeric_acl (const struct acl_s *acl, const char *ip)
 
                 /* If x and y don't match, the IP addresses don't match */
                 if (x != y)
-                        return 0;
+                        return -1;
         }
 
         /* The addresses match, return the permission */
