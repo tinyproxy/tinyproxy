@@ -252,18 +252,18 @@ int setup_logging (void)
 
         /* Write to a user supplied log file if it's defined.  This will
          * override using the syslog even if syslog is defined. */
-        if (config.logf_name) {
+        if (config.syslog) {
+                if (config.godaemon == TRUE)
+                        openlog ("tinyproxy", LOG_PID, LOG_DAEMON);
+                else
+                        openlog ("tinyproxy", LOG_PID, LOG_USER);
+        } else {
                 if (open_log_file (config.logf_name) < 0) {
                         fprintf (stderr,
                                  "%s: Could not create log file.\n", PACKAGE);
                         goto done;
                 }
                 config.syslog = FALSE;  /* disable syslog */
-        } else if (config.syslog) {
-                if (config.godaemon == TRUE)
-                        openlog ("tinyproxy", LOG_PID, LOG_DAEMON);
-                else
-                        openlog ("tinyproxy", LOG_PID, LOG_USER);
         }
 
         logging_initialized = TRUE;
@@ -284,10 +284,10 @@ void shutdown_logging (void)
 		return;
 	}
 
-        if (config.logf_name) {
-                close_log_file ();
-        } else if (config.syslog) {
+        if (config.syslog) {
                 closelog ();
+        } else {
+                close_log_file ();
         }
 
         logging_initialized = FALSE;
