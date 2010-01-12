@@ -18,7 +18,8 @@
 sbin_PROGRAMS = tinyproxy
 
 AM_CPPFLAGS = \
-	-DSYSCONFDIR=\"${sysconfdir}\"
+	-DSYSCONFDIR=\"${sysconfdir}\" \
+	-DLOCALSTATEDIR=\"${localstatedir}\"
 
 tinyproxy_SOURCES = \
 	acl.c acl.h \
