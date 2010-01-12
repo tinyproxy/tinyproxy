@@ -264,10 +264,6 @@ int setup_logging (void)
                         openlog ("tinyproxy", LOG_PID, LOG_DAEMON);
                 else
                         openlog ("tinyproxy", LOG_PID, LOG_USER);
-        } else {
-                fprintf (stderr, "%s: Either define a logfile or "
-                         "enable syslog logging.\n", PACKAGE);
-                goto done;
         }
 
         logging_initialized = TRUE;
