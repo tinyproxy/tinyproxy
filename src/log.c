@@ -280,9 +280,9 @@ done:
  */
 void shutdown_logging (void)
 {
-	if (!logging_initialized) {
-		return;
-	}
+        if (!logging_initialized) {
+                return;
+        }
 
         if (config.syslog) {
                 closelog ();
