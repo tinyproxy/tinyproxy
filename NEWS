@@ -8,6 +8,13 @@ Version 1.7.1
  * Wrote improved asciidoc manpages
  * Cleaned up build system
  * Fixed various other bugs
+ * Tinyproxy now reloads its configuration upon HUP signal.
+ * Tinyproxy reopens its log file (instead of truncation) upon HUP
+   signal. This is to play more nicely with logrotate.
+ * File logging is now the default.
+   Sylsog is chosen if and only if "SysLog Yes" is in the config.
+   (I.e., a present "SysLog Yes" in the config file now overrides
+    any LogFile setting.)
 
 Bugs fixed since version 1.7.0
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
