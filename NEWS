@@ -4,21 +4,21 @@ Tinyproxy NEWS
 Version 1.7.2
 -------------
 
- * Tinyproxy now reloads its configuration upon HUP signal.
- * Tinyproxy reopens its log file (instead of truncation) upon HUP
+ * Tinyproxy now reloads its configuration upon SIGHUP signal.
+ * Tinyproxy reopens its log file (instead of truncation) upon SIGHUP
    signal. This is to play more nicely with logrotate.
  * File logging is now the default.
-   Sylsog is chosen if and only if "SysLog Yes" is in the config.
-   (I.e., a present "SysLog Yes" in the config file now overrides
-    any LogFile setting.)
- * The XTinyProxy option is now a global boolean.
-   Before,e it was documented to build a list of sites to add an
-   x-tinyproxy header for, but it was implemented as global bool...
- * A new config option AddHeader allows to configure a list of
-   custom headers.
- * A new config option DisableViaHeader allows to disable sending
-   of the "Via:" header.
- * Tinyproxy is now IPv6-aware.
+   Syslog is chosen if and only if "SysLog Yes" is in the config,
+   i.e., a present "SysLog Yes" in the config file now overrides
+   any LogFile setting.
+ * The XTinyProxy option is now documented as a global boolean.
+   Before it was documented to build a list of sites to add a
+   X-Tinyproxy header for, but it was implemented as global boolean.
+ * A new config option AddHeader allows the user to configure a list of
+   custom headers to send in outgoing HTTP requests.
+ * A new config option DisableViaHeader allows the user to disable
+   sending of the "Via:" header.
+ * Tinyproxy is now IPv6 capable.
  * The config option PidFile now has a compiled in default.
 
 Bugs fixed since Version 1.7.1
