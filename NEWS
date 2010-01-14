@@ -14,6 +14,12 @@ Version 1.7.2
  * The XTinyProxy option is now a global boolean.
    Before,e it was documented to build a list of sites to add an
    x-tinyproxy header for, but it was implemented as global bool...
+ * A new config option AddHeader allows to configure a list of
+   custom headers.
+ * A new config option DisableViaHeader allows to disable sending
+   of the "Via:" header.
+ * Tinyproxy is now IPv6-aware.
+ * The config option PidFile now has a compiled in default.
 
 Bugs fixed since Version 1.7.0
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
