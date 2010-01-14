@@ -11,6 +11,9 @@ Version 1.7.2
    Sylsog is chosen if and only if "SysLog Yes" is in the config.
    (I.e., a present "SysLog Yes" in the config file now overrides
     any LogFile setting.)
+ * The XTinyProxy option is now a global boolean.
+   Before,e it was documented to build a list of sites to add an
+   x-tinyproxy header for, but it was implemented as global bool...
 
 Version 1.7.1
 -------------
