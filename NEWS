@@ -63,3 +63,19 @@ Contributors
 
 Andrew Stribblehill, Jeremy Hinegardner, Matthew Dempsky, Michael Adam,
 Mukund Sivaraman, Robert James Kaes.
+
+Version 1.7.0
+-------------
+
+ * There is now support for reverse proxying.
+ * Tinyproxy does not bundle a vendor regular expressions library
+   anymore. It uses the system installed regular expressions library.
+ * The documentation has been updated.
+ * Tinyproxy now contains some code optimizations such as the use of a
+   hashmap internally for looking up error pages.
+ * Various other bugs have been fixed.
+
+Contributors
+~~~~~~~~~~~~
+
+Kim Holviala, Marc Silver, Robert James Kaes, Steven Young.
