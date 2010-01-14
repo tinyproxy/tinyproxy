@@ -21,7 +21,7 @@ Version 1.7.2
  * Tinyproxy is now IPv6-aware.
  * The config option PidFile now has a compiled in default.
 
-Bugs fixed since Version 1.7.0
+Bugs fixed since Version 1.7.1
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  * BB#9: Add support for the IPv6 protocol
