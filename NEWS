@@ -15,6 +15,19 @@ Version 1.7.2
    Before,e it was documented to build a list of sites to add an
    x-tinyproxy header for, but it was implemented as global bool...
 
+Bugs fixed since Version 1.7.0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * BB#9: Add support for the IPv6 protocol
+ * BB#17: Add support for custom headers
+ * BB#55: Error message response omits body when request has a body
+ * BB#60: Add config option to disable Via header
+ * BB#61: SIGHUP does not refresh filter list
+ * BB#62: Make tinyproxy reload the config upon SIGHUP
+ * BB#64: Config parsing error with reverse proxy option
+ * BB#65: Format string compile warnings
+ * BB#67: ACL processing error with multiple Allow statements
+
 Version 1.7.1
 -------------
 
