@@ -34,6 +34,12 @@ Bugs fixed since Version 1.7.1
  * BB#65: Format string compile warnings
  * BB#67: ACL processing error with multiple Allow statements
 
+Contributors
+~~~~~~~~~~~~
+
+Andrew Stribblehill, David Shanks, Jeremy Hinegardner, Mathew Mrosko,
+Matthew Dempsky, Michael Adam, Mukund Sivaraman, Robert James Kaes.
+
 Version 1.7.1
 -------------
 
