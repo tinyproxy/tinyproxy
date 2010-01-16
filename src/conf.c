@@ -389,24 +389,23 @@ static int load_config_file (const char *config_fname, struct config_s *conf)
         FILE *config_file;
         int ret = -1;
 
-        do {
-                config_file = fopen (config_fname, "r");
-                if (!config_file) {
-                        fprintf (stderr,
-                                 "%s: Could not open config file \"%s\".\n",
-                                 PACKAGE, config_fname);
-                        break;
-                }
+        config_file = fopen (config_fname, "r");
+        if (!config_file) {
+                fprintf (stderr,
+                         "%s: Could not open config file \"%s\".\n",
+                         PACKAGE, config_fname);
+                goto done;
+        }
 
-                if (config_compile () || config_parse (conf, config_file)) {
-                        fprintf (stderr, "Unable to parse config file. "
-                                 "Not starting.\n");
-                        break;
-                }
+        if (config_compile () || config_parse (conf, config_file)) {
+                fprintf (stderr, "Unable to parse config file. "
+                         "Not starting.\n");
+                goto done;
+        }
 
-                ret = 0;
-        } while (0);
+        ret = 0;
 
+done:
         if (config_file)
                 fclose (config_file);
 
