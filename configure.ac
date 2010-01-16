@@ -11,7 +11,7 @@ m4_define([tinyproxy_real_version],
 m4_define([tinyproxy_version], [tinyproxy_real_version])
 
 # For overriding the version string. Comment out if not needed.
-# m4_define([tinyproxy_version], [0.7.0])
+# m4_define([tinyproxy_version], [1.7.2])
 
 m4_define([tinyproxy_unstable],
           m4_if(m4_eval(tinyproxy_minor_version % 2), [1], [yes], [no]))
