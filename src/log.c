@@ -248,14 +248,7 @@ void send_stored_logs (void)
  */
 int setup_logging (void)
 {
-        /* Write to a user supplied log file if it's defined.  This will
-         * override using the syslog even if syslog is defined. */
-        if (config.syslog) {
-                if (config.godaemon == TRUE)
-                        openlog ("tinyproxy", LOG_PID, LOG_DAEMON);
-                else
-                        openlog ("tinyproxy", LOG_PID, LOG_USER);
-        } else {
+        if (!config.syslog) {
                 if (open_log_file (config.logf_name) < 0) {
                         /*
                          * If opening the log file fails, we try
@@ -268,9 +261,14 @@ int setup_logging (void)
                                      config.logf_name, strerror (errno));
                         log_message (LOG_CRIT,
                                      "Falling back to syslog logging\n");
-                } else {
-                        config.syslog = FALSE;
                 }
+        }
+
+        if (config.syslog) {
+                if (config.godaemon == TRUE)
+                        openlog ("tinyproxy", LOG_PID, LOG_DAEMON);
+                else
+                        openlog ("tinyproxy", LOG_PID, LOG_USER);
         }
 
         logging_initialized = TRUE;
