@@ -259,11 +259,20 @@ int setup_logging (void)
                         openlog ("tinyproxy", LOG_PID, LOG_USER);
         } else {
                 if (open_log_file (config.logf_name) < 0) {
-                        fprintf (stderr,
-                                 "%s: Could not create log file.\n", PACKAGE);
-                        goto done;
+                        /*
+                         * If opening the log file fails, we try
+                         * to fall back to syslog logging...
+                         */
+                        config.syslog = TRUE;
+
+                        log_message (LOG_CRIT, "ERROR: Could not create log "
+                                     "file %s: %s.\n", PACKAGE,
+                                     config.logf_name, strerror (errno));
+                        log_message (LOG_CRIT,
+                                     "Falling back to syslog logging\n");
+                } else {
+                        config.syslog = FALSE;
                 }
-                config.syslog = FALSE;  /* disable syslog */
         }
 
         logging_initialized = TRUE;
