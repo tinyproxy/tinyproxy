@@ -53,11 +53,11 @@ int check_allowed_connect_ports (int port, vector_t connect_ports)
         int *data;
 
         /*
-         * A port list is REQUIRED for a CONNECT request to function
-         * properly.  This closes a potential security hole.
+	 * The absence of ConnectPort options in the config file
+	 * meanas that all ports are allowed for CONNECT.
          */
         if (!connect_ports)
-                return 0;
+                return 1;
 
         for (i = 0; i != (size_t) vector_length (connect_ports); ++i) {
                 data = (int *) vector_getentry (connect_ports, i, NULL);
