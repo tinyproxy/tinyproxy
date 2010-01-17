@@ -264,7 +264,7 @@ int setup_logging (void)
                         config.syslog = TRUE;
 
                         log_message (LOG_CRIT, "ERROR: Could not create log "
-                                     "file %s: %s.\n", PACKAGE,
+                                     "file %s: %s.\n",
                                      config.logf_name, strerror (errno));
                         log_message (LOG_CRIT,
                                      "Falling back to syslog logging\n");
