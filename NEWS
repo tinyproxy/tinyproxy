@@ -1,81 +1,12 @@
 Tinyproxy NEWS
 ==============
 
-Version 1.8.0
+Version 1.9.0
 -------------
 
- * Tinyproxy now reloads its configuration upon SIGHUP signal.
- * Tinyproxy reopens its log file (instead of truncation) upon SIGHUP
-   signal. This is to play more nicely with logrotate.
- * File logging is now the default.
-   Syslog is chosen if and only if "SysLog Yes" is in the config,
-   i.e., a present "SysLog Yes" in the config file now overrides
-   any LogFile setting.
- * The XTinyProxy option is now documented as a global boolean.
-   Before it was documented to build a list of sites to add a
-   X-Tinyproxy header for, but it was implemented as global boolean.
- * A new config option AddHeader allows the user to configure a list of
-   custom headers to send in outgoing HTTP requests.
- * A new config option DisableViaHeader allows the user to disable
-   sending of the "Via:" header.
- * Tinyproxy is now IPv6 capable.
- * The config option PidFile now has a compiled in default.
-
-Bugs fixed since version 1.7.1
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- * BB#9: Add support for the IPv6 protocol
- * BB#17: Add support for custom headers
- * BB#55: Error message response omits body when request has a body
- * BB#60: Add config option to disable Via header
- * BB#61: SIGHUP does not refresh filter list
- * BB#62: Make tinyproxy reload the config upon SIGHUP
- * BB#64: Config parsing error with reverse proxy option
- * BB#65: Format string compile warnings
- * BB#67: ACL processing error with multiple Allow statements
+Bugs fixed
+~~~~~~~~~~
 
 Contributors
 ~~~~~~~~~~~~
 
-David Shanks, Mathew Mrosko, Michael Adam, Mukund Sivaraman.
-
-Version 1.7.1
--------------
-
- * Fixed all warnings reported by GCC.
- * The tinyproxy manpage has been extended and converted to asciidoc.
- * There is a new tinyproxy.conf manpage that describes all the options.
- * The build system has been considerably cleaned up.
- * Various other bugs have been fixed.
-
-Bugs fixed since version 1.7.0
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- * BB#2: Fix Tinyproxy for requests like www.site.com:8001
- * BB#5: Move templates from the doc directory to its own directory
- * BB#8: Update README, INSTALL, NEWS and the manpage
- * BB#10: Do not filter out transfer-encoding header
- * BB#18: Fix pointer aliasing issues
- * BB#53: Add a GPLv2 COPYING file
-
-Contributors
-~~~~~~~~~~~~
-
-Andrew Stribblehill, Jeremy Hinegardner, Matthew Dempsky, Michael Adam,
-Mukund Sivaraman, Robert James Kaes.
-
-Version 1.7.0
--------------
-
- * There is now support for reverse proxying.
- * Tinyproxy does not bundle a vendor regular expressions library
-   anymore. It uses the system installed regular expressions library.
- * The documentation has been updated.
- * Tinyproxy now contains some code optimizations such as the use of a
-   hashmap internally for looking up error pages.
- * Various other bugs have been fixed.
-
-Contributors
-~~~~~~~~~~~~
-
-Kim Holviala, Marc Silver, Robert James Kaes, Steven Young.
