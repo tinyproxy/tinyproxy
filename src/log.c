@@ -280,7 +280,6 @@ int setup_logging (void)
 
         ret = 0;
 
-done:
         return ret;
 }
 
