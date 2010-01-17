@@ -248,8 +248,6 @@ void send_stored_logs (void)
  */
 int setup_logging (void)
 {
-        int ret = -1;
-
         /* Write to a user supplied log file if it's defined.  This will
          * override using the syslog even if syslog is defined. */
         if (config.syslog) {
@@ -278,9 +276,7 @@ int setup_logging (void)
         logging_initialized = TRUE;
         send_stored_logs ();
 
-        ret = 0;
-
-        return ret;
+        return 0;
 }
 
 /**
