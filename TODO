@@ -42,12 +42,6 @@ against the current tree and I'll integrate it if possible.
 
    ==> https://www.banu.com/bugzilla/show_bug.cgi?id=13
 
- * Fix paths inside etc/tinyproxy.conf
-
- * Finish manpages
-
- * Move defaults handling to conf.c
-
  * Remove common.h and fix order of headers
 
  * Remove memory debugging functions (Valgrind is good enough)
