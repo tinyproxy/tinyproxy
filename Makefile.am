@@ -27,6 +27,9 @@ all-local: AUTHORS
 check-local: validate-authors
 
 EXTRA_DIST = \
+	authors.dtd \
+	authors.xml \
+	authors.xsl \
 	autogen.sh \
 	tinyproxy-indent.sh \
 	TODO
