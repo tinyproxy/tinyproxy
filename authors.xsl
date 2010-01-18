@@ -22,7 +22,9 @@
     <xsl:text>Tinyproxy AUTHORS
 =================
 
+////
 This file is generated from authors.xml, do not edit it directly.
+////
 
 Coding
 ------
