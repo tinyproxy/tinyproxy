@@ -1,19 +1,25 @@
-Early History
--------------
+Tinyproxy AUTHORS
+=================
 
- Steven Young is the original author and was the primary maintainer of
- tinyproxy until version 1.1.  He also maintained the project from
- version 1.3.1 until 1.4.0.
+This file is generated from authors.xml, do not edit it directly.
 
- Robert James Kaes is the current maintainer and lead programmer.  He
- also maintained the project between versions 1.2 and 1.3.0, and again
- starting with version 1.4.0.
+The following people have contributed code to Tinyproxy:
+
+ Andrew Stribblehill
+ David Shanks
+ George Talusan
+ James E. Flemer
+ Jeremy Hinegardner
+ Kim Holviala
+ Marc Silver
+ Mathew Mrosko
+ Matthew Dempsky
+ Michael Adam
+ Mukund Sivaraman
+ Petr Lampa
+ Robert James Kaes
+ Steven Young
 
 
-Major Additions/Improvements
-----------------------------
+The following people have helped to document Tinyproxy:
 
-James E. Flemer <jflemer@acm.jhu.edu> - URL/domain filtering
-Kim Holviala <kim@holviala.com> - Reverse proxy support
-Petr Lampa <lampa@fit.vutbr.cz> - Transparent proxy support
-George Talusan <gstalusan@uwaterloo.ca> - URL/domain filtering
