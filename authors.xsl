@@ -24,6 +24,9 @@
 
 This file is generated from authors.xml, do not edit it directly.
 
+Coding
+------
+
 The following people have contributed code to Tinyproxy:
 
 </xsl:text>
@@ -31,6 +34,9 @@ The following people have contributed code to Tinyproxy:
       <xsl:with-param name="role" select="'author'"/>
     </xsl:call-template>
     <xsl:text>
+
+Documentation
+-------------
 
 The following people have helped to document Tinyproxy:
 
@@ -42,7 +48,7 @@ The following people have helped to document Tinyproxy:
   </xsl:template>
 
   <xsl:template match="dc:contributor">
-    <xsl:text> </xsl:text><xsl:apply-templates /><xsl:text>
+    <xsl:text> * </xsl:text><xsl:apply-templates /><xsl:text>
 </xsl:text>
   </xsl:template>
 
