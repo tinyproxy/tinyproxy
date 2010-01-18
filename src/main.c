@@ -122,20 +122,15 @@ display_license (void)
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.\n\
 \n");
 
-        authors = authors_get_authors ();
-
         printf ("\nAUTHORS:\n");
-        while (*authors) {
+        for (authors = authors_get_authors (); *authors; authors++) {
                 printf ("  %s\n", *authors);
-                authors++;
         }
 
-        documenters = authors_get_documenters ();
-
         printf ("\nDOCUMENTERS:\n");
-        while (*documenters) {
+        for (documenters = authors_get_documenters ();
+             *documenters; documenters++) {
                 printf ("  %s\n", *documenters);
-                documenters++;
         }
 
         printf ("\n");
