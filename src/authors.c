@@ -6,13 +6,17 @@
 static const char * const authors[] =
 {
         "Andrew Stribblehill",
+        "Chris Lightfoot",
         "David Shanks",
+        "George Talusan",
+        "James E. Flemer",
         "Jeremy Hinegardner",
         "Kim Holviala",
         "Mathew Mrosko",
         "Matthew Dempsky",
         "Michael Adam",
         "Mukund Sivaraman",
+        "Petr Lampa",
         "Robert James Kaes",
         "Steven Young",
         NULL

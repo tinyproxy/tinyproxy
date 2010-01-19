@@ -15,7 +15,7 @@
 
   <xsl:template name="recent-contributor">
     <xsl:param name="role" />
-    <xsl:apply-templates select="dc:contributor[contains(@role, $role) and number(@last-active) > 1.6]" />
+    <xsl:apply-templates select="dc:contributor[contains(@role, $role)]" />
   </xsl:template>
 
   <xsl:template match="/dc:authors">
