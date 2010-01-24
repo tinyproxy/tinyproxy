@@ -87,8 +87,9 @@ source, please send a patch (preferably as a unified diff. i.e. `diff
 repository to 'tinyproxy-developers-list'.  Please include a description
 of what your patch does.
 
-Tinyproxy's git repository is <git://www.banu.com/tinyproxy.git>. The
-following command creates a local copy:
+Tinyproxy's source code is maintained in a Git repository at
+<git://www.banu.com/tinyproxy.git>. The following command creates a
+local copy:
 
 ----
 git clone git://www.banu.com/tinyproxy.git
@@ -96,8 +97,8 @@ git clone git://www.banu.com/tinyproxy.git
 
 The easiest and preferred way to create a patch for submission is to
 check in your changes locally and use `git format-patch` to generate a
-mbox-style commit file that contains the diff along with the commit
-message and author information.  Such a format-patch file can be
+mbox-style patch file that contains the diff along with the commit
+message and author information.  Such a formatted patch file can be
 integrated into the upstream repository, automatically keeping the
 commit message and author information.
 
