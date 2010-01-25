@@ -38,7 +38,7 @@ void add_connect_port_allowed (int port, vector_t *connect_ports)
 
         log_message (LOG_INFO,
                      "Adding Port [%d] to the list allowed by CONNECT", port);
-        vector_append (*connect_ports, (void **) &port, sizeof (port));
+        vector_append (*connect_ports, &port, sizeof (port));
 }
 
 /*
