@@ -617,8 +617,8 @@ set_bool_arg (unsigned int *var, const char *line, regmatch_t * match)
         return 0;
 }
 
-static unsigned long int
-get_int_arg (const char *line, regmatch_t * match)
+static unsigned long
+get_long_arg (const char *line, regmatch_t * match)
 {
         assert (line);
         assert (match && match->rm_so != -1);
@@ -627,13 +627,13 @@ get_int_arg (const char *line, regmatch_t * match)
 }
 
 static int
-set_int_arg (unsigned long int *var, const char *line, regmatch_t * match)
+set_int_arg (unsigned int *var, const char *line, regmatch_t * match)
 {
         assert (var);
         assert (line);
         assert (match);
 
-        *var = get_int_arg (line, match);
+        *var = (unsigned int) get_long_arg (line, match);
         return 0;
 }
 
@@ -755,49 +755,50 @@ static HANDLE_FUNC (handle_bindsame)
 
 static HANDLE_FUNC (handle_port)
 {
-        return set_int_arg ((unsigned long int *) &conf->port, line, &match[2]);
+        return set_int_arg (&conf->port, line, &match[2]);
 }
 
 static HANDLE_FUNC (handle_maxclients)
 {
-        child_configure (CHILD_MAXCLIENTS, get_int_arg (line, &match[2]));
+        child_configure (CHILD_MAXCLIENTS, get_long_arg (line, &match[2]));
         return 0;
 }
 
 static HANDLE_FUNC (handle_maxspareservers)
 {
-        child_configure (CHILD_MAXSPARESERVERS, get_int_arg (line, &match[2]));
+        child_configure (CHILD_MAXSPARESERVERS,
+                         get_long_arg (line, &match[2]));
         return 0;
 }
 
 static HANDLE_FUNC (handle_minspareservers)
 {
-        child_configure (CHILD_MINSPARESERVERS, get_int_arg (line, &match[2]));
+        child_configure (CHILD_MINSPARESERVERS,
+                         get_long_arg (line, &match[2]));
         return 0;
 }
 
 static HANDLE_FUNC (handle_startservers)
 {
-        child_configure (CHILD_STARTSERVERS, get_int_arg (line, &match[2]));
+        child_configure (CHILD_STARTSERVERS, get_long_arg (line, &match[2]));
         return 0;
 }
 
 static HANDLE_FUNC (handle_maxrequestsperchild)
 {
         child_configure (CHILD_MAXREQUESTSPERCHILD,
-                         get_int_arg (line, &match[2]));
+                         get_long_arg (line, &match[2]));
         return 0;
 }
 
 static HANDLE_FUNC (handle_timeout)
 {
-        return set_int_arg ((unsigned long int *) &conf->idletimeout, line,
-                            &match[2]);
+        return set_int_arg (&conf->idletimeout, line, &match[2]);
 }
 
 static HANDLE_FUNC (handle_connectport)
 {
-        add_connect_port_allowed (get_int_arg (line, &match[2]),
+        add_connect_port_allowed (get_long_arg (line, &match[2]),
                                   &conf->connect_ports);
         return 0;
 }
@@ -866,7 +867,7 @@ static HANDLE_FUNC (handle_errorfile)
          * present.  This is why the "string" is located at
          * match[4] (rather than the more intuitive match[3].
          */
-        unsigned long int err = get_int_arg (line, &match[2]);
+        unsigned long int err = get_long_arg (line, &match[2]);
         char *page = get_string_arg (line, &match[4]);
 
         add_new_errorpage (page, err);
@@ -1019,7 +1020,7 @@ static HANDLE_FUNC (handle_upstream)
         ip = get_string_arg (line, &match[2]);
         if (!ip)
                 return -1;
-        port = (int) get_int_arg (line, &match[7]);
+        port = (int) get_long_arg (line, &match[7]);
 
         if (match[9].rm_so != -1) {
                 domain = get_string_arg (line, &match[9]);

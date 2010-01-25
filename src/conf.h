@@ -40,7 +40,7 @@ struct config_s {
         char *logf_name;
         char *config_file;
         unsigned int syslog;    /* boolean */
-        int port;
+        unsigned int port;
         char *stathost;
         unsigned int godaemon;  /* boolean */
         unsigned int quit;      /* boolean */
