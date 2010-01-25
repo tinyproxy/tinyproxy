@@ -210,9 +210,9 @@ The possible keywords and their descriptions are as follows:
     which clients are allowed to access Tinyproxy. `Allow` and `Deny`
     lines can be specified multiple times to build the access control
     list for Tinyproxy. The order in the config file is important.
-    If there are no `Access` or `Deny` lines, then all clients are
+    If there are no `Allow` or `Deny` lines, then all clients are
     allowed. Otherwise, the default action is to deny access.
-    The argument to `Access` or `Deny` can be a single IP address
+    The argument to `Allow` or `Deny` can be a single IP address
     of a client host, like `127.0.0.1`, an IP address range, like
     `192.168.0.1/24` or a string that will be matched against the
     end of the client host name, i.e, this can be a full host name
