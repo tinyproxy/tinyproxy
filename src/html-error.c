@@ -62,7 +62,7 @@ static char *get_html_file (unsigned int errornum)
         hashmap_iter result_iter;
         char errornbuf[ERRORNUM_BUFSIZE];
         char *key;
-        static char *val;
+        char *val;
 
         assert (errornum >= 100 && errornum < 1000);
 
@@ -90,7 +90,7 @@ static char *lookup_variable (struct conn_s *connptr, const char *varname)
 {
         hashmap_iter result_iter;
         char *key;
-        static char *data;
+        char *data;
 
         result_iter = hashmap_find (connptr->error_variables, varname);
 
