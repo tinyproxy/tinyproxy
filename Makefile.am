@@ -26,6 +26,10 @@ all-local: AUTHORS
 
 check-local: validate-authors
 
+dist_doc_DATA = \
+	README \
+	NEWS
+
 EXTRA_DIST = \
 	authors.dtd \
 	authors.xml \
