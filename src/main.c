@@ -185,7 +185,7 @@ display_usage (void)
                 printf ("    None\n");
 
         printf ("\n"
-                "For bug reporting instructions, please see:\n"
+                "For support and bug reporting instructions, please visit\n"
                 "<https://www.banu.com/tinyproxy/support/>.\n");
 }
 
