@@ -56,18 +56,18 @@ Timeout 600
 #   /usr/share/tinyproxy
 #   /etc/tinyproxy
 #
-#ErrorFile 404 "@datadir@/404.html"
-#ErrorFile 400 "@datadir@/400.html"
-#ErrorFile 503 "@datadir@/503.html"
-#ErrorFile 403 "@datadir@/403.html"
-#ErrorFile 408 "@datadir@/408.html"
+#ErrorFile 404 "@pkgdatadir@/404.html"
+#ErrorFile 400 "@pkgdatadir@/400.html"
+#ErrorFile 503 "@pkgdatadir@/503.html"
+#ErrorFile 403 "@pkgdatadir@/403.html"
+#ErrorFile 408 "@pkgdatadir@/408.html"
 
 #
 # DefaultErrorFile: The HTML file that gets sent if there is no
 # HTML file defined with an ErrorFile keyword for the HTTP error
 # that has occured.
 #
-DefaultErrorFile "@datadir@/default.html"
+DefaultErrorFile "@pkgdatadir@/default.html"
 
 #
 # StatHost: This configures the host name or IP address that is treated
@@ -84,7 +84,7 @@ DefaultErrorFile "@datadir@/default.html"
 # for the stathost.  If this file doesn't exist a basic page is
 # hardcoded in tinyproxy.
 #
-StatFile "@datadir@/stats.html"
+StatFile "@pkgdatadir@/stats.html"
 
 #
 # Logfile: Allows you to specify the location where information should
