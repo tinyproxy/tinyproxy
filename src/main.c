@@ -181,6 +181,11 @@ display_usage (void)
         features++;
 #endif /* REVERSE_SUPPORT */
 
+#ifdef UPSTREAM_SUPPORT
+        printf ("    Upstream proxy support\n");
+        features++;
+#endif /* UPSTREAM_SUPPORT */
+
         if (0 == features)
                 printf ("    None\n");
 
