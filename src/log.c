@@ -230,7 +230,7 @@ void send_stored_logs (void)
                         continue;
 #endif
 
-                log_message (level, ptr);
+                log_message (level, "%s", ptr);
         }
 
         vector_delete (log_message_storage);
