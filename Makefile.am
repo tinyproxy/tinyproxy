@@ -17,5 +17,8 @@ EXTRA_DIST = \
 test: all
 	./tests/scripts/run_tests.sh
 
+test-wait:
+	TINYPROXY_TESTS_WAIT=yes $(MAKE) test
+
 valgrind-test: all
 	./tests/scripts/run_tests_valgrind.sh
