@@ -159,7 +159,7 @@ run_basic_webclient_request() {
 	if test "x$WEBCLIENT_EXIT_CODE" = "x0" ; then
 		echo " ok"
 	else
-		echo "ERROR ($EBCLIENT_EXIT_CODE)"
+		echo "ERROR ($WEBCLIENT_EXIT_CODE)"
 		echo "webclient output:"
 		cat $WEBCLIENT_LOG
 	fi
