@@ -22,3 +22,6 @@ test-wait:
 
 valgrind-test: all
 	./tests/scripts/run_tests_valgrind.sh
+
+valgrind-test-wait:
+	TINYPROXY_TESTS_WAIT=yes $(MAKE) valgrind-test
