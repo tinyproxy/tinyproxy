@@ -163,8 +163,9 @@ run_basic_webclient_request() {
 		echo "webclient output:"
 		cat $WEBCLIENT_LOG
 	fi
-}
 
+	return $WEBCLIENT_EXIT_CODE
+}
 
 # "main"
 
@@ -177,14 +178,21 @@ start_tinyproxy
 
 wait_for_some_seconds 3
 
+FAILED=0
+
 echo -n "checking direct connection to web server..."
 run_basic_webclient_request "$WEBSERVER_IP:$WEBSERVER_PORT" /
+test "x$?" = "x0" || FAILED=$((FAILED + 1))
 
 echo -n "testing connection through tinyproxy..."
 run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
+test "x$?" = "x0" || FAILED=$((FAILED + 1))
 
 echo -n "requesting statspage via stathost url..."
 run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$TINYPROXY_STATHOST_IP"
+test "x$?" = "x0" || FAILED=$((FAILED + 1))
+
+echo "$FAILED errors"
 
 if test "x$TINYPROXY_TESTS_WAIT" = "xyes"; then
 	echo "You can continue using the webserver and tinyproxy."
@@ -197,4 +205,4 @@ stop_webserver
 
 echo "done"
 
-exit 0
+exit $FAILED
