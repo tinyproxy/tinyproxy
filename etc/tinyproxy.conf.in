@@ -87,12 +87,12 @@ DefaultErrorFile "@pkgdatadir@/default.html"
 StatFile "@pkgdatadir@/stats.html"
 
 #
-# Logfile: Allows you to specify the location where information should
+# LogFile: Allows you to specify the location where information should
 # be logged to.  If you would prefer to log to syslog, then disable this
 # and enable the Syslog directive.  These directives are mutually
 # exclusive.
 #
-Logfile "@localstatedir@/log/tinyproxy.log"
+LogFile "@localstatedir@/log/tinyproxy.log"
 
 #
 # Syslog: Tell tinyproxy to use syslog instead of a logfile.  This
