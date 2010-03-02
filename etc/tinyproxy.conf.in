@@ -92,7 +92,7 @@ StatFile "@pkgdatadir@/stats.html"
 # and enable the Syslog directive.  These directives are mutually
 # exclusive.
 #
-LogFile "@localstatedir@/log/tinyproxy.log"
+LogFile "@localstatedir@/log/tinyproxy/tinyproxy.log"
 
 #
 # Syslog: Tell tinyproxy to use syslog instead of a logfile.  This
