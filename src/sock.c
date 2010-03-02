@@ -178,6 +178,7 @@ int listen_sock (uint16_t port, socklen_t * addrlen)
         memset (&hints, 0, sizeof (struct addrinfo));
         hints.ai_family = AF_UNSPEC;
         hints.ai_socktype = SOCK_STREAM;
+        hints.ai_flags = AI_PASSIVE;
 
         snprintf (portstr, sizeof (portstr), "%d", port);
 
