@@ -92,7 +92,7 @@ StatFile "@pkgdatadir@/stats.html"
 # and enable the Syslog directive.  These directives are mutually
 # exclusive.
 #
-LogFile "@localstatedir@/log/tinyproxy/tinyproxy.log"
+#LogFile "@localstatedir@/log/tinyproxy/tinyproxy.log"
 
 #
 # Syslog: Tell tinyproxy to use syslog instead of a logfile.  This
@@ -122,7 +122,7 @@ LogLevel Info
 # PidFile: Write the PID of the main tinyproxy thread to this file so it
 # can be used for signalling purposes.
 #
-PidFile "@localstatedir@/run/tinyproxy/tinyproxy.pid"
+#PidFile "@localstatedir@/run/tinyproxy/tinyproxy.pid"
 
 #
 # XTinyproxy: Tell Tinyproxy to include the X-Tinyproxy header, which
