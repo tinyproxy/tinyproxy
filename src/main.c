@@ -374,6 +374,14 @@ main (int argc, char **argv)
                 exit (EX_SOFTWARE);
         }
 
+        /* Switch to a different user if we're running as root */
+        if (geteuid () == 0) {
+                change_user (argv[0]);
+        } else {
+                log_message (LOG_WARNING,
+                             "Not running as root, so not changing UID/GID.");
+        }
+
         ret = setup_logging ();
         if (ret != 0) {
                 exit (EX_SOFTWARE);
@@ -418,13 +426,6 @@ main (int argc, char **argv)
                          argv[0]);
                 exit (EX_OSERR);
         }
-
-        /* Switch to a different user if we're running as root */
-        if (geteuid () == 0)
-                change_user (argv[0]);
-        else
-                log_message (LOG_WARNING,
-                             "Not running as root, so not changing UID/GID.");
 
         if (child_pool_create () < 0) {
                 fprintf (stderr,
