@@ -367,7 +367,14 @@ main (int argc, char **argv)
 
         log_message (LOG_INFO, "Initializing " PACKAGE " ...");
 
-        ret = reload_config ();
+        ret = reload_config_file (config_defaults.config_file,
+                                  &config,
+                                  &config_defaults);
+        if (ret != 0) {
+                exit (EX_SOFTWARE);
+        }
+
+        ret = setup_logging ();
         if (ret != 0) {
                 exit (EX_SOFTWARE);
         }
