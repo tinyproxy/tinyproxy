@@ -381,10 +381,10 @@ main (int argc, char **argv)
          */
         umask (0177);
 
+        log_message (LOG_INFO, "Initializing " PACKAGE " ...");
+
         initialize_config_defaults (&config_defaults);
         process_cmdline (argc, argv, &config_defaults);
-
-        log_message (LOG_INFO, "Initializing " PACKAGE " ...");
 
         ret = reload_config_file (config_defaults.config_file,
                                   &config,
