@@ -22,6 +22,11 @@ Bugs fixed since version 1.8.0
  * BB#73: generated tinyproxy.conf has the wrong location for the html
    file installation
 
+Contributors
+~~~~~~~~~~~~
+
+Michael Adam, Mukund Sivaraman.
+
 Version 1.8.0
 -------------
 
