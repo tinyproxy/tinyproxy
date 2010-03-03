@@ -1,6 +1,27 @@
 Tinyproxy NEWS
 ==============
 
+Version 1.8.1
+-------------
+
+ * Tinyproxy now drops `root` user privileges more quickly.
+ * The log and pid files now are stored in a sub-directory in `/var/`.
+ * A format string vulnerability was fixed.
+ * Minor formatting changes and typo fixes were made.
+
+Bugs fixed since version 1.8.0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * BB#69: INET6 not available when configured to Listen and Bind in v4,
+   and vice versa
+ * BB#74: tinyproxy unable to reopen log files after receiving HUP
+ * BB#79: Make the testsuite uninteractive
+ * BB#80: Handle errors in testsuite
+ * BB#81: Listen directive doesn't work as expected
+ * BB#72: upstream support is not reported with tinyproxy -h
+ * BB#73: generated tinyproxy.conf has the wrong location for the html
+   file installation
+
 Version 1.8.0
 -------------
 
