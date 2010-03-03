@@ -5,7 +5,7 @@ Version 1.8.1
 -------------
 
  * Tinyproxy now drops `root` user privileges more quickly.
- * The log and pid files now are stored in a sub-directory in `/var/`.
+ * The log and pid files are now stored in a sub-directory in `/var/`.
  * A format string vulnerability was fixed.
  * Minor formatting changes and typo fixes were made.
 
