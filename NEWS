@@ -12,8 +12,6 @@ Version 1.8.1
 Bugs fixed since version 1.8.0
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- * BB#69: INET6 not available when configured to Listen and Bind in v4,
-   and vice versa
  * BB#74: tinyproxy unable to reopen log files after receiving HUP
  * BB#79: Make the testsuite uninteractive
  * BB#80: Handle errors in testsuite
