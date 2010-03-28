@@ -15,7 +15,7 @@ administrator.
 
 For more info, please visit:
 
-<https://banu.com/tinyproxy/>
+<https://www.banu.com/tinyproxy/>
 
 
 Installation
@@ -64,16 +64,16 @@ Support
 If you are having problems with Tinyproxy, please submit a bug report
 using Tinyproxy as the product at:
 
-<https://banu.com/bugzilla/>
+<https://www.banu.com/bugzilla/>
 
 You may also wish to subscribe to the Tinyproxy mailing lists. To do so
 please visit:
 
-<https://banu.com/mailman/listinfo/tinyproxy-announce-list>
+<https://www.banu.com/mailman/listinfo/tinyproxy-announce-list>
 
-<https://banu.com/mailman/listinfo/tinyproxy-users-list>
+<https://www.banu.com/mailman/listinfo/tinyproxy-users-list>
 
-<https://banu.com/mailman/listinfo/tinyproxy-developers-list>
+<https://www.banu.com/mailman/listinfo/tinyproxy-developers-list>
 
 for more information on how to subscribe and post messages to the lists.
 
@@ -91,7 +91,7 @@ Tinyproxy's source code is maintained in a Git repository. The following
 command creates a local copy of it:
 
 ----
-git clone git://banu.com/tinyproxy.git
+git clone git://www.banu.com/tinyproxy.git
 ----
 
 The easiest and preferred way to create a patch for submission is to
