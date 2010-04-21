@@ -206,10 +206,11 @@ void send_stored_logs (void)
 {
         char *string;
         char *ptr;
-
         int level;
-
         size_t i;
+
+        if (log_message_storage == NULL)
+                return;
 
         log_message(LOG_DEBUG, "sending stored logs");
 
