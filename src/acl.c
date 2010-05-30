@@ -127,7 +127,8 @@ static int init_access_list(vector_t *access_list)
  *    -1 on failure
  *     0 otherwise.
  */
-int insert_acl (char *location, acl_access_t access_type, vector_t *access_list)
+int
+insert_acl (char *location, acl_access_t access_type, vector_t *access_list)
 {
         struct acl_s acl;
         int ret;
