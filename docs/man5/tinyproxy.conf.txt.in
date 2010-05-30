@@ -147,7 +147,7 @@ The possible keywords and their descriptions are as follows:
 *No Upstream*::
 
     This option allows you to set up a set of rules for deciding
-    whether an upstream a proxy server is to be used, based on the
+    whether an upstream proxy server is to be used, based on the
     host or domain of the site being accessed. The rules are stored
     in the order encountered in the configuration file and the
     LAST matching rule wins. There are three possible forms for
