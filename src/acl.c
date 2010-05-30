@@ -51,7 +51,7 @@ struct acl_s {
         union {
                 char *string;
                 struct {
-                        unsigned char octet[IPV6_LEN];
+                        unsigned char network[IPV6_LEN];
                         unsigned char mask[IPV6_LEN];
                 } ip;
         } address;
@@ -152,9 +152,11 @@ insert_acl (char *location, acl_access_t access_type, vector_t *access_list)
          */
         if (full_inet_pton (location, ip_dst) > 0) {
                 acl.type = ACL_NUMERIC;
-                memcpy (acl.address.ip.octet, ip_dst, IPV6_LEN);
+                memcpy (acl.address.ip.network, ip_dst, IPV6_LEN);
                 memset (acl.address.ip.mask, 0xff, IPV6_LEN);
         } else {
+                int i;
+
                 /*
                  * At this point we're either a hostname or an
                  * IP address with a slash.
@@ -170,12 +172,15 @@ insert_acl (char *location, acl_access_t access_type, vector_t *access_list)
                                 return -1;
 
                         acl.type = ACL_NUMERIC;
-                        memcpy (acl.address.ip.octet, ip_dst, IPV6_LEN);
 
                         if (fill_netmask_array
                             (p + 1, &(acl.address.ip.mask[0]), IPV6_LEN)
                             < 0)
                                 return -1;
+
+                        for (i = 0; i < IPV6_LEN; i++)
+                                acl.address.ip.network[i] = ip_dst[i] &
+                                        acl.address.ip.mask[i];
                 } else {
                         /* In all likelihood a string */
                         acl.type = ACL_STRING;
@@ -289,7 +294,7 @@ static int check_numeric_acl (const struct acl_s *acl, const char *ip)
 
         for (i = 0; i != IPV6_LEN; ++i) {
                 x = addr[i] & acl->address.ip.mask[i];
-                y = acl->address.ip.octet[i] & acl->address.ip.mask[i];
+                y = acl->address.ip.network[i];
 
                 /* If x and y don't match, the IP addresses don't match */
                 if (x != y)
