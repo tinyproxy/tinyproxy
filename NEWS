@@ -1,6 +1,30 @@
 Tinyproxy NEWS
 ==============
 
+Version 1.8.2
+-------------
+
+ * Minor formatting changes and typo fixes were made.
+
+Bugs fixed since version 1.8.1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * BB#69: INET6 not available when configured to Listen and Bind in v4,
+   and vice versa
+ * BB#78: Warn if configuration results in an open proxy
+ * BB#82: https access not working
+ * BB#83: run_tests.sh relies on $USER
+ * BB#84: Unaligned access error on ia64 and alpha
+ * BB#87: Unable to listen on ports less than 1024 (regression in 1.8.1)
+ * BB#88: Crashes when reloading configuration
+
+Contributors
+~~~~~~~~~~~~
+
+Dmitry Semyonov, John van der Kamp, Jordi Mallach, Michael Adam,
+Mukund Sivaraman.
+
+
 Version 1.8.1
 -------------
 
