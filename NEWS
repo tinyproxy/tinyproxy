@@ -17,6 +17,7 @@ Bugs fixed since version 1.8.1
  * BB#84: Unaligned access error on ia64 and alpha
  * BB#87: Unable to listen on ports less than 1024 (regression in 1.8.1)
  * BB#88: Crashes when reloading configuration
+ * BB#89: tinyproxy leaks memory over time
 
 Contributors
 ~~~~~~~~~~~~
