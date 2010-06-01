@@ -163,6 +163,8 @@ static HANDLE_FUNC (handle_upstream);
 static HANDLE_FUNC (handle_upstream_no);
 #endif
 
+static void config_free_regex (void);
+
 /*
  * This macro can be used to make standard directives in the form:
  *   directive arguments [arguments ...]
@@ -317,7 +319,8 @@ static void free_config (struct config_s *conf)
  *
  * Returns 0 on success; negative upon failure.
  */
-static int config_compile (void)
+int
+config_compile_regex (void)
 {
         unsigned int i, r;
 
@@ -335,7 +338,28 @@ static int config_compile (void)
                 if (r)
                         return r;
         }
+
+        atexit (config_free_regex);
+
         return 0;
+}
+
+/*
+ * Frees pre-compiled regular expressions used by the configuration
+ * file. This function is registered to be automatically called at exit.
+ */
+static void
+config_free_regex (void)
+{
+        unsigned int i;
+
+        for (i = 0; i < ndirectives; i++) {
+                if (directives[i].cre) {
+                        regfree (directives[i].cre);
+                        safefree (directives[i].cre);
+                        directives[i].cre = NULL;
+                }
+        }
 }
 
 /*
@@ -397,7 +421,7 @@ static int load_config_file (const char *config_fname, struct config_s *conf)
                 goto done;
         }
 
-        if (config_compile () || config_parse (conf, config_file)) {
+        if (config_parse (conf, config_file)) {
                 fprintf (stderr, "Unable to parse config file. "
                          "Not starting.\n");
                 goto done;
