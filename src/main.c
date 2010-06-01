@@ -383,6 +383,11 @@ main (int argc, char **argv)
 
         log_message (LOG_INFO, "Initializing " PACKAGE " ...");
 
+        ret = config_compile_regex();
+        if (ret != 0) {
+                exit (EX_SOFTWARE);
+        }
+
         initialize_config_defaults (&config_defaults);
         process_cmdline (argc, argv, &config_defaults);
 
