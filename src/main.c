@@ -355,8 +355,6 @@ done:
 int
 main (int argc, char **argv)
 {
-        int ret;
-
         /* Only allow u+rw bits. This may be required for some versions
          * of glibc so that mkstemp() doesn't make us vulnerable.
          */
@@ -364,23 +362,20 @@ main (int argc, char **argv)
 
         log_message (LOG_INFO, "Initializing " PACKAGE " ...");
 
-        ret = config_compile_regex();
-        if (ret != 0) {
+        if (config_compile_regex()) {
                 exit (EX_SOFTWARE);
         }
 
         initialize_config_defaults (&config_defaults);
         process_cmdline (argc, argv, &config_defaults);
 
-        ret = reload_config_file (config_defaults.config_file,
-                                  &config,
-                                  &config_defaults);
-        if (ret != 0) {
+        if (reload_config_file (config_defaults.config_file,
+                                &config,
+                                &config_defaults)) {
                 exit (EX_SOFTWARE);
         }
 
-        ret = setup_logging ();
-        if (ret != 0) {
+        if (setup_logging ()) {
                 exit (EX_SOFTWARE);
         }
 
