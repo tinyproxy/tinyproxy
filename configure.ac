@@ -5,13 +5,13 @@ AC_PREREQ(2.54)
 
 m4_define([tinyproxy_major_version], [1])
 m4_define([tinyproxy_minor_version], [8])
-m4_define([tinyproxy_micro_version], [1])
+m4_define([tinyproxy_micro_version], [2])
 m4_define([tinyproxy_real_version],
           [tinyproxy_major_version.tinyproxy_minor_version.tinyproxy_micro_version])
 m4_define([tinyproxy_version], [tinyproxy_real_version])
 
 # For overriding the version string. Comment out if not needed.
-# m4_define([tinyproxy_version], [1.8.0])
+# m4_define([tinyproxy_version], [1.8.2])
 
 m4_define([tinyproxy_unstable],
           m4_if(m4_eval(tinyproxy_minor_version % 2), [1], [yes], [no]))
