@@ -375,10 +375,6 @@ main (int argc, char **argv)
                 exit (EX_SOFTWARE);
         }
 
-        if (setup_logging ()) {
-                exit (EX_SOFTWARE);
-        }
-
         init_stats ();
 
         /* If ANONYMOUS is turned on, make sure that Content-Length is
@@ -392,14 +388,6 @@ main (int argc, char **argv)
 
         if (config.godaemon == TRUE)
                 makedaemon ();
-
-        if (config.pidpath) {
-                if (pidfile_create (config.pidpath) < 0) {
-                        fprintf (stderr, "%s: Could not create PID file.\n",
-                                 argv[0]);
-                        exit (EX_OSERR);
-                }
-        }
 
         if (set_signal_handler (SIGPIPE, SIG_IGN) == SIG_ERR) {
                 fprintf (stderr, "%s: Could not set the \"SIGPIPE\" signal.\n",
@@ -425,6 +413,20 @@ main (int argc, char **argv)
         else
                 log_message (LOG_WARNING,
                              "Not running as root, so not changing UID/GID.");
+
+        /* Create log file after we drop privileges */
+        if (setup_logging ()) {
+                exit (EX_SOFTWARE);
+        }
+
+        /* Create pid file after we drop privileges */
+        if (config.pidpath) {
+                if (pidfile_create (config.pidpath) < 0) {
+                        fprintf (stderr, "%s: Could not create PID file.\n",
+                                 argv[0]);
+                        exit (EX_OSERR);
+                }
+        }
 
         if (child_pool_create () < 0) {
                 fprintf (stderr,
