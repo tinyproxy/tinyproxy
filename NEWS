@@ -6,8 +6,8 @@ Version 1.8.2
 
  * Minor formatting changes and typo fixes were made.
 
-Bugs fixed since version 1.8.1
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Bugs resolved since version 1.8.1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  * BB#69: INET6 not available when configured to Listen and Bind in v4,
    and vice versa
