@@ -418,7 +418,7 @@ BAD_REQUEST_ERROR:
         } else {
 #ifdef TRANSPARENT_PROXY
                 if (!do_transparent_proxy
-                    (connptr, hashofheaders, request, &config, url)) {
+                    (connptr, hashofheaders, request, &config, &url)) {
                         goto fail;
                 }
 #else
