@@ -55,11 +55,11 @@ static int build_url (char **url, const char *host, int port, const char *path)
 int
 do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                       struct request_s *request, struct config_s *conf,
-                      char *url)
+                      char **url)
 {
         socklen_t length;
         char *data;
-        size_t ulen = strlen (url);
+        size_t ulen = strlen (*url);
 
         length = hashmap_entry_by_key (hashofheaders, "host", (void **) &data);
         if (length <= 0) {
@@ -73,7 +73,7 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                                      connptr->client_fd);
                         indicate_http_error (connptr, 400, "Bad Request",
                                              "detail", "Unknown destination",
-                                             "url", url, NULL);
+                                             "url", *url, NULL);
                         return 0;
                 }
 
@@ -83,15 +83,15 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                 request->port = ntohs (dest_addr.sin_port);
 
                 request->path = (char *) safemalloc (ulen + 1);
-                strlcpy (request->path, url, ulen + 1);
+                strlcpy (request->path, *url, ulen + 1);
 
                 /* url overwritten by the call below is the url passed
                  * to this function, and is not the url variable in the
                  * caller. */
-                build_url (&url, request->host, request->port, request->path);
+                build_url (url, request->host, request->port, request->path);
                 log_message (LOG_INFO,
                              "process_request: trans IP %s %s for %d",
-                             request->method, url, connptr->client_fd);
+                             request->method, *url, connptr->client_fd);
         } else {
                 request->host = (char *) safemalloc (length + 1);
                 if (sscanf (data, "%[^:]:%hu", request->host, &request->port) !=
@@ -101,15 +101,15 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                 }
 
                 request->path = (char *) safemalloc (ulen + 1);
-                strlcpy (request->path, url, ulen + 1);
+                strlcpy (request->path, *url, ulen + 1);
 
                 /* url overwritten by the call below is the url passed
                  * to this function, and is not the url variable in the
                  * caller. */
-                build_url (&url, request->host, request->port, request->path);
+                build_url (url, request->host, request->port, request->path);
                 log_message (LOG_INFO,
                              "process_request: trans Host %s %s for %d",
-                             request->method, url, connptr->client_fd);
+                             request->method, *url, connptr->client_fd);
         }
         if (conf->ipAddr && strcmp (request->host, conf->ipAddr) == 0) {
                 log_message (LOG_ERR,
@@ -118,7 +118,7 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                 indicate_http_error (connptr, 400, "Bad Request",
                                      "detail",
                                      "You tried to connect to the machine "
-                                     "the proxy is running on", "url", url,
+                                     "the proxy is running on", "url", *url,
                                      NULL);
                 return 0;
         }
