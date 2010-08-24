@@ -202,10 +202,10 @@ struct upstream *upstream_get (char *host, struct upstream *up)
                 up = NULL;
 
         if (up)
-                log_message (LOG_INFO, "Found proxy %s:%d for %s",
+                log_message (LOG_INFO, "Found upstream proxy %s:%d for %s",
                              up->host, up->port, host);
         else
-                log_message (LOG_INFO, "No proxy for %s", host);
+                log_message (LOG_INFO, "No upstream proxy for %s", host);
 
         return up;
 }
