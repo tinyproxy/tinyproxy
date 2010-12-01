@@ -48,7 +48,7 @@ include:
 --enable-upstream::
     Enable support for proxying connections through another proxy server.
 
---enable-transparent-proxy::
+--enable-transparent::
     Allow Tinyproxy to be used as a transparent proxy daemon.
 
 --enable-static::
