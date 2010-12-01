@@ -85,9 +85,6 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                 request->path = (char *) safemalloc (ulen + 1);
                 strlcpy (request->path, *url, ulen + 1);
 
-                /* url overwritten by the call below is the url passed
-                 * to this function, and is not the url variable in the
-                 * caller. */
                 build_url (url, request->host, request->port, request->path);
                 log_message (LOG_INFO,
                              "process_request: trans IP %s %s for %d",
@@ -103,9 +100,6 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                 request->path = (char *) safemalloc (ulen + 1);
                 strlcpy (request->path, *url, ulen + 1);
 
-                /* url overwritten by the call below is the url passed
-                 * to this function, and is not the url variable in the
-                 * caller. */
                 build_url (url, request->host, request->port, request->path);
                 log_message (LOG_INFO,
                              "process_request: trans Host %s %s for %d",
