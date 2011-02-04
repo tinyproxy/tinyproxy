@@ -167,10 +167,16 @@ static void strip_username_password (char *host)
 static int strip_return_port (char *host)
 {
         char *ptr1;
+        char *ptr2;
         int port;
 
-        ptr1 = strchr (host, ':');
+        ptr1 = strrchr (host, ':');
         if (ptr1 == NULL)
+                return 0;
+
+        /* Check for IPv6 style literals */
+        ptr2 = strchr (ptr1, ']');
+        if (ptr2 != NULL)
                 return 0;
 
         *ptr1++ = '\0';
@@ -211,6 +217,13 @@ static int extract_http_url (const char *url, struct request_s *request)
         /* Find a proper port in www.site.com:8001 URLs */
         port = strip_return_port (request->host);
         request->port = (port != 0) ? port : HTTP_PORT;
+
+        /* Remove any surrounding '[' and ']' from IPv6 literals */
+        p = strrchr (request->host, ']');
+        if (p && (*(request->host) == '[')) {
+                request->host++;
+                *p = '\0';
+        }
 
         return 0;
 
