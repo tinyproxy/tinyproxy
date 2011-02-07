@@ -268,6 +268,7 @@ static int
 establish_http_connection (struct conn_s *connptr, struct request_s *request)
 {
         char portbuff[7];
+        char dst[sizeof(struct in6_addr)];
 
         /* Build a port string if it's not a standard port */
         if (request->port != HTTP_PORT && request->port != HTTP_PORT_SSL)
@@ -275,12 +276,23 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
         else
                 portbuff[0] = '\0';
 
-        return write_message (connptr->server_fd,
-                              "%s %s HTTP/1.0\r\n"
-                              "Host: %s%s\r\n"
-                              "Connection: close\r\n",
-                              request->method, request->path,
-                              request->host, portbuff);
+        if (inet_pton(AF_INET6, request->host, dst) > 0) {
+                /* host is an IPv6 address literal, so surround it with
+                 * [] */
+                return write_message (connptr->server_fd,
+                                      "%s %s HTTP/1.0\r\n"
+                                      "Host: [%s]%s\r\n"
+                                      "Connection: close\r\n",
+                                      request->method, request->path,
+                                      request->host, portbuff);
+        } else {
+                return write_message (connptr->server_fd,
+                                      "%s %s HTTP/1.0\r\n"
+                                      "Host: %s%s\r\n"
+                                      "Connection: close\r\n",
+                                      request->method, request->path,
+                                      request->host, portbuff);
+        }
 }
 
 /*
