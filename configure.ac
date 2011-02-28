@@ -19,7 +19,7 @@ m4_define([tinyproxy_stable],
           m4_if(m4_eval(tinyproxy_minor_version % 2), [0], [yes], [no]))
 
 AC_INIT([Tinyproxy], [tinyproxy_version],
-	[https://www.banu.com/tinyproxy/],
+	[https://banu.com/tinyproxy/],
 	[tinyproxy])
 
 AC_CANONICAL_TARGET
