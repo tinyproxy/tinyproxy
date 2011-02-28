@@ -191,7 +191,7 @@ display_usage (void)
 
         printf ("\n"
                 "For support and bug reporting instructions, please visit\n"
-                "<https://www.banu.com/tinyproxy/>.\n");
+                "<https://banu.com/tinyproxy/>.\n");
 }
 
 static int
