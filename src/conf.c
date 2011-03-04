@@ -779,7 +779,15 @@ static HANDLE_FUNC (handle_bindsame)
 
 static HANDLE_FUNC (handle_port)
 {
-        return set_int_arg (&conf->port, line, &match[2]);
+        set_int_arg (&conf->port, line, &match[2]);
+
+        if (conf->port > 65535) {
+                fprintf (stderr, "Bad port number (%d) supplied for Port.\n",
+                         conf->port);
+                return 1;
+        }
+
+        return 0;
 }
 
 static HANDLE_FUNC (handle_maxclients)
