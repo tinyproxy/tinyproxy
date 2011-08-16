@@ -1,4 +1,4 @@
-MAN8_FILES  = \
+MAN8_FILES = \
 	tinyproxy.txt
 
 A2X_ARGS = \
