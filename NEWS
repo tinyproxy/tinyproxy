@@ -1,6 +1,25 @@
 Tinyproxy NEWS
 ==============
 
+Version 1.8.3
+-------------
+
+This release mostly fixes support for IPv6, and also some security
+bugs. Fixes to messages, etc. were also made.
+
+Bugs resolved since version 1.8.2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * BB#91: Fix upstream proxy support
+ * BB#95: Fix FilterURLs with transparent proxy support
+ * BB#90: Fix bug in ACL netmask generation
+
+Contributors
+~~~~~~~~~~~~
+
+Daniel Egger, John Horne, Michael Adam, Mukund Sivaraman.
+
+
 Version 1.8.2
 -------------
 
