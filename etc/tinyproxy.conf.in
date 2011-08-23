@@ -236,7 +236,7 @@ ViaProxyName "tinyproxy"
 #
 # Filter: This allows you to specify the location of the filter file.
 #
-#Filter "@sysconfdir@/filter"
+#Filter "@pkgsysconfdir@/filter"
 
 #
 # FilterURLs: Filter based on URLs rather than domains.
