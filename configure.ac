@@ -23,7 +23,7 @@ AC_INIT([Tinyproxy], [tinyproxy_version],
 	[tinyproxy])
 
 AC_CANONICAL_TARGET
-AM_INIT_AUTOMAKE([dist-bzip2])
+AM_INIT_AUTOMAKE([dist-bzip2 dist-xz])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4macros])
 
