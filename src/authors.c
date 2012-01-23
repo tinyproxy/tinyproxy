@@ -7,6 +7,7 @@ static const char * const authors[] =
 {
         "Andrew Stribblehill",
         "Chris Lightfoot",
+        "Daniel Egger",
         "David Shanks",
         "Dmitry Semyonov",
         "George Talusan",
@@ -18,6 +19,7 @@ static const char * const authors[] =
         "Mathew Mrosko",
         "Matthew Dempsky",
         "Michael Adam",
+        "Moritz Muehlenhoff",
         "Mukund Sivaraman",
         "Petr Lampa",
         "Robert James Kaes",
