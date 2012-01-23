@@ -222,7 +222,7 @@ if test x"$debug_enabled" != x"yes" ; then
     CFLAGS="-DNDEBUG $CFLAGS"
 fi
 
-LDFLAGS="-Wl,-z,defs"
+LDFLAGS="-Wl,-z,defs $LDFLAGS"
 
 dnl
 dnl Make sure we can actually handle the "--with-*" and "--enable-*" stuff.
