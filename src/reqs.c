@@ -597,12 +597,20 @@ add_header_to_connection (hashmap_t hashofheaders, char *header, size_t len)
 }
 
 /*
+ * Define maximum number of headers that we accept.
+ * This should be big enough to handle legitimate cases,
+ * but limited to avoid DoS.
+ */
+#define MAX_HEADERS 10000
+
+/*
  * Read all the headers from the stream
  */
 static int get_all_headers (int fd, hashmap_t hashofheaders)
 {
         char *line = NULL;
         char *header = NULL;
+        int count;
         char *tmp;
         ssize_t linelen;
         ssize_t len = 0;
@@ -611,7 +619,7 @@ static int get_all_headers (int fd, hashmap_t hashofheaders)
         assert (fd >= 0);
         assert (hashofheaders != NULL);
 
-        for (;;) {
+        for (count = 0; count < MAX_HEADERS; count++) {
                 if ((linelen = readline (fd, &line)) <= 0) {
                         safefree (header);
                         safefree (line);
@@ -677,6 +685,14 @@ static int get_all_headers (int fd, hashmap_t hashofheaders)
 
                 safefree (line);
         }
+
+        /*
+         * If we get here, this means we reached MAX_HEADERS count.
+         * Bail out with error.
+         */
+        safefree (header);
+        safefree (line);
+        return -1;
 }
 
 /*
