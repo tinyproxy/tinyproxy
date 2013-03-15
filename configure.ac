@@ -205,6 +205,8 @@ AC_CHECK_FUNCS([gethostname inet_ntoa memchr memset select socket strcasecmp \
 AC_CHECK_FUNCS([isascii memcpy memmove setrlimit ftruncate regcomp regexec])
 AC_CHECK_FUNCS([strlcpy strlcat setgroups])
 
+AC_CHECK_FUNCS([time rand srand])
+
 
 dnl Enable extra warnings
 DESIRED_FLAGS="-fdiagnostics-show-option -Wall -Wextra -Wno-unused-parameter -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wfloat-equal -Wundef -Wformat=2 -Wlogical-op -Wmissing-include-dirs -Wformat-nonliteral -Wold-style-definition -Wpointer-arith -Waggregate-return -Winit-self -Wpacked --std=c89 -ansi -pedantic -Wc++-compat -Wno-long-long -Wno-overlength-strings -Wdeclaration-after-statement -Wredundant-decls -Wmissing-noreturn -Wshadow -Wendif-labels -Wcast-qual -Wcast-align -Wwrite-strings -Wp,-D_FORTIFY_SOURCE=2 -fno-common"

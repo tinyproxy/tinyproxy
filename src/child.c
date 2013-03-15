@@ -200,6 +200,7 @@ static void child_main (struct child_s *ptr)
         }
 
         ptr->connects = 0;
+        srand(time(NULL));
 
         /*
          * We have to wait for connections on multiple fds,
