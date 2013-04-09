@@ -24,7 +24,7 @@ AC_INIT([Tinyproxy], [tinyproxy_version],
 
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([foreign dist-bzip2 dist-xz])
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4macros])
 
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
