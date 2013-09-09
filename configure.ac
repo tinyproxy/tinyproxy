@@ -203,7 +203,7 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([gethostname inet_ntoa memchr memset select socket strcasecmp \
                 strchr strdup strerror strncasecmp strpbrk strstr strtol])
 AC_CHECK_FUNCS([isascii memcpy setrlimit ftruncate regcomp regexec])
-AC_CHECK_FUNCS([strlcpy strlcat])
+AC_CHECK_FUNCS([strlcpy strlcat setgroups])
 
 
 dnl Enable extra warnings
