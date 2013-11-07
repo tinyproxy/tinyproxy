@@ -430,7 +430,7 @@ main (int argc, char **argv)
 #endif /* FILTER_ENABLE */
 
         /* Start listening on the selected port. */
-        if (child_listening_sock (config.port) < 0) {
+        if (child_listening_sock (config.ipAddr, config.port) < 0) {
                 fprintf (stderr, "%s: Could not create listening socket.\n",
                          argv[0]);
                 exit (EX_OSERR);
