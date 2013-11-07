@@ -166,7 +166,7 @@ int socket_blocking (int sock)
  * Start listening on a socket. Create a socket with the selected port.
  * The socket fd is returned upon success, -1 upon error.
  */
-int listen_sock (uint16_t port)
+int listen_sock (const char *addr, uint16_t port)
 {
         struct addrinfo hints, *result, *rp;
         char portstr[6];
@@ -182,7 +182,7 @@ int listen_sock (uint16_t port)
 
         snprintf (portstr, sizeof (portstr), "%d", port);
 
-        if (getaddrinfo (config.ipAddr, portstr, &hints, &result) != 0) {
+        if (getaddrinfo (addr, portstr, &hints, &result) != 0) {
                 log_message (LOG_ERR,
                              "Unable to getaddrinfo() because of %s",
                              strerror (errno));

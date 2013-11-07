@@ -466,7 +466,7 @@ void child_kill_children (int sig)
 
 int child_listening_sock (uint16_t port)
 {
-        listenfd = listen_sock (port);
+        listenfd = listen_sock (config.ipAddr, port);
         return listenfd;
 }
 
