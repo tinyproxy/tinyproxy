@@ -21,6 +21,8 @@
 #ifndef TINYPROXY_CHILD_H
 #define TINYPROXY_CHILD_H
 
+#include "vector.h"
+
 typedef enum {
         CHILD_MAXCLIENTS,
         CHILD_MAXSPARESERVERS,
@@ -30,7 +32,7 @@ typedef enum {
 } child_config_t;
 
 extern short int child_pool_create (void);
-extern int child_listening_sock (const char *addr, uint16_t port);
+extern int child_listening_sockets (vector_t listen_addrs, uint16_t port);
 extern void child_close_sock (void);
 extern void child_main_loop (void);
 extern void child_kill_children (int sig);

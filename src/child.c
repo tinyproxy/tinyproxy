@@ -522,9 +522,16 @@ void child_kill_children (int sig)
         }
 }
 
-int child_listening_sock (const char *addr, uint16_t port)
+
+/**
+ * Listen on the various configured interfaces
+ */
+int child_listening_sockets(vector_t listen_addrs, uint16_t port)
 {
         int ret;
+        ssize_t i;
+
+        assert (port > 0);
 
         if (listen_fds == NULL) {
                 listen_fds = vector_create();
@@ -535,8 +542,34 @@ int child_listening_sock (const char *addr, uint16_t port)
                 }
         }
 
-        ret = listen_sock (addr, port, listen_fds);
-        return ret;
+        if ((listen_addrs == NULL) ||
+            (vector_length(config.listen_addrs) == 0))
+        {
+                /*
+                 * no Listen directive:
+                 * listen on the wildcard address(es)
+                 */
+                ret = listen_sock(NULL, port, listen_fds);
+                return ret;
+        }
+
+        for (i = 0; i < vector_length(config.listen_addrs); i++) {
+                const char *addr;
+
+                addr = (char *)vector_getentry(config.listen_addrs, i, NULL);
+                if (addr == NULL) {
+                        log_message(LOG_WARNING,
+                                    "got NULL from listen_addrs - skipping");
+                        continue;
+                }
+
+                ret = listen_sock(addr, port, listen_fds);
+                if (ret != 0) {
+                        return ret;
+                }
+        }
+
+        return 0;
 }
 
 void child_close_sock (void)

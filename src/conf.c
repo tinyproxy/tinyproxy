@@ -288,7 +288,7 @@ static void free_config (struct config_s *conf)
         safefree (conf->stathost);
         safefree (conf->user);
         safefree (conf->group);
-        safefree (conf->ipAddr);
+        vector_delete(conf->listen_addrs);
 #ifdef FILTER_ENABLE
         safefree (conf->filter);
 #endif                          /* FILTER_ENABLE */
@@ -465,8 +465,18 @@ static void initialize_with_defaults (struct config_s *conf,
                 conf->group = safestrdup (defaults->group);
         }
 
-        if (defaults->ipAddr) {
-                conf->ipAddr = safestrdup (defaults->ipAddr);
+        if (defaults->listen_addrs) {
+                ssize_t i;
+
+                conf->listen_addrs = vector_create();
+                for (i=0; i < vector_length(defaults->listen_addrs); i++) {
+                        char *addr;
+                        size_t size;
+                        addr = (char *)vector_getentry(defaults->listen_addrs,
+                                                       i, &size);
+                        vector_append(conf->listen_addrs, addr, size);
+                }
+
         }
 
 #ifdef FILTER_ENABLE
@@ -882,11 +892,26 @@ static HANDLE_FUNC (handle_bind)
 
 static HANDLE_FUNC (handle_listen)
 {
-        int r = set_string_arg (&conf->ipAddr, line, &match[2]);
+        char *arg = get_string_arg (line, &match[2]);
 
-        if (r)
-                return r;
-        log_message (LOG_INFO, "Listening on IP %s", conf->ipAddr);
+        if (arg == NULL) {
+                return -1;
+        }
+
+        if (conf->listen_addrs == NULL) {
+               conf->listen_addrs = vector_create();
+               if (conf->listen_addrs == NULL) {
+                       log_message(LOG_WARNING, "Could not create a list "
+                                   "of listen addresses.");
+                       return -1;
+               }
+        }
+
+        vector_append (conf->listen_addrs, arg, strlen(arg) + 1);
+
+        log_message(LOG_INFO, "Added address [%s] to listen addresses.", arg);
+
+        safefree (arg);
         return 0;
 }
 
@@ -933,6 +958,7 @@ static HANDLE_FUNC (handle_addheader)
 
 /*
  * Log level's strings.
+
  */
 struct log_levels_s {
         const char *string;
