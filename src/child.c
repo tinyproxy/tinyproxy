@@ -33,7 +33,6 @@
 #include "conf.h"
 
 static int listenfd;
-static socklen_t addrlen;
 
 /*
  * Stores the internal data needed for each child (connection)
@@ -188,7 +187,8 @@ static void child_main (struct child_s *ptr)
         struct sockaddr *cliaddr;
         socklen_t clilen;
 
-        cliaddr = (struct sockaddr *) safemalloc (addrlen);
+        cliaddr = (struct sockaddr *)
+                        safemalloc (sizeof(struct sockaddr_storage));
         if (!cliaddr) {
                 log_message (LOG_CRIT,
                              "Could not allocate memory for child address.");
@@ -200,7 +200,7 @@ static void child_main (struct child_s *ptr)
         while (!config.quit) {
                 ptr->status = T_WAITING;
 
-                clilen = addrlen;
+                clilen = sizeof(struct sockaddr_storage);
 
                 connfd = accept (listenfd, cliaddr, &clilen);
 
@@ -466,7 +466,7 @@ void child_kill_children (int sig)
 
 int child_listening_sock (uint16_t port)
 {
-        listenfd = listen_sock (port, &addrlen);
+        listenfd = listen_sock (port);
         return listenfd;
 }
 
