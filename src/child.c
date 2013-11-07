@@ -464,9 +464,9 @@ void child_kill_children (int sig)
         }
 }
 
-int child_listening_sock (uint16_t port)
+int child_listening_sock (const char *addr, uint16_t port)
 {
-        listenfd = listen_sock (config.ipAddr, port);
+        listenfd = listen_sock (addr, port);
         return listenfd;
 }
 
