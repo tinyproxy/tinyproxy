@@ -163,12 +163,10 @@ int socket_blocking (int sock)
 }
 
 /*
- * Start listening to a socket. Create a socket with the selected port.
- * The size of the socket address will be returned to the caller through
- * the pointer, while the socket is returned as a default return.
- *      - rjkaes
+ * Start listening on a socket. Create a socket with the selected port.
+ * The socket fd is returned upon success, -1 upon error.
  */
-int listen_sock (uint16_t port, socklen_t * addrlen)
+int listen_sock (uint16_t port)
 {
         struct addrinfo hints, *result, *rp;
         char portstr[6];
@@ -176,7 +174,6 @@ int listen_sock (uint16_t port, socklen_t * addrlen)
         const int on = 1;
 
         assert (port > 0);
-        assert (addrlen != NULL);
 
         memset (&hints, 0, sizeof (struct addrinfo));
         hints.ai_family = AF_UNSPEC;
@@ -226,8 +223,6 @@ int listen_sock (uint16_t port, socklen_t * addrlen)
                 freeaddrinfo (result);
                 return -1;
         }
-
-        *addrlen = rp->ai_addrlen;
 
         freeaddrinfo (result);
 
