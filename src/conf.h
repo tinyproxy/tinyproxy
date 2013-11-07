@@ -46,7 +46,7 @@ struct config_s {
         unsigned int quit;      /* boolean */
         char *user;
         char *group;
-        char *ipAddr;
+        vector_t listen_addrs;
 #ifdef FILTER_ENABLE
         char *filter;
         unsigned int filter_url;        /* boolean */
