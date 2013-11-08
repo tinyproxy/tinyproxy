@@ -237,7 +237,13 @@ static int listen_on_one_socket(struct addrinfo *ad)
 
 /*
  * Start listening on a socket. Create a socket with the selected port.
- * The socket fd is returned upon success, -1 upon error.
+ * If the provided address is NULL, we may listen on multiple sockets,
+ * e.g. the wildcard addresse for IPv4 and IPv6, depending on what is
+ * supported. If the address is not NULL, we only listen on the first
+ * address reported by getaddrinfo that works.
+ *
+ * Upon success, the listen-fds are added to the listen_fds list
+ * and 0 is returned. Upon error,  -1 is returned.
  */
 int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
 {
