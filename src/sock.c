@@ -204,6 +204,18 @@ static int listen_on_one_socket(struct addrinfo *ad)
                 return -1;
         }
 
+        if (ad->ai_family == AF_INET6) {
+                ret = setsockopt(listenfd, IPPROTO_IPV6, IPV6_V6ONLY, &on,
+                                 sizeof(on));
+                if (ret != 0) {
+                        log_message(LOG_ERR,
+                                    "setsockopt failed to set IPV6_V6ONLY: %s",
+                                    strerror(errno));
+                        close(listenfd);
+                        return -1;
+                }
+        }
+
         ret = bind(listenfd, ad->ai_addr, ad->ai_addrlen);
         if (ret != 0) {
                log_message(LOG_ERR, "bind failed: %s", strerror (errno));
