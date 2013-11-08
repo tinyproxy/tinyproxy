@@ -214,6 +214,8 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
                 }
 
                 if (bind(listenfd, rp->ai_addr, rp->ai_addrlen) != 0) {
+                        log_message (LOG_ERR,
+                                     "bind failed: %s", strerror (errno));
                         close (listenfd);
                         continue;
                 }
