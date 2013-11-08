@@ -281,9 +281,16 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
 
                 vector_append (listen_fds, &listenfd, sizeof(int));
 
-                /* success, don't continue */
+                /* success */
                 ret = 0;
-                break;
+
+                if (addr != NULL) {
+                        /*
+                         * Unless wildcard is requested, only listen
+                         * on the first result that works.
+                         */
+                        break;
+                }
         }
 
         if (ret != 0) {
