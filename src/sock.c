@@ -254,6 +254,9 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
         assert (port > 0);
         assert (listen_fds != NULL);
 
+        log_message(LOG_INFO, "listen_sock called with addr = '%s'",
+                    addr == NULL ? "(NULL)" : addr);
+
         memset (&hints, 0, sizeof (struct addrinfo));
         hints.ai_family = AF_UNSPEC;
         hints.ai_socktype = SOCK_STREAM;
