@@ -195,8 +195,12 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
 
                 listenfd = socket (rp->ai_family, rp->ai_socktype,
                                    rp->ai_protocol);
-                if (listenfd == -1)
+                if (listenfd == -1) {
+                        log_message(LOG_ERR,
+                                    "failed to create socket: %s",
+                                    strerror(errno));
                         continue;
+                }
 
                 setsockopt (listenfd, SOL_SOCKET, SO_REUSEADDR, &on,
                             sizeof (on));
