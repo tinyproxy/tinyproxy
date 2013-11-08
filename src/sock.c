@@ -192,6 +192,7 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
 
         for (rp = result; rp != NULL; rp = rp->ai_next) {
                 int listenfd;
+                int lret;
 
                 listenfd = socket (rp->ai_family, rp->ai_socktype,
                                    rp->ai_protocol);
@@ -202,8 +203,15 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
                         continue;
                 }
 
-                setsockopt (listenfd, SOL_SOCKET, SO_REUSEADDR, &on,
-                            sizeof (on));
+                lret = setsockopt (listenfd, SOL_SOCKET, SO_REUSEADDR, &on,
+                                  sizeof (on));
+                if (lret != 0) {
+                        log_message (LOG_ERR,
+                                     "setsockopt failed to set SO_REUSEADDR: "
+                                     "%s", strerror(errno));
+                        close(listenfd);
+                        continue;
+                }
 
                 if (bind(listenfd, rp->ai_addr, rp->ai_addrlen) != 0) {
                         close (listenfd);
