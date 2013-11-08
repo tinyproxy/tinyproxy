@@ -170,8 +170,8 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
 {
         struct addrinfo hints, *result, *rp;
         char portstr[6];
-        int listenfd;
         const int on = 1;
+        int ret = -1;
 
         assert (port > 0);
         assert (listen_fds != NULL);
@@ -191,6 +191,8 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
         }
 
         for (rp = result; rp != NULL; rp = rp->ai_next) {
+                int listenfd;
+
                 listenfd = socket (rp->ai_family, rp->ai_socktype,
                                    rp->ai_protocol);
                 if (listenfd == -1)
@@ -199,37 +201,35 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
                 setsockopt (listenfd, SOL_SOCKET, SO_REUSEADDR, &on,
                             sizeof (on));
 
-                if (bind (listenfd, rp->ai_addr, rp->ai_addrlen) == 0)
-                        break;  /* success */
+                if (bind(listenfd, rp->ai_addr, rp->ai_addrlen) != 0) {
+                        close (listenfd);
+                        continue;
+                }
 
-                close (listenfd);
+                if (listen(listenfd, MAXLISTEN) < 0) {
+                        log_message(LOG_ERR,
+                                    "listen failed: %s", strerror(errno));
+
+                        close (listenfd);
+                        continue;
+                }
+
+                log_message(LOG_INFO, "listening on fd [%d]", listenfd);
+
+                vector_append (listen_fds, &listenfd, sizeof(int));
+
+                /* success, don't continue */
+                ret = 0;
+                break;
         }
 
-        if (rp == NULL) {
-                /* was not able to bind to any address */
-                log_message (LOG_ERR,
-                             "Unable to bind listening socket "
-                             "to any address.");
-
-                freeaddrinfo (result);
-                return -1;
+        if (ret != 0) {
+                log_message (LOG_ERR, "Unable to listen on any address.");
         }
-
-        if (listen (listenfd, MAXLISTEN) < 0) {
-                log_message (LOG_ERR,
-                             "Unable to start listening socket because of %s",
-                             strerror (errno));
-
-                close (listenfd);
-                freeaddrinfo (result);
-                return -1;
-        }
-
-        vector_append(listen_fds, &listenfd, sizeof(int));
 
         freeaddrinfo (result);
 
-        return 0;
+        return ret;
 }
 
 /*
