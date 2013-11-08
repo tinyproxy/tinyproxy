@@ -193,6 +193,20 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
         for (rp = result; rp != NULL; rp = rp->ai_next) {
                 int listenfd;
                 int lret;
+                char numerichost[NI_MAXHOST];
+                int flags = NI_NUMERICHOST;
+
+                ret = getnameinfo(rp->ai_addr, rp->ai_addrlen,
+                                  numerichost, NI_MAXHOST, NULL, 0, flags);
+                if (ret != 0) {
+                        log_message(LOG_ERR, "error calling getnameinfo: %s",
+                                    gai_strerror(errno));
+                       continue;
+                }
+
+                log_message(LOG_INFO, "trying host[%s], family[%d], "
+                            "socktype[%d], proto[%d]", numerichost,
+                            rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 
                 listenfd = socket (rp->ai_family, rp->ai_socktype,
                                    rp->ai_protocol);
