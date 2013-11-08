@@ -162,6 +162,67 @@ int socket_blocking (int sock)
         return fcntl (sock, F_SETFL, flags & ~O_NONBLOCK);
 }
 
+
+/**
+ * Try to listen on one socket based on the addrinfo
+ * as returned from getaddrinfo.
+ *
+ * Return the file descriptor upon success, -1 upon error.
+ */
+static int listen_on_one_socket(struct addrinfo *ad)
+{
+        int listenfd;
+        int ret;
+        const int on = 1;
+        char numerichost[NI_MAXHOST];
+        int flags = NI_NUMERICHOST;
+
+        ret = getnameinfo(ad->ai_addr, ad->ai_addrlen,
+                          numerichost, NI_MAXHOST, NULL, 0, flags);
+        if (ret != 0) {
+                log_message(LOG_ERR, "error calling getnameinfo: %s",
+                            gai_strerror(errno));
+                return -1;
+        }
+
+        log_message(LOG_INFO, "trying to listen on host[%s], family[%d], "
+                    "socktype[%d], proto[%d]", numerichost,
+                    ad->ai_family, ad->ai_socktype, ad->ai_protocol);
+
+        listenfd = socket(ad->ai_family, ad->ai_socktype, ad->ai_protocol);
+        if (listenfd == -1) {
+                log_message(LOG_ERR, "socket() failed: %s", strerror(errno));
+                return -1;
+        }
+
+        ret = setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+        if (ret != 0) {
+                log_message(LOG_ERR,
+                            "setsockopt failed to set SO_REUSEADDR: %s",
+                            strerror(errno));
+                close(listenfd);
+                return -1;
+        }
+
+        ret = bind(listenfd, ad->ai_addr, ad->ai_addrlen);
+        if (ret != 0) {
+               log_message(LOG_ERR, "bind failed: %s", strerror (errno));
+               close(listenfd);
+               return -1;
+        }
+
+        ret = listen(listenfd, MAXLISTEN);
+        if (ret != 0) {
+                log_message(LOG_ERR, "listen failed: %s", strerror(errno));
+                close(listenfd);
+                return -1;
+        }
+
+        log_message(LOG_INFO, "listening on fd [%d]", listenfd);
+
+        return listenfd;
+}
+
 /*
  * Start listening on a socket. Create a socket with the selected port.
  * The socket fd is returned upon success, -1 upon error.
@@ -191,58 +252,11 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
 
         for (rp = result; rp != NULL; rp = rp->ai_next) {
                 int listenfd;
-                int lret;
-                const int on = 1;
-                char numerichost[NI_MAXHOST];
-                int flags = NI_NUMERICHOST;
 
-                ret = getnameinfo(rp->ai_addr, rp->ai_addrlen,
-                                  numerichost, NI_MAXHOST, NULL, 0, flags);
-                if (ret != 0) {
-                        log_message(LOG_ERR, "error calling getnameinfo: %s",
-                                    gai_strerror(errno));
-                       continue;
-                }
-
-                log_message(LOG_INFO, "trying host[%s], family[%d], "
-                            "socktype[%d], proto[%d]", numerichost,
-                            rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-
-                listenfd = socket (rp->ai_family, rp->ai_socktype,
-                                   rp->ai_protocol);
+                listenfd = listen_on_one_socket(rp);
                 if (listenfd == -1) {
-                        log_message(LOG_ERR,
-                                    "failed to create socket: %s",
-                                    strerror(errno));
                         continue;
                 }
-
-                lret = setsockopt (listenfd, SOL_SOCKET, SO_REUSEADDR, &on,
-                                  sizeof (on));
-                if (lret != 0) {
-                        log_message (LOG_ERR,
-                                     "setsockopt failed to set SO_REUSEADDR: "
-                                     "%s", strerror(errno));
-                        close(listenfd);
-                        continue;
-                }
-
-                if (bind(listenfd, rp->ai_addr, rp->ai_addrlen) != 0) {
-                        log_message (LOG_ERR,
-                                     "bind failed: %s", strerror (errno));
-                        close (listenfd);
-                        continue;
-                }
-
-                if (listen(listenfd, MAXLISTEN) < 0) {
-                        log_message(LOG_ERR,
-                                    "listen failed: %s", strerror(errno));
-
-                        close (listenfd);
-                        continue;
-                }
-
-                log_message(LOG_INFO, "listening on fd [%d]", listenfd);
 
                 vector_append (listen_fds, &listenfd, sizeof(int));
 
