@@ -28,8 +28,10 @@
 
 #define MAXLINE (1024 * 4)
 
+#include "vector.h"
+
 extern int opensock (const char *host, int port, const char *bind_to);
-extern int listen_sock (const char *addr, uint16_t port);
+extern int listen_sock (const char *addr, uint16_t port, vector_t listen_fds);
 
 extern int socket_nonblocking (int sock);
 extern int socket_blocking (int sock);

@@ -32,7 +32,7 @@
 #include "utils.h"
 #include "conf.h"
 
-static int listenfd;
+static vector_t listen_fds;
 
 /*
  * Stores the internal data needed for each child (connection)
@@ -186,6 +186,10 @@ static void child_main (struct child_s *ptr)
         int connfd;
         struct sockaddr *cliaddr;
         socklen_t clilen;
+        fd_set rfds;
+        int maxfd = 0;
+        ssize_t i;
+        int ret;
 
         cliaddr = (struct sockaddr *)
                         safemalloc (sizeof(struct sockaddr_storage));
@@ -197,10 +201,64 @@ static void child_main (struct child_s *ptr)
 
         ptr->connects = 0;
 
+        /*
+         * We have to wait for connections on multiple fds,
+         * so use select.
+         */
+
+        FD_ZERO(&rfds);
+
+        for (i = 0; i < vector_length(listen_fds); i++) {
+                int *fd = (int *) vector_getentry(listen_fds, i, NULL);
+
+                socket_nonblocking(*fd);
+                FD_SET(*fd, &rfds);
+                maxfd = max(maxfd, *fd);
+        }
+
         while (!config.quit) {
+                int listenfd = -1;
+
                 ptr->status = T_WAITING;
 
                 clilen = sizeof(struct sockaddr_storage);
+
+                ret = select(maxfd + 1, &rfds, NULL, NULL, NULL);
+                if (ret == -1) {
+                        log_message (LOG_ERR, "error calling select: %s",
+                                     strerror(errno));
+                        exit(1);
+                } else if (ret == 0) {
+                        log_message (LOG_WARNING, "Strange: select returned 0 "
+                                     "but we did not specify a timeout...");
+                        continue;
+                }
+
+                for (i = 0; i < vector_length(listen_fds); i++) {
+                        int *fd = (int *) vector_getentry(listen_fds, i, NULL);
+
+                        if (FD_ISSET(*fd, &rfds)) {
+                                /*
+                                 * only accept the connection on the first
+                                 * fd that we find readable. - fair?
+                                 */
+                                listenfd = *fd;
+                                break;
+                        }
+                }
+
+                if (listenfd == -1) {
+                        log_message(LOG_WARNING, "Strange: None of our listen "
+                                    "fds was readable after select");
+                        continue;
+                }
+
+                socket_blocking(listenfd);
+
+                /*
+                 * We have a socket that is readable.
+                 * Continue handling this connection.
+                 */
 
                 connfd = accept (listenfd, cliaddr, &clilen);
 
@@ -466,11 +524,31 @@ void child_kill_children (int sig)
 
 int child_listening_sock (const char *addr, uint16_t port)
 {
-        listenfd = listen_sock (addr, port);
-        return listenfd;
+        int ret;
+
+        if (listen_fds == NULL) {
+                listen_fds = vector_create();
+                if (listen_fds == NULL) {
+                        log_message (LOG_ERR, "Could not create the list "
+                                     "of listening fds");
+                        return -1;
+                }
+        }
+
+        ret = listen_sock (addr, port, listen_fds);
+        return ret;
 }
 
 void child_close_sock (void)
 {
-        close (listenfd);
+        ssize_t i;
+
+        for (i = 0; i < vector_length(listen_fds); i++) {
+                int *fd = (int *) vector_getentry(listen_fds, i, NULL);
+                close (*fd);
+        }
+
+        vector_delete(listen_fds);
+
+        listen_fds = NULL;
 }

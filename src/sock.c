@@ -166,7 +166,7 @@ int socket_blocking (int sock)
  * Start listening on a socket. Create a socket with the selected port.
  * The socket fd is returned upon success, -1 upon error.
  */
-int listen_sock (const char *addr, uint16_t port)
+int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
 {
         struct addrinfo hints, *result, *rp;
         char portstr[6];
@@ -174,6 +174,7 @@ int listen_sock (const char *addr, uint16_t port)
         const int on = 1;
 
         assert (port > 0);
+        assert (listen_fds != NULL);
 
         memset (&hints, 0, sizeof (struct addrinfo));
         hints.ai_family = AF_UNSPEC;
@@ -224,9 +225,11 @@ int listen_sock (const char *addr, uint16_t port)
                 return -1;
         }
 
+        vector_append(listen_fds, &listenfd, sizeof(int));
+
         freeaddrinfo (result);
 
-        return listenfd;
+        return 0;
 }
 
 /*
