@@ -170,7 +170,6 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
 {
         struct addrinfo hints, *result, *rp;
         char portstr[6];
-        const int on = 1;
         int ret = -1;
 
         assert (port > 0);
@@ -193,6 +192,7 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
         for (rp = result; rp != NULL; rp = rp->ai_next) {
                 int listenfd;
                 int lret;
+                const int on = 1;
                 char numerichost[NI_MAXHOST];
                 int flags = NI_NUMERICHOST;
 
