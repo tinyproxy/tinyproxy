@@ -84,6 +84,9 @@ int opensock (const char *host, int port, const char *bind_to)
         assert (host != NULL);
         assert (port > 0);
 
+        log_message(LOG_INFO,
+                    "opensock: opening connection to %s:%d", host, port);
+
         memset (&hints, 0, sizeof (struct addrinfo));
         hints.ai_family = AF_UNSPEC;
         hints.ai_socktype = SOCK_STREAM;
@@ -96,6 +99,9 @@ int opensock (const char *host, int port, const char *bind_to)
                              "opensock: Could not retrieve info for %s", host);
                 return -1;
         }
+
+        log_message(LOG_INFO,
+                    "opensock: getaddrinfo returned for %s:%d", host, port);
 
         ressave = res;
         do {
