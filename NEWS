@@ -1,6 +1,24 @@
 Tinyproxy NEWS
 ==============
 
+Version 1.8.4
+-------------
+
+Bugs resolved since version 1.8.3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * BB#106: fix failing CONNECT requests with IPv6 literal addresses
+ * BB#116: fix invalid free for GET requests to IPv6 literal addresses
+ * BB#63: support multiple Listen statements in configuraiont
+ * BB#81: support listening on ipv4 and ipv6 wildcard if no Listen specified
+ * BB#109: fix crash when writing to log file fails
+ * BB#112: fix build with autoconf >= 2.69
+
+Contributors:
+~~~~~~~~~~~~~
+
+Mukund Sivaraman, Michael Adam, Gaudenz Steinlin.
+
 Version 1.8.3
 -------------
 
