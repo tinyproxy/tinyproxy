@@ -186,10 +186,14 @@ static int strip_return_port (char *host)
 }
 
 /*
- * Pull the information out of the URL line.  This will handle both HTTP
- * and FTP (proxied) URLs.
+ * Pull the information out of the URL line.
+ * This expects urls with the initial '<proto>://'
+ * part stripped and hence can handle http urls,
+ * (proxied) ftp:// urls and https-requests that
+ * come in without the proto:// part via CONNECT.
  */
-static int extract_http_url (const char *url, struct request_s *request)
+static int extract_url (const char *url, int default_port,
+                        struct request_s *request)
 {
         char *p;
         int len;
@@ -216,7 +220,7 @@ static int extract_http_url (const char *url, struct request_s *request)
 
         /* Find a proper port in www.site.com:8001 URLs */
         port = strip_return_port (request->host);
-        request->port = (port != 0) ? port : HTTP_PORT;
+        request->port = (port != 0) ? port : default_port;
 
         /* Remove any surrounding '[' and ']' from IPv6 literals */
         p = strrchr (request->host, ']');
@@ -413,7 +417,7 @@ BAD_REQUEST_ERROR:
         {
                 char *skipped_type = strstr (url, "//") + 2;
 
-                if (extract_http_url (skipped_type, request) < 0) {
+                if (extract_url (skipped_type, HTTP_PORT, request) < 0) {
                         indicate_http_error (connptr, 400, "Bad Request",
                                              "detail", "Could not parse URL",
                                              "url", url, NULL);
