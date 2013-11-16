@@ -424,7 +424,7 @@ BAD_REQUEST_ERROR:
                         goto fail;
                 }
         } else if (strcmp (request->method, "CONNECT") == 0) {
-                if (extract_ssl_url (url, request) < 0) {
+                if (extract_url (url, HTTP_PORT_SSL, request) < 0) {
                         indicate_http_error (connptr, 400, "Bad Request",
                                              "detail", "Could not parse URL",
                                              "url", url, NULL);
