@@ -244,31 +244,6 @@ ERROR_EXIT:
 }
 
 /*
- * Extract the URL from a SSL connection.
- */
-static int extract_ssl_url (const char *url, struct request_s *request)
-{
-        request->host = (char *) safemalloc (strlen (url) + 1);
-        if (!request->host)
-                return -1;
-
-        if (sscanf (url, "%[^:]:%hu", request->host, &request->port) == 2) ;
-        else if (sscanf (url, "%s", request->host) == 1)
-                request->port = HTTP_PORT_SSL;
-        else {
-                log_message (LOG_ERR, "extract_ssl_url: Can't parse URL.");
-
-                safefree (request->host);
-                return -1;
-        }
-
-        /* Remove the username/password if they're present */
-        strip_username_password (request->host);
-
-        return 0;
-}
-
-/*
  * Create a connection for HTTP connections.
  */
 static int
