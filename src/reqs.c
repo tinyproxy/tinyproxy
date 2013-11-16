@@ -192,12 +192,12 @@ static int strip_return_port (char *host)
 static int extract_http_url (const char *url, struct request_s *request)
 {
         char *p;
-        int len;
         int port;
 
         /* Split the URL on the slash to separate host from path */
         p = strchr (url, '/');
         if (p != NULL) {
+                int len;
                 len = p - url;
                 request->host = (char *) safemalloc (len + 1);
                 memcpy (request->host, url, len);
