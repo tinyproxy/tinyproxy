@@ -221,7 +221,10 @@ static int extract_http_url (const char *url, struct request_s *request)
         /* Remove any surrounding '[' and ']' from IPv6 literals */
         p = strrchr (request->host, ']');
         if (p && (*(request->host) == '[')) {
-                request->host++;
+                memmove(request->host, request->host + 1,
+                        strlen(request->host) - 2);
+                *p = '\0';
+                p--;
                 *p = '\0';
         }
 
