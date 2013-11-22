@@ -211,7 +211,14 @@ static void child_main (struct child_s *ptr)
         for (i = 0; i < vector_length(listen_fds); i++) {
                 int *fd = (int *) vector_getentry(listen_fds, i, NULL);
 
-                socket_nonblocking(*fd);
+                ret = socket_nonblocking(*fd);
+                if (ret != 0) {
+                        log_message(LOG_ERR, "Failed to set the listening "
+                                    "socket %d to non-blocking: %s",
+                                    fd, strerror(errno));
+                        exit(1);
+                }
+
                 FD_SET(*fd, &rfds);
                 maxfd = max(maxfd, *fd);
         }
