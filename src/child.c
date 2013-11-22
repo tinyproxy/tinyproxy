@@ -260,7 +260,13 @@ static void child_main (struct child_s *ptr)
                         continue;
                 }
 
-                socket_blocking(listenfd);
+                ret = socket_blocking(listenfd);
+                if (ret != 0) {
+                        log_message(LOG_ERR, "Failed to set listening "
+                                    "socket %d to blocking for accept: %s",
+                                    listenfd, strerror(errno));
+                        exit(1);
+                }
 
                 /*
                  * We have a socket that is readable.
