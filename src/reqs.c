@@ -1119,7 +1119,13 @@ static void relay_connection (struct conn_s *connptr)
         int maxfd = max (connptr->client_fd, connptr->server_fd) + 1;
         ssize_t bytes_received;
 
-        socket_nonblocking (connptr->client_fd);
+        ret = socket_nonblocking (connptr->client_fd);
+        if (ret != 0) {
+                log_message(LOG_ERR, "Failed to set the client socket "
+                            "to non-blocking: %s", strerror(errno));
+                return;
+        }
+
         socket_nonblocking (connptr->server_fd);
 
         last_access = time (NULL);
