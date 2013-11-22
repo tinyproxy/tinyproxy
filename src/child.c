@@ -556,7 +556,7 @@ int child_listening_sockets(vector_t listen_addrs, uint16_t port)
         }
 
         if ((listen_addrs == NULL) ||
-            (vector_length(config.listen_addrs) == 0))
+            (vector_length(listen_addrs) == 0))
         {
                 /*
                  * no Listen directive:
@@ -566,10 +566,10 @@ int child_listening_sockets(vector_t listen_addrs, uint16_t port)
                 return ret;
         }
 
-        for (i = 0; i < vector_length(config.listen_addrs); i++) {
+        for (i = 0; i < vector_length(listen_addrs); i++) {
                 const char *addr;
 
-                addr = (char *)vector_getentry(config.listen_addrs, i, NULL);
+                addr = (char *)vector_getentry(listen_addrs, i, NULL);
                 if (addr == NULL) {
                         log_message(LOG_WARNING,
                                     "got NULL from listen_addrs - skipping");
