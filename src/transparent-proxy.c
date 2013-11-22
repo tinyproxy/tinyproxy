@@ -60,6 +60,7 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
         socklen_t length;
         char *data;
         size_t ulen = strlen (*url);
+        ssize_t i;
 
         length = hashmap_entry_by_key (hashofheaders, "host", (void **) &data);
         if (length <= 0) {
@@ -105,16 +106,28 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                              "process_request: trans Host %s %s for %d",
                              request->method, *url, connptr->client_fd);
         }
-        if (conf->ipAddr && strcmp (request->host, conf->ipAddr) == 0) {
-                log_message (LOG_ERR,
-                             "process_request: destination IP is localhost %d",
-                             connptr->client_fd);
-                indicate_http_error (connptr, 400, "Bad Request",
-                                     "detail",
-                                     "You tried to connect to the machine "
-                                     "the proxy is running on", "url", *url,
-                                     NULL);
-                return 0;
+
+        if (conf->listen_addrs == NULL) {
+                return 1;
+        }
+
+        for (i = 0; i < vector_length(conf->listen_addrs); i++) {
+                const char *addr;
+
+                addr = (char *)vector_getentry(conf->listen_addrs, i, NULL);
+
+                if (addr && strcmp(request->host, addr) == 0) {
+                        log_message(LOG_ERR,
+                                    "transparent: destination IP %s is local "
+                                    "on socket fd %d",
+                                    request->host, connptr->client_fd);
+                        indicate_http_error(connptr, 400, "Bad Request",
+                                            "detail",
+                                            "You tried to connect to the "
+                                            "machine the proxy is running on",
+                                            "url", *url, NULL);
+                        return 0;
+                }
         }
 
         return 1;
