@@ -903,6 +903,7 @@ static HANDLE_FUNC (handle_listen)
                if (conf->listen_addrs == NULL) {
                        log_message(LOG_WARNING, "Could not create a list "
                                    "of listen addresses.");
+                       safefree(arg);
                        return -1;
                }
         }
