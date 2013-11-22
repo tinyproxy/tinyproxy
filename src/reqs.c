@@ -1220,7 +1220,14 @@ static void relay_connection (struct conn_s *connptr)
         /*
          * Try to send any remaining data to the server if we can.
          */
-        socket_blocking (connptr->server_fd);
+        ret = socket_blocking (connptr->server_fd);
+        if (ret != 0) {
+                log_message(LOG_ERR,
+                            "Failed to set server socket to blocking: %s",
+                            strerror(errno));
+                return;
+        }
+
         while (buffer_size (connptr->cbuffer) > 0) {
                 if (write_buffer (connptr->server_fd, connptr->cbuffer) < 0)
                         break;
