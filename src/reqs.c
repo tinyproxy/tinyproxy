@@ -1126,7 +1126,12 @@ static void relay_connection (struct conn_s *connptr)
                 return;
         }
 
-        socket_nonblocking (connptr->server_fd);
+        ret = socket_nonblocking (connptr->server_fd);
+        if (ret != 0) {
+                log_message(LOG_ERR, "Failed to set the server socket "
+                            "to non-blocking: %s", strerror(errno));
+                return;
+        }
 
         last_access = time (NULL);
 
