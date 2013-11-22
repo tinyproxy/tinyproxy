@@ -357,15 +357,6 @@ BAD_REQUEST_ERROR:
                 goto fail;
         }
 
-        if (!url) {
-                log_message (LOG_ERR,
-                             "process_request: Null URL on file descriptor %d",
-                             connptr->client_fd);
-                indicate_http_error (connptr, 400, "Bad Request",
-                                     "detail", "Request has an empty URL",
-                                     "url", url, NULL);
-                goto fail;
-        }
 #ifdef REVERSE_SUPPORT
         if (config.reversepath_list != NULL) {
                 /*
