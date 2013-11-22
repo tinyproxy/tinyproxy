@@ -534,7 +534,13 @@ static int pull_client_data (struct conn_s *connptr, long int length)
         }
 
         len = recv (connptr->client_fd, buffer, 2, MSG_PEEK);
-        socket_blocking (connptr->client_fd);
+
+        ret = socket_blocking (connptr->client_fd);
+        if (ret != 0) {
+                log_message(LOG_ERR, "Failed to set the client socket "
+                            "to blocking: %s", strerror(errno));
+                goto ERROR_EXIT;
+        }
 
         if (len < 0 && errno != EAGAIN)
                 goto ERROR_EXIT;
