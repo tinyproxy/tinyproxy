@@ -1210,7 +1210,14 @@ static void relay_connection (struct conn_s *connptr)
          * Here the server has closed the connection... write the
          * remainder to the client and then exit.
          */
-        socket_blocking (connptr->client_fd);
+        ret = socket_blocking (connptr->client_fd);
+        if (ret != 0) {
+                log_message(LOG_ERR,
+                            "Failed to set client socket to blocking: %s",
+                            strerror(errno));
+                return;
+        }
+
         while (buffer_size (connptr->sbuffer) > 0) {
                 if (write_buffer (connptr->client_fd, connptr->sbuffer) < 0)
                         break;
