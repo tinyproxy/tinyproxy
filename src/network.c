@@ -191,7 +191,11 @@ ssize_t readline (int fd, char **whole_buffer)
                         goto CLEANUP;
                 }
 
-                recv (fd, line_ptr->data, diff, 0);
+                ret = recv (fd, line_ptr->data, diff, 0);
+                if (ret == -1) {
+                        goto CLEANUP;
+                }
+
                 line_ptr->len = diff;
 
                 if (ptr) {
