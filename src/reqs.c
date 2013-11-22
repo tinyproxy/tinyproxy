@@ -500,6 +500,7 @@ static int pull_client_data (struct conn_s *connptr, long int length)
 {
         char *buffer;
         ssize_t len;
+        int ret;
 
         buffer =
             (char *) safemalloc (min (MAXBUFFSIZE, (unsigned long int) length));
@@ -525,7 +526,13 @@ static int pull_client_data (struct conn_s *connptr, long int length)
          * return and line feed) at the end of a POST message.  These
          * need to be eaten for tinyproxy to work correctly.
          */
-        socket_nonblocking (connptr->client_fd);
+        ret = socket_nonblocking (connptr->client_fd);
+        if (ret != 0) {
+                log_message(LOG_ERR, "Failed to set the client socket "
+                            "to non-blocking: %s", strerror(errno));
+                goto ERROR_EXIT;
+        }
+
         len = recv (connptr->client_fd, buffer, 2, MSG_PEEK);
         socket_blocking (connptr->client_fd);
 
