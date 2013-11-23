@@ -253,8 +253,8 @@ ssize_t read_buffer (int fd, struct buffer_s * buffptr)
                         break;
                 default:
                         log_message (LOG_ERR,
-                                     "readbuff: recv() error \"%s\" on file descriptor %d",
-                                     strerror (errno), fd);
+                                     "read_buffer: read() failed on fd %d: %s",
+                                     fd, strerror(errno));
                         bytesin = -1;
                         break;
                 }
