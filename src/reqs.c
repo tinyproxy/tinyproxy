@@ -1349,7 +1349,7 @@ get_request_entity(struct conn_s *connptr)
                 nread = read_buffer (connptr->client_fd, connptr->cbuffer);
                 if (nread < 0) {
                         log_message (LOG_ERR,
-                                     "Error reading readble client_fd %d",
+                                     "Error reading readable client_fd %d",
                                      connptr->client_fd);
                         ret = -1;
                 } else {
