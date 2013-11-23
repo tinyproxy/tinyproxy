@@ -236,29 +236,27 @@ ssize_t read_buffer (int fd, struct buffer_s * buffptr)
                                      "readbuff: add_to_buffer() error.");
                         bytesin = -1;
                 }
+        } else if (bytesin == 0) {
+                /* connection was closed by client */
+                bytesin = -1;
         } else {
-                if (bytesin == 0) {
-                        /* connection was closed by client */
-                        bytesin = -1;
-                } else {
-                        switch (errno) {
+                switch (errno) {
 #ifdef EWOULDBLOCK
-                        case EWOULDBLOCK:
+                case EWOULDBLOCK:
 #else
 #  ifdef EAGAIN
-                        case EAGAIN:
+                case EAGAIN:
 #  endif
 #endif
-                        case EINTR:
-                                bytesin = 0;
-                                break;
-                        default:
-                                log_message (LOG_ERR,
-                                             "readbuff: recv() error \"%s\" on file descriptor %d",
-                                             strerror (errno), fd);
-                                bytesin = -1;
-                                break;
-                        }
+                case EINTR:
+                        bytesin = 0;
+                        break;
+                default:
+                        log_message (LOG_ERR,
+                                     "readbuff: recv() error \"%s\" on file descriptor %d",
+                                     strerror (errno), fd);
+                        bytesin = -1;
+                        break;
                 }
         }
 
