@@ -4,6 +4,9 @@ Tinyproxy NEWS
 Version 1.8.4
 -------------
 
+Among several bug fixes, this release fixes a bunch of issues found
+by coverity (scan.coverity.com).
+
 Bugs resolved since version 1.8.3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
