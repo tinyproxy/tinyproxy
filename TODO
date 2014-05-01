@@ -38,7 +38,7 @@ against the current tree and I'll integrate it if possible.
  * Include user authentication for accessing tinyproxy itself.
    Administrators should be allowed to selectively allow certain users
    access to tinyproxy via a user name/password pair.  Check the
-   HTTP/1.1 RFC for more information.  [Suggested: Tyrone Tranmer]
+   HTTP/1.1 RFC for more information.
 
    ==> https://www.banu.com/bugzilla/show_bug.cgi?id=13
 
