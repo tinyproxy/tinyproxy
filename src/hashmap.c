@@ -63,6 +63,9 @@ struct hashmap_s {
  * The contents of the key are converted to lowercase, so this function
  * is not case-sensitive.
  *
+ * This is Dan Bernstein's hash function as described, for example, here:
+ * http://www.cse.yorku.ca/~oz/hash.html
+ *
  * If any of the arguments are invalid a negative number is returned.
  */
 static int hashfunc (const char *key, unsigned int size)
@@ -74,12 +77,8 @@ static int hashfunc (const char *key, unsigned int size)
         if (size == 0)
                 return -ERANGE;
 
-        for (hash = tolower (*key++); *key != '\0'; key++) {
-                uint32_t bit = (hash & 1) ? (1 << (sizeof (uint32_t) - 1)) : 0;
-
-                hash >>= 1;
-
-                hash += tolower (*key) + bit;
+        for (hash = 5381; *key != '\0'; key++) {
+                hash = ((hash << 5) + hash) ^ tolower (*key);
         }
 
         /* Keep the hash within the table limits */
