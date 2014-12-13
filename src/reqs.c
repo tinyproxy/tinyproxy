@@ -819,7 +819,7 @@ done:
 /*
  * Number of buckets to use internally in the hashmap.
  */
-#define HEADER_BUCKETS 32
+#define HEADER_BUCKETS 256
 
 /*
  * Here we loop through all the headers the client is sending. If we
