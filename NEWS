@@ -4,12 +4,17 @@ Tinyproxy NEWS
 Version 1.8.4
 -------------
 
-Among several bug fixes, this release fixes a bunch of issues found
+Most notably, this release removes the limitation of
+a single Listen address of not listening on the
+wildcard address (BB#63) and a DoS (BB#110, CVE-2012-3505).
+
+Among several other bug fixes, this release fixes a bunch of issues found
 by coverity (scan.coverity.com).
 
 Bugs resolved since version 1.8.3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+ * BB#110: fix algorithmic complexity DoS in hashmap
  * BB#106: fix failing CONNECT requests with IPv6 literal addresses
  * BB#116: fix invalid free for GET requests to IPv6 literal addresses
  * BB#63: support multiple Listen statements in configuration
@@ -20,7 +25,7 @@ Bugs resolved since version 1.8.3
 Contributors:
 ~~~~~~~~~~~~~
 
-Mukund Sivaraman, Michael Adam, Gaudenz Steinlin.
+Mukund Sivaraman, Michael Adam, Gaudenz Steinlin, Peter H. Froehlich
 
 Version 1.8.3
 -------------
