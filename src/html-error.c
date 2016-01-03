@@ -280,7 +280,7 @@ int add_standard_vars (struct conn_s *connptr)
         add_error_variable (connptr, "date", timebuf);
 
         add_error_variable (connptr, "website",
-                            "https://banu.com/tinyproxy/");
+                            "https://tinyproxy.github.io/");
         add_error_variable (connptr, "version", VERSION);
         add_error_variable (connptr, "package", PACKAGE);
 
