@@ -131,11 +131,6 @@ if test x"$transparent_enabled" = x"yes"; then
    AC_DEFINE(TRANSPARENT_PROXY)
 fi
 
-dnl Check for broken regex library
-TP_ARG_ENABLE(regexcheck,
-              [Check for working regex library (default is YES)],
-              yes)
-
 # This is required to build test programs below
 AC_PROG_CC
 
@@ -233,46 +228,6 @@ dnl
 dnl Handle the REGEX library
 if test x"$ac_cv_func_regexec" != x"yes"; then
     AC_MSG_ERROR([Could not locate the regexec() function])
-else
-    if test x"$regexcheck_enabled" = x"yes" ; then
-        AC_MSG_CHECKING([whether the system's regex library is broken])
-        AC_CACHE_VAL(tinyproxy_cv_regex_broken,
-                     [AC_TRY_RUN([
-#if HAVE_SYS_TYPES_H
-#  include <sys/types.h>
-#endif
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
-#if HAVE_REGEX_H
-# include <regex.h>
-#endif
-#if HAVE_STDLIB_H
-# include <stdlib.h>
-#endif
-int main(void)
-{
-	regex_t blah;
-	if (regcomp(&blah, "foo.*bar", REG_NOSUB) != 0)
-		exit(1);
-	if (regexec(&blah, "foobar", 0, NULL, 0) != 0)
-		exit(1);
-	else
-		exit(0);
-
-	return 0;
-}
-                     ],
-                     tinyproxy_cv_regex_broken=no,
-                     tinyproxy_cv_regex_broken=yes,
-                     tinyproxy_cv_regex_broken=yes)])
-
-        AC_MSG_RESULT([$tinyproxy_cv_regex_broken])
-
-        if test x"$tinyproxy_cv_regex_broken" = x"yes" ; then
-            AC_MSG_ERROR([Your system's regexec() function is broken.])
-        fi
-    fi
 fi
 
 dnl
