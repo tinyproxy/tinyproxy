@@ -188,8 +188,8 @@ static int strip_return_port (char *host)
 /*
  * Pull the information out of the URL line.
  * This expects urls with the initial '<proto>://'
- * part stripped and hence can handle http urls,
- * (proxied) ftp:// urls and https-requests that
+ * part stripped and hence can handle http urls, https
+ * urls, (proxied) ftp:// urls and https-requests that
  * come in without the proto:// part via CONNECT.
  */
 static int extract_url (const char *url, int default_port,
@@ -378,7 +378,7 @@ BAD_REQUEST_ERROR:
         }
 #endif
 
-        if (strncasecmp (url, "http://", 7) == 0
+        if (strncasecmp (url, "http://", 7) == 0 || strncasecmp (url, "https://", 8) == 0
             || (UPSTREAM_CONFIGURED () && strncasecmp (url, "ftp://", 6) == 0))
         {
                 char *skipped_type = strstr (url, "//") + 2;
