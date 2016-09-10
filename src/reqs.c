@@ -369,12 +369,15 @@ BAD_REQUEST_ERROR:
 
                 reverse_url = reverse_rewrite_url (connptr, hashofheaders, url);
 
-                if (!reverse_url) {
+                if (reverse_url != NULL) {
+                        safefree (url);
+                        url = reverse_url;
+		} else if (config.reverseonly) {
+                        indicate_http_error (connptr, 400, "Bad Request",
+                                     "detail", "No mapping found for requested url",
+                                     "url", url, NULL);
                         goto fail;
                 }
-
-                safefree (url);
-                url = reverse_url;
         }
 #endif
 
