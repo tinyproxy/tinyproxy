@@ -372,7 +372,7 @@ BAD_REQUEST_ERROR:
                 if (reverse_url != NULL) {
                         safefree (url);
                         url = reverse_url;
-		} else if (config.reverseonly) {
+                } else if (config.reverseonly) {
                         indicate_http_error (connptr, 400, "Bad Request",
                                      "detail", "No mapping found for requested url",
                                      "url", url, NULL);
