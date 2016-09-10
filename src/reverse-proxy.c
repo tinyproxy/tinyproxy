@@ -156,13 +156,7 @@ char *reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
                 }
         }
 
-        /* Forward proxy support off and no reverse path match found */
-        if (config.reverseonly && !rewrite_url) {
-                log_message (LOG_ERR, "Bad request");
-                indicate_http_error (connptr, 400, "Bad Request",
-                                     "detail",
-                                     "Request has an invalid URL", "url", url,
-                                     NULL);
+        if (rewrite_url == NULL) {
                 return NULL;
         }
 
