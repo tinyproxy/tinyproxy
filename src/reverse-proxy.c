@@ -166,7 +166,8 @@ char *reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
                 return NULL;
         }
 
-        log_message (LOG_CONN, "Rewriting URL: %s -> %s", url, rewrite_url);
+        log_message (LOG_CONN, "Rewriting URL: %s -> %s", url, 
+			rewrite_url ? rewrite_url : "No mapping found");
 
         /* Store reverse path so that the magical tracking cookie can be set */
         if (config.reversemagic && reverse)
