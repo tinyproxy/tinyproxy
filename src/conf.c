@@ -1090,13 +1090,12 @@ static HANDLE_FUNC (handle_upstream)
         if (match[12].rm_so != -1) {
                 domain = get_string_arg (line, &match[12]);
                 if (domain) {
-                        upstream_bauth_add (ip, port, basic_auth, domain,
-                                            &conf->upstream_list);
+                        upstream_add (ip, port, basic_auth, domain,
+                                      &conf->upstream_list);
                         safefree (domain);
                 }
         } else {
-                upstream_bauth_add (ip, port, basic_auth, NULL,
-                                    &conf->upstream_list);
+                upstream_add (ip, port, basic_auth, NULL, &conf->upstream_list);
         }
 
         safefree (basic_auth);
@@ -1113,7 +1112,7 @@ static HANDLE_FUNC (handle_upstream_no)
         if (!domain)
                 return -1;
 
-        upstream_add (NULL, 0, domain, &conf->upstream_list);
+        upstream_add (NULL, 0, NULL, domain, &conf->upstream_list);
         safefree (domain);
 
         return 0;

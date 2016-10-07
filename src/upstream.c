@@ -30,8 +30,7 @@
 
 #ifdef UPSTREAM_SUPPORT
 /**
- * Construct an upstream struct from input data, with basic auth credentials.
- * 'basic_auth' can be NULL.
+ * Construct an upstream struct from input data.
  */
 static struct upstream *upstream_build (const char *host, int port,
                                         const char *basic_auth,
@@ -126,11 +125,10 @@ fail:
 }
 
 /*
- * Add an entry to the upstream list, with basic auth credentials.
- * 'basic_auth' can be NULL.
+ * Add an entry to the upstream list.
  */
-void upstream_bauth_add (const char *host, int port, const char *basic_auth,
-                         const char *domain, struct upstream **upstream_list)
+void upstream_add (const char *host, int port, const char *basic_auth,
+                   const char *domain, struct upstream **upstream_list)
 {
         struct upstream *up;
 
@@ -171,15 +169,6 @@ upstream_cleanup:
         safefree (up);
 
         return;
-}
-
-/*
- * Add an entry to the upstream list
- */
-void upstream_add (const char *host, int port, const char *domain,
-                   struct upstream **upstream_list)
-{
-        upstream_bauth_add (host, port, NULL, domain, upstream_list);
 }
 
 /*

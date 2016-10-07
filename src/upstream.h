@@ -41,11 +41,9 @@ struct upstream {
 };
 
 #ifdef UPSTREAM_SUPPORT
-extern void upstream_add (const char *host, int port, const char *domain,
+extern void upstream_add (const char *host, int port,
+                          const char *basic_auth, const char *domain,
                           struct upstream **upstream_list);
-extern void upstream_bauth_add (const char *host, int port,
-                                const char *basic_auth, const char *domain,
-                                struct upstream **upstream_list);
 extern struct upstream *upstream_get (char *host, struct upstream *up);
 extern void free_upstream_list (struct upstream *up);
 #endif /* UPSTREAM_SUPPORT */
