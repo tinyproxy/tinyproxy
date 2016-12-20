@@ -248,9 +248,6 @@ AM_CONDITIONAL(HAVE_XSLTPROC, test "x$XSLTPROC" != "xno")
 # Check for asciidoc
 AC_PATH_PROG(A2X, a2x, no)
 AM_CONDITIONAL(HAVE_A2X, test "x$A2X" != "xno")
-if test x"$A2X" = x"no"; then
-  AC_MSG_ERROR([Test for asciidoc failed. See the file 'INSTALL' for help.])
-fi
 
 AC_CONFIG_FILES([
 Makefile
@@ -269,3 +266,20 @@ tests/scripts/Makefile
 ])
 
 AC_OUTPUT
+
+# the manpages are shipped in the release tarball and we don't want them to
+# get regenerated if a2x is not available. the intermediate files from
+# AC_CONFIG_FILES are created with config.status, which is created at configure
+# runtime, so we need to touch them after config.status terminated to prevent
+# make from rebuild them.
+
+if test "x$A2X" = "xno"; then
+  touch docs/man5/tinyproxy.conf.txt
+  touch docs/man8/tinyproxy.txt
+  if test -e docs/man5/tinyproxy.conf.5 ; then
+      touch docs/man5/tinyproxy.conf.5
+  fi
+  if test -e docs/man8/tinyproxy.8 ; then
+      touch docs/man8/tinyproxy.8
+  fi
+fi

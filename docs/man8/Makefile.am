@@ -18,3 +18,6 @@ endif
 CLEANFILES = \
 	$(MAN8_FILES:.txt=.8) \
 	$(MAN8_FILES:.txt=.xml)
+
+EXTRA_DIST= \
+	$(MAN8_FILES:.txt=.8)
