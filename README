@@ -61,43 +61,21 @@ include:
 Support
 -------
 
-If you are having problems with Tinyproxy, please submit a bug report
-using Tinyproxy as the product at:
+If you are having problems with Tinyproxy, please raise an issue
+on github:
 
-<https://banu.com/bugzilla/>
-
-You may also wish to subscribe to the Tinyproxy mailing lists. To do so
-please visit:
-
-<https://banu.com/mailman/listinfo/tinyproxy-announce-list>
-
-<https://banu.com/mailman/listinfo/tinyproxy-list>
-
-for more information on how to subscribe and post messages to the lists.
+<https://github.com/tinyproxy/tinyproxy/issues>
 
 
 Contributing
 ------------
 
 If you would like to contribute a feature, or a bug fix to the Tinyproxy
-source, please send a patch (preferably as a unified diff. i.e. `diff
--u` against the 'master' branch of the Tinyproxy source code git
-repository to 'tinyproxy-developers-list'.  Please include a description
-of what your patch does.
+source, please clone the git repository from github
+(https://github.com/tinyproxy/tinyproxy.git) and create a pull request:
 
-Tinyproxy's source code is maintained in a Git repository. The following
-command creates a local copy of it:
+<https://github.com/tinyproxy/tinyproxy/pulls>
 
-----
-git clone git://banu.com/tinyproxy.git
-----
-
-The easiest and preferred way to create a patch for submission is to
-check in your changes locally against the 'master' branch and use `git
-format-patch` to generate a mbox-style patch file that contains the diff
-along with the commit message and author information.  Such a formatted
-patch file can be integrated into the upstream repository, automatically
-keeping the commit message and author information.
 
 You can also meet developers and discuss development issues and patches
 in the `#tinyproxy` IRC channel on Freenode (`irc.freenode.net`).
