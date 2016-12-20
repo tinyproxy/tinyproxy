@@ -160,6 +160,8 @@ static HANDLE_FUNC (handle_xtinyproxy);
 
 #ifdef UPSTREAM_SUPPORT
 static HANDLE_FUNC (handle_upstream);
+static HANDLE_FUNC (handle_upstream4);
+static HANDLE_FUNC (handle_upstream5);
 static HANDLE_FUNC (handle_upstream_no);
 #endif
 
@@ -256,6 +258,14 @@ struct {
         {
                 BEGIN "(upstream)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR
                       ")?" END, handle_upstream, NULL
+        },
+        {
+                BEGIN "(upstream4)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR
+                      ")?" END, handle_upstream4, NULL
+        },
+        {
+                BEGIN "(upstream5)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR
+                      ")?" END, handle_upstream5, NULL
         },
 #endif
         /* loglevel */
@@ -1066,7 +1076,8 @@ static HANDLE_FUNC (handle_reversepath)
 #endif
 
 #ifdef UPSTREAM_SUPPORT
-static HANDLE_FUNC (handle_upstream)
+static int _handle_upstream(struct config_s* conf, const char* line,
+           regmatch_t match[], proxy_type type)
 {
         char *ip;
         int port;
@@ -1080,16 +1091,31 @@ static HANDLE_FUNC (handle_upstream)
         if (match[10].rm_so != -1) {
                 domain = get_string_arg (line, &match[10]);
                 if (domain) {
-                        upstream_add (ip, port, domain, &conf->upstream_list);
+                        upstream_add (ip, port, domain, type, &conf->upstream_list);
                         safefree (domain);
                 }
         } else {
-                upstream_add (ip, port, NULL, &conf->upstream_list);
+                upstream_add (ip, port, NULL, type, &conf->upstream_list);
         }
 
         safefree (ip);
 
         return 0;
+}
+
+static HANDLE_FUNC (handle_upstream)
+{
+	return _handle_upstream(conf, line, match, HTTP_TYPE);
+}
+
+static HANDLE_FUNC (handle_upstream4)
+{
+	return _handle_upstream(conf, line, match, SOCKS4_TYPE);
+}
+
+static HANDLE_FUNC (handle_upstream5)
+{
+	return _handle_upstream(conf, line, match, SOCKS5_TYPE);
 }
 
 static HANDLE_FUNC (handle_upstream_no)
@@ -1100,7 +1126,7 @@ static HANDLE_FUNC (handle_upstream_no)
         if (!domain)
                 return -1;
 
-        upstream_add (NULL, 0, domain, &conf->upstream_list);
+        upstream_add (NULL, 0, domain, HTTP_TYPE, &conf->upstream_list);
         safefree (domain);
 
         return 0;
