@@ -29,7 +29,8 @@ check-local: validate-authors
 dist_doc_DATA = \
 	AUTHORS \
 	NEWS \
-	README
+	README \
+	README.md
 
 EXTRA_DIST = \
 	authors.dtd \
