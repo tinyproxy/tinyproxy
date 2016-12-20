@@ -1,5 +1,4 @@
-Tinyproxy
-=========
+# Tinyproxy
 
 Tinyproxy is a small, efficient HTTP/SSL proxy daemon released under the
 GNU General Public License.  Tinyproxy is very useful in a small network
@@ -13,69 +12,67 @@ connection with a small network, and you only want to allow HTTP
 requests to be allowed, then Tinyproxy is a great tool for the network
 administrator.
 
-For more info, please visit:
-
-<https://tinyproxy.github.io/>
+For more info, please visit [the Tinyproxy web site](https://tinyproxy.github.io/).
 
 
-Installation
-------------
+## Installation
+
 
 To install this package under a UNIX derivative, read the INSTALL file.
 Tinyproxy uses a standard GNU `configure` script. Basically you should
 be able to do:
 
-----
+
+```
 ./configure
 make
 make install
-----
+```
 
 in the top level directory to compile and install Tinyproxy. There are
 additional command line arguments you can supply to `configure`. They
 include:
 
---enable-debug::
-    If you would like to turn on full debugging support.
+- `--enable-debug`: 
+If you would like to turn on full debugging support.
 
---enable-xtinyproxy::
-    Compile in support for the XTinyproxy header, which is sent to any
-    web server in your domain.
+- `--enable-xtinyproxy`: 
+Compile in support for the XTinyproxy header, which is sent to any
+web server in your domain.
 
---enable-filter::
-    Allows Tinyproxy to filter out certain domains and URLs.
+- `--enable-filter`: 
+Allows Tinyproxy to filter out certain domains and URLs.
 
---enable-upstream::
-    Enable support for proxying connections through another proxy server.
+- `--enable-upstream`: 
+Enable support for proxying connections through another proxy server.
 
---enable-transparent::
-    Allow Tinyproxy to be used as a transparent proxy daemon.
+- `--enable-transparent`: 
+Allow Tinyproxy to be used as a transparent proxy daemon.
 
---enable-static::
-    Compile a static version of Tinyproxy.
+- `--enable-static`: 
+Compile a static version of Tinyproxy.
 
---with-stathost=HOST::
-    Set the default name of the stats host.
-
-
-Support
--------
-
-If you are having problems with Tinyproxy, please raise an issue
-on github:
-
-<https://github.com/tinyproxy/tinyproxy/issues>
+- `--with-stathost=HOST`: 
+Set the default name of the stats host.
 
 
-Contributing
-------------
+## Support
+
+
+If you are having problems with Tinyproxy, please raise an
+[issue on github](https://github.com/tinyproxy/tinyproxy/issues).
+
+
+## Contributing
 
 If you would like to contribute a feature, or a bug fix to the Tinyproxy
-source, please clone the git repository from github
-(https://github.com/tinyproxy/tinyproxy.git) and create a pull request:
+source, please clone the
+[git repository from github](https://github.com/tinyproxy/tinyproxy.git)
+and create a [pull request](https://github.com/tinyproxy/tinyproxy/pulls).
 
-<https://github.com/tinyproxy/tinyproxy/pulls>
 
+## Community
 
-You can also meet developers and discuss development issues and patches
-in the `#tinyproxy` IRC channel on Freenode (`irc.freenode.net`).
+You can meet developers and users to discuss development,
+patches and deployment issues in the `#tinyproxy` IRC channel on
+Freenode (`irc.freenode.net`).
