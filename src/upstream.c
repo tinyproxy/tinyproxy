@@ -29,10 +29,22 @@
 #include "log.h"
 
 #ifdef UPSTREAM_SUPPORT
+const char *
+proxy_type_name(proxy_type type)
+{
+    switch(type) {
+        case HTTP_TYPE: return "http";
+        case SOCKS4_TYPE: return "socks4";
+        case SOCKS5_TYPE: return "socks5";
+        default: return "unknown";
+    }
+}
+
 /**
  * Construct an upstream struct from input data.
  */
-static struct upstream *upstream_build (const char *host, int port, const char *domain)
+static struct upstream *upstream_build (const char *host, int port, const char *domain,
+			proxy_type type)
 {
         char *ptr;
         struct upstream *up;
@@ -44,6 +56,7 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                 return NULL;
         }
 
+        up->type = type;
         up->host = up->domain = NULL;
         up->ip = up->mask = 0;
 
@@ -57,8 +70,8 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                 up->host = safestrdup (host);
                 up->port = port;
 
-                log_message (LOG_INFO, "Added upstream %s:%d for [default]",
-                             host, port);
+                log_message (LOG_INFO, "Added upstream %s %s:%d for [default]",
+                             proxy_type_name(type), host, port);
         } else if (host == NULL) {
                 if (!domain || domain[0] == '\0') {
                         log_message (LOG_WARNING,
@@ -101,8 +114,8 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                 up->port = port;
                 up->domain = safestrdup (domain);
 
-                log_message (LOG_INFO, "Added upstream %s:%d for %s",
-                             host, port, domain);
+                log_message (LOG_INFO, "Added upstream %s %s:%d for %s",
+                             proxy_type_name(type), host, port, domain);
         }
 
         return up;
@@ -119,11 +132,11 @@ fail:
  * Add an entry to the upstream list
  */
 void upstream_add (const char *host, int port, const char *domain,
-                   struct upstream **upstream_list)
+                   proxy_type type, struct upstream **upstream_list)
 {
         struct upstream *up;
 
-        up = upstream_build (host, port, domain);
+        up = upstream_build (host, port, domain, type);
         if (up == NULL) {
                 return;
         }
@@ -202,8 +215,8 @@ struct upstream *upstream_get (char *host, struct upstream *up)
                 up = NULL;
 
         if (up)
-                log_message (LOG_INFO, "Found upstream proxy %s:%d for %s",
-                             up->host, up->port, host);
+                log_message (LOG_INFO, "Found upstream proxy %s %s:%d for %s",
+                             proxy_type_name(up->type), up->host, up->port, host);
         else
                 log_message (LOG_INFO, "No upstream proxy for %s", host);
 
