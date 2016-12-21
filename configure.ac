@@ -161,21 +161,8 @@ dnl
 AC_HEADER_STDC
 AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([sys/ioctl.h sys/mman.h sys/resource.h \
-		  sys/select.h sys/socket.h sys/time.h sys/uio.h \
-		  sys/un.h arpa/inet.h netinet/in.h \
-		  assert.h errno.h fcntl.h grp.h io.h libintl.h \
-		  netdb.h pwd.h regex.h signal.h stdarg.h \
-		  sysexits.h syslog.h time.h wchar.h wctype.h \
+AC_CHECK_HEADERS([sys/ioctl.h alloca.h memory.h malloc.h sysexits.h \
 		  values.h])
-
-dnl OpenBSD machines don't like having malloc included (even if it's present)
-dnl as they expect you to use stdlib.h
-case "$target" in
-    *-openbsd*) ;;
-    *)         AC_CHECK_HEADER(malloc.h);;
-esac
-
 
 dnl Checks for types
 AC_TYPE_SIZE_T
