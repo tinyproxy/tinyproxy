@@ -164,8 +164,8 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([sys/ioctl.h sys/mman.h sys/resource.h \
 		  sys/select.h sys/socket.h sys/time.h sys/uio.h \
 		  sys/un.h arpa/inet.h netinet/in.h \
-		  assert.h ctype.h errno.h fcntl.h grp.h io.h libintl.h \
-		  netdb.h pwd.h regex.h signal.h stdarg.h stddef.h stdio.h \
+		  assert.h errno.h fcntl.h grp.h io.h libintl.h \
+		  netdb.h pwd.h regex.h signal.h stdarg.h \
 		  sysexits.h syslog.h time.h wchar.h wctype.h \
 		  values.h])
 
