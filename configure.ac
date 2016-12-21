@@ -182,13 +182,8 @@ AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 
-AC_CHECK_FUNCS([gethostname inet_ntoa memchr memset select socket strcasecmp \
-                strchr strdup strerror strncasecmp strpbrk strstr strtol])
-AC_CHECK_FUNCS([isascii memcpy memmove setrlimit ftruncate regcomp regexec])
+AC_CHECK_FUNCS([inet_ntoa strdup])
 AC_CHECK_FUNCS([strlcpy strlcat setgroups])
-
-AC_CHECK_FUNCS([time rand srand])
-
 
 dnl Enable extra warnings
 DESIRED_FLAGS="-fdiagnostics-show-option -Wall -Wextra -Wno-unused-parameter -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wfloat-equal -Wundef -Wformat=2 -Wlogical-op -Wmissing-include-dirs -Wformat-nonliteral -Wold-style-definition -Wpointer-arith -Waggregate-return -Winit-self -Wpacked --std=c89 -ansi -pedantic -Wno-overlength-strings -Wc++-compat -Wno-long-long -Wno-overlength-strings -Wdeclaration-after-statement -Wredundant-decls -Wmissing-noreturn -Wshadow -Wendif-labels -Wcast-qual -Wcast-align -Wwrite-strings -Wp,-D_FORTIFY_SOURCE=2 -fno-common"
@@ -211,11 +206,6 @@ LDFLAGS="-Wl,-z,defs $LDFLAGS"
 dnl
 dnl Make sure we can actually handle the "--with-*" and "--enable-*" stuff.
 dnl
-
-dnl Handle the REGEX library
-if test x"$ac_cv_func_regexec" != x"yes"; then
-    AC_MSG_ERROR([Could not locate the regexec() function])
-fi
 
 dnl
 dnl Substitute the variables into the various Makefiles
