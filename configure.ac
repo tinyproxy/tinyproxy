@@ -164,19 +164,6 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([sys/ioctl.h alloca.h memory.h malloc.h sysexits.h \
 		  values.h])
 
-dnl Checks for types
-AC_TYPE_SIZE_T
-AC_TYPE_PID_T
-AC_UNP_CHECK_TYPE(uint8_t, unsigned char)
-AC_UNP_CHECK_TYPE(int16_t, short)
-AC_UNP_CHECK_TYPE(uint16_t, unsigned short)
-AC_UNP_CHECK_TYPE(int32_t, int)
-AC_UNP_CHECK_TYPE(uint32_t, unsigned int)
-AC_UNP_CHECK_TYPE(ssize_t, int)
-AC_UNP_CHECK_TYPE(socklen_t, unsigned int)
-AC_UNP_CHECK_TYPE(in_addr_t, uint32_t)
-
-
 dnl Checks for libary functions
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
