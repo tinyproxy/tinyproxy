@@ -59,6 +59,9 @@ Allow Tinyproxy to be used as a transparent proxy daemon.
 - `--enable-static`: 
 Compile a static version of Tinyproxy.
 
+- `--enable-reverse`: 
+Enable reverse proxying.
+
 - `--with-stathost=HOST`: 
 Set the default name of the stats host.
 
