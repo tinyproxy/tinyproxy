@@ -219,7 +219,12 @@ if test x"$debug_enabled" != x"yes" ; then
     CFLAGS="-DNDEBUG $CFLAGS"
 fi
 
+AS_ECHO_N(["checking to see if linker understands -z,defs... "])
+LDFLAGS_OLD="-Wl $LDFLAGS"
 LDFLAGS="-Wl,-z,defs $LDFLAGS"
+AC_LINK_IFELSE([AC_LANG_PROGRAM()],
+    AS_ECHO("yes"),
+    AS_ECHO("no"); LDFLAGS="$LDFLAGS_OLD")
 
 dnl
 dnl Make sure we can actually handle the "--with-*" and "--enable-*" stuff.
