@@ -84,27 +84,6 @@ static char *get_html_file (unsigned int errornum)
 }
 
 /*
- * Look up the value for a variable.
- */
-static char *lookup_variable (hashmap_t map, const char *varname)
-{
-        hashmap_iter result_iter;
-        char *key;
-        char *data;
-
-        result_iter = hashmap_find (map, varname);
-
-        if (hashmap_is_end (map, result_iter))
-                return (NULL);
-
-        if (hashmap_return_entry (map, result_iter,
-                                  &key, (void **) &data) < 0)
-                return (NULL);
-
-        return (data);
-}
-
-/*
  * Send an already-opened file to the client with variable substitution.
  */
 int

@@ -117,4 +117,9 @@ extern ssize_t hashmap_search (hashmap_t map, const char *key);
  */
 extern ssize_t hashmap_remove (hashmap_t map, const char *key);
 
+/*
+ * Look up the value for a variable.
+ */
+extern char *lookup_variable (hashmap_t map, const char *varname);
+
 #endif /* _HASHMAP_H */
