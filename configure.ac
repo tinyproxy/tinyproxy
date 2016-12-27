@@ -240,8 +240,6 @@ AC_SUBST(LIBS)
 AC_SUBST(ADDITIONAL_OBJECTS)
 
 # Check for xml tools
-AC_PATH_PROG(XMLLINT, xmllint, no)
-AM_CONDITIONAL(HAVE_XMLLINT, test "x$XMLLINT" != "xno")
 AC_PATH_PROG(XSLTPROC, xsltproc, no)
 AM_CONDITIONAL(HAVE_XSLTPROC, test "x$XSLTPROC" != "xno")
 
@@ -251,6 +249,21 @@ AM_CONDITIONAL(HAVE_A2X, test "x$A2X" != "xno")
 if test x"$A2X" = x"no"; then
   AC_MSG_ERROR([Test for asciidoc failed. See the file 'INSTALL' for help.])
 fi
+
+# checking xmllint
+AC_PATH_PROG(XMLLINT, xmllint, no)
+if test "x$XMLLINT" != "xno"; then
+  AS_ECHO_N("testing xmllint... ")
+  echo "TEST" > conftest.txt
+  if $A2X -f docbook conftest.txt 2>/dev/null; then
+    AS_ECHO("ok")
+  else
+    AS_ECHO("failed")
+    XMLLINT="no"
+  fi
+  rm -f conftest.txt conftest.xml
+fi
+AM_CONDITIONAL(HAVE_XMLLINT, test "x$XMLLINT" != "xno")
 
 AC_CONFIG_FILES([
 Makefile
