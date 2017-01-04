@@ -493,3 +493,24 @@ ssize_t hashmap_remove (hashmap_t map, const char *key)
         /* The key was not found, so return 0 */
         return deleted;
 }
+
+/*
+ * Look up the value for a variable.
+ */
+char *lookup_variable (hashmap_t map, const char *varname)
+{
+        hashmap_iter result_iter;
+        char *key;
+        char *data;
+
+        result_iter = hashmap_find (map, varname);
+
+        if (hashmap_is_end (map, result_iter))
+                return (NULL);
+
+        if (hashmap_return_entry (map, result_iter,
+                                  &key, (void **) &data) < 0)
+                return (NULL);
+
+        return (data);
+}

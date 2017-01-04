@@ -84,27 +84,6 @@ static char *get_html_file (unsigned int errornum)
 }
 
 /*
- * Look up the value for a variable.
- */
-static char *lookup_variable (struct conn_s *connptr, const char *varname)
-{
-        hashmap_iter result_iter;
-        char *key;
-        char *data;
-
-        result_iter = hashmap_find (connptr->error_variables, varname);
-
-        if (hashmap_is_end (connptr->error_variables, result_iter))
-                return (NULL);
-
-        if (hashmap_return_entry (connptr->error_variables, result_iter,
-                                  &key, (void **) &data) < 0)
-                return (NULL);
-
-        return (data);
-}
-
-/*
  * Send an already-opened file to the client with variable substitution.
  */
 int
@@ -126,7 +105,7 @@ send_html_file (FILE *infile, struct conn_s *connptr)
                                 if (in_variable) {
                                         *p = '\0';
                                         varval = (const char *)
-                                                lookup_variable (connptr,
+                                                lookup_variable (connptr->error_variables,
                                                                  varstart);
                                         if (!varval)
                                                 varval = "(unknown)";
@@ -212,7 +191,7 @@ int send_http_error_message (struct conn_s *connptr)
 
         error_file = get_html_file (connptr->error_number);
         if (!(infile = fopen (error_file, "r"))) {
-                char *detail = lookup_variable (connptr, "detail");
+                char *detail = lookup_variable (connptr->error_variables, "detail");
                 return (write_message (connptr->client_fd, fallback_error,
                                        connptr->error_number,
                                        connptr->error_string,
