@@ -219,7 +219,12 @@ if test x"$debug_enabled" != x"yes" ; then
     CFLAGS="-DNDEBUG $CFLAGS"
 fi
 
+AS_ECHO_N(["checking to see if linker understands -z,defs... "])
+LDFLAGS_OLD="-Wl $LDFLAGS"
 LDFLAGS="-Wl,-z,defs $LDFLAGS"
+AC_LINK_IFELSE([AC_LANG_PROGRAM()],
+    AS_ECHO("yes"),
+    AS_ECHO("no"); LDFLAGS="$LDFLAGS_OLD")
 
 dnl
 dnl Make sure we can actually handle the "--with-*" and "--enable-*" stuff.
@@ -240,14 +245,27 @@ AC_SUBST(LIBS)
 AC_SUBST(ADDITIONAL_OBJECTS)
 
 # Check for xml tools
-AC_PATH_PROG(XMLLINT, xmllint, no)
-AM_CONDITIONAL(HAVE_XMLLINT, test "x$XMLLINT" != "xno")
 AC_PATH_PROG(XSLTPROC, xsltproc, no)
 AM_CONDITIONAL(HAVE_XSLTPROC, test "x$XSLTPROC" != "xno")
 
 # Check for asciidoc
 AC_PATH_PROG(A2X, a2x, no)
 AM_CONDITIONAL(HAVE_A2X, test "x$A2X" != "xno")
+
+# checking xmllint
+AC_PATH_PROG(XMLLINT, xmllint, no)
+if test "x$XMLLINT" != "xno"; then
+  AS_ECHO_N("testing xmllint... ")
+  echo "TEST" > conftest.txt
+  if $A2X -f docbook conftest.txt 2>/dev/null; then
+    AS_ECHO("ok")
+  else
+    AS_ECHO("failed")
+    XMLLINT="no"
+  fi
+  rm -f conftest.txt conftest.xml
+fi
+AM_CONDITIONAL(HAVE_XMLLINT, test "x$XMLLINT" != "xno")
 
 AC_CONFIG_FILES([
 Makefile

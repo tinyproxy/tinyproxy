@@ -1,9 +1,11 @@
 MAN8_FILES = \
 	tinyproxy.txt
 
-A2X_ARGS = \
-	-d manpage \
-	-f manpage
+if HAVE_XMLLINT
+A2X_ARGS = -d manpage -f manpage
+else
+A2X_ARGS = -d manpage -f manpage -L
+endif
 
 man_MANS = \
 	$(MAN8_FILES:.txt=.8)
