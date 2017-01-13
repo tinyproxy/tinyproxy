@@ -2,6 +2,7 @@ SUBDIRS = \
 	src \
 	data \
 	etc \
+	extras \
 	docs \
 	m4macros \
 	tests
