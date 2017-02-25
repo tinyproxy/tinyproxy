@@ -131,6 +131,16 @@ if test x"$transparent_enabled" = x"yes"; then
    AC_DEFINE(TRANSPARENT_PROXY)
 fi
 
+dnl Include support for packaging and running tinyproxy in snap world.
+AH_TEMPLATE([SNAP_SUPPORT],
+            [Include support for snap package.])
+TP_ARG_ENABLE(snap,
+              [Enable snap packaging (default is NO)],
+              no)
+if test x"$snap_enabled" = x"yes"; then
+    AC_DEFINE(SNAP_SUPPORT)
+fi
+
 # This is required to build test programs below
 AC_PROG_CC
 
