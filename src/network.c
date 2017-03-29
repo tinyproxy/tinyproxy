@@ -249,7 +249,7 @@ CLEANUP:
  * Convert the network address into either a dotted-decimal or an IPv6
  * hex string.
  */
-char *get_ip_string (struct sockaddr *sa, char *buf, size_t buflen)
+const char *get_ip_string (struct sockaddr *sa, char *buf, size_t buflen)
 {
         assert (sa != NULL);
         assert (buf != NULL);
