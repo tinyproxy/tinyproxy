@@ -233,6 +233,9 @@ static void child_main (struct child_s *ptr)
 
                 ret = select(maxfd + 1, &rfds, NULL, NULL, NULL);
                 if (ret == -1) {
+                        if (errno == EINTR) {
+                                continue;
+                        }
                         log_message (LOG_ERR, "error calling select: %s",
                                      strerror(errno));
                         exit(1);
