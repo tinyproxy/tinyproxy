@@ -249,35 +249,20 @@ CLEANUP:
  * Convert the network address into either a dotted-decimal or an IPv6
  * hex string.
  */
-char *get_ip_string (struct sockaddr *sa, char *buf, size_t buflen)
+const char *get_ip_string (struct sockaddr *sa, char *buf, size_t buflen)
 {
+	int af;
+	void* addr;
         assert (sa != NULL);
         assert (buf != NULL);
         assert (buflen != 0);
         buf[0] = '\0';          /* start with an empty string */
-
-        switch (sa->sa_family) {
-        case AF_INET:
-                {
-                        struct sockaddr_in *sa_in = (struct sockaddr_in *) sa;
-
-                        inet_ntop (AF_INET, &sa_in->sin_addr, buf, buflen);
-                        break;
-                }
-        case AF_INET6:
-                {
-                        struct sockaddr_in6 *sa_in6 =
-                            (struct sockaddr_in6 *) sa;
-
-                        inet_ntop (AF_INET6, &sa_in6->sin6_addr, buf, buflen);
-                        break;
-                }
-        default:
-                /* no valid family */
-                return NULL;
-        }
-
-        return buf;
+	af = sa->sa_family;
+	if(af != AF_INET && af != AF_INET6) return NULL;
+	addr = (af == AF_INET ?
+	      (void*)&(((struct sockaddr_in *) (void*)sa)->sin_addr) :
+	      (void*)&(((struct sockaddr_in6 *) (void*)sa)->sin6_addr) );
+	return inet_ntop(af, addr, buf, buflen);
 }
 
 /*
