@@ -62,7 +62,7 @@ authors.c: $(top_srcdir)/authors.xml $(srcdir)/authors.xsl
 if HAVE_XSLTPROC
 	$(AM_V_GEN) $(XSLTPROC) $(srcdir)/authors.xsl $< > $(@) || rm -f $(@)
 else
-        @echo "*** xsltproc is required to regenerate $(@) ***"; exit 1;
+	@echo "*** xsltproc is required to regenerate $(@) ***"; exit 1;
 endif
 
 BUILT_SOURCES = \
