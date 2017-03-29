@@ -161,47 +161,16 @@ dnl
 AC_HEADER_STDC
 AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([sys/ioctl.h sys/mman.h sys/resource.h \
-		  sys/select.h sys/socket.h sys/time.h sys/uio.h \
-		  sys/un.h arpa/inet.h netinet/in.h \
-		  assert.h ctype.h errno.h fcntl.h grp.h io.h libintl.h \
-		  netdb.h pwd.h regex.h signal.h stdarg.h stddef.h stdio.h \
-		  sysexits.h syslog.h time.h wchar.h wctype.h \
+AC_CHECK_HEADERS([sys/ioctl.h alloca.h memory.h malloc.h sysexits.h \
 		  values.h])
-
-dnl OpenBSD machines don't like having malloc included (even if it's present)
-dnl as they expect you to use stdlib.h
-case "$target" in
-    *-openbsd*) ;;
-    *)         AC_CHECK_HEADER(malloc.h);;
-esac
-
-
-dnl Checks for types
-AC_TYPE_SIZE_T
-AC_TYPE_PID_T
-AC_UNP_CHECK_TYPE(uint8_t, unsigned char)
-AC_UNP_CHECK_TYPE(int16_t, short)
-AC_UNP_CHECK_TYPE(uint16_t, unsigned short)
-AC_UNP_CHECK_TYPE(int32_t, int)
-AC_UNP_CHECK_TYPE(uint32_t, unsigned int)
-AC_UNP_CHECK_TYPE(ssize_t, int)
-AC_UNP_CHECK_TYPE(socklen_t, unsigned int)
-AC_UNP_CHECK_TYPE(in_addr_t, uint32_t)
-
 
 dnl Checks for libary functions
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 
-AC_CHECK_FUNCS([gethostname inet_ntoa memchr memset select socket strcasecmp \
-                strchr strdup strerror strncasecmp strpbrk strstr strtol])
-AC_CHECK_FUNCS([isascii memcpy memmove setrlimit ftruncate regcomp regexec])
+AC_CHECK_FUNCS([inet_ntoa strdup])
 AC_CHECK_FUNCS([strlcpy strlcat setgroups])
-
-AC_CHECK_FUNCS([time rand srand])
-
 
 dnl Enable extra warnings
 DESIRED_FLAGS="-fdiagnostics-show-option -Wall -Wextra -Wno-unused-parameter -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wfloat-equal -Wundef -Wformat=2 -Wlogical-op -Wmissing-include-dirs -Wformat-nonliteral -Wold-style-definition -Wpointer-arith -Waggregate-return -Winit-self -Wpacked --std=c89 -ansi -pedantic -Wno-overlength-strings -Wc++-compat -Wno-long-long -Wno-overlength-strings -Wdeclaration-after-statement -Wredundant-decls -Wmissing-noreturn -Wshadow -Wendif-labels -Wcast-qual -Wcast-align -Wwrite-strings -Wp,-D_FORTIFY_SOURCE=2 -fno-common"
@@ -229,11 +198,6 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM()],
 dnl
 dnl Make sure we can actually handle the "--with-*" and "--enable-*" stuff.
 dnl
-
-dnl Handle the REGEX library
-if test x"$ac_cv_func_regexec" != x"yes"; then
-    AC_MSG_ERROR([Could not locate the regexec() function])
-fi
 
 dnl
 dnl Substitute the variables into the various Makefiles
