@@ -156,6 +156,7 @@ static HANDLE_FUNC (handle_timeout);
 static HANDLE_FUNC (handle_user);
 static HANDLE_FUNC (handle_viaproxyname);
 static HANDLE_FUNC (handle_disableviaheader);
+static HANDLE_FUNC (handle_disablexffheader);
 static HANDLE_FUNC (handle_xtinyproxy);
 
 #ifdef UPSTREAM_SUPPORT
@@ -205,11 +206,12 @@ struct {
         STDCONF ("defaulterrorfile", STR, handle_defaulterrorfile),
         STDCONF ("statfile", STR, handle_statfile),
         STDCONF ("stathost", STR, handle_stathost),
-        STDCONF ("xtinyproxy",  BOOL, handle_xtinyproxy),
         /* boolean arguments */
         STDCONF ("syslog", BOOL, handle_syslog),
         STDCONF ("bindsame", BOOL, handle_bindsame),
         STDCONF ("disableviaheader", BOOL, handle_disableviaheader),
+        STDCONF ("disablexffheader", BOOL, handle_disablexffheader),
+        STDCONF ("xtinyproxy",  BOOL, handle_xtinyproxy),
         /* integer arguments */
         STDCONF ("port", INT, handle_port),
         STDCONF ("maxclients", INT, handle_maxclients),
@@ -733,6 +735,19 @@ static HANDLE_FUNC (handle_disableviaheader)
 
         log_message (LOG_INFO,
                      "Disabling transmission of the \"Via\" header.");
+        return 0;
+}
+
+static HANDLE_FUNC (handle_disablexffheader)
+{
+        int r = set_bool_arg (&conf->disable_xffheader, line, &match[2]);
+
+        if (r) {
+                return r;
+        }
+
+        log_message (LOG_INFO,
+                     "Disabling transmission of the \"X-Forwarded-For\" header.");
         return 0;
 }
 

@@ -923,17 +923,20 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
                                      NULL);
                 goto PULL_CLIENT_DATA;
         }
-        /* Send new or appended the 'X-Forwarded-For' header */
-        ret = write_xff_header(connptr->server_fd, hashofheaders,
-                               connptr->client_ip_addr);
-        if (ret < 0) {
-                indicate_http_error(connptr, 503,
-                                    "Could not send data to remote server",
-                                    "detail",
-                                    "A network error occurred while "
-                                    "trying to write data to the remote web server.",
-                                    NULL);
-                goto PULL_CLIENT_DATA;
+
+        if (!config.disable_xffheader) {
+                /* Send new or appended the 'X-Forwarded-For' header */
+                ret = write_xff_header(connptr->server_fd, hashofheaders,
+                                       connptr->client_ip_addr);
+                if (ret < 0) {
+                        indicate_http_error(connptr, 503,
+                                            "Could not send data to remote server",
+                                            "detail",
+                                            "A network error occurred while "
+                                            "trying to write data to the remote web server.",
+                                            NULL);
+                        goto PULL_CLIENT_DATA;
+                }
         }
 
         /*
@@ -1096,11 +1099,14 @@ retry:
                                 connptr->protocol.minor);
         if (ret < 0)
                 goto ERROR_EXIT;
-        /* Send new or appended the 'X-Forwarded-For' header */
-        ret = write_xff_header(connptr->client_fd, hashofheaders,
-                               connptr->server_ip_addr);
-        if (ret < 0)
-                goto ERROR_EXIT;
+
+        if (!config.disable_xffheader) {
+                /* Send new or appended the 'X-Forwarded-For' header */
+                ret = write_xff_header(connptr->client_fd, hashofheaders,
+                                       connptr->server_ip_addr);
+                if (ret < 0)
+                        goto ERROR_EXIT;
+        }
 
 #ifdef REVERSE_SUPPORT
         /* Write tracking cookie for the magical reverse proxy path hack */
