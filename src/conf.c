@@ -542,7 +542,7 @@ static void initialize_with_defaults (struct config_s *conf,
  * Load the configuration.
  */
 int reload_config_file (const char *config_fname, struct config_s *conf,
-                        struct config_s *defaults)
+                        struct config_s *defaults, struct config_s *overrides)
 {
         int ret;
 
@@ -580,6 +580,34 @@ int reload_config_file (const char *config_fname, struct config_s *conf,
                              "Therefore setting idle timeout to %u seconds.",
                              MAX_IDLE_TIME);
                 conf->idletimeout = MAX_IDLE_TIME;
+        }
+
+        /* Copy overridable values. */
+        if (overrides->logf_name != NULL) {
+                if (conf->logf_name != NULL) {
+                        safefree (conf->logf_name);
+                }
+                conf->logf_name = safestrdup (overrides->logf_name);
+                if (!conf->logf_name) {
+                        fprintf (stderr,
+                                 "%s: Could not allocate memory.\n",
+                                 PACKAGE);
+                        ret = -1;
+                }
+                conf->syslog = 0;
+        }
+
+        if (overrides->pidpath != NULL) {
+                if (conf->pidpath != NULL) {
+                        safefree (conf->pidpath);
+                }
+                conf->pidpath = safestrdup (overrides->pidpath);
+                if (!conf->pidpath) {
+                        fprintf (stderr,
+                                 "%s: Could not allocate memory.\n",
+                                 PACKAGE);
+                        ret = -1;
+                }
         }
 
 done:

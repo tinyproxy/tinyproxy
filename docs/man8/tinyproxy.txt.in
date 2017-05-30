@@ -40,8 +40,14 @@ OPTIONS
 *-h*::
     Display a short help screen of command line arguments and exit.
 
-*-l*::
+*-L*::
     Display the licensing agreement.
+
+*-l <logfile>*::
+    Set log file path. Overrides configuration file *LogFile* directive.
+
+*-p <pidfile>*::
+    Set pidfile path. Overrides configuration file *PidFile* directive.
 
 *-v*::
     Display version information and exit.
