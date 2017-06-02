@@ -70,7 +70,7 @@ static unsigned int logging_initialized = FALSE;     /* boolean */
  */
 int open_log_file (const char *log_file_name)
 {
-        log_file_fd = create_file_safely (log_file_name, FALSE);
+        log_file_fd = create_file_safely (log_file_name, FALSE, FALSE);
         return log_file_fd;
 }
 
