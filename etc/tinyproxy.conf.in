@@ -158,6 +158,9 @@ LogLevel Info
 #  # default upstream is internet firewall
 #  upstream firewall.internal.example.com:80
 #
+#  # connection through testproxy with authentication
+#  upstream user:password@testproxy:8008 ".test.domain.invalid"
+#
 # The LAST matching rule wins the route decision.  As you can see, you
 # can use a host, or a domain:
 #  name     matches host exactly
