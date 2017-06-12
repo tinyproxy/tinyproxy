@@ -1535,15 +1535,12 @@ void handle_connection (int fd)
         if (connptr->upstream_proxy != NULL) {
                 if (connptr->upstream_proxy->user)
                 {
-                        char proxy_auth[200] = "";
-                        char src[256];
-                        char dst2[512];
-                        strcpy(src, connptr->upstream_proxy->user);
-                        strcat(src, ":");
-                        strcat(src, connptr->upstream_proxy->pass);
-                        encode_base_64(src, dst2, 512);
-                        strcat(proxy_auth, "Basic ");
-                        strcat(proxy_auth, dst2);
+                        char plain[256];
+                        char encoded[256];
+                        char proxy_auth[256];
+                        snprintf (plain, 256, "%s:%s", connptr->upstream_proxy->user, connptr->upstream_proxy->pass);
+                        encode_base_64(plain, encoded, 256);
+                        snprintf (proxy_auth, 256, "Basic %s", encoded);
 
                         hashmap_insert (hashofheaders,
                                         "Proxy-Authorization",
