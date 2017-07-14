@@ -883,10 +883,6 @@ static HANDLE_FUNC (handle_bind)
         log_message (LOG_INFO,
                      "Outgoing connections bound to IP %s", conf->bind_address);
         return 0;
-#else
-        fprintf (stderr,
-                 "\"Bind\" cannot be used with transparent support enabled.\n");
-        return 1;
 #endif
 }
 
