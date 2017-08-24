@@ -56,9 +56,6 @@ Enable support for proxying connections through another proxy server.
 - `--enable-transparent`: 
 Allow Tinyproxy to be used as a transparent proxy daemon.
 
-- `--enable-static`: 
-Compile a static version of Tinyproxy.
-
 - `--enable-reverse`: 
 Enable reverse proxying.
 
