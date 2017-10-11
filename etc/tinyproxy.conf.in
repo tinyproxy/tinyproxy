@@ -102,7 +102,7 @@ StatFile "@pkgdatadir@/stats.html"
 #Syslog On
 
 #
-# LogLevel: 
+# LogLevel: Warning
 #
 # Set the logging level. Allowed settings are:
 #	Critical	(least verbose)
