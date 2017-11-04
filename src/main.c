@@ -147,7 +147,7 @@ display_usage (void)
         printf ("Usage: %s [options]\n", PACKAGE);
         printf ("\n"
                 "Options are:\n"
-                "  -d        Do not daemonize (run in foreground).\n"
+                "  -d        Do not daemonize (run in foreground, log to stdout).\n"
                 "  -c FILE   Use an alternate configuration file.\n"
                 "  -h        Display this usage information.\n"
                 "  -l        Display the license.\n"
