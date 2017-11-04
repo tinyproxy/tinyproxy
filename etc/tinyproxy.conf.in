@@ -121,6 +121,7 @@ LogLevel Info
 #
 # PidFile: Write the PID of the main tinyproxy thread to this file so it
 # can be used for signalling purposes.
+# If not specified, no pidfile will be written.
 #
 #PidFile "@localstatedir@/run/tinyproxy/tinyproxy.pid"
 
