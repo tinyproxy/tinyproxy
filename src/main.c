@@ -355,7 +355,7 @@ static void initialize_config_defaults (struct config_s *conf)
         conf->errorpages = NULL;
         conf->stathost = safestrdup (TINYPROXY_STATHOST);
         conf->idletimeout = MAX_IDLE_TIME;
-        conf->logf_name = safestrdup (LOCALSTATEDIR "/log/tinyproxy/tinyproxy.log");
+        conf->logf_name = NULL;
         conf->pidpath = NULL;
 }
 
@@ -415,8 +415,13 @@ main (int argc, char **argv)
                 anonymous_insert ("Content-Type");
         }
 
-        if (config.godaemon == TRUE)
+        if (config.godaemon == TRUE) {
+                if (!config.syslog && config.logf_name == NULL)
+                        fprintf(stderr, "WARNING: logging deactivated "
+                                "(can't log to stdout when daemonized)\n");
+
                 makedaemon ();
+        }
 
         if (set_signal_handler (SIGPIPE, SIG_IGN) == SIG_ERR) {
                 fprintf (stderr, "%s: Could not set the \"SIGPIPE\" signal.\n",
