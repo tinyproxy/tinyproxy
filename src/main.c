@@ -147,7 +147,7 @@ display_usage (void)
         printf ("Usage: %s [options]\n", PACKAGE);
         printf ("\n"
                 "Options are:\n"
-                "  -d        Do not daemonize (run in foreground).\n"
+                "  -d        Do not daemonize (run in foreground, log to stdout).\n"
                 "  -c FILE   Use an alternate configuration file.\n"
                 "  -h        Display this usage information.\n"
                 "  -l        Display the license.\n"
@@ -356,7 +356,7 @@ static void initialize_config_defaults (struct config_s *conf)
         conf->stathost = safestrdup (TINYPROXY_STATHOST);
         conf->idletimeout = MAX_IDLE_TIME;
         conf->logf_name = safestrdup (LOCALSTATEDIR "/log/tinyproxy/tinyproxy.log");
-        conf->pidpath = safestrdup (LOCALSTATEDIR "/run/tinyproxy/tinyproxy.pid");
+        conf->pidpath = NULL;
 }
 
 /**
@@ -496,7 +496,7 @@ main (int argc, char **argv)
         child_close_sock ();
 
         /* Remove the PID file */
-        if (unlink (config.pidpath) < 0) {
+        if (config.pidpath != NULL && unlink (config.pidpath) < 0) {
                 log_message (LOG_WARNING,
                              "Could not remove PID file \"%s\": %s.",
                              config.pidpath, strerror (errno));
