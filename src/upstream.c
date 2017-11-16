@@ -124,7 +124,7 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                 log_message (LOG_INFO, "Added no-upstream for %s", domain);
         } else {
                 if (!host || host[0] == '\0' || port < 1 || !domain
-                    || domain == '\0') {
+                    || domain[0] == '\0') {
                         log_message (LOG_WARNING,
                                      "Nonsense upstream rule: invalid parameters");
                         goto fail;
