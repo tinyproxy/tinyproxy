@@ -48,6 +48,7 @@
 #include "upstream.h"
 #include "connect-ports.h"
 #include "conf.h"
+#include "basicauth.h"
 
 /*
  * Maximum length of a HTTP line
@@ -1561,6 +1562,30 @@ void handle_connection (int fd)
                 update_stats (STAT_BADCONN);
                 goto fail;
         }
+
+	if (config.basicauth_list != NULL) {
+		ssize_t len;
+		char *authstring;
+		int failure = 1;
+		len = hashmap_entry_by_key (hashofheaders, "proxy-authorization",
+                                  (void **) &authstring);
+		if (len > 0 &&
+		/* currently only "basic" auth supported */
+			(strncmp(authstring, "Basic ", 6) == 0 ||
+			 strncmp(authstring, "basic ", 6) == 0) &&
+			basicauth_check (config.basicauth_list, authstring + 6) == 1)
+				failure = 0;
+		if(failure) {
+			update_stats (STAT_DENIED);
+			indicate_http_error (connptr, 403, "Access denied",
+					     "detail",
+					     "The administrator of this proxy has not configured "
+					     "it to service requests from you.",
+					     NULL);
+			goto fail;
+		}
+		hashmap_remove (hashofheaders, "proxy-authorization");
+	}
 
         /*
          * Add any user-specified headers (AddHeader directive) to the

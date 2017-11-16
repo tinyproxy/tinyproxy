@@ -36,6 +36,7 @@
 #include "reverse-proxy.h"
 #include "upstream.h"
 #include "connect-ports.h"
+#include "basicauth.h"
 
 /*
  * The configuration directives are defined in the structure below.  Each
@@ -116,6 +117,7 @@ static HANDLE_FUNC (handle_nop)
 }                               /* do nothing function */
 
 static HANDLE_FUNC (handle_allow);
+static HANDLE_FUNC (handle_basicauth);
 static HANDLE_FUNC (handle_anonymous);
 static HANDLE_FUNC (handle_bind);
 static HANDLE_FUNC (handle_bindsame);
@@ -232,6 +234,7 @@ struct {
                  handle_deny),
         STDCONF ("bind", "(" IP "|" IPV6 ")", handle_bind),
         /* other */
+        STDCONF ("basicauth", ALNUM WS ALNUM, handle_basicauth),
         STDCONF ("errorfile", INT WS STR, handle_errorfile),
         STDCONF ("addheader",  STR WS STR, handle_addheader),
 
@@ -299,6 +302,7 @@ static void free_config (struct config_s *conf)
         safefree (conf->user);
         safefree (conf->group);
         vector_delete(conf->listen_addrs);
+        vector_delete(conf->basicauth_list);
 #ifdef FILTER_ENABLE
         safefree (conf->filter);
 #endif                          /* FILTER_ENABLE */
@@ -998,6 +1002,27 @@ static HANDLE_FUNC (handle_loglevel)
 
         safefree (arg);
         return -1;
+}
+
+static HANDLE_FUNC (handle_basicauth)
+{
+        char *user, *pass;
+        user = get_string_arg(line, &match[2]);
+        if (!user)
+                return -1;
+        pass = get_string_arg(line, &match[3]);
+        if (!pass) {
+                safefree (user);
+                return -1;
+        }
+        if (!conf->basicauth_list) {
+                conf->basicauth_list = vector_create ();
+        }
+
+        basicauth_add (conf->basicauth_list, user, pass);
+        safefree (user);
+        safefree (pass);
+        return 0;
 }
 
 #ifdef FILTER_ENABLE
