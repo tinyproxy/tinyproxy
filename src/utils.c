@@ -61,7 +61,8 @@ send_http_message (struct conn_s *connptr, int http_code,
 /*
  * Safely creates filename and returns the low-level file descriptor.
  */
-int create_file_safely (const char *filename, unsigned int truncate_file)
+int create_file_safely (const char *filename, unsigned int truncate_file,
+                unsigned int strict_check)
 {
         struct stat lstatinfo;
         int fildes;
@@ -112,35 +113,37 @@ int create_file_safely (const char *filename, unsigned int truncate_file)
                         return fildes;
                 }
 
-                /*
-                 * fstat() the opened file and check that the file mode bits,
-                 * inode, and device match.
-                 */
-                if (fstat (fildes, &fstatinfo) < 0
-                    || lstatinfo.st_mode != fstatinfo.st_mode
-                    || lstatinfo.st_ino != fstatinfo.st_ino
-                    || lstatinfo.st_dev != fstatinfo.st_dev) {
-                        fprintf (stderr,
-                                 "%s: The file %s has been changed before it could be opened\n",
-                                 PACKAGE, filename);
-                        close (fildes);
-                        return -EIO;
-                }
+                if (strict_check) {
+                        /*
+                         * fstat() the opened file and check that the file mode bits,
+                         * inode, and device match.
+                         */
+                        if (fstat (fildes, &fstatinfo) < 0
+                                        || lstatinfo.st_mode != fstatinfo.st_mode
+                                        || lstatinfo.st_ino != fstatinfo.st_ino
+                                        || lstatinfo.st_dev != fstatinfo.st_dev) {
+                                fprintf (stderr,
+                                                "%s: The file %s has been changed before it could be opened\n",
+                                                PACKAGE, filename);
+                                close (fildes);
+                                return -EIO;
+                        }
 
-                /*
-                 * If the above check was passed, we know that the lstat()
-                 * and fstat() were done on the same file. Now we check that
-                 * there's only one link, and that it's a normal file (this
-                 * isn't strictly necessary because the fstat() vs lstat()
-                 * st_mode check would also find this)
-                 */
-                if (fstatinfo.st_nlink > 1 || !S_ISREG (lstatinfo.st_mode)) {
-                        fprintf (stderr,
-                                 "%s: The file %s has too many links, "
-                                 "or is not a regular file: %s\n",
-                                 PACKAGE, filename, strerror (errno));
-                        close (fildes);
-                        return -EMLINK;
+                        /*
+                         * If the above check was passed, we know that the lstat()
+                         * and fstat() were done on the same file. Now we check that
+                         * there's only one link, and that it's a normal file (this
+                         * isn't strictly necessary because the fstat() vs lstat()
+                         * st_mode check would also find this)
+                         */
+                        if (fstatinfo.st_nlink > 1 || !S_ISREG (lstatinfo.st_mode)) {
+                                fprintf (stderr,
+                                                "%s: The file %s has too many links, "
+                                                "or is not a regular file: %s\n",
+                                                PACKAGE, filename, strerror (errno));
+                                close (fildes);
+                                return -EMLINK;
+                        }
                 }
 
                 /*
@@ -194,7 +197,7 @@ pidfile_create (const char *filename)
         /*
          * Create a new file
          */
-        if ((fildes = create_file_safely (filename, TRUE)) < 0)
+        if ((fildes = create_file_safely (filename, TRUE, TRUE)) < 0)
                 return fildes;
 
         /*
