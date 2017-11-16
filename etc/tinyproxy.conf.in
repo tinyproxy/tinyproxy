@@ -215,6 +215,11 @@ MaxRequestsPerChild 0
 #
 Allow 127.0.0.1
 
+# BasicAuth: HTTP "Basic Authentication" for accessing the proxy.
+# If there are any entries specified, access is only granted for authenticated
+# users.
+#BasicAuth user password
+
 #
 # AddHeader: Adds the specified headers to outgoing HTTP requests that
 # Tinyproxy makes. Note that this option will not work for HTTPS
