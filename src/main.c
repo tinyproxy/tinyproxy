@@ -441,6 +441,15 @@ main (int argc, char **argv)
                 exit (EX_OSERR);
         }
 
+        /* Create pid file before we drop privileges */
+        if (config.pidpath) {
+                if (pidfile_create (config.pidpath) < 0) {
+                        fprintf (stderr, "%s: Could not create PID file.\n",
+                                 argv[0]);
+                        exit (EX_OSERR);
+                }
+        }
+
         /* Switch to a different user if we're running as root */
         if (geteuid () == 0)
                 change_user (argv[0]);
@@ -451,15 +460,6 @@ main (int argc, char **argv)
         /* Create log file after we drop privileges */
         if (setup_logging ()) {
                 exit (EX_SOFTWARE);
-        }
-
-        /* Create pid file after we drop privileges */
-        if (config.pidpath) {
-                if (pidfile_create (config.pidpath) < 0) {
-                        fprintf (stderr, "%s: Could not create PID file.\n",
-                                 argv[0]);
-                        exit (EX_OSERR);
-                }
         }
 
         if (child_pool_create () < 0) {
