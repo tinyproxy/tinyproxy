@@ -1270,8 +1270,8 @@ static void relay_connection (struct conn_s *connptr)
 static int
 connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 {
-	int len;
-	char buff[512]; /* won't use more than 7 + 255 */
+	unsigned len;
+	unsigned char buff[512]; /* won't use more than 7 + 255 */
 	unsigned short port;
 	struct hostent *host;
 	struct upstream *cur_upstream = connptr->upstream_proxy;
