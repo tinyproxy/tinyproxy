@@ -21,8 +21,8 @@
 #ifndef TINYPROXY_NETWORK_H
 #define TINYPROXY_NETWORK_H
 
-extern ssize_t safe_write (int fd, const char *buffer, size_t count);
-extern ssize_t safe_read (int fd, char *buffer, size_t count);
+extern ssize_t safe_write (int fd, const void *buf, size_t count);
+extern ssize_t safe_read (int fd, void *buf, size_t count);
 
 extern int write_message (int fd, const char *fmt, ...);
 extern ssize_t readline (int fd, char **whole_buffer);
