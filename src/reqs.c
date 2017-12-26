@@ -61,6 +61,41 @@
 #ifdef UPSTREAM_SUPPORT
 #  define UPSTREAM_CONFIGURED() (config.upstream_list != NULL)
 #  define UPSTREAM_HOST(host) upstream_get(host, config.upstream_list)
+static const char base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+static void encode_base_64(char* src, char* dest, int max_len) {
+        int n, l, i;
+        l = strlen(src);
+        max_len = (max_len - 1) / 4;
+        for (i = 0; i < max_len; i++, src += 3, l -= 3) {
+                switch (l) {
+                        case 0:
+                                break;
+                        case 1:
+                                n = src[0] << 16;
+                        *dest++ = base64[(n >> 18) & 077];
+                        *dest++ = base64[(n >> 12) & 077];
+                        *dest++ = '=';
+                        *dest++ = '=';
+                        break;
+                        case 2:
+                                n = src[0] << 16 | src[1] << 8;
+                        *dest++ = base64[(n >> 18) & 077];
+                        *dest++ = base64[(n >> 12) & 077];
+                        *dest++ = base64[(n >> 6) & 077];
+                        *dest++ = '=';
+                        break;
+                        default:
+                                n = src[0] << 16 | src[1] << 8 | src[2];
+                        *dest++ = base64[(n >> 18) & 077];
+                        *dest++ = base64[(n >> 12) & 077];
+                        *dest++ = base64[(n >> 6) & 077];
+                        *dest++ = base64[n & 077];
+                }
+                if (l < 3) break;
+        }
+        *dest++ = 0;
+}
 #else
 #  define UPSTREAM_CONFIGURED() (0)
 #  define UPSTREAM_HOST(host) (NULL)
@@ -1498,6 +1533,19 @@ void handle_connection (int fd)
 
         connptr->upstream_proxy = UPSTREAM_HOST (request->host);
         if (connptr->upstream_proxy != NULL) {
+                if (connptr->upstream_proxy->user)
+                {
+                        char plain[256];
+                        char encoded[256];
+                        char proxy_auth[256];
+                        snprintf (plain, 256, "%s:%s", connptr->upstream_proxy->user, connptr->upstream_proxy->pass);
+                        encode_base_64(plain, encoded, 256);
+                        snprintf (proxy_auth, 256, "Basic %s", encoded);
+
+                        hashmap_insert (hashofheaders,
+                                        "Proxy-Authorization",
+                                        proxy_auth, strlen (proxy_auth) + 1);
+                }
                 if (connect_to_upstream (connptr, request) < 0) {
                         goto fail;
                 }

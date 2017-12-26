@@ -35,12 +35,14 @@ struct upstream {
         struct upstream *next;
         char *domain;           /* optional */
         char *host;
+        char *user;
+        char *pass;
         int port;
         in_addr_t ip, mask;
 };
 
 #ifdef UPSTREAM_SUPPORT
-extern void upstream_add (const char *host, int port, const char *domain,
+extern void upstream_add (const char *user, const char *pass, const char *host, int port, const char *domain,
                           struct upstream **upstream_list);
 extern struct upstream *upstream_get (char *host, struct upstream *up);
 extern void free_upstream_list (struct upstream *up);

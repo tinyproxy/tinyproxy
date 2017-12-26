@@ -32,7 +32,7 @@
 /**
  * Construct an upstream struct from input data.
  */
-static struct upstream *upstream_build (const char *host, int port, const char *domain)
+static struct upstream *upstream_build (const char *user, const char *pass, const char *host, int port, const char *domain)
 {
         char *ptr;
         struct upstream *up;
@@ -44,8 +44,17 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                 return NULL;
         }
 
-        up->host = up->domain = NULL;
+        up->user = up->pass = up->host = up->domain = NULL;
         up->ip = up->mask = 0;
+
+        if (user != NULL) {
+            up->user = safestrdup(user);
+        }
+
+        if (pass != NULL) {
+            up->pass = safestrdup(pass);
+        }
+
 
         if (domain == NULL) {
                 if (!host || host[0] == '\0' || port < 1) {
@@ -57,8 +66,8 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                 up->host = safestrdup (host);
                 up->port = port;
 
-                log_message (LOG_INFO, "Added upstream %s:%d for [default]",
-                             host, port);
+                log_message (LOG_INFO, "Added upstream %s:<hidden>@%s:%d for [default]",
+                             user, host, port);
         } else if (host == NULL) {
                 if (!domain || domain[0] == '\0') {
                         log_message (LOG_WARNING,
@@ -101,13 +110,15 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                 up->port = port;
                 up->domain = safestrdup (domain);
 
-                log_message (LOG_INFO, "Added upstream %s:%d for %s",
-                             host, port, domain);
+                log_message (LOG_INFO, "Added upstream %s:<hidden>@%s:%d for %s",
+                             user, host, port, domain);
         }
 
         return up;
 
 fail:
+        safefree (up->user);
+        safefree (up->pass);
         safefree (up->host);
         safefree (up->domain);
         safefree (up);
@@ -118,12 +129,12 @@ fail:
 /*
  * Add an entry to the upstream list
  */
-void upstream_add (const char *host, int port, const char *domain,
+void upstream_add (const char *user, const char *pass, const char *host, int port, const char *domain,
                    struct upstream **upstream_list)
 {
         struct upstream *up;
 
-        up = upstream_build (host, port, domain);
+        up = upstream_build (user, pass, host, port, domain);
         if (up == NULL) {
                 return;
         }
@@ -154,6 +165,8 @@ void upstream_add (const char *host, int port, const char *domain,
         return;
 
 upstream_cleanup:
+        safefree (up->user);
+        safefree (up->pass);
         safefree (up->host);
         safefree (up->domain);
         safefree (up);
@@ -215,6 +228,8 @@ void free_upstream_list (struct upstream *up)
         while (up) {
                 struct upstream *tmp = up;
                 up = up->next;
+                safefree (tmp->user);
+                safefree (tmp->pass);
                 safefree (tmp->domain);
                 safefree (tmp->host);
                 safefree (tmp);
