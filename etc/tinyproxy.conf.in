@@ -160,6 +160,10 @@ LogLevel Info
 #  # default upstream is internet firewall
 #  upstream firewall.internal.example.com:80
 #
+# You may also use SOCKS4/SOCKS5 upstream proxies by using upstream4/upstream5:
+#  upstream4 127.0.0.1:9050
+#  upstream5 socksproxy:1080
+#
 # The LAST matching rule wins the route decision.  As you can see, you
 # can use a host, or a domain:
 #  name     matches host exactly
