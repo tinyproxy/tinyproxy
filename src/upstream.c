@@ -32,7 +32,9 @@
 /**
  * Construct an upstream struct from input data.
  */
-static struct upstream *upstream_build (const char *host, int port, const char *domain)
+static struct upstream *upstream_build (const char *host, int port,
+                                        const char *basic_auth,
+                                        const char *domain)
 {
         char *ptr;
         struct upstream *up;
@@ -44,7 +46,7 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                 return NULL;
         }
 
-        up->host = up->domain = NULL;
+        up->host = up->domain = up->basic_auth = NULL;
         up->ip = up->mask = 0;
 
         if (domain == NULL) {
@@ -56,6 +58,9 @@ static struct upstream *upstream_build (const char *host, int port, const char *
 
                 up->host = safestrdup (host);
                 up->port = port;
+
+                if (basic_auth != NULL)
+                        up->basic_auth = safestrdup (basic_auth);
 
                 log_message (LOG_INFO, "Added upstream %s:%d for [default]",
                              host, port);
@@ -101,6 +106,9 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                 up->port = port;
                 up->domain = safestrdup (domain);
 
+                if (basic_auth != NULL)
+                        up->basic_auth = safestrdup (basic_auth);
+
                 log_message (LOG_INFO, "Added upstream %s:%d for %s",
                              host, port, domain);
         }
@@ -109,6 +117,7 @@ static struct upstream *upstream_build (const char *host, int port, const char *
 
 fail:
         safefree (up->host);
+        safefree (up->basic_auth);
         safefree (up->domain);
         safefree (up);
 
@@ -116,14 +125,14 @@ fail:
 }
 
 /*
- * Add an entry to the upstream list
+ * Add an entry to the upstream list.
  */
-void upstream_add (const char *host, int port, const char *domain,
-                   struct upstream **upstream_list)
+void upstream_add (const char *host, int port, const char *basic_auth,
+                   const char *domain, struct upstream **upstream_list)
 {
         struct upstream *up;
 
-        up = upstream_build (host, port, domain);
+        up = upstream_build (host, port, basic_auth, domain);
         if (up == NULL) {
                 return;
         }
@@ -155,6 +164,7 @@ void upstream_add (const char *host, int port, const char *domain,
 
 upstream_cleanup:
         safefree (up->host);
+        safefree (up->basic_auth);
         safefree (up->domain);
         safefree (up);
 
@@ -216,6 +226,7 @@ void free_upstream_list (struct upstream *up)
                 struct upstream *tmp = up;
                 up = up->next;
                 safefree (tmp->domain);
+                safefree (tmp->basic_auth);
                 safefree (tmp->host);
                 safefree (tmp);
         }

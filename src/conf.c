@@ -254,8 +254,8 @@ struct {
                 BEGIN "(no" WS "upstream)" WS STR END, handle_upstream_no, NULL
         },
         {
-                BEGIN "(upstream)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR
-                      ")?" END, handle_upstream, NULL
+                BEGIN "(upstream)" WS "(" STR "@" ")?" "(" IP "|" ALNUM ")" ":"
+                        INT "(" WS STR ")?" END, handle_upstream, NULL
         },
 #endif
         /* loglevel */
@@ -1071,22 +1071,30 @@ static HANDLE_FUNC (handle_upstream)
         char *ip;
         int port;
         char *domain;
+        char *basic_auth = NULL;        /* optional, Base64 basic auth */
 
-        ip = get_string_arg (line, &match[2]);
+        if (match[3].rm_so != -1) {
+                /* Basic auth is set for upstream proxy. */
+                basic_auth = get_string_arg (line, &match[3]);
+        }
+
+        ip = get_string_arg (line, &match[4]);
         if (!ip)
                 return -1;
-        port = (int) get_long_arg (line, &match[7]);
+        port = (int) get_long_arg (line, &match[9]);
 
-        if (match[10].rm_so != -1) {
-                domain = get_string_arg (line, &match[10]);
+        if (match[12].rm_so != -1) {
+                domain = get_string_arg (line, &match[12]);
                 if (domain) {
-                        upstream_add (ip, port, domain, &conf->upstream_list);
+                        upstream_add (ip, port, basic_auth, domain,
+                                      &conf->upstream_list);
                         safefree (domain);
                 }
         } else {
-                upstream_add (ip, port, NULL, &conf->upstream_list);
+                upstream_add (ip, port, basic_auth, NULL, &conf->upstream_list);
         }
 
+        safefree (basic_auth);
         safefree (ip);
 
         return 0;
@@ -1100,7 +1108,7 @@ static HANDLE_FUNC (handle_upstream_no)
         if (!domain)
                 return -1;
 
-        upstream_add (NULL, 0, domain, &conf->upstream_list);
+        upstream_add (NULL, 0, NULL, domain, &conf->upstream_list);
         safefree (domain);
 
         return 0;
