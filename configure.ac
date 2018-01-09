@@ -113,8 +113,8 @@ dnl Include support for reverse proxy?
 AH_TEMPLATE([REVERSE_SUPPORT],
             [Include support for reverse proxy.])
 TP_ARG_ENABLE(reverse,
-              [Enable reverse proxying (default is NO)],
-              no)
+              [Enable reverse proxying (default is YES)],
+              yes)
 if test x"$reverse_enabled" = x"yes"; then
     ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS reverse-proxy.o"
     AC_DEFINE(REVERSE_SUPPORT)
