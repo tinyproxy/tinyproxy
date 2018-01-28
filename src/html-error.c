@@ -156,13 +156,24 @@ send_html_file (FILE *infile, struct conn_s *connptr)
 
 int send_http_headers (struct conn_s *connptr, int code, const char *message)
 {
-        const char *headers =
+        const char headers[] =
             "HTTP/1.0 %d %s\r\n"
             "Server: %s/%s\r\n"
-            "Content-Type: text/html\r\n" "Connection: close\r\n" "\r\n";
+            "Content-Type: text/html\r\n"
+            "%s"
+            "Connection: close\r\n" "\r\n";
+
+        const char auth_str[] =
+            "Proxy-Authenticate: Basic realm=\""
+            PACKAGE_NAME "\"\r\n";
+
+	/* according to rfc7235, the 407 error must be accompanied by
+           a Proxy-Authenticate header field. */
+        const char *add = code == 407 ? auth_str : "";
 
         return (write_message (connptr->client_fd, headers,
-                               code, message, PACKAGE, VERSION));
+                               code, message, PACKAGE, VERSION,
+                               add));
 }
 
 /*
