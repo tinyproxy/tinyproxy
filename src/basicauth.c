@@ -24,41 +24,7 @@
 #include "html-error.h"
 #include "log.h"
 #include "conf.h"
-
-/* calculates number of bytes base64-encoded stream of N bytes will take. */
-#define BASE64ENC_BYTES(N) (((N+2)/3)*4)
-
-static const char base64_tbl[64] =
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-/* my own base64 impl (taken from libulz) */
-static void base64enc(char *dst, const void* src, size_t count)
-{
-	unsigned const char *s = src;
-	char* d = dst;
-	while(count) {
-		int i = 0,  n = *s << 16;
-		s++;
-		count--;
-		if(count) {
-			n |= *s << 8;
-			s++;
-			count--;
-			i++;
-		}
-		if(count) {
-			n |= *s;
-			s++;
-			count--;
-			i++;
-		}
-		*d++ = base64_tbl[(n >> 18) & 0x3f];
-		*d++ = base64_tbl[(n >> 12) & 0x3f];
-		*d++ = i ? base64_tbl[(n >> 6) & 0x3f] : '=';
-		*d++ = i == 2 ? base64_tbl[n & 0x3f] : '=';
-	}
-	*d = 0;
-}
+#include "base64.h"
 
 /*
  * Add entry to the basicauth list

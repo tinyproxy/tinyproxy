@@ -48,6 +48,7 @@ tinyproxy_SOURCES = \
 	vector.c vector.h \
 	upstream.c upstream.h \
 	basicauth.c basicauth.h \
+	base64.c base64.h \
 	connect-ports.c connect-ports.h
 
 EXTRA_tinyproxy_SOURCES = filter.c filter.h \
