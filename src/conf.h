@@ -113,7 +113,7 @@ struct config_s {
 };
 
 extern int reload_config_file (const char *config_fname, struct config_s *conf,
-                               struct config_s *defaults);
+                               struct config_s *defaults, struct config_s *overrides);
 
 int config_compile_regex (void);
 

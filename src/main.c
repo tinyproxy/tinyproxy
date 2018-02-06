@@ -50,6 +50,7 @@
  */
 struct config_s config;
 struct config_s config_defaults;
+struct config_s config_overrides;
 unsigned int received_sighup = FALSE;   /* boolean */
 
 /*
@@ -149,8 +150,10 @@ display_usage (void)
                 "Options are:\n"
                 "  -d        Do not daemonize (run in foreground).\n"
                 "  -c FILE   Use an alternate configuration file.\n"
+                "  -l FILE   Set log file path (overrides config file)\n"
+                "  -p FILE   Set pid file path (overrides config file)\n"
                 "  -h        Display this usage information.\n"
-                "  -l        Display the license.\n"
+                "  -L        Display the license.\n"
                 "  -v        Display version information.\n");
 
         /* Display the modes compiled into tinyproxy */
@@ -220,17 +223,17 @@ get_id (char *str)
  * This function parses command line arguments.
  **/
 static void
-process_cmdline (int argc, char **argv, struct config_s *conf)
+process_cmdline (int argc, char **argv, struct config_s *conf, struct config_s *overrides)
 {
         int opt;
 
-        while ((opt = getopt (argc, argv, "c:vldh")) != EOF) {
+        while ((opt = getopt (argc, argv, "c:l:p:vLdh")) != EOF) {
                 switch (opt) {
                 case 'v':
                         display_version ();
                         exit (EX_OK);
 
-                case 'l':
+                case 'L':
                         display_license ();
                         exit (EX_OK);
 
@@ -244,6 +247,32 @@ process_cmdline (int argc, char **argv, struct config_s *conf)
                         }
                         conf->config_file = safestrdup (optarg);
                         if (!conf->config_file) {
+                                fprintf (stderr,
+                                         "%s: Could not allocate memory.\n",
+                                         argv[0]);
+                                exit (EX_SOFTWARE);
+                        }
+                        break;
+
+                case 'l':
+                        if (overrides->logf_name != NULL) {
+                                safefree (overrides->logf_name);
+                        }
+                        overrides->logf_name = safestrdup (optarg);
+                        if (!overrides->logf_name) {
+                                fprintf (stderr,
+                                         "%s: Could not allocate memory.\n",
+                                         argv[0]);
+                                exit (EX_SOFTWARE);
+                        }
+                        break;
+
+                case 'p':
+                        if (overrides->pidpath != NULL) {
+                                safefree (overrides->pidpath);
+                        }
+                        overrides->pidpath = safestrdup (optarg);
+                        if (!overrides->pidpath) {
                                 fprintf (stderr,
                                          "%s: Could not allocate memory.\n",
                                          argv[0]);
@@ -370,7 +399,7 @@ int reload_config (void)
         shutdown_logging ();
 
         ret = reload_config_file (config_defaults.config_file, &config,
-                                  &config_defaults);
+                                  &config_defaults, &config_overrides);
         if (ret != 0) {
                 goto done;
         }
@@ -396,11 +425,13 @@ main (int argc, char **argv)
         }
 
         initialize_config_defaults (&config_defaults);
-        process_cmdline (argc, argv, &config_defaults);
+        memset (&config_overrides, 0, sizeof(config_overrides));
+        process_cmdline (argc, argv, &config_defaults, &config_overrides);
 
         if (reload_config_file (config_defaults.config_file,
                                 &config,
-                                &config_defaults)) {
+                                &config_defaults,
+                                &config_overrides)) {
                 exit (EX_SOFTWARE);
         }
 
