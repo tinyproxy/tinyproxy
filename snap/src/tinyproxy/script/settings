@@ -1,0 +1,24 @@
+#!/bin/bash
+
+source $SNAP_DATA/custom_config
+
+tinyproxy_conf="${SNAP_DATA}/etc/tinyproxy.conf"
+
+params=("Port" "MaxClients" "StartServers")
+line_number=(23 176 192)
+length=${#params[@]}
+
+#sed -i in-place option is not available by default on some other distro.
+modify() {
+    sed -u "$1" "$2" > "$2".bak && mv "$2".bak "$2"
+}
+
+for ((i = 0; i < $length; i++))
+do
+  if [ ! -z "${!params[i]}" ]; then
+      echo "customized config: ${params[i]}=${!params[i]}"
+      modify "${line_number[i]}d" $tinyproxy_conf
+      #space sensitive
+      modify "${line_number[i]}i${params[i]} ${!params[i]}" $tinyproxy_conf
+  fi
+done

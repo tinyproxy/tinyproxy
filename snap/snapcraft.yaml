@@ -1,0 +1,50 @@
+name: tinyproxy-snap
+version: '0.2'
+summary: a light-weight HTTP(S) proxy daemon for POSIX operating systems.
+description: |
+  Tinyproxy is a small, efficient HTTP/SSL proxy daemon released under the GNU General Public License. 
+  Tinyproxy is very useful in a small network setting, where a larger proxy would either be too resource intensive, or a security risk.
+
+  usage: $ sudo snap set tinyproxy port=9876
+         $ sudo snap disable tinyproxy
+         $ sudo snap enable tinyproxy
+  supported parameters:
+    - port: The socket addresses where tinyproxy will listen for HTTP/HTTPS client requests. The default value is '8888'
+    - max-clients: This is the absolute highest number of threads which will be created. The default value is 100.
+    - start-servers: The number of servers to start initially. The default value is 10.
+
+grade: stable
+confinement: strict
+
+apps:
+  tinyproxy:
+    command: run-tinyproxy start
+    daemon: simple
+    plugs: [ network, network-bind ]
+
+parts:
+  tinyproxy:
+    plugin: autotools
+    source: https://github.com/tinyproxy/tinyproxy.git
+    source-type: git
+    source-tag: 1.8.4
+    configflags:
+      - --enable-xtinyproxy 
+      - --enable-filter 
+      - --enable-upstream 
+      - --enable-reverse 
+      - --enable-transparent
+      - --enable-snap
+    build-packages:
+      - asciidoc 
+      - xsltproc 
+    organize:
+      sbin: bin 
+    stage:
+      - -etc
+  tinyproxy-customized:
+    plugin: dump
+    organize:
+      src/tinyproxy/script/*: bin/
+      src/tinyproxy/conf/tinyproxy.conf.template: etc/
+      src/tinyproxy/conf/configure: meta/hooks/configure

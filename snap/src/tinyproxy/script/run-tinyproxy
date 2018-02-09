@@ -1,0 +1,17 @@
+#!/bin/bash
+
+test -d ${SNAP_DATA}/etc || mkdir -p ${SNAP_DATA}/etc
+test -d ${SNAP_DATA}/var/run/tinyproxy || mkdir -p ${SNAP_DATA}/var/run/tinyproxy
+test -d ${SNAP_DATA}/var/log/tinyproxy || mkdir -p ${SNAP_DATA}/var/log/tinyproxy
+test -f ${SNAP_DATA}/etc/tinyproxy.conf || sed -e "s|\${SNAP_DATA}|$SNAP_DATA|" ${SNAP}/etc/tinyproxy.conf.template > ${SNAP_DATA}/etc/tinyproxy.conf.ori && sed -e "s|\${SNAP}|$SNAP|" ${SNAP_DATA}/etc/tinyproxy.conf.ori > ${SNAP_DATA}/etc/tinyproxy.conf
+
+#waiting custom_config file is generated.
+#That's sth hooks feature neeeds.
+while [ ! -f "$SNAP_DATA/custom_config" ]; do
+    sleep 1
+    echo "waiting for custom config file generated."
+done
+
+source ${SNAP}/bin/settings
+
+tinyproxy -d -c ${SNAP_DATA}/etc/tinyproxy.conf

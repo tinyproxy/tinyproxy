@@ -441,12 +441,14 @@ main (int argc, char **argv)
                 exit (EX_OSERR);
         }
 
+#ifndef SNAP_SUPPORT
         /* Switch to a different user if we're running as root */
         if (geteuid () == 0)
                 change_user (argv[0]);
         else
                 log_message (LOG_WARNING,
                              "Not running as root, so not changing UID/GID.");
+#endif
 
         /* Create log file after we drop privileges */
         if (setup_logging ()) {
