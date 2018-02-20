@@ -783,12 +783,7 @@ static HANDLE_FUNC (handle_xtinyproxy)
 
 static HANDLE_FUNC (handle_syslog)
 {
-#ifdef HAVE_SYSLOG_H
         return set_bool_arg (&conf->syslog, line, &match[2]);
-#else
-        fprintf (stderr, "Syslog support not compiled in executable.\n");
-        return 1;
-#endif
 }
 
 static HANDLE_FUNC (handle_bindsame)
