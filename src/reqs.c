@@ -681,7 +681,11 @@ static int get_all_headers (int fd, hashmap_t hashofheaders)
                 /*
                  * Append the new line to the current header field.
                  */
-                tmp = (char *) saferealloc (header, len + linelen);
+                if( NULL == header ) {
+                    tmp = (char *) safemalloc (len + linelen);
+                } else {
+                    tmp = (char *) saferealloc (header, len + linelen);
+                }
                 if (tmp == NULL) {
                         safefree (header);
                         safefree (line);

@@ -38,6 +38,7 @@
 static int build_url (char **url, const char *host, int port, const char *path)
 {
         int len;
+        char *tmp;
 
         assert (url != NULL);
         assert (host != NULL);
@@ -45,10 +46,13 @@ static int build_url (char **url, const char *host, int port, const char *path)
         assert (path != NULL);
 
         len = strlen (host) + strlen (path) + 14;
-        *url = (char *) safemalloc (len);
-        if (*url == NULL)
+        
+        tmp = (char *) saferealloc (*url, len);
+        if (tmp == NULL) {
                 return -1;
-
+        }
+        *url = tmp;
+        
         return snprintf (*url, len, "http://%s:%d%s", host, port, path);
 }
 
