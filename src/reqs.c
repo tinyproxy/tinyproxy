@@ -270,6 +270,17 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
                                       "Connection: close\r\n",
                                       request->method, request->path,
                                       request->host, portbuff);
+        } else if (connptr->upstream_proxy &&
+                   connptr->upstream_proxy->type == HTTP_TYPE &&
+                   connptr->upstream_proxy->ua.authstr) {
+                return write_message (connptr->server_fd,
+                                      "%s %s HTTP/1.0\r\n"
+                                      "Host: %s%s\r\n"
+                                      "Connection: close\r\n"
+                                      "Proxy-Authorization: Basic %s\r\n",
+                                      request->method, request->path,
+                                      request->host, portbuff,
+                                      connptr->upstream_proxy->ua.authstr);
         } else {
                 return write_message (connptr->server_fd,
                                       "%s %s HTTP/1.0\r\n"

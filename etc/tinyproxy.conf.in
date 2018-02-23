@@ -146,6 +146,9 @@ LogLevel Info
 #  upstream testproxy:8008 ".our_testbed.example.com"
 #  upstream testproxy:8008 "192.168.128.0/255.255.254.0"
 #
+#  # upstream proxy using basic authentication
+#  upstream user:pass@testproxy:8008 ".test.domain.invalid"
+#
 #  # no upstream proxy for internal websites and unqualified hosts
 #  no upstream ".internal.example.com"
 #  no upstream "www.example.com"
