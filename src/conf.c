@@ -259,8 +259,11 @@ struct {
                 BEGIN "(no" WS "upstream)" WS STR END, handle_upstream_no, NULL
         },
         {
-                BEGIN "(upstream)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR
-                      ")?" END, handle_upstream, NULL
+                BEGIN "(upstream)" WS
+                      "(" ALNUM /*username*/ ":" ALNUM /*password*/ "@" ")?"
+                      "(" IP "|" ALNUM ")"
+                      ":" INT "(" WS STR ")?"
+                END, handle_upstream, NULL
         },
         {
                 BEGIN "(upstream4)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR
@@ -1100,24 +1103,33 @@ static int _handle_upstream(struct config_s* conf, const char* line,
            regmatch_t match[], proxy_type type)
 {
         char *ip;
-        int port;
-        char *domain;
+        int port, mi = 3;
+        char *domain = 0, *user = 0, *pass = 0;
 
-        ip = get_string_arg (line, &match[2]);
+        if (match[mi].rm_so != -1)
+                user = get_string_arg (line, &match[mi]);
+        mi++;
+
+	if (match[mi].rm_so != -1)
+                pass = get_string_arg (line, &match[mi]);
+        mi++;
+
+        ip = get_string_arg (line, &match[mi]);
         if (!ip)
                 return -1;
-        port = (int) get_long_arg (line, &match[7]);
+        mi += 5;
 
-        if (match[10].rm_so != -1) {
-                domain = get_string_arg (line, &match[10]);
-                if (domain) {
-                        upstream_add (ip, port, domain, type, &conf->upstream_list);
-                        safefree (domain);
-                }
-        } else {
-                upstream_add (ip, port, NULL, type, &conf->upstream_list);
-        }
+        port = (int) get_long_arg (line, &match[mi]);
+        mi += 3;
 
+        if (match[mi].rm_so != -1)
+                domain = get_string_arg (line, &match[mi]);
+
+        upstream_add (ip, port, domain, user, pass, type, &conf->upstream_list);
+
+        safefree (user);
+        safefree (pass);
+        safefree (domain);
         safefree (ip);
 
         return 0;
@@ -1146,7 +1158,7 @@ static HANDLE_FUNC (handle_upstream_no)
         if (!domain)
                 return -1;
 
-        upstream_add (NULL, 0, domain, HTTP_TYPE, &conf->upstream_list);
+        upstream_add (NULL, 0, domain, 0, 0, HTTP_TYPE, &conf->upstream_list);
         safefree (domain);
 
         return 0;

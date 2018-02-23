@@ -36,6 +36,11 @@ struct upstream {
         struct upstream *next;
         char *domain;           /* optional */
         char *host;
+        union {
+                char *user;
+                char *authstr;
+        } ua;
+        char *pass;
         int port;
         in_addr_t ip, mask;
         proxy_type type;
@@ -44,6 +49,7 @@ struct upstream {
 #ifdef UPSTREAM_SUPPORT
 const char *proxy_type_name(proxy_type type);
 extern void upstream_add (const char *host, int port, const char *domain,
+                          const char *user, const char *pass,
                           proxy_type type, struct upstream **upstream_list);
 extern struct upstream *upstream_get (char *host, struct upstream *up);
 extern void free_upstream_list (struct upstream *up);
