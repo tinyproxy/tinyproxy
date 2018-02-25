@@ -144,21 +144,25 @@ The possible keywords and their descriptions are as follows:
     `X-Tinyproxy` containing the client's IP address to the request.
 
 *Upstream*::
-*No Upstream*::
 
     This option allows you to set up a set of rules for deciding
     whether an upstream proxy server is to be used, based on the
     host or domain of the site being accessed. The rules are stored
     in the order encountered in the configuration file and the
-    LAST matching rule wins. There are three possible forms for
-    specifying upstream rules:
+    LAST matching rule wins. The following forms for specifying upstream
+    rules exist:
 
-    * 'upstream host:port' turns proxy upstream support on generally.
+    * 'upstream type host:port' turns proxy upstream support on generally.
 
-    * 'upstream host:port "site_spec"' turns on the upstream proxy for
-    the sites matching `site_spec`.
+    * 'upstream type user:pass@host:port' does the same, but uses the
+    supplied credentials for authentication.
 
-    * 'no upstream "site_spec"' turns off upstream support for sites
+    * 'upstream type host:port "site_spec"' turns on the upstream proxy
+    for the sites matching `site_spec`.
+
+    `type` can be one of `http`, `socks4`, `socks5`, `none`.
+
+    * 'upstream none "site_spec"' turns off upstream support for sites
     matching `site_spec`.
 
     The site can be specified in various forms as a hostname, domain
