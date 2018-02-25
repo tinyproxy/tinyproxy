@@ -92,7 +92,7 @@ static struct upstream *upstream_build (const char *host, int port, const char *
 
                 log_message (LOG_INFO, "Added upstream %s %s:%d for [default]",
                              proxy_type_name(type), host, port);
-        } else if (host == NULL) {
+        } else if (host == NULL || type == PT_NONE) {
                 if (!domain || domain[0] == '\0') {
                         log_message (LOG_WARNING,
                                      "Nonsense no-upstream rule: empty domain");

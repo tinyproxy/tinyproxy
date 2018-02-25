@@ -162,8 +162,6 @@ static HANDLE_FUNC (handle_xtinyproxy);
 
 #ifdef UPSTREAM_SUPPORT
 static HANDLE_FUNC (handle_upstream);
-static HANDLE_FUNC (handle_upstream4);
-static HANDLE_FUNC (handle_upstream5);
 static HANDLE_FUNC (handle_upstream_no);
 #endif
 
@@ -254,24 +252,15 @@ struct {
         STDCONF ("reversepath", STR "(" WS STR ")?", handle_reversepath),
 #endif
 #ifdef UPSTREAM_SUPPORT
-        /* upstream is rather complicated */
         {
-                BEGIN "(no" WS "upstream)" WS STR END, handle_upstream_no, NULL
+                BEGIN "(upstream)" WS "(none)" WS STR END, handle_upstream_no, NULL
         },
         {
-                BEGIN "(upstream)" WS
+                BEGIN "(upstream)" WS "(http|socks4|socks5)" WS
                       "(" ALNUM /*username*/ ":" ALNUM /*password*/ "@" ")?"
                       "(" IP "|" ALNUM ")"
                       ":" INT "(" WS STR ")?"
                 END, handle_upstream, NULL
-        },
-        {
-                BEGIN "(upstream4)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR
-                      ")?" END, handle_upstream4, NULL
-        },
-        {
-                BEGIN "(upstream5)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR
-                      ")?" END, handle_upstream5, NULL
         },
 #endif
         /* loglevel */
@@ -1099,12 +1088,33 @@ static HANDLE_FUNC (handle_reversepath)
 #endif
 
 #ifdef UPSTREAM_SUPPORT
-static int _handle_upstream(struct config_s* conf, const char* line,
-           regmatch_t match[], proxy_type type)
+
+static enum proxy_type pt_from_string(const char *s)
+{
+	static const char pt_map[][7] = {
+		[PT_NONE]   = "none",
+		[PT_HTTP]   = "http",
+		[PT_SOCKS4] = "socks4",
+		[PT_SOCKS5] = "socks5",
+	};
+	unsigned i;
+	for (i = 0; i < sizeof(pt_map)/sizeof(pt_map[0]); i++)
+		if (!strcmp(pt_map[i], s))
+			return i;
+	return PT_NONE;
+}
+
+static HANDLE_FUNC (handle_upstream)
 {
         char *ip;
-        int port, mi = 3;
-        char *domain = 0, *user = 0, *pass = 0;
+        int port, mi = 2;
+        char *domain = 0, *user = 0, *pass = 0, *tmp;
+        enum proxy_type pt;
+
+        tmp = get_string_arg (line, &match[mi]);
+        pt = pt_from_string(tmp);
+        safefree(tmp);
+        mi += 2;
 
         if (match[mi].rm_so != -1)
                 user = get_string_arg (line, &match[mi]);
@@ -1125,7 +1135,7 @@ static int _handle_upstream(struct config_s* conf, const char* line,
         if (match[mi].rm_so != -1)
                 domain = get_string_arg (line, &match[mi]);
 
-        upstream_add (ip, port, domain, user, pass, type, &conf->upstream_list);
+        upstream_add (ip, port, domain, user, pass, pt, &conf->upstream_list);
 
         safefree (user);
         safefree (pass);
@@ -1135,30 +1145,15 @@ static int _handle_upstream(struct config_s* conf, const char* line,
         return 0;
 }
 
-static HANDLE_FUNC (handle_upstream)
-{
-	return _handle_upstream(conf, line, match, PT_HTTP);
-}
-
-static HANDLE_FUNC (handle_upstream4)
-{
-	return _handle_upstream(conf, line, match, PT_SOCKS4);
-}
-
-static HANDLE_FUNC (handle_upstream5)
-{
-	return _handle_upstream(conf, line, match, PT_SOCKS5);
-}
-
 static HANDLE_FUNC (handle_upstream_no)
 {
         char *domain;
 
-        domain = get_string_arg (line, &match[2]);
+        domain = get_string_arg (line, &match[3]);
         if (!domain)
                 return -1;
 
-        upstream_add (NULL, 0, domain, 0, 0, PT_HTTP, &conf->upstream_list);
+        upstream_add (NULL, 0, domain, 0, 0, PT_NONE, &conf->upstream_list);
         safefree (domain);
 
         return 0;
