@@ -1137,17 +1137,17 @@ static int _handle_upstream(struct config_s* conf, const char* line,
 
 static HANDLE_FUNC (handle_upstream)
 {
-	return _handle_upstream(conf, line, match, HTTP_TYPE);
+	return _handle_upstream(conf, line, match, PT_HTTP);
 }
 
 static HANDLE_FUNC (handle_upstream4)
 {
-	return _handle_upstream(conf, line, match, SOCKS4_TYPE);
+	return _handle_upstream(conf, line, match, PT_SOCKS4);
 }
 
 static HANDLE_FUNC (handle_upstream5)
 {
-	return _handle_upstream(conf, line, match, SOCKS5_TYPE);
+	return _handle_upstream(conf, line, match, PT_SOCKS5);
 }
 
 static HANDLE_FUNC (handle_upstream_no)
@@ -1158,7 +1158,7 @@ static HANDLE_FUNC (handle_upstream_no)
         if (!domain)
                 return -1;
 
-        upstream_add (NULL, 0, domain, 0, 0, HTTP_TYPE, &conf->upstream_list);
+        upstream_add (NULL, 0, domain, 0, 0, PT_HTTP, &conf->upstream_list);
         safefree (domain);
 
         return 0;

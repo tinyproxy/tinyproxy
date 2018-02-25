@@ -62,7 +62,7 @@
 #ifdef UPSTREAM_SUPPORT
 #  define UPSTREAM_CONFIGURED() (config.upstream_list != NULL)
 #  define UPSTREAM_HOST(host) upstream_get(host, config.upstream_list)
-#  define UPSTREAM_IS_HTTP(conn) (conn->upstream_proxy != NULL && conn->upstream_proxy->type == HTTP_TYPE)
+#  define UPSTREAM_IS_HTTP(conn) (conn->upstream_proxy != NULL && conn->upstream_proxy->type == PT_HTTP)
 #else
 #  define UPSTREAM_CONFIGURED() (0)
 #  define UPSTREAM_HOST(host) (NULL)
@@ -271,7 +271,7 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
                                       request->method, request->path,
                                       request->host, portbuff);
         } else if (connptr->upstream_proxy &&
-                   connptr->upstream_proxy->type == HTTP_TYPE &&
+                   connptr->upstream_proxy->type == PT_HTTP &&
                    connptr->upstream_proxy->ua.authstr) {
                 return write_message (connptr->server_fd,
                                       "%s %s HTTP/1.0\r\n"
@@ -1292,7 +1292,7 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 		    "Established connection to %s proxy \"%s\" using file descriptor %d.",
 		    proxy_type_name(cur_upstream->type), cur_upstream->host, connptr->server_fd);
 
-	if (cur_upstream->type == SOCKS4_TYPE) {
+	if (cur_upstream->type == PT_SOCKS4) {
 
 		buff[0] = 4; /* socks version */
 		buff[1] = 1; /* connect command */
@@ -1308,7 +1308,7 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 		if (buff[0]!=0 || buff[1]!=90)
 			return -1;
 
-	} else if (cur_upstream->type == SOCKS5_TYPE) {
+	} else if (cur_upstream->type == PT_SOCKS5) {
 
 		/* init */
 		buff[0] = 5; /* socks version */
@@ -1404,7 +1404,7 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
                 return -1;
         }
 
-	if (cur_upstream->type != HTTP_TYPE)
+	if (cur_upstream->type != PT_HTTP)
 		return connect_to_upstream_proxy(connptr, request);
 
         log_message (LOG_CONN,
