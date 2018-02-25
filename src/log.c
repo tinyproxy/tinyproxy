@@ -217,7 +217,7 @@ out:
 /*
  * This needs to send any stored log messages.
  */
-void send_stored_logs (void)
+static void send_stored_logs (void)
 {
         char *string;
         char *ptr;
