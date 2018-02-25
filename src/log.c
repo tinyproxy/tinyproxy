@@ -115,9 +115,6 @@ void log_message (int level, const char *fmt, ...)
 
         ssize_t ret;
 
-        if(!config.syslog && log_file_fd == -1)
-                return;
-
 #ifdef NDEBUG
         /*
          * Figure out if we should write the message or not.
@@ -163,6 +160,9 @@ void log_message (int level, const char *fmt, ...)
                 safefree (entry_buffer);
                 goto out;
         }
+
+        if(!config.syslog && log_file_fd == -1)
+                goto out;
 
         if (config.syslog) {
 #ifdef HAVE_VSYSLOG_H
