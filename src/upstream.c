@@ -35,9 +35,10 @@ const char *
 proxy_type_name(proxy_type type)
 {
     switch(type) {
-        case HTTP_TYPE: return "http";
-        case SOCKS4_TYPE: return "socks4";
-        case SOCKS5_TYPE: return "socks5";
+        case PT_NONE: return "none";
+        case PT_HTTP: return "http";
+        case PT_SOCKS4: return "socks4";
+        case PT_SOCKS5: return "socks5";
         default: return "unknown";
     }
 }
@@ -63,7 +64,7 @@ static struct upstream *upstream_build (const char *host, int port, const char *
         up->host = up->domain = up->ua.user = up->pass = NULL;
         up->ip = up->mask = 0;
         if (user) {
-                if (type == HTTP_TYPE) {
+                if (type == PT_HTTP) {
                         char b[BASE64ENC_BYTES((256+2)-1) + 1];
                         ssize_t ret;
                         ret = basicauth_string(user, pass, b, sizeof b);

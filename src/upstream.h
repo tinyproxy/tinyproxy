@@ -31,7 +31,13 @@
  * Even if upstream support is not compiled into tinyproxy, this
  * structure still needs to be defined.
  */
-typedef enum {HTTP_TYPE, SOCKS4_TYPE, SOCKS5_TYPE} proxy_type;
+typedef enum proxy_type {
+	PT_NONE = 0,
+	PT_HTTP,
+	PT_SOCKS4,
+	PT_SOCKS5
+} proxy_type;
+
 struct upstream {
         struct upstream *next;
         char *domain;           /* optional */
