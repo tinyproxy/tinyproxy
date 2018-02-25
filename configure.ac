@@ -237,6 +237,8 @@ src/Makefile
 data/Makefile
 data/templates/Makefile
 etc/Makefile
+extras/Makefile
+extras/systemd/Makefile
 docs/Makefile
 docs/man5/Makefile
 docs/man5/tinyproxy.conf.txt
