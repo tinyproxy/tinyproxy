@@ -124,8 +124,8 @@ dnl Include the transparent proxy support
 AH_TEMPLATE([TRANSPARENT_PROXY],
 	    [Include support for using tinyproxy as a transparent proxy.])
 TP_ARG_ENABLE(transparent,
-              [Enable transparent proxying code (default is NO)],
-              no)
+              [Enable transparent proxying code (default is YES)],
+              yes)
 if test x"$transparent_enabled" = x"yes"; then
    ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS transparent-proxy.o"
    AC_DEFINE(TRANSPARENT_PROXY)
