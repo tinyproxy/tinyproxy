@@ -45,7 +45,7 @@ static int build_url (char **url, const char *host, int port, const char *path)
         assert (path != NULL);
 
         len = strlen (host) + strlen (path) + 14;
-        *url = (char *) safemalloc (len);
+        *url = (char *) saferealloc (*url, len);
         if (*url == NULL)
                 return -1;
 
