@@ -1285,8 +1285,14 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 	unsigned len;
 	unsigned char buff[512]; /* won't use more than 7 + 255 */
 	unsigned short port;
+	size_t ulen, passlen;
+
 	struct hostent *host;
 	struct upstream *cur_upstream = connptr->upstream_proxy;
+
+	ulen = cur_upstream->ua.user ? strlen(cur_upstream->ua.user) : 0;
+	passlen = cur_upstream->pass ? strlen(cur_upstream->pass) : 0;
+
 
 	log_message(LOG_CONN,
 		    "Established connection to %s proxy \"%s\" using file descriptor %d.",
@@ -1311,15 +1317,43 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 	} else if (cur_upstream->type == PT_SOCKS5) {
 
 		/* init */
+		int n_methods = ulen ? 2 : 1;
 		buff[0] = 5; /* socks version */
-		buff[1] = 1; /* number of methods  */
+		buff[1] = n_methods; /* number of methods  */
 		buff[2] = 0; /* no auth method */
-		if (3 != safe_write(connptr->server_fd, buff, 3))
+		if (ulen) buff[3] = 2;  /* auth method -> username / password */
+		if (2+n_methods != safe_write(connptr->server_fd, buff, 2+n_methods))
 			return -1;
 		if (2 != safe_read(connptr->server_fd, buff, 2))
 			return -1;
-		if (buff[0]!=5 || buff[1]!=0)
+		if (buff[0] != 5 || (buff[1] != 0 && buff[1] != 2))
 			return -1;
+
+		if (buff[1] == 2) {
+			/* authentication */
+			char in[2];
+			char out[515];
+			char *cur = out;
+			size_t c;
+			*cur++ = 1;	/* version */
+			c = ulen & 0xFF;
+			*cur++ = c;
+			memcpy(cur, cur_upstream->ua.user, c);
+			cur += c;
+			c = passlen & 0xFF;
+			*cur++ = c;
+			memcpy(cur, cur_upstream->pass, c);
+			cur += c;
+
+			if((cur - out) != safe_write(connptr->server_fd, out, cur - out))
+				return -1;
+
+			if(2 != safe_read(connptr->server_fd, in, 2))
+				return -1;
+			if(in[0] != 5 || in[1] != 0) {
+				return -1;
+			}
+		}
 		/* connect */
 		buff[0] = 5; /* socks version */
 		buff[1] = 1; /* connect */
