@@ -876,7 +876,6 @@ static HANDLE_FUNC (handle_deny)
 
 static HANDLE_FUNC (handle_bind)
 {
-#ifndef TRANSPARENT_PROXY
         int r = set_string_arg (&conf->bind_address, line, &match[2]);
 
         if (r)
@@ -884,7 +883,6 @@ static HANDLE_FUNC (handle_bind)
         log_message (LOG_INFO,
                      "Outgoing connections bound to IP %s", conf->bind_address);
         return 0;
-#endif
 }
 
 static HANDLE_FUNC (handle_listen)
