@@ -17,7 +17,7 @@
 
 pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 
-sbin_PROGRAMS = tinyproxy
+bin_PROGRAMS = tinyproxy
 
 AM_CPPFLAGS = \
 	-DSYSCONFDIR=\"${pkgsysconfdir}\" \
