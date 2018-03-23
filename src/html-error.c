@@ -132,6 +132,7 @@ send_html_file (FILE *infile, struct conn_s *connptr)
                                 } else
                                         in_variable = 0;
 
+                                /* FALL THROUGH */
                         default:
                                 if (!in_variable) {
                                         r = write_message (connptr->client_fd,
