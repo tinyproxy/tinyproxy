@@ -83,16 +83,15 @@ void basicauth_add (vector_t authlist,
 int basicauth_check (vector_t authlist, const char *authstring)
 {
         ssize_t vl, i;
-        size_t al, el;
+        size_t el;
         const char* entry;
 
         vl = vector_length (authlist);
         if (vl == -EINVAL) return 0;
 
-        al = strlen (authstring);
         for (i = 0; i < vl; i++) {
                 entry = vector_getentry (authlist, i, &el);
-                if (strncmp (authstring, entry, al) == 0)
+                if (strcmp (authstring, entry) == 0)
                         return 1;
         }
 	return 0;
