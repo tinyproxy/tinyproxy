@@ -924,7 +924,7 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
                 goto PULL_CLIENT_DATA;
         }
 
-        if (!config.disable_xffheader) {
+        if (config.enable_xffheader) {
                 /* Send new or appended the 'X-Forwarded-For' header */
                 ret = write_xff_header(connptr->server_fd, hashofheaders,
                                        connptr->client_ip_addr);
@@ -1100,7 +1100,7 @@ retry:
         if (ret < 0)
                 goto ERROR_EXIT;
 
-        if (!config.disable_xffheader) {
+        if (config.enable_xffheader) {
                 /* Send new or appended the 'X-Forwarded-For' header */
                 ret = write_xff_header(connptr->client_fd, hashofheaders,
                                        connptr->server_ip_addr);

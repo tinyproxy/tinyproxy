@@ -234,13 +234,13 @@ ViaProxyName "tinyproxy"
 #DisableViaHeader Yes
 
 #
-# DisableXffHeader: The 'X-Forwarded-For' header isn't required by the
+# EnableXffHeader: The 'X-Forwarded-For' header isn't required by the
 # HTTP RFC, but is a common method for identifying the originating
 # IP address of a client connecting to a web server through an HTTP
 # proxy or load balancer. Though, using this is a security concern.
 # So we disable it by default.
 #
-DisableXffHeader Yes
+#EnableXffHeader No
 
 #
 # Filter: This allows you to specify the location of the filter file.

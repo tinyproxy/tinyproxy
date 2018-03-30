@@ -156,7 +156,7 @@ static HANDLE_FUNC (handle_timeout);
 static HANDLE_FUNC (handle_user);
 static HANDLE_FUNC (handle_viaproxyname);
 static HANDLE_FUNC (handle_disableviaheader);
-static HANDLE_FUNC (handle_disablexffheader);
+static HANDLE_FUNC (handle_enablexffheader);
 static HANDLE_FUNC (handle_xtinyproxy);
 
 #ifdef UPSTREAM_SUPPORT
@@ -210,7 +210,7 @@ struct {
         STDCONF ("syslog", BOOL, handle_syslog),
         STDCONF ("bindsame", BOOL, handle_bindsame),
         STDCONF ("disableviaheader", BOOL, handle_disableviaheader),
-        STDCONF ("disablexffheader", BOOL, handle_disablexffheader),
+        STDCONF ("enablexffheader", BOOL, handle_enablexffheader),
         STDCONF ("xtinyproxy",  BOOL, handle_xtinyproxy),
         /* integer arguments */
         STDCONF ("port", INT, handle_port),
@@ -527,6 +527,8 @@ static void initialize_with_defaults (struct config_s *conf,
 
         conf->disable_viaheader = defaults->disable_viaheader;
 
+        conf->enable_xffheader = defaults->enable_xffheader;
+
         if (defaults->errorpage_undef) {
                 conf->errorpage_undef = safestrdup (defaults->errorpage_undef);
         }
@@ -738,17 +740,17 @@ static HANDLE_FUNC (handle_disableviaheader)
         return 0;
 }
 
-static HANDLE_FUNC (handle_disablexffheader)
+static HANDLE_FUNC (handle_enablexffheader)
 {
-        int r = set_bool_arg (&conf->disable_xffheader, line, &match[2]);
+        int r = set_bool_arg (&conf->enable_xffheader, line, &match[2]);
 
-        if (r) {
+        if (!r) {
                 return r;
         }
 
         log_message (LOG_INFO,
-                     "Disabling transmission of the \"X-Forwarded-For\" header.");
-        return 0;
+                     "Enabling transmission of the \"X-Forwarded-For\" header.");
+        return r;
 }
 
 static HANDLE_FUNC (handle_defaulterrorfile)
