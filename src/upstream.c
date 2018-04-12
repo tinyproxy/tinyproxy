@@ -140,7 +140,8 @@ static struct upstream *upstream_build (const char *host, int port, const char *
 
                 up->host = safestrdup (host);
                 up->port = port;
-                up->domain = safestrdup (domain);
+
+                upstream_handle_site_spec(up, domain);
 
                 log_message (LOG_INFO, "Added upstream %s %s:%d for %s",
                              proxy_type_name(type), host, port, domain);
