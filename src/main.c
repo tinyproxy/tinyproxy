@@ -147,7 +147,7 @@ display_usage (void)
         printf ("Usage: %s [options]\n", PACKAGE);
         printf ("\n"
                 "Options are:\n"
-                "  -d        Do not daemonize (run in foreground).\n"
+                "  -D        Daemonize (fork into background).\n"
                 "  -c FILE   Use an alternate configuration file.\n"
                 "  -h        Display this usage information.\n"
                 "  -l        Display the license.\n"
@@ -224,7 +224,7 @@ process_cmdline (int argc, char **argv, struct config_s *conf)
 {
         int opt;
 
-        while ((opt = getopt (argc, argv, "c:vldh")) != EOF) {
+        while ((opt = getopt (argc, argv, "c:vlDh")) != EOF) {
                 switch (opt) {
                 case 'v':
                         display_version ();
@@ -234,8 +234,8 @@ process_cmdline (int argc, char **argv, struct config_s *conf)
                         display_license ();
                         exit (EX_OK);
 
-                case 'd':
-                        conf->godaemon = FALSE;
+                case 'D':
+                        conf->godaemon = TRUE;
                         break;
 
                 case 'c':
@@ -347,7 +347,7 @@ static void initialize_config_defaults (struct config_s *conf)
                 fprintf (stderr, PACKAGE ": Could not allocate memory.\n");
                 exit (EX_SOFTWARE);
         }
-        conf->godaemon = TRUE;
+        conf->godaemon = FALSE;
         /*
          * Make sure the HTML error pages array is NULL to begin with.
          * (FIXME: Should have a better API for all this)

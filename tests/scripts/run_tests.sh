@@ -103,7 +103,7 @@ EOF
 
 start_tinyproxy() {
 	echo -n "starting tinyproxy..."
-	$VALGRIND $TINYPROXY_BIN -c $TINYPROXY_CONF_FILE 2> $TINYPROXY_STDERR_LOG
+	$VALGRIND $TINYPROXY_BIN -D -c $TINYPROXY_CONF_FILE 2> $TINYPROXY_STDERR_LOG
 	echo " done (listening on $TINYPROXY_IP:$TINYPROXY_PORT)"
 }
 
