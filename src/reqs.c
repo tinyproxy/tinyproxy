@@ -1350,7 +1350,7 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 
 			if(2 != safe_read(connptr->server_fd, in, 2))
 				return -1;
-			if(in[0] != 5 || in[1] != 0) {
+			if(in[1] != 0 || !(in[0] == 5 || in[0] == 1)) {
 				return -1;
 			}
 		}
