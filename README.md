@@ -18,7 +18,14 @@ For more info, please visit [the Tinyproxy web site](https://tinyproxy.github.io
 ## Installation
 
 Tinyproxy uses a standard GNU `configure` script based on the automake
-system.  If compiling from a git checkout, you need to first run
+system.  To compile and install Tinyproxy, ensure the following packages are installed:
+
+```
+apt-get install -y gcc automake asciidoc  # Debian/Ubuntu
+yum install -y gcc automake asciidoc  # CenOS/RHEL
+```
+
+If compiling from a git checkout, you need to first run
 
 ```
 ./autogen.sh
