@@ -13,11 +13,6 @@ m4_define([tinyproxy_version], [tinyproxy_real_version])
 # For overriding the version string. Comment out if not needed.
 # m4_define([tinyproxy_version], [1.9.0])
 
-m4_define([tinyproxy_unstable],
-          m4_if(m4_eval(tinyproxy_minor_version % 2), [1], [yes], [no]))
-m4_define([tinyproxy_stable],
-          m4_if(m4_eval(tinyproxy_minor_version % 2), [0], [yes], [no]))
-
 AC_INIT([Tinyproxy], [tinyproxy_version],
 	[https://tinyproxy.github.io/],
 	[tinyproxy])
@@ -28,19 +23,6 @@ AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4macros])
 
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
-
-TINYPROXY_MAJOR_VERSION=tinyproxy_major_version
-TINYPROXY_MINOR_VERSION=tinyproxy_minor_version
-TINYPROXY_MICRO_VERSION=tinyproxy_micro_version
-TINYPROXY_REAL_VERSION=tinyproxy_real_version
-TINYPROXY_VERSION=tinyproxy_version
-TINYPROXY_UNSTABLE=tinyproxy_unstable
-AC_SUBST(TINYPROXY_MAJOR_VERSION)
-AC_SUBST(TINYPROXY_MINOR_VERSION)
-AC_SUBST(TINYPROXY_MICRO_VERSION)
-AC_SUBST(TINYPROXY_REAL_VERSION)
-AC_SUBST(TINYPROXY_VERSION)
-AC_SUBST(TINYPROXY_UNSTABLE)
 
 dnl Temporarily defined here until we get tinyproxy-version.h
 AC_DEFINE(TINYPROXY_VERSION, "tinyproxy_version", [Tinyproxy version number])
