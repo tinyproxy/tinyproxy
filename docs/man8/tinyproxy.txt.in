@@ -150,10 +150,7 @@ This manpage was written by the Tinyproxy project team.
 COPYRIGHT
 ---------
 
-Copyright (c) 1998-2000 Steven Young;
-Copyright (c) 2000-2001 Robert James Kaes;
-Copyright (c) 2009-2010 Mukund Sivaraman;
-Copyright (c) 2009-2010 Michael Adam.
+Copyright (c) 1998-2018 the Tinyproxy authors.
 
 This program is distributed under the terms of the GNU General Public
 License version 2 or above. See the COPYING file for additional
