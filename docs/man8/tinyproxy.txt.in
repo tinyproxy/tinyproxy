@@ -12,7 +12,7 @@ tinyproxy - A light-weight HTTP proxy daemon
 SYNOPSIS
 --------
 
-*tinyproxy* [-vldch]
+*tinyproxy* [-vdch]
 
 
 DESCRIPTION
