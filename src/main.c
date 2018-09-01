@@ -32,7 +32,6 @@
 #include "main.h"
 
 #include "anonymous.h"
-#include "authors.h"
 #include "buffer.h"
 #include "conf.h"
 #include "daemon.h"
@@ -88,55 +87,6 @@ display_version (void)
 }
 
 /*
- * Display the copyright and license for this program.
- */
-static void
-display_license (void)
-{
-        const char * const *authors;
-        const char * const *documenters;
-
-        display_version ();
-
-        printf ("\
-\n\
-  Copyright 1998       Steven Young (sdyoung@well.com)\n\
-  Copyright 1998-2002  Robert James Kaes (rjkaes@users.sourceforge.net)\n\
-  Copyright 1999       George Talusan (gstalusan@uwaterloo.ca)\n\
-  Copyright 2000       Chris Lightfoot (chris@ex-parrot.com)\n\
-  Copyright 2009-2010  Mukund Sivaraman (muks@banu.com)\n\
-  Copyright 2009-2010  Michael Adam (obnox@samba.org)\n\
-\n\
-  This program is free software; you can redistribute it and/or modify\n\
-  it under the terms of the GNU General Public License as published by\n\
-  the Free Software Foundation; either version 2, or (at your option)\n\
-  any later version.\n\
-\n\
-  This program is distributed in the hope that it will be useful,\n\
-  but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
-  GNU General Public License for more details.\n\
-\n\
-  You should have received a copy of the GNU General Public License\n\
-  along with this program; if not, write to the Free Software\n\
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.\n\
-\n");
-
-        printf ("\nAUTHORS:\n");
-        for (authors = authors_get_authors (); *authors; authors++) {
-                printf ("  %s\n", *authors);
-        }
-
-        printf ("\nDOCUMENTERS:\n");
-        for (documenters = authors_get_documenters ();
-             *documenters; documenters++) {
-                printf ("  %s\n", *documenters);
-        }
-
-        printf ("\n");
-}
-
-/*
  * Display usage to the user.
  */
 static void
@@ -150,7 +100,6 @@ display_usage (void)
                 "  -d        Do not daemonize (run in foreground).\n"
                 "  -c FILE   Use an alternate configuration file.\n"
                 "  -h        Display this usage information.\n"
-                "  -l        Display the license.\n"
                 "  -v        Display version information.\n");
 
         /* Display the modes compiled into tinyproxy */
@@ -224,14 +173,10 @@ process_cmdline (int argc, char **argv, struct config_s *conf)
 {
         int opt;
 
-        while ((opt = getopt (argc, argv, "c:vldh")) != EOF) {
+        while ((opt = getopt (argc, argv, "c:vdh")) != EOF) {
                 switch (opt) {
                 case 'v':
                         display_version ();
-                        exit (EX_OK);
-
-                case 'l':
-                        display_license ();
                         exit (EX_OK);
 
                 case 'd':
