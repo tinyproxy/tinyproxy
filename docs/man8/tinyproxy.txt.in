@@ -40,9 +40,6 @@ OPTIONS
 *-h*::
     Display a short help screen of command line arguments and exit.
 
-*-l*::
-    Display the licensing agreement.
-
 *-v*::
     Display version information and exit.
 
