@@ -19,15 +19,6 @@ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 dnl Temporarily defined here until we get tinyproxy-version.h
 AC_DEFINE(TINYPROXY_VERSION, "tinyproxy_version", [Tinyproxy version number])
 
-# The symbol TINYPROXY_UNSTABLE is defined above for substitution in
-# Makefiles and conditionally defined here as a preprocessor symbol
-# and automake conditional.
-if test "x$TINYPROXY_UNSTABLE" = "xyes"; then
-  AC_DEFINE(TINYPROXY_UNSTABLE, 1,
-            [Define to 1 if this is an unstable version of Tinyproxy])
-fi
-AM_CONDITIONAL(TINYPROXY_UNSTABLE, test "x$TINYPROXY_UNSTABLE" = "xyes")
-
 
 dnl Check if we're compiling on a weird platform :)
 AC_USE_SYSTEM_EXTENSIONS
