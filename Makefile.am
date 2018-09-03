@@ -4,7 +4,8 @@ SUBDIRS = \
 	etc \
 	docs \
 	m4macros \
-	tests
+	tests \
+	scripts
 
 # tools want this on a single line
 ACLOCAL_AMFLAGS = -I m4macros
@@ -20,7 +21,8 @@ dist_doc_DATA = \
 EXTRA_DIST = \
 	autogen.sh \
 	tinyproxy-indent.sh \
-	TODO
+	TODO \
+	VERSION
 
 test: all
 	./tests/scripts/run_tests.sh
