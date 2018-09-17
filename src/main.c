@@ -173,7 +173,7 @@ process_cmdline (int argc, char **argv, struct config_s *conf)
 {
         int opt;
 
-        while ((opt = getopt (argc, argv, "c:vdh")) != EOF) {
+        while ((opt = getopt (argc, argv, "c:p:vdh")) != EOF) {
                 switch (opt) {
                 case 'v':
                         display_version ();
@@ -194,6 +194,10 @@ process_cmdline (int argc, char **argv, struct config_s *conf)
                                          argv[0]);
                                 exit (EX_SOFTWARE);
                         }
+                        break;
+
+                case 'p':
+                        conf->port = strtol(optarg, NULL, 10);
                         break;
 
                 case 'h':
