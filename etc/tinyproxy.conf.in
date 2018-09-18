@@ -20,7 +20,7 @@ Group nobody
 # that should you choose to run on a port lower than 1024 you will need
 # to start tinyproxy using root.
 #
-Port 8888
+#Port 8888
 
 #
 # Listen: If you have multiple interfaces this allows you to bind to
