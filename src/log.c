@@ -70,7 +70,14 @@ static unsigned int logging_initialized = FALSE;     /* boolean */
  */
 int open_log_file (const char *log_file_name)
 {
-        log_file_fd = create_file_safely (log_file_name, FALSE);
+        if (log_file_name == NULL) {
+                if(config.godaemon == FALSE)
+                        log_file_fd = fileno(stdout);
+                else
+                        log_file_fd = -1;
+        } else {
+                log_file_fd = create_file_safely (log_file_name, FALSE);
+        }
         return log_file_fd;
 }
 
@@ -79,7 +86,7 @@ int open_log_file (const char *log_file_name)
  */
 void close_log_file (void)
 {
-        if (log_file_fd < 0) {
+        if (log_file_fd < 0 || log_file_fd == fileno(stdout)) {
                 return;
         }
 
@@ -154,6 +161,9 @@ void log_message (int level, const char *fmt, ...)
                 goto out;
         }
 
+        if(!config.syslog && log_file_fd == -1)
+                goto out;
+
         if (config.syslog) {
 #ifdef HAVE_VSYSLOG_H
                 vsyslog (level, fmt, args);
@@ -207,7 +217,7 @@ out:
 /*
  * This needs to send any stored log messages.
  */
-void send_stored_logs (void)
+static void send_stored_logs (void)
 {
         char *string;
         char *ptr;

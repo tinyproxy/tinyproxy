@@ -1,5 +1,5 @@
 /* tinyproxy - A fast light-weight HTTP proxy
- * Copyright (C) 2010 Mukund Sivaraman <muks@banu.com>
+ * this file Copyright (C) 2016-2018 rofl0r
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __AUTHORS_H__
-#define __AUTHORS_H__
+#ifndef TINYPROXY_BASE64_H
+#define TINYPROXY_BASE64_H
 
-#include "common.h"
+#include <stddef.h>
 
-const char * const *
-authors_get_authors (void);
+/* calculates number of bytes base64-encoded stream of N bytes will take. */
+#define BASE64ENC_BYTES(N) (((N+2)/3)*4)
+void base64enc(char *dst, const void* src, size_t count);
 
-const char * const *
-authors_get_documenters (void);
+#endif
 
-#endif /* __AUTHORS_H__ */

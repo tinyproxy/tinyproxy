@@ -90,7 +90,8 @@ StatFile "@pkgdatadir@/stats.html"
 # LogFile: Allows you to specify the location where information should
 # be logged to.  If you would prefer to log to syslog, then disable this
 # and enable the Syslog directive.  These directives are mutually
-# exclusive.
+# exclusive. If neither Syslog nor LogFile are specified, output goes
+# to stdout.
 #
 #LogFile "@localstatedir@/log/tinyproxy/tinyproxy.log"
 
@@ -102,7 +103,7 @@ StatFile "@pkgdatadir@/stats.html"
 #Syslog On
 
 #
-# LogLevel: 
+# LogLevel: Warning
 #
 # Set the logging level. Allowed settings are:
 #	Critical	(least verbose)
@@ -121,6 +122,7 @@ LogLevel Info
 #
 # PidFile: Write the PID of the main tinyproxy thread to this file so it
 # can be used for signalling purposes.
+# If not specified, no pidfile will be written.
 #
 #PidFile "@localstatedir@/run/tinyproxy/tinyproxy.pid"
 
@@ -138,25 +140,37 @@ LogLevel Info
 # The upstream rules allow you to selectively route upstream connections
 # based on the host/domain of the site being accessed.
 #
+# Syntax: upstream type (user:pass@)ip:port ("domain")
+# Or:     upstream none "domain"
+# The parts in parens are optional.
+# Possible types are http, socks4, socks5, none
+#
 # For example:
 #  # connection to test domain goes through testproxy
-#  upstream testproxy:8008 ".test.domain.invalid"
-#  upstream testproxy:8008 ".our_testbed.example.com"
-#  upstream testproxy:8008 "192.168.128.0/255.255.254.0"
+#  upstream http testproxy:8008 ".test.domain.invalid"
+#  upstream http testproxy:8008 ".our_testbed.example.com"
+#  upstream http testproxy:8008 "192.168.128.0/255.255.254.0"
+#
+#  # upstream proxy using basic authentication
+#  upstream http user:pass@testproxy:8008 ".test.domain.invalid"
 #
 #  # no upstream proxy for internal websites and unqualified hosts
-#  no upstream ".internal.example.com"
-#  no upstream "www.example.com"
-#  no upstream "10.0.0.0/8"
-#  no upstream "192.168.0.0/255.255.254.0"
-#  no upstream "."
+#  upstream none ".internal.example.com"
+#  upstream none "www.example.com"
+#  upstream none "10.0.0.0/8"
+#  upstream none "192.168.0.0/255.255.254.0"
+#  upstream none "."
 #
 #  # connection to these boxes go through their DMZ firewalls
-#  upstream cust1_firewall:8008 "testbed_for_cust1"
-#  upstream cust2_firewall:8008 "testbed_for_cust2"
+#  upstream http cust1_firewall:8008 "testbed_for_cust1"
+#  upstream http cust2_firewall:8008 "testbed_for_cust2"
 #
 #  # default upstream is internet firewall
-#  upstream firewall.internal.example.com:80
+#  upstream http firewall.internal.example.com:80
+#
+# You may also use SOCKS4/SOCKS5 upstream proxies:
+#  upstream socks4 127.0.0.1:9050
+#  upstream socks5 socksproxy:1080
 #
 # The LAST matching rule wins the route decision.  As you can see, you
 # can use a host, or a domain:
@@ -166,7 +180,7 @@ LogLevel Info
 #  IP/bits  matches network/mask
 #  IP/mask  matches network/mask
 #
-#Upstream some.remote.proxy:port
+#Upstream http some.remote.proxy:port
 
 #
 # MaxClients: This is the absolute highest number of threads which will
@@ -208,6 +222,11 @@ MaxRequestsPerChild 0
 # tested against the controls based on order.
 #
 Allow 127.0.0.1
+
+# BasicAuth: HTTP "Basic Authentication" for accessing the proxy.
+# If there are any entries specified, access is only granted for authenticated
+# users.
+#BasicAuth user password
 
 #
 # AddHeader: Adds the specified headers to outgoing HTTP requests that
@@ -292,12 +311,12 @@ ViaProxyName "tinyproxy"
 # ConnectPort: This is a list of ports allowed by tinyproxy when the
 # CONNECT method is used.  To disable the CONNECT method altogether, set
 # the value to 0.  If no ConnectPort line is found, all ports are
-# allowed (which is not very secure.)
+# allowed.
 #
 # The following two ports are used by SSL.
 #
-ConnectPort 443
-ConnectPort 563
+#ConnectPort 443
+#ConnectPort 563
 
 #
 # Configure one or more ReversePath directives to enable reverse proxy

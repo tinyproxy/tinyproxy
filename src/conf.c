@@ -36,6 +36,7 @@
 #include "reverse-proxy.h"
 #include "upstream.h"
 #include "connect-ports.h"
+#include "basicauth.h"
 
 /*
  * The configuration directives are defined in the structure below.  Each
@@ -116,6 +117,7 @@ static HANDLE_FUNC (handle_nop)
 }                               /* do nothing function */
 
 static HANDLE_FUNC (handle_allow);
+static HANDLE_FUNC (handle_basicauth);
 static HANDLE_FUNC (handle_anonymous);
 static HANDLE_FUNC (handle_bind);
 static HANDLE_FUNC (handle_bindsame);
@@ -232,6 +234,7 @@ struct {
                  handle_deny),
         STDCONF ("bind", "(" IP "|" IPV6 ")", handle_bind),
         /* other */
+        STDCONF ("basicauth", ALNUM WS ALNUM, handle_basicauth),
         STDCONF ("errorfile", INT WS STR, handle_errorfile),
         STDCONF ("addheader",  STR WS STR, handle_addheader),
 
@@ -251,13 +254,15 @@ struct {
         STDCONF ("reversepath", STR "(" WS STR ")?", handle_reversepath),
 #endif
 #ifdef UPSTREAM_SUPPORT
-        /* upstream is rather complicated */
         {
-                BEGIN "(no" WS "upstream)" WS STR END, handle_upstream_no, NULL
+                BEGIN "(upstream)" WS "(none)" WS STR END, handle_upstream_no, NULL
         },
         {
-                BEGIN "(upstream)" WS "(" IP "|" ALNUM ")" ":" INT "(" WS STR
-                      ")?" END, handle_upstream, NULL
+                BEGIN "(upstream)" WS "(http|socks4|socks5)" WS
+                      "(" ALNUM /*username*/ ":" ALNUM /*password*/ "@" ")?"
+                      "(" IP "|" ALNUM ")"
+                      ":" INT "(" WS STR ")?"
+                END, handle_upstream, NULL
         },
 #endif
         /* loglevel */
@@ -291,6 +296,7 @@ static void free_config (struct config_s *conf)
         safefree (conf->user);
         safefree (conf->group);
         vector_delete(conf->listen_addrs);
+        vector_delete(conf->basicauth_list);
 #ifdef FILTER_ENABLE
         safefree (conf->filter);
 #endif                          /* FILTER_ENABLE */
@@ -786,12 +792,7 @@ static HANDLE_FUNC (handle_xtinyproxy)
 
 static HANDLE_FUNC (handle_syslog)
 {
-#ifdef HAVE_SYSLOG_H
         return set_bool_arg (&conf->syslog, line, &match[2]);
-#else
-        fprintf (stderr, "Syslog support not compiled in executable.\n");
-        return 1;
-#endif
 }
 
 static HANDLE_FUNC (handle_bindsame)
@@ -892,7 +893,6 @@ static HANDLE_FUNC (handle_deny)
 
 static HANDLE_FUNC (handle_bind)
 {
-#ifndef TRANSPARENT_PROXY
         int r = set_string_arg (&conf->bind_address, line, &match[2]);
 
         if (r)
@@ -900,11 +900,6 @@ static HANDLE_FUNC (handle_bind)
         log_message (LOG_INFO,
                      "Outgoing connections bound to IP %s", conf->bind_address);
         return 0;
-#else
-        fprintf (stderr,
-                 "\"Bind\" cannot be used with transparent support enabled.\n");
-        return 1;
-#endif
 }
 
 static HANDLE_FUNC (handle_listen)
@@ -1011,6 +1006,27 @@ static HANDLE_FUNC (handle_loglevel)
         return -1;
 }
 
+static HANDLE_FUNC (handle_basicauth)
+{
+        char *user, *pass;
+        user = get_string_arg(line, &match[2]);
+        if (!user)
+                return -1;
+        pass = get_string_arg(line, &match[3]);
+        if (!pass) {
+                safefree (user);
+                return -1;
+        }
+        if (!conf->basicauth_list) {
+                conf->basicauth_list = vector_create ();
+        }
+
+        basicauth_add (conf->basicauth_list, user, pass);
+        safefree (user);
+        safefree (pass);
+        return 0;
+}
+
 #ifdef FILTER_ENABLE
 static HANDLE_FUNC (handle_filter)
 {
@@ -1087,27 +1103,58 @@ static HANDLE_FUNC (handle_reversepath)
 #endif
 
 #ifdef UPSTREAM_SUPPORT
+
+static enum proxy_type pt_from_string(const char *s)
+{
+	static const char pt_map[][7] = {
+		[PT_NONE]   = "none",
+		[PT_HTTP]   = "http",
+		[PT_SOCKS4] = "socks4",
+		[PT_SOCKS5] = "socks5",
+	};
+	unsigned i;
+	for (i = 0; i < sizeof(pt_map)/sizeof(pt_map[0]); i++)
+		if (!strcmp(pt_map[i], s))
+			return i;
+	return PT_NONE;
+}
+
 static HANDLE_FUNC (handle_upstream)
 {
         char *ip;
-        int port;
-        char *domain;
+        int port, mi = 2;
+        char *domain = 0, *user = 0, *pass = 0, *tmp;
+        enum proxy_type pt;
 
-        ip = get_string_arg (line, &match[2]);
+        tmp = get_string_arg (line, &match[mi]);
+        pt = pt_from_string(tmp);
+        safefree(tmp);
+        mi += 2;
+
+        if (match[mi].rm_so != -1)
+                user = get_string_arg (line, &match[mi]);
+        mi++;
+
+	if (match[mi].rm_so != -1)
+                pass = get_string_arg (line, &match[mi]);
+        mi++;
+
+        ip = get_string_arg (line, &match[mi]);
         if (!ip)
                 return -1;
-        port = (int) get_long_arg (line, &match[7]);
+        mi += 5;
 
-        if (match[10].rm_so != -1) {
-                domain = get_string_arg (line, &match[10]);
-                if (domain) {
-                        upstream_add (ip, port, domain, &conf->upstream_list);
-                        safefree (domain);
-                }
-        } else {
-                upstream_add (ip, port, NULL, &conf->upstream_list);
-        }
+        port = (int) get_long_arg (line, &match[mi]);
+        mi += 3;
 
+        if (match[mi].rm_so != -1)
+                domain = get_string_arg (line, &match[mi]);
+
+        upstream_add (ip, port, domain, user, pass, pt, &conf->upstream_list);
+
+        safefree (user);
+        safefree (pass);
+        safefree (domain);
         safefree (ip);
 
         return 0;
@@ -1117,11 +1164,11 @@ static HANDLE_FUNC (handle_upstream_no)
 {
         char *domain;
 
-        domain = get_string_arg (line, &match[2]);
+        domain = get_string_arg (line, &match[3]);
         if (!domain)
                 return -1;
 
-        upstream_add (NULL, 0, domain, &conf->upstream_list);
+        upstream_add (NULL, 0, domain, 0, 0, PT_NONE, &conf->upstream_list);
         safefree (domain);
 
         return 0;

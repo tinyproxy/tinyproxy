@@ -32,7 +32,6 @@
 #include "main.h"
 
 #include "anonymous.h"
-#include "authors.h"
 #include "buffer.h"
 #include "conf.h"
 #include "daemon.h"
@@ -88,55 +87,6 @@ display_version (void)
 }
 
 /*
- * Display the copyright and license for this program.
- */
-static void
-display_license (void)
-{
-        const char * const *authors;
-        const char * const *documenters;
-
-        display_version ();
-
-        printf ("\
-\n\
-  Copyright 1998       Steven Young (sdyoung@well.com)\n\
-  Copyright 1998-2002  Robert James Kaes (rjkaes@users.sourceforge.net)\n\
-  Copyright 1999       George Talusan (gstalusan@uwaterloo.ca)\n\
-  Copyright 2000       Chris Lightfoot (chris@ex-parrot.com)\n\
-  Copyright 2009-2010  Mukund Sivaraman (muks@banu.com)\n\
-  Copyright 2009-2010  Michael Adam (obnox@samba.org)\n\
-\n\
-  This program is free software; you can redistribute it and/or modify\n\
-  it under the terms of the GNU General Public License as published by\n\
-  the Free Software Foundation; either version 2, or (at your option)\n\
-  any later version.\n\
-\n\
-  This program is distributed in the hope that it will be useful,\n\
-  but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
-  GNU General Public License for more details.\n\
-\n\
-  You should have received a copy of the GNU General Public License\n\
-  along with this program; if not, write to the Free Software\n\
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.\n\
-\n");
-
-        printf ("\nAUTHORS:\n");
-        for (authors = authors_get_authors (); *authors; authors++) {
-                printf ("  %s\n", *authors);
-        }
-
-        printf ("\nDOCUMENTERS:\n");
-        for (documenters = authors_get_documenters ();
-             *documenters; documenters++) {
-                printf ("  %s\n", *documenters);
-        }
-
-        printf ("\n");
-}
-
-/*
  * Display usage to the user.
  */
 static void
@@ -150,7 +100,6 @@ display_usage (void)
                 "  -d        Do not daemonize (run in foreground).\n"
                 "  -c FILE   Use an alternate configuration file.\n"
                 "  -h        Display this usage information.\n"
-                "  -l        Display the license.\n"
                 "  -v        Display version information.\n");
 
         /* Display the modes compiled into tinyproxy */
@@ -224,14 +173,10 @@ process_cmdline (int argc, char **argv, struct config_s *conf)
 {
         int opt;
 
-        while ((opt = getopt (argc, argv, "c:vldh")) != EOF) {
+        while ((opt = getopt (argc, argv, "c:vdh")) != EOF) {
                 switch (opt) {
                 case 'v':
                         display_version ();
-                        exit (EX_OK);
-
-                case 'l':
-                        display_license ();
                         exit (EX_OK);
 
                 case 'd':
@@ -355,8 +300,8 @@ static void initialize_config_defaults (struct config_s *conf)
         conf->errorpages = NULL;
         conf->stathost = safestrdup (TINYPROXY_STATHOST);
         conf->idletimeout = MAX_IDLE_TIME;
-        conf->logf_name = safestrdup (LOCALSTATEDIR "/log/tinyproxy/tinyproxy.log");
-        conf->pidpath = safestrdup (LOCALSTATEDIR "/run/tinyproxy/tinyproxy.pid");
+        conf->logf_name = NULL;
+        conf->pidpath = NULL;
 }
 
 /**
@@ -415,8 +360,13 @@ main (int argc, char **argv)
                 anonymous_insert ("Content-Type");
         }
 
-        if (config.godaemon == TRUE)
+        if (config.godaemon == TRUE) {
+                if (!config.syslog && config.logf_name == NULL)
+                        fprintf(stderr, "WARNING: logging deactivated "
+                                "(can't log to stdout when daemonized)\n");
+
                 makedaemon ();
+        }
 
         if (set_signal_handler (SIGPIPE, SIG_IGN) == SIG_ERR) {
                 fprintf (stderr, "%s: Could not set the \"SIGPIPE\" signal.\n",
@@ -436,6 +386,15 @@ main (int argc, char **argv)
                 exit (EX_OSERR);
         }
 
+        /* Create pid file before we drop privileges */
+        if (config.pidpath) {
+                if (pidfile_create (config.pidpath) < 0) {
+                        fprintf (stderr, "%s: Could not create PID file.\n",
+                                 argv[0]);
+                        exit (EX_OSERR);
+                }
+        }
+
         /* Switch to a different user if we're running as root */
         if (geteuid () == 0)
                 change_user (argv[0]);
@@ -446,15 +405,6 @@ main (int argc, char **argv)
         /* Create log file after we drop privileges */
         if (setup_logging ()) {
                 exit (EX_SOFTWARE);
-        }
-
-        /* Create pid file after we drop privileges */
-        if (config.pidpath) {
-                if (pidfile_create (config.pidpath) < 0) {
-                        fprintf (stderr, "%s: Could not create PID file.\n",
-                                 argv[0]);
-                        exit (EX_OSERR);
-                }
         }
 
         if (child_pool_create () < 0) {
@@ -496,7 +446,7 @@ main (int argc, char **argv)
         child_close_sock ();
 
         /* Remove the PID file */
-        if (unlink (config.pidpath) < 0) {
+        if (config.pidpath != NULL && unlink (config.pidpath) < 0) {
                 log_message (LOG_WARNING,
                              "Could not remove PID file \"%s\": %s.",
                              config.pidpath, strerror (errno));

@@ -32,10 +32,11 @@
  * Write the buffer to the socket. If an EINTR occurs, pick up and try
  * again. Keep sending until the buffer has been sent.
  */
-ssize_t safe_write (int fd, const char *buffer, size_t count)
+ssize_t safe_write (int fd, const void *buf, size_t count)
 {
         ssize_t len;
         size_t bytestosend;
+	const char *buffer = buf;
 
         assert (fd >= 0);
         assert (buffer != NULL);
@@ -67,7 +68,7 @@ ssize_t safe_write (int fd, const char *buffer, size_t count)
  * Matched pair for safe_write(). If an EINTR occurs, pick up and try
  * again.
  */
-ssize_t safe_read (int fd, char *buffer, size_t count)
+ssize_t safe_read (int fd, void *buffer, size_t count)
 {
         ssize_t len;
 

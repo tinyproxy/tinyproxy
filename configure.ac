@@ -3,20 +3,7 @@
 
 AC_PREREQ(2.54)
 
-m4_define([tinyproxy_major_version], [1])
-m4_define([tinyproxy_minor_version], [9])
-m4_define([tinyproxy_micro_version], [0])
-m4_define([tinyproxy_real_version],
-          [tinyproxy_major_version.tinyproxy_minor_version.tinyproxy_micro_version])
-m4_define([tinyproxy_version], [tinyproxy_real_version])
-
-# For overriding the version string. Comment out if not needed.
-# m4_define([tinyproxy_version], [1.9.0])
-
-m4_define([tinyproxy_unstable],
-          m4_if(m4_eval(tinyproxy_minor_version % 2), [1], [yes], [no]))
-m4_define([tinyproxy_stable],
-          m4_if(m4_eval(tinyproxy_minor_version % 2), [0], [yes], [no]))
+m4_define([tinyproxy_version], esyscmd(sh scripts/version.sh | tr -d '\n'))
 
 AC_INIT([Tinyproxy], [tinyproxy_version],
 	[https://tinyproxy.github.io/],
@@ -29,30 +16,8 @@ AC_CONFIG_MACRO_DIR([m4macros])
 
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
-TINYPROXY_MAJOR_VERSION=tinyproxy_major_version
-TINYPROXY_MINOR_VERSION=tinyproxy_minor_version
-TINYPROXY_MICRO_VERSION=tinyproxy_micro_version
-TINYPROXY_REAL_VERSION=tinyproxy_real_version
-TINYPROXY_VERSION=tinyproxy_version
-TINYPROXY_UNSTABLE=tinyproxy_unstable
-AC_SUBST(TINYPROXY_MAJOR_VERSION)
-AC_SUBST(TINYPROXY_MINOR_VERSION)
-AC_SUBST(TINYPROXY_MICRO_VERSION)
-AC_SUBST(TINYPROXY_REAL_VERSION)
-AC_SUBST(TINYPROXY_VERSION)
-AC_SUBST(TINYPROXY_UNSTABLE)
-
 dnl Temporarily defined here until we get tinyproxy-version.h
 AC_DEFINE(TINYPROXY_VERSION, "tinyproxy_version", [Tinyproxy version number])
-
-# The symbol TINYPROXY_UNSTABLE is defined above for substitution in
-# Makefiles and conditionally defined here as a preprocessor symbol
-# and automake conditional.
-if test "x$TINYPROXY_UNSTABLE" = "xyes"; then
-  AC_DEFINE(TINYPROXY_UNSTABLE, 1,
-            [Define to 1 if this is an unstable version of Tinyproxy])
-fi
-AM_CONDITIONAL(TINYPROXY_UNSTABLE, test "x$TINYPROXY_UNSTABLE" = "xyes")
 
 
 dnl Check if we're compiling on a weird platform :)
@@ -113,8 +78,8 @@ dnl Include support for reverse proxy?
 AH_TEMPLATE([REVERSE_SUPPORT],
             [Include support for reverse proxy.])
 TP_ARG_ENABLE(reverse,
-              [Enable reverse proxying (default is NO)],
-              no)
+              [Enable reverse proxying (default is YES)],
+              yes)
 if test x"$reverse_enabled" = x"yes"; then
     ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS reverse-proxy.o"
     AC_DEFINE(REVERSE_SUPPORT)
@@ -124,8 +89,8 @@ dnl Include the transparent proxy support
 AH_TEMPLATE([TRANSPARENT_PROXY],
 	    [Include support for using tinyproxy as a transparent proxy.])
 TP_ARG_ENABLE(transparent,
-              [Enable transparent proxying code (default is NO)],
-              no)
+              [Enable transparent proxying code (default is YES)],
+              yes)
 if test x"$transparent_enabled" = x"yes"; then
    ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS transparent-proxy.o"
    AC_DEFINE(TRANSPARENT_PROXY)
@@ -173,7 +138,7 @@ AC_CHECK_FUNCS([inet_ntoa strdup])
 AC_CHECK_FUNCS([strlcpy strlcat setgroups])
 
 dnl Enable extra warnings
-DESIRED_FLAGS="-fdiagnostics-show-option -Wall -Wextra -Wno-unused-parameter -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wfloat-equal -Wundef -Wformat=2 -Wlogical-op -Wmissing-include-dirs -Wformat-nonliteral -Wold-style-definition -Wpointer-arith -Waggregate-return -Winit-self -Wpacked --std=c89 -ansi -pedantic -Wno-overlength-strings -Wc++-compat -Wno-long-long -Wno-overlength-strings -Wdeclaration-after-statement -Wredundant-decls -Wmissing-noreturn -Wshadow -Wendif-labels -Wcast-qual -Wcast-align -Wwrite-strings -Wp,-D_FORTIFY_SOURCE=2 -fno-common"
+DESIRED_FLAGS="-fdiagnostics-show-option -Wall -Wextra -Wno-unused-parameter -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wfloat-equal -Wundef -Wformat=2 -Wlogical-op -Wmissing-include-dirs -Wformat-nonliteral -Wold-style-definition -Wpointer-arith -Waggregate-return -Winit-self -Wpacked --std=c89 -ansi -Wno-overlength-strings -Wno-long-long -Wno-overlength-strings -Wdeclaration-after-statement -Wredundant-decls -Wmissing-noreturn -Wshadow -Wendif-labels -Wcast-qual -Wcast-align -Wwrite-strings -Wp,-D_FORTIFY_SOURCE=2 -fno-common"
 
 if test -n "${MAINTAINER_MODE_FALSE}"; then
    DESIRED_FLAGS="-Werror $DESIRED_FLAGS"
@@ -245,6 +210,7 @@ docs/man8/tinyproxy.txt
 m4macros/Makefile
 tests/Makefile
 tests/scripts/Makefile
+scripts/Makefile
 ])
 
 AC_OUTPUT

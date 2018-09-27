@@ -1,5 +1,5 @@
 /* tinyproxy - A fast light-weight HTTP proxy
- * Copyright (C) 2002, 2004 Robert James Kaes <rjkaes@users.sourceforge.net>
+ * Copyright (C) 2005 Robert James Kaes <rjkaes@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* See 'network.c' for detailed information. */
+/* See 'basicauth.c' for detailed information. */
 
-#ifndef TINYPROXY_NETWORK_H
-#define TINYPROXY_NETWORK_H
+#ifndef TINYPROXY_BASICAUTH_H
+#define TINYPROXY_BASICAUTH_H
 
-extern ssize_t safe_write (int fd, const void *buf, size_t count);
-extern ssize_t safe_read (int fd, void *buf, size_t count);
+#include <stddef.h>
+#include "vector.h"
 
-extern int write_message (int fd, const char *fmt, ...);
-extern ssize_t readline (int fd, char **whole_buffer);
+extern ssize_t basicauth_string(const char *user, const char *pass,
+	char *buf, size_t bufsize);
 
-extern const char *get_ip_string (struct sockaddr *sa, char *buf, size_t len);
-extern int full_inet_pton (const char *ip, void *dst);
+extern void basicauth_add (vector_t authlist,
+	const char *user, const char *pass);
+
+extern int basicauth_check (vector_t authlist, const char *authstring);
 
 #endif

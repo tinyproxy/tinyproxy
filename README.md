@@ -26,7 +26,7 @@ system.  If compiling from a git checkout, you need to first run
 
 from the top level directory to generate the `configure` script.
 The release tarball contains the pre-created `configure` script,
-so when building fom a release, you can skip this step.
+so when building from a release, you can skip this step.
 Then basically all you need to do is
 
 
@@ -55,9 +55,6 @@ Enable support for proxying connections through another proxy server.
 
 - `--enable-transparent`: 
 Allow Tinyproxy to be used as a transparent proxy daemon.
-
-- `--enable-static`: 
-Compile a static version of Tinyproxy.
 
 - `--enable-reverse`: 
 Enable reverse proxying.
