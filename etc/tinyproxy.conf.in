@@ -234,6 +234,8 @@ Allow 127.0.0.1
 # traffic, as Tinyproxy has no control over what headers are exchanged.
 #
 #AddHeader "X-My-Header" "Powered by Tinyproxy"
+AddHeader "Connection" "Upgrade"
+AddHeader "Upgrade" "WebSocket"
 
 #
 # ViaProxyName: The "Via" header is required by the HTTP RFC, but using
