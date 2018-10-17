@@ -11,9 +11,10 @@
 # used for tinyproxy after the initial binding to the port has been done
 # as the root user. Either the user or group name or the UID or GID
 # number may be used.
+# TODO : Revisit this setting once proxy integration is stabilized.
 #
-User nobody
-Group nobody
+User root
+Group root
 
 #
 # Port: Specify the port which tinyproxy will listen on.  Please note
@@ -222,6 +223,7 @@ MaxRequestsPerChild 0
 # tested against the controls based on order.
 #
 Allow 127.0.0.1
+Allow localhost
 
 # BasicAuth: HTTP "Basic Authentication" for accessing the proxy.
 # If there are any entries specified, access is only granted for authenticated
