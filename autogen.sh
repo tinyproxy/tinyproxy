@@ -1,5 +1,9 @@
 #!/bin/sh
 
+checkInstalled () {
+	which "$1" || { echo "$1 not installed"; exit 0; }
+}
+
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 ORIGDIR=`pwd`
@@ -7,6 +11,9 @@ ORIGDIR=`pwd`
 set -x
 
 cd $srcdir
+
+checkInstalled "automake"
+checkInstalled "autoconf"
 
 aclocal -I m4macros \
   && autoheader \
