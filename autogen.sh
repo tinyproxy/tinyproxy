@@ -1,7 +1,7 @@
 #!/bin/sh
 
 checkInstalled () {
-	which "$1" || { echo "$1 not installed"; exit 0; }
+	"$1" --help >/dev/null 2>&1 || { echo "$1 not installed"; exit 1; }
 }
 
 srcdir=`dirname $0`
