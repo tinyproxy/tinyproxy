@@ -82,6 +82,30 @@
 #define CHECK_LWS(header, len)                                  \
   ((len) > 0 && (header[0] == ' ' || header[0] == '\t'))
 
+static const char *skip_headers_allow_upgrade[] = {
+         "host",
+         "keep-alive",
+         "proxy-connection",
+         "te",
+         "trailers"
+};
+static const char *skip_headers_default[] = {
+         "host",
+         "keep-alive",
+         "proxy-connection",
+         "te",
+         "trailers",
+         "upgrade"
+};
+
+static const char *connection_headers_allow_upgrade[] = {
+        "proxy-connection"
+};
+static const char *connection_headers_default[] = {
+        "connection",
+        "proxy-connection"
+};
+
 /*
  * Read in the first line from the client (the request line for HTTP
  * connections. The request line is allocated from the heap, but it must
@@ -281,6 +305,13 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
                                       request->method, request->path,
                                       request->host, portbuff,
                                       connptr->upstream_proxy->ua.authstr);
+        } else if (config.allowupgrade) {
+                /* Allow websockets to not be closed after handshake. */
+                return write_message (connptr->server_fd,
+                                      "%s %s HTTP/1.0\r\n"
+                                      "Host: %s%s\r\n"
+                                      request->method, request->path,
+                                      request->host, portbuff);
         } else {
                 return write_message (connptr->server_fd,
                                       "%s %s HTTP/1.0\r\n"
@@ -721,15 +752,17 @@ static int get_all_headers (int fd, hashmap_t hashofheaders)
  */
 static int remove_connection_headers (hashmap_t hashofheaders)
 {
-        static const char *headers[] = {
-                "connection",
-                "proxy-connection"
-        };
-
+        char **headers;
         char *data;
         char *ptr;
         ssize_t len;
         int i;
+
+        headers = connection_headers_default;
+
+        if (config.allowupgrade) {
+                headers = connection_headers_allow_upgrade;
+        }
 
         for (i = 0; i != (sizeof (headers) / sizeof (char *)); ++i) {
                 /* Look for the connection header.  If it's not found, return. */
@@ -850,19 +883,18 @@ done:
 static int
 process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
 {
-        static const char *skipheaders[] = {
-                "host",
-                "keep-alive",
-                "proxy-connection",
-                "te",
-                "trailers",
-                "upgrade"
-        };
+        char **skipheaders;
         int i;
         hashmap_iter iter;
         int ret = 0;
 
         char *data, *header;
+
+        skipheaders = skip_headers_default;
+
+        if (config.allowupgrade) {
+                skipheaders = skip_headers_allow_upgrade;
+        }
 
         /*
          * Don't send headers if there's already an error, if the request was

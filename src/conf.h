@@ -111,6 +111,14 @@ struct config_s {
          * Extra headers to be added to outgoing HTTP requests.
          */
         vector_t add_headers;
+
+        /*
+         * Allow Upgrade and Connection headers to pass through proxy.
+         * Enables unencrypted WebSocket connections violates RFC
+         * requirements of not passing Connection/Upgrade through a
+         * proxy.  Unexpected behavior may result.
+         */
+        unsigned int allowupgrade;      /* boolean */
 };
 
 extern int reload_config_file (const char *config_fname, struct config_s *conf,

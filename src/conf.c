@@ -126,6 +126,7 @@ static HANDLE_FUNC (handle_defaulterrorfile);
 static HANDLE_FUNC (handle_deny);
 static HANDLE_FUNC (handle_errorfile);
 static HANDLE_FUNC (handle_addheader);
+static HANDLE_FUNC (handle_allowupgrade);
 #ifdef FILTER_ENABLE
 static HANDLE_FUNC (handle_filter);
 static HANDLE_FUNC (handle_filtercasesensitive);
@@ -235,6 +236,7 @@ struct {
         STDCONF ("basicauth", ALNUM WS ALNUM, handle_basicauth),
         STDCONF ("errorfile", INT WS STR, handle_errorfile),
         STDCONF ("addheader",  STR WS STR, handle_addheader),
+        STDCONF ("allowupgrade", BOOL, handle_allowupgrade),
 
 #ifdef FILTER_ENABLE
         /* filtering */
@@ -951,6 +953,12 @@ static HANDLE_FUNC (handle_addheader)
 
         return 0;
 }
+
+static HANDLE_FUNC (handle_allowupgrade)
+{
+        return set_bool_arg (&conf->allowupgrade, line, &match[2]);
+}
+
 
 /*
  * Log level's strings.

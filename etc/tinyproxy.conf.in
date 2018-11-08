@@ -236,6 +236,14 @@ Allow 127.0.0.1
 #AddHeader "X-My-Header" "Powered by Tinyproxy"
 
 #
+# AllowUpgrade: 'Upgrade' and 'Connection' headers are stripped in
+# non-HTTPS connections per proxy operation in the HTTP RFC. Enabling
+# fixes unencrypted WebSocket connections but is RFC 2616 non-compliant.
+# May cause issues with in-connection upgrades to unencrypted HTTP/2.
+# Don't enable unless you know what you are doing.
+# AllowUpgrade Yes
+
+#
 # ViaProxyName: The "Via" header is required by the HTTP RFC, but using
 # the real host name is a security concern.  If the following directive
 # is enabled, the string supplied will be used as the host name in the
