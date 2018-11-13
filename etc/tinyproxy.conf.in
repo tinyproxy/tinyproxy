@@ -188,7 +188,7 @@ LogLevel Info
 # be created. In other words, only MaxClients number of clients can be
 # connected at the same time.
 #
-MaxClients 1
+MaxClients 100
 
 #
 # MinSpareServers/MaxSpareServers: These settings set the upper and
@@ -198,13 +198,13 @@ MaxClients 1
 # server processes will be spawned.  If the number of servers exceeds
 # MaxSpareServers then the extras will be killed off.
 #
-#MinSpareServers 5
-#MaxSpareServers 20
+MinSpareServers 5
+MaxSpareServers 20
 
 #
 # StartServers: The number of servers to start initially.
 #
-StartServers 1
+StartServers 10
 
 #
 # MaxRequestsPerChild: The number of connections a thread will handle
