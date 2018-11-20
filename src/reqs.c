@@ -309,7 +309,7 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
                 /* Allow websockets to not be closed after handshake. */
                 return write_message (connptr->server_fd,
                                       "%s %s HTTP/1.0\r\n"
-                                      "Host: %s%s\r\n"
+                                      "Host: %s%s\r\n",
                                       request->method, request->path,
                                       request->host, portbuff);
         } else {
