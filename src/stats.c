@@ -33,6 +33,7 @@
 #include "stats.h"
 #include "utils.h"
 #include "conf.h"
+#include <pthread.h>
 
 struct stat_s {
         unsigned long int num_reqs;
@@ -43,14 +44,16 @@ struct stat_s {
 };
 
 static struct stat_s *stats;
+static pthread_mutex_t stats_update_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t stats_file_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /*
  * Initialize the statistics information to zero.
  */
 void init_stats (void)
 {
-        stats = (struct stat_s *) malloc_shared_memory (sizeof (struct stat_s));
-        if (stats == MAP_FAILED)
+        stats = (struct stat_s *) safemalloc (sizeof (struct stat_s));
+        if (!stats)
                 return;
 
         memset (stats, 0, sizeof (struct stat_s));
@@ -72,10 +75,15 @@ showstats (struct conn_s *connptr)
         snprintf (denied, sizeof (denied), "%lu", stats->num_denied);
         snprintf (refused, sizeof (refused), "%lu", stats->num_refused);
 
+        pthread_mutex_lock(&stats_file_lock);
+
         if (!config.statpage || (!(statfile = fopen (config.statpage, "r")))) {
                 message_buffer = (char *) safemalloc (MAXBUFFSIZE);
-                if (!message_buffer)
+                if (!message_buffer) {
+err_minus_one:
+                        pthread_mutex_unlock(&stats_file_lock);
                         return -1;
+                }
 
                 snprintf
                   (message_buffer, MAXBUFFSIZE,
@@ -105,13 +113,13 @@ showstats (struct conn_s *connptr)
                 if (send_http_message (connptr, 200, "OK",
                                        message_buffer) < 0) {
                         safefree (message_buffer);
-                        return -1;
+                        goto err_minus_one;
                 }
 
                 safefree (message_buffer);
+                pthread_mutex_unlock(&stats_file_lock);
                 return 0;
         }
-
         add_error_variable (connptr, "opens", opens);
         add_error_variable (connptr, "reqs", reqs);
         add_error_variable (connptr, "badconns", badconns);
@@ -121,6 +129,7 @@ showstats (struct conn_s *connptr)
         send_http_headers (connptr, 200, "Statistic requested");
         send_html_file (statfile, connptr);
         fclose (statfile);
+        pthread_mutex_unlock(&stats_file_lock);
 
         return 0;
 }
@@ -131,6 +140,9 @@ showstats (struct conn_s *connptr)
  */
 int update_stats (status_t update_level)
 {
+        int ret = 0;
+
+        pthread_mutex_lock(&stats_update_lock);
         switch (update_level) {
         case STAT_BADCONN:
                 ++stats->num_badcons;
@@ -149,8 +161,9 @@ int update_stats (status_t update_level)
                 ++stats->num_denied;
                 break;
         default:
-                return -1;
+                ret = -1;
         }
+        pthread_mutex_unlock(&stats_update_lock);
 
-        return 0;
+        return ret;
 }

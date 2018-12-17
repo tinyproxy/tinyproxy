@@ -65,6 +65,7 @@ takesig (int sig)
                 received_sighup = TRUE;
                 break;
 
+        case SIGINT:
         case SIGTERM:
                 config.quit = TRUE;
                 break;
@@ -302,6 +303,7 @@ static void initialize_config_defaults (struct config_s *conf)
         conf->idletimeout = MAX_IDLE_TIME;
         conf->logf_name = NULL;
         conf->pidpath = NULL;
+        conf->maxclients = 100;
 }
 
 /**
@@ -329,6 +331,8 @@ done:
 int
 main (int argc, char **argv)
 {
+        srand(time(NULL)); /* for hashmap seeds */
+
         /* Only allow u+rw bits. This may be required for some versions
          * of glibc so that mkstemp() doesn't make us vulnerable.
          */
@@ -404,13 +408,6 @@ main (int argc, char **argv)
 
         /* Create log file after we drop privileges */
         if (setup_logging ()) {
-                exit (EX_SOFTWARE);
-        }
-
-        if (child_pool_create () < 0) {
-                fprintf (stderr,
-                         "%s: Could not create the pool of children.\n",
-                         argv[0]);
                 exit (EX_SOFTWARE);
         }
 

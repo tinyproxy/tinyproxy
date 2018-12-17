@@ -52,10 +52,4 @@ extern char *debugging_strdup (const char *s, const char *file,
 
 #endif
 
-/*
- * Allocate memory from the "shared" region of memory.
- */
-extern void *malloc_shared_memory (size_t size);
-extern void *calloc_shared_memory (size_t nmemb, size_t size);
-
 #endif
