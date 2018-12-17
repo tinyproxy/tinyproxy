@@ -27,7 +27,6 @@
 
 #include "acl.h"
 #include "anonymous.h"
-#include "child.h"
 #include "filter.h"
 #include "heap.h"
 #include "html-error.h"
@@ -140,9 +139,6 @@ static HANDLE_FUNC (handle_listen);
 static HANDLE_FUNC (handle_logfile);
 static HANDLE_FUNC (handle_loglevel);
 static HANDLE_FUNC (handle_maxclients);
-static HANDLE_FUNC (handle_maxrequestsperchild);
-static HANDLE_FUNC (handle_maxspareservers);
-static HANDLE_FUNC (handle_minspareservers);
 static HANDLE_FUNC (handle_pidfile);
 static HANDLE_FUNC (handle_port);
 #ifdef REVERSE_SUPPORT
@@ -151,7 +147,6 @@ static HANDLE_FUNC (handle_reversemagic);
 static HANDLE_FUNC (handle_reverseonly);
 static HANDLE_FUNC (handle_reversepath);
 #endif
-static HANDLE_FUNC (handle_startservers);
 static HANDLE_FUNC (handle_statfile);
 static HANDLE_FUNC (handle_stathost);
 static HANDLE_FUNC (handle_syslog);
@@ -217,10 +212,6 @@ struct {
         /* integer arguments */
         STDCONF ("port", INT, handle_port),
         STDCONF ("maxclients", INT, handle_maxclients),
-        STDCONF ("maxspareservers", INT, handle_maxspareservers),
-        STDCONF ("minspareservers", INT, handle_minspareservers),
-        STDCONF ("startservers", INT, handle_startservers),
-        STDCONF ("maxrequestsperchild", INT, handle_maxrequestsperchild),
         STDCONF ("timeout", INT, handle_timeout),
         STDCONF ("connectport", INT, handle_connectport),
         /* alphanumeric arguments */
@@ -805,34 +796,7 @@ static HANDLE_FUNC (handle_port)
 
 static HANDLE_FUNC (handle_maxclients)
 {
-        child_configure (CHILD_MAXCLIENTS, get_long_arg (line, &match[2]));
-        return 0;
-}
-
-static HANDLE_FUNC (handle_maxspareservers)
-{
-        child_configure (CHILD_MAXSPARESERVERS,
-                         get_long_arg (line, &match[2]));
-        return 0;
-}
-
-static HANDLE_FUNC (handle_minspareservers)
-{
-        child_configure (CHILD_MINSPARESERVERS,
-                         get_long_arg (line, &match[2]));
-        return 0;
-}
-
-static HANDLE_FUNC (handle_startservers)
-{
-        child_configure (CHILD_STARTSERVERS, get_long_arg (line, &match[2]));
-        return 0;
-}
-
-static HANDLE_FUNC (handle_maxrequestsperchild)
-{
-        child_configure (CHILD_MAXREQUESTSPERCHILD,
-                         get_long_arg (line, &match[2]));
+        set_int_arg (&conf->maxclients, line, &match[2]);
         return 0;
 }
 

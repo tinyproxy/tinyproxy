@@ -45,6 +45,7 @@ struct config_s {
         char *stathost;
         unsigned int godaemon;  /* boolean */
         unsigned int quit;      /* boolean */
+        unsigned int maxclients;
         char *user;
         char *group;
         vector_t listen_addrs;
