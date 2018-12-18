@@ -29,6 +29,7 @@
 #include "utils.h"
 #include "vector.h"
 #include "conf.h"
+#include <pthread.h>
 
 static const char *syslog_level[] = {
         NULL,
@@ -44,6 +45,8 @@ static const char *syslog_level[] = {
 
 #define TIME_LENGTH 16
 #define STRING_LENGTH 800
+
+static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*
  * Global file descriptor for the log file
@@ -165,12 +168,14 @@ void log_message (int level, const char *fmt, ...)
                 goto out;
 
         if (config.syslog) {
+                pthread_mutex_lock(&log_mutex);
 #ifdef HAVE_VSYSLOG_H
                 vsyslog (level, fmt, args);
 #else
                 vsnprintf (str, STRING_LENGTH, fmt, args);
                 syslog (level, "%s", str);
 #endif
+                pthread_mutex_unlock(&log_mutex);
         } else {
                 char *p;
 
@@ -196,7 +201,10 @@ void log_message (int level, const char *fmt, ...)
 
                 assert (log_file_fd >= 0);
 
+                pthread_mutex_lock(&log_mutex);
                 ret = write (log_file_fd, str, strlen (str));
+                pthread_mutex_unlock(&log_mutex);
+
                 if (ret == -1) {
                         config.syslog = TRUE;
 
@@ -207,7 +215,10 @@ void log_message (int level, const char *fmt, ...)
                                     "Falling back to syslog logging");
                 }
 
+                pthread_mutex_lock(&log_mutex);
                 fsync (log_file_fd);
+                pthread_mutex_unlock(&log_mutex);
+
         }
 
 out:
