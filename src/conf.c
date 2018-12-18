@@ -91,7 +91,8 @@
  * All configuration handling functions are REQUIRED to be defined
  * with the same function template as below.
  */
-typedef int (*CONFFILE_HANDLER) (struct config_s *, const char *, regmatch_t[]);
+typedef int (*CONFFILE_HANDLER) (struct config_s *, const char *,
+             unsigned long, regmatch_t[]);
 
 /*
  * Define the pattern used by any directive handling function.  The
@@ -106,7 +107,7 @@ typedef int (*CONFFILE_HANDLER) (struct config_s *, const char *, regmatch_t[]);
  */
 #define HANDLE_FUNC(func) \
   int func(struct config_s* conf, const char* line, \
-           regmatch_t match[])
+           unsigned long lineno, regmatch_t match[])
 
 /*
  * List all the handling functions.  These are defined later, but they need
@@ -369,7 +370,8 @@ config_free_regex (void)
  * Returns 0 if a match was found and successfully processed; otherwise,
  * a negative number is returned.
  */
-static int check_match (struct config_s *conf, const char *line)
+static int check_match (struct config_s *conf, const char *line,
+                        unsigned long lineno)
 {
         regmatch_t match[RE_MAX_MATCHES];
         unsigned int i;
@@ -380,7 +382,7 @@ static int check_match (struct config_s *conf, const char *line)
                 assert (directives[i].cre);
                 if (!regexec
                     (directives[i].cre, line, RE_MAX_MATCHES, match, 0))
-                        return (*directives[i].handler) (conf, line, match);
+                        return (*directives[i].handler) (conf, line, lineno, match);
         }
 
         return -1;
@@ -395,7 +397,7 @@ static int config_parse (struct config_s *conf, FILE * f)
         unsigned long lineno = 1;
 
         while (fgets (buffer, sizeof (buffer), f)) {
-                if (check_match (conf, buffer)) {
+                if (check_match (conf, buffer, lineno)) {
                         printf ("Syntax error on line %ld\n", lineno);
                         return 1;
                 }
