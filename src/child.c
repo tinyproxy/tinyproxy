@@ -304,7 +304,8 @@ static void child_main (struct child_s *ptr)
                  * Make sure no error occurred...
                  */
                 if (connfd < 0) {
-                        log_message (LOG_ERR,
+                        if (errno != EAGAIN)    /* do not spam the logs */
+                            log_message (LOG_ERR,
                                      "Accept returned an error (%s) ... retrying.",
                                      strerror (errno));
                         continue;
