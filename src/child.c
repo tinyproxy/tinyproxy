@@ -33,6 +33,7 @@
 #include "conf.h"
 
 static vector_t listen_fds;
+volatile int children;	    /* referenced from main.c */
 
 /*
  * Stores the internal data needed for each child (connection)
@@ -202,6 +203,11 @@ static void child_main (struct child_s *ptr)
         ptr->connects = 0;
         srand(time(NULL));
 
+#ifdef FILTER_ENABLE
+        if (config.filter)
+                filter_init ();
+#endif /* FILTER_ENABLE */
+
         /*
          * We have to wait for connections on multiple fds,
          * so use select.
@@ -226,7 +232,6 @@ static void child_main (struct child_s *ptr)
                         FD_SET(*fd, &rfds);
                         maxfd = max(maxfd, *fd);
                 }
-
                 ptr->status = T_WAITING;
 
                 clilen = sizeof(struct sockaddr_storage);
@@ -358,8 +363,10 @@ static pid_t child_make (struct child_s *ptr)
 {
         pid_t pid;
 
-        if ((pid = fork ()) > 0)
+        if ((pid = fork ()) > 0) {
+		++children;
                 return pid;     /* parent */
+	}
 
         /*
          * Reset the SIGNALS so that the child can be reaped.
@@ -513,10 +520,7 @@ void child_main_loop (void)
                          * This should actually be handled somehow...
                          */
                         reload_config ();
-
-#ifdef FILTER_ENABLE
                         filter_reload ();
-#endif /* FILTER_ENABLE */
 
                         /* propagate filter reload to all children */
                         child_kill_children (SIGHUP);
