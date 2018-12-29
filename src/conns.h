@@ -24,6 +24,12 @@
 #include "main.h"
 #include "hsearch.h"
 
+enum connect_method_e {
+        CM_FALSE = 0,
+        CM_TRUE = 1,
+        CM_UPGRADE = 2,
+};
+
 /*
  * Connection Definition
  */
@@ -37,8 +43,9 @@ struct conn_s {
         /* The request line (first line) from the client */
         char *request_line;
 
+        enum connect_method_e connect_method;
+
         /* Booleans */
-        unsigned int connect_method;
         unsigned int show_stats;
 
         /*
