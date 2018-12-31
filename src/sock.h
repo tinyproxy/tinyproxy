@@ -28,7 +28,13 @@
 
 #define MAXLINE (1024 * 4)
 
+#include "common.h"
 #include "vector.h"
+
+union sockaddr_union {
+        struct sockaddr_in  v4;
+        struct sockaddr_in6 v6;
+};
 
 extern int opensock (const char *host, int port, const char *bind_to);
 extern int listen_sock (const char *addr, uint16_t port, vector_t listen_fds);

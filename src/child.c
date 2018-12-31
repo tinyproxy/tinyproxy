@@ -36,11 +36,6 @@
 
 static vector_t listen_fds;
 
-union sockaddr_union {
-        struct sockaddr_in  v4;
-        struct sockaddr_in6 v6;
-};
-
 struct client {
         union sockaddr_union addr;
         int fd;
