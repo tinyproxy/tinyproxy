@@ -221,8 +221,8 @@ insert_acl (char *location, acl_access_t access_type, vector_t *access_list)
  *        -1 if no tests match, so skip
  */
 static int
-acl_string_processing (struct acl_s *acl,
-                       const char *ip_address, const char *string_address)
+acl_string_processing (struct acl_s *acl, const char *ip_address,
+                       union sockaddr_union *addr, char *string_addr)
 {
         int match;
         struct addrinfo hints, *res, *ressave;
@@ -231,7 +231,6 @@ acl_string_processing (struct acl_s *acl,
 
         assert (acl && acl->type == ACL_STRING);
         assert (ip_address && strlen (ip_address) > 0);
-        assert (string_address && strlen (string_address) > 0);
 
         /*
          * If the first character of the ACL string is a period, we need to
@@ -267,7 +266,15 @@ acl_string_processing (struct acl_s *acl,
         }
 
 STRING_TEST:
-        test_length = strlen (string_address);
+        if(string_addr[0] == 0) {
+                /* only do costly hostname resolution when it is absolutely needed,
+                   and only once */
+                if(getnameinfo ((void *) addr, sizeof (*addr),
+                                string_addr, HOSTNAME_LENGTH, NULL, 0, 0) != 0)
+                        return -1;
+        }
+
+        test_length = strlen (string_addr);
         match_length = strlen (acl->address.string);
 
         /*
@@ -278,7 +285,7 @@ STRING_TEST:
                 return -1;
 
         if (strcasecmp
-            (string_address + (test_length - match_length),
+            (string_addr + (test_length - match_length),
              acl->address.string) == 0) {
                 if (acl->access == ACL_DENY)
                         return 0;
@@ -329,14 +336,17 @@ static int check_numeric_acl (const struct acl_s *acl, const char *ip)
  *     1 if allowed
  *     0 if denied
  */
-int check_acl (const char *ip, const char *host, vector_t access_list)
+int check_acl (const char *ip, union sockaddr_union *addr, vector_t access_list)
 {
         struct acl_s *acl;
         int perm = 0;
         size_t i;
+        char string_addr[HOSTNAME_LENGTH];
 
         assert (ip != NULL);
         assert (host != NULL);
+
+        string_addr[0] = 0;
 
         /*
          * If there is no access list allow everything.
@@ -348,7 +358,7 @@ int check_acl (const char *ip, const char *host, vector_t access_list)
                 acl = (struct acl_s *) vector_getentry (access_list, i, NULL);
                 switch (acl->type) {
                 case ACL_STRING:
-                        perm = acl_string_processing (acl, ip, host);
+                        perm = acl_string_processing (acl, ip, addr, string_addr);
                         break;
 
                 case ACL_NUMERIC:
@@ -371,8 +381,8 @@ int check_acl (const char *ip, const char *host, vector_t access_list)
         /*
          * Deny all connections by default.
          */
-        log_message (LOG_NOTICE, "Unauthorized connection from \"%s\" [%s].",
-                     host, ip);
+        log_message (LOG_NOTICE, "Unauthorized connection from \"%s\".",
+                     ip);
         return 0;
 }
 

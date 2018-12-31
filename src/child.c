@@ -50,7 +50,7 @@ struct child {
 static void* child_thread(void* data)
 {
 	struct child *c = data;
-	handle_connection (c->client.fd);
+	handle_connection (c->client.fd, &c->client.addr);
 	c->done = 1;
 	return NULL;
 }

@@ -334,27 +334,9 @@ int getsock_ip (int fd, char *ipaddr)
 /*
  * Return the peer's socket information.
  */
-int getpeer_information (int fd, char *ipaddr, char *string_addr)
+void getpeer_information (union sockaddr_union* addr, char *ipaddr, size_t ipaddr_len)
 {
-        struct sockaddr_storage sa;
-        socklen_t salen = sizeof sa;
-
-        assert (fd >= 0);
-        assert (ipaddr != NULL);
-        assert (string_addr != NULL);
-
-        /* Set the strings to default values */
-        ipaddr[0] = '\0';
-        strlcpy (string_addr, "[unknown]", HOSTNAME_LENGTH);
-
-        /* Look up the IP address */
-        if (getpeername (fd, (struct sockaddr *) &sa, &salen) != 0)
-                return -1;
-
-        if (get_ip_string ((struct sockaddr *) &sa, ipaddr, IP_LENGTH) == NULL)
-                return -1;
-
-        /* Get the full host name */
-        return getnameinfo ((struct sockaddr *) &sa, salen,
-                            string_addr, HOSTNAME_LENGTH, NULL, 0, 0);
+        int af = addr->v4.sin_family;
+        void *ipdata = af == AF_INET ? (void*)&addr->v4.sin_addr : (void*)&addr->v6.sin6_addr;
+        inet_ntop(af, ipdata, ipaddr, ipaddr_len);
 }
