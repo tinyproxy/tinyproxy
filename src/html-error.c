@@ -262,7 +262,6 @@ int add_standard_vars (struct conn_s *connptr)
         ADD_VAR_RET ("cause", connptr->error_string);
         ADD_VAR_RET ("request", connptr->request_line);
         ADD_VAR_RET ("clientip", connptr->client_ip_addr);
-        ADD_VAR_RET ("clienthost", connptr->client_string_addr);
 
         /* The following value parts are all non-NULL and will
          * trigger warnings in ADD_VAR_RET(), so we use

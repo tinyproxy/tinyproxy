@@ -23,6 +23,7 @@
 #define _TINYPROXY_REQS_H_
 
 #include "common.h"
+#include "sock.h"
 
 /*
  * Port constants for HTTP (80) and SSL (443)
@@ -43,6 +44,6 @@ struct request_s {
         char *path;
 };
 
-extern void handle_connection (int fd);
+extern void handle_connection (int fd, union sockaddr_union* addr);
 
 #endif
