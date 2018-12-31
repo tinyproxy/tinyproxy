@@ -32,6 +32,7 @@
 #include "utils.h"
 #include "conf.h"
 #include "sblist.h"
+#include "loop.h"
 #include <pthread.h>
 
 static vector_t listen_fds;
@@ -86,6 +87,8 @@ void child_main_loop (void)
         struct child *child;
 
         childs = sblist_new(sizeof (struct child*), config.maxclients);
+
+        loop_records_init();
 
         /*
          * We have to wait for connections on multiple fds,

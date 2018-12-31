@@ -49,6 +49,7 @@
 #include "connect-ports.h"
 #include "conf.h"
 #include "basicauth.h"
+#include "loop.h"
 
 /*
  * Maximum length of a HTTP line
@@ -1559,6 +1560,20 @@ void handle_connection (int fd, union sockaddr_union* addr)
                 close (fd);
                 return;
         }
+
+        if (connection_loops (addr))  {
+                log_message (LOG_CONN,
+                             "Prevented endless loop (file descriptor %d): %s",
+                             fd, peer_ipaddr);
+
+                indicate_http_error(connptr, 400, "Bad Request",
+                                    "detail",
+                                    "You tried to connect to the "
+                                    "machine the proxy is running on",
+                                    NULL);
+                goto fail;
+        }
+
 
         if (check_acl (peer_ipaddr, addr, config.access_list) <= 0) {
                 update_stats (STAT_DENIED);
