@@ -604,7 +604,7 @@ add_header_to_connection (hashmap_t hashofheaders, char *header, size_t len)
 
         sep = strchr (header, ':');
         if (!sep)
-                return -1;
+                return 0; /* just skip invalid header, do not give error */
 
         /* Blank out colons, spaces, and tabs. */
         while (*sep == ':' || *sep == ' ' || *sep == '\t')
