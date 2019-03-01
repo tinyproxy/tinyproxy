@@ -134,7 +134,7 @@ AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 
-AC_CHECK_FUNCS([inet_ntoa strdup])
+AC_CHECK_FUNCS([inet_ntoa strdup fdopen])
 AC_CHECK_FUNCS([strlcpy strlcat setgroups])
 
 dnl Enable extra warnings

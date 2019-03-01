@@ -47,7 +47,7 @@ proxy_type_name(proxy_type type)
  * Construct an upstream struct from input data.
  */
 static struct upstream *upstream_build (const char *host, int port, const char *domain,
-                        const char *user, const char *pass,
+                        const char *user, const char *pass, const char *command,
 			proxy_type type)
 {
         char *ptr;
@@ -63,6 +63,9 @@ static struct upstream *upstream_build (const char *host, int port, const char *
         up->type = type;
         up->host = up->domain = up->ua.user = up->pass = NULL;
         up->ip = up->mask = 0;
+        up->command = NULL;
+        up->cmdstate.in = up->cmdstate.out = NULL;
+        up->cmdstate.pid = 0;
         if (user) {
                 if (type == PT_HTTP) {
                         char b[BASE64ENC_BYTES((256+2)-1) + 1];
@@ -78,6 +81,21 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                         up->ua.user = safestrdup (user);
                         up->pass = safestrdup (pass);
                 }
+        }
+
+        if (command) {
+                up->command = safestrdup(command);
+                if (domain && domain[0] != '\0')
+                        up->domain = safestrdup (domain);
+
+                if (domain && domain[0] != '\0') {
+                        log_message (LOG_INFO, "Added upstream command %s for %s",
+                                     up->command, up->domain);
+                } else {
+                        log_message (LOG_INFO, "Added upstream command %s",
+                                     up->command);
+                }
+                return up;
         }
 
         if (domain == NULL) {
@@ -154,12 +172,12 @@ fail:
  * Add an entry to the upstream list
  */
 void upstream_add (const char *host, int port, const char *domain,
-                   const char *user, const char *pass,
+                   const char *user, const char *pass, const char *command,
                    proxy_type type, struct upstream **upstream_list)
 {
         struct upstream *up;
 
-        up = upstream_build (host, port, domain, user, pass, type);
+        up = upstream_build (host, port, domain, user, pass, command, type);
         if (up == NULL) {
                 return;
         }
@@ -203,32 +221,58 @@ upstream_cleanup:
 struct upstream *upstream_get (char *host, struct upstream *up)
 {
         in_addr_t my_ip = INADDR_NONE;
+        int maskfail;
+        int res;
 
         while (up) {
+                maskfail = (up->domain || up->ip) ? 1 : 0;
                 if (up->domain) {
                         if (strcasecmp (host, up->domain) == 0)
-                                break;  /* exact match */
+                                maskfail = 0;  /* exact match */
 
                         if (up->domain[0] == '.') {
                                 char *dot = strchr (host, '.');
 
                                 if (!dot && !up->domain[1])
-                                        break;  /* local host matches "." */
+                                        maskfail = 0;  /* local host matches "." */
 
                                 while (dot && strcasecmp (dot, up->domain))
                                         dot = strchr (dot + 1, '.');
 
                                 if (dot)
-                                        break;  /* subdomain match */
+                                        maskfail = 0;  /* subdomain match */
                         }
                 } else if (up->ip) {
                         if (my_ip == INADDR_NONE)
                                 my_ip = ntohl (inet_addr (host));
 
                         if ((my_ip & up->mask) == up->ip)
+                                maskfail = 0;
+                }
+
+                if (!maskfail) {
+                        if (!up->command)
+                               break;
+
+                        log_message (LOG_INFO,
+                                     "Running command %s for host %s",
+                                     up->command, host);
+                        res = upstream_get_from_command(host, up);
+                        if (UPSTREAM_DIRECT == res || UPSTREAM_PROXY == res) {
                                 break;
-                } else {
-                        break;  /* No domain or IP, default upstream */
+                        } else if (UPSTREAM_FALLTHROUGH == res) {
+                                /* continue */
+                        } else {
+                                /* command failure
+                                 * TODO(tkluck): we should propagate this failure
+                                 * and reject the request rather than forwarding
+                                 * the request to a 'random' location. E.g. if
+                                 * the user configures a proxy for privacy reasons,
+                                 * command failure should not compromise their
+                                 * privacy.
+                                 */
+                                return NULL;
+                        }
                 }
 
                 up = up->next;
@@ -251,6 +295,7 @@ void free_upstream_list (struct upstream *up)
         while (up) {
                 struct upstream *tmp = up;
                 up = up->next;
+                safefree (tmp->command);
                 safefree (tmp->domain);
                 safefree (tmp->host);
                 safefree (tmp);

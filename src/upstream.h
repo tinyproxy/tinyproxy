@@ -26,6 +26,7 @@
 #define _TINYPROXY_UPSTREAM_H_
 
 #include "common.h"
+#include "upstream-command.h"
 
 /*
  * Even if upstream support is not compiled into tinyproxy, this
@@ -50,15 +51,19 @@ struct upstream {
         int port;
         in_addr_t ip, mask;
         proxy_type type;
+        char *command;
+        struct upstream_command_state cmdstate;
 };
 
 #ifdef UPSTREAM_SUPPORT
 const char *proxy_type_name(proxy_type type);
 extern void upstream_add (const char *host, int port, const char *domain,
                           const char *user, const char *pass,
+                          const char *command,
                           proxy_type type, struct upstream **upstream_list);
 extern struct upstream *upstream_get (char *host, struct upstream *up);
 extern void free_upstream_list (struct upstream *up);
+int upstream_get_from_command(const char *host, struct upstream *up);
 #endif /* UPSTREAM_SUPPORT */
 
 #endif /* _TINYPROXY_UPSTREAM_H_ */
