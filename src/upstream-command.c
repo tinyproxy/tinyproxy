@@ -31,7 +31,7 @@ static int ensure_upstream_command_writable(const char *cmd, struct upstream_com
                         return -1;
 
                 st->pid = fork();
-                if (0 > std->pid)
+                if (0 > st->pid)
                         return -1;
                 if (0 == st->pid) {
                         /* I'm the child; connect stdin/stdout to the pipes */
