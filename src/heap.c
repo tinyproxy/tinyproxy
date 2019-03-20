@@ -134,7 +134,7 @@ void *malloc_shared_memory (size_t size)
 }
 
 /*
- * Allocate a block of memory from the "shared" region an initialize it to
+ * Allocate a block of memory from the "shared" region and initialize it to
  * zero.
  */
 void *calloc_shared_memory (size_t nmemb, size_t size)
