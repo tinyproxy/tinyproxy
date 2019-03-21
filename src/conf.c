@@ -1119,7 +1119,7 @@ static HANDLE_FUNC (handle_upstream)
                 user = get_string_arg (line, &match[mi]);
         mi++;
 
-	if (match[mi].rm_so != -1)
+        if (match[mi].rm_so != -1)
                 pass = get_string_arg (line, &match[mi]);
         mi++;
 
