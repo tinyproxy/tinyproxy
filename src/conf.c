@@ -956,7 +956,6 @@ static HANDLE_FUNC (handle_addheader)
 
 /*
  * Log level's strings.
-
  */
 struct log_levels_s {
         const char *string;
