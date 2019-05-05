@@ -52,7 +52,7 @@ void filter_init (void)
         FILE *fd;
         struct filter_list *p;
         char buf[FILTER_BUFFER_LEN];
-        char *s;
+        char *s, *start;
         int cflags;
 
         if (fl || already_init) {
@@ -73,14 +73,16 @@ void filter_init (void)
                 cflags |= REG_ICASE;
 
         while (fgets (buf, FILTER_BUFFER_LEN, fd)) {
+                /* skip leading whitespace */
+                s = buf;
+                while (*s && isspace ((unsigned char) *s))
+                        s++;
+				start = s;
+
                 /*
                  * Remove any trailing white space and
                  * comments.
                  */
-                s = buf;
-                /* skip leading whitespace */
-                while (*s && isspace ((unsigned char) *s))
-                        ++s;
                 while (*s) {
                         if (isspace ((unsigned char) *s))
                                 break;
@@ -96,11 +98,7 @@ void filter_init (void)
                         ++s;
                 }
                 *s = '\0';
-
-                /* skip leading whitespace */
-                s = buf;
-                while (*s && isspace ((unsigned char) *s))
-                        s++;
+				s = start;
 
                 /* skip blank lines and comments */
                 if (*s == '\0')
