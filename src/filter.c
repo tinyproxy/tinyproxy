@@ -78,6 +78,9 @@ void filter_init (void)
                  * comments.
                  */
                 s = buf;
+				/* skip leading whitespace */
+				while (*s && isspace ((unsigned char) *s))
+					++s;
                 while (*s) {
                         if (isspace ((unsigned char) *s))
                                 break;
