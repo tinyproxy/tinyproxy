@@ -77,7 +77,7 @@ void filter_init (void)
                 s = buf;
                 while (*s && isspace ((unsigned char) *s))
                         s++;
-				start = s;
+                start = s;
 
                 /*
                  * Remove any trailing white space and
@@ -98,7 +98,7 @@ void filter_init (void)
                         ++s;
                 }
                 *s = '\0';
-				s = start;
+                s = start;
 
                 /* skip blank lines and comments */
                 if (*s == '\0')
