@@ -164,13 +164,17 @@ int send_http_headers (struct conn_s *connptr, int code, const char *message)
             "%s"
             "Connection: close\r\n" "\r\n";
 
-        const char auth_str[] =
+        const char p_auth_str[] =
             "Proxy-Authenticate: Basic realm=\""
+            PACKAGE_NAME "\"\r\n";
+
+        const char w_auth_str[] =
+            "WWW-Authenticate: Basic realm=\""
             PACKAGE_NAME "\"\r\n";
 
 	/* according to rfc7235, the 407 error must be accompanied by
            a Proxy-Authenticate header field. */
-        const char *add = code == 407 ? auth_str : "";
+        const char *add = code == 407 ? p_auth_str : (code == 401 ? w_auth_str : "");
 
         return (write_message (connptr->client_fd, headers,
                                code, message, PACKAGE, VERSION,

@@ -1611,11 +1611,22 @@ void handle_connection (int fd)
         if (config.basicauth_list != NULL) {
                 ssize_t len;
                 char *authstring;
-                int failure = 1;
+                int failure = 1, stathost_connect = 0;
                 len = hashmap_entry_by_key (hashofheaders, "proxy-authorization",
                                             (void **) &authstring);
 
+                if (len == 0 && config.stathost) {
+                        len = hashmap_entry_by_key (hashofheaders, "host",
+                                                    (void **) &authstring);
+                        if (len && !strncmp(authstring, config.stathost, strlen(config.stathost))) {
+                                len = hashmap_entry_by_key (hashofheaders, "authorization",
+                                                            (void **) &authstring);
+                                stathost_connect = 1;
+                        } else len = 0;
+                }
+
                 if (len == 0) {
+                        if (stathost_connect) goto e401;
                         update_stats (STAT_DENIED);
                         indicate_http_error (connptr, 407, "Proxy Authentication Required",
                                              "detail",
@@ -1629,6 +1640,7 @@ void handle_connection (int fd)
                         basicauth_check (config.basicauth_list, authstring + 6) == 1)
                                 failure = 0;
                 if(failure) {
+e401:
                         update_stats (STAT_DENIED);
                         indicate_http_error (connptr, 401, "Unauthorized",
                                              "detail",
