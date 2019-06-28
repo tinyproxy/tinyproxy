@@ -1641,7 +1641,7 @@ void handle_connection (int fd)
                                 failure = 0;
                 if(failure) {
 e401:
-                        update_stats (STAT_DENIED);
+                        update_stats (STAT_DENIED);     
                         indicate_http_error (connptr, 401, "Unauthorized",
                                              "detail",
                                              "The administrator of this proxy has not configured "
@@ -1651,7 +1651,7 @@ e401:
                 }
                 hashmap_remove (hashofheaders, "proxy-authorization");
         }
-
+/* above we should try to clarify it to even newbie users that their proxy password is what is wrong most likely here and actually tell him what to do about it. Those succint error msg drive ppl crazy */
         /*
          * Add any user-specified headers (AddHeader directive) to the
          * outgoing HTTP request.
