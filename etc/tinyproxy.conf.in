@@ -222,6 +222,7 @@ MaxRequestsPerChild 0
 # tested against the controls based on order.
 #
 Allow 127.0.0.1
+Allow ::1
 
 # BasicAuth: HTTP "Basic Authentication" for accessing the proxy.
 # If there are any entries specified, access is only granted for authenticated
