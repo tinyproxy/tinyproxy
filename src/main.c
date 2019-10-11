@@ -50,6 +50,7 @@
 struct config_s config;
 struct config_s config_defaults;
 unsigned int received_sighup = FALSE;   /* boolean */
+extern volatile int children;		/* defined in child.c */
 
 /*
  * Handle a signal
@@ -373,11 +374,6 @@ main (int argc, char **argv)
                          argv[0]);
                 exit (EX_OSERR);
         }
-
-#ifdef FILTER_ENABLE
-        if (config.filter)
-                filter_init ();
-#endif /* FILTER_ENABLE */
 
         /* Start listening on the selected port. */
         if (child_listening_sockets(config.listen_addrs, config.port) < 0) {

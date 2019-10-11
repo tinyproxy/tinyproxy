@@ -61,7 +61,9 @@ void filter_init (void)
 
         fd = fopen (config.filter, "r");
         if (!fd) {
-                return;
+		log_message(LOG_ERR, "Can't read the filter from %s: %s",
+		    config.filter, strerror(errno));
+		exit(3);
         }
 
         p = NULL;
