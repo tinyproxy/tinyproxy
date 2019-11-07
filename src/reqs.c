@@ -3,6 +3,7 @@
  * Copyright (C) 1999-2005 Robert James Kaes <rjkaes@users.sourceforge.net>
  * Copyright (C) 2000 Chris Lightfoot <chris@ex-parrot.com>
  * Copyright (C) 2002 Petr Lampa <lampa@fit.vutbr.cz>
+ * Copyright (C) 2019 Kaito Yamada <kaitoy@pcap4j.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1679,8 +1680,13 @@ e401:
                         goto fail;
                 }
         } else {
-                connptr->server_fd = opensock (request->host, request->port,
-                                               connptr->server_ip_addr);
+                if (config.proxied_host) {
+                        connptr->server_fd = opensock (config.proxied_host, config.proxied_port,
+                                                       connptr->server_ip_addr);
+                } else {
+                        connptr->server_fd = opensock (request->host, request->port,
+                                                       connptr->server_ip_addr);
+                }
                 if (connptr->server_fd < 0) {
                         indicate_http_error (connptr, 500, "Unable to connect",
                                              "detail",

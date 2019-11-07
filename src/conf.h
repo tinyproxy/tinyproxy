@@ -1,6 +1,7 @@
 /* tinyproxy - A fast light-weight HTTP proxy
  * Copyright (C) 2004 Robert James Kaes <rjkaes@users.sourceforge.net>
  * Copyright (C) 2009 Michael Adam <obnox@samba.org>
+ * Copyright (C) 2019 Kaito Yamada <kaitoy@pcap4j.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -111,6 +112,13 @@ struct config_s {
          * Extra headers to be added to outgoing HTTP requests.
          */
         vector_t add_headers;
+
+        /*
+         * The proxied host and port.
+         * All requests are sent to it regardless of their original destination.
+         */
+        char *proxied_host;
+        unsigned int proxied_port;
 };
 
 extern int reload_config_file (const char *config_fname, struct config_s *conf,

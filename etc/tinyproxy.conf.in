@@ -346,5 +346,9 @@ ViaProxyName "tinyproxy"
 #
 #ReverseBaseURL "http://localhost:8888/"
 
-
-
+#
+# The host and port to which all requests are sent.
+# If ProxiedHost is set, ProxiedPort must be set.
+#
+#ProxiedHost "some.proxied.host.com"
+#ProxiedPort 8080

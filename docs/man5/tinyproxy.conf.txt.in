@@ -342,6 +342,11 @@ ReversePath "/example/" "http://www.example.com/"
     types into his/her browser).  If this option is not set then
     no rewriting of redirects occurs.
 
+*ProxiedHost*::
+*ProxiedPort*::
+
+    The host name and the port to which all requests from clients
+    are sent. If ProxiedHost is set, ProxiedPort must be set, too.
 
 BUGS
 ----

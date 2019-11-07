@@ -1,6 +1,7 @@
 /* tinyproxy - A fast light-weight HTTP proxy
  * Copyright (C) 2004 Robert James Kaes <rjkaes@users.sourceforge.net>
  * Copyright (C) 2009 Michael Adam <obnox@samba.org>
+ * Copyright (C) 2019 Kaito Yamada <kaitoy@pcap4j.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -169,6 +170,9 @@ static HANDLE_FUNC (handle_upstream_no);
 
 static void config_free_regex (void);
 
+static HANDLE_FUNC (handle_proxiedhost);
+static HANDLE_FUNC (handle_proxiedport);
+
 /*
  * This macro can be used to make standard directives in the form:
  *   directive arguments [arguments ...]
@@ -210,6 +214,7 @@ struct {
         STDCONF ("statfile", STR, handle_statfile),
         STDCONF ("stathost", STR, handle_stathost),
         STDCONF ("xtinyproxy",  BOOL, handle_xtinyproxy),
+        STDCONF ("proxiedhost", STR, handle_proxiedhost),
         /* boolean arguments */
         STDCONF ("syslog", BOOL, handle_syslog),
         STDCONF ("bindsame", BOOL, handle_bindsame),
@@ -223,6 +228,7 @@ struct {
         STDCONF ("maxrequestsperchild", INT, handle_maxrequestsperchild),
         STDCONF ("timeout", INT, handle_timeout),
         STDCONF ("connectport", INT, handle_connectport),
+        STDCONF ("proxiedport", INT, handle_proxiedport),
         /* alphanumeric arguments */
         STDCONF ("user", ALNUM, handle_user),
         STDCONF ("group", ALNUM, handle_group),
@@ -731,6 +737,18 @@ static HANDLE_FUNC (handle_viaproxyname)
         return 0;
 }
 
+static HANDLE_FUNC (handle_proxiedhost)
+{
+        int r = set_string_arg (&conf->proxied_host, line, &match[2]);
+
+        if (r)
+                return r;
+        log_message (LOG_INFO,
+                     "Setting proxied host to '%s'",
+                     conf->proxied_host);
+        return 0;
+}
+
 static HANDLE_FUNC (handle_disableviaheader)
 {
         int r = set_bool_arg (&conf->disable_viaheader, line, &match[2]);
@@ -797,6 +815,19 @@ static HANDLE_FUNC (handle_port)
         if (conf->port > 65535) {
                 fprintf (stderr, "Bad port number (%d) supplied for Port.\n",
                          conf->port);
+                return 1;
+        }
+
+        return 0;
+}
+
+static HANDLE_FUNC (handle_proxiedport)
+{
+        set_int_arg (&conf->proxied_port, line, &match[2]);
+
+        if (conf->proxied_port > 65535) {
+                fprintf (stderr, "Bad port number (%d) supplied for ProxiedPort.\n",
+                         conf->proxied_port);
                 return 1;
         }
 
