@@ -35,6 +35,17 @@
 #include "conf.h"
 
 /*
+ * Return a human readable error for getaddrinfo() and getnameinfo().
+ */
+static const char * get_gai_error (int n)
+{
+        if (n == EAI_SYSTEM)
+                return strerror (errno);
+        else
+                return gai_strerror (n);
+}
+
+/*
  * Bind the given socket to the supplied address.  The socket is
  * returned if the bind succeeded.  Otherwise, -1 is returned
  * to indicate an error.
@@ -43,6 +54,7 @@ static int
 bind_socket (int sockfd, const char *addr, int family)
 {
         struct addrinfo hints, *res, *ressave;
+        int n;
 
         assert (sockfd >= 0);
         assert (addr != NULL && strlen (addr) != 0);
@@ -51,9 +63,13 @@ bind_socket (int sockfd, const char *addr, int family)
         hints.ai_family = family;
         hints.ai_socktype = SOCK_STREAM;
 
-        /* The local port it not important */
-        if (getaddrinfo (addr, NULL, &hints, &res) != 0)
+        /* The local port is not important */
+        n = getaddrinfo (addr, NULL, &hints, &res);
+        if (n != 0) {
+                log_message (LOG_INFO,
+                        "bind_socket: getaddrinfo failed for %s: ", addr, get_gai_error (n));
                 return -1;
+        }
 
         ressave = res;
 
@@ -96,7 +112,7 @@ int opensock (const char *host, int port, const char *bind_to)
         n = getaddrinfo (host, portstr, &hints, &res);
         if (n != 0) {
                 log_message (LOG_ERR,
-                             "opensock: Could not retrieve info for %s", host);
+                             "opensock: Could not retrieve address info for %s:%d: %s", host, port, get_gai_error (n));
                 return -1;
         }
 
@@ -134,8 +150,9 @@ int opensock (const char *host, int port, const char *bind_to)
         freeaddrinfo (ressave);
         if (res == NULL) {
                 log_message (LOG_ERR,
-                             "opensock: Could not establish a connection to %s",
-                             host);
+                             "opensock: Could not establish a connection to %s:%d",
+                             host,
+                             port);
                 return -1;
         }
 
@@ -186,8 +203,7 @@ static int listen_on_one_socket(struct addrinfo *ad)
         ret = getnameinfo(ad->ai_addr, ad->ai_addrlen,
                           numerichost, NI_MAXHOST, NULL, 0, flags);
         if (ret != 0) {
-                log_message(LOG_ERR, "error calling getnameinfo: %s",
-                            gai_strerror(errno));
+                log_message(LOG_ERR, "getnameinfo failed: %s", get_gai_error (ret));
                 return -1;
         }
 
@@ -256,6 +272,7 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
         struct addrinfo hints, *result, *rp;
         char portstr[6];
         int ret = -1;
+        int n;
 
         assert (port > 0);
         assert (listen_fds != NULL);
@@ -270,10 +287,13 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
 
         snprintf (portstr, sizeof (portstr), "%d", port);
 
-        if (getaddrinfo (addr, portstr, &hints, &result) != 0) {
+        n = getaddrinfo (addr, portstr, &hints, &result);
+        if (n != 0) {
                 log_message (LOG_ERR,
-                             "Unable to getaddrinfo() because of %s",
-                             strerror (errno));
+                             "Unable to getaddrinfo() for %s:%d because of %s",
+                             addr,
+                             port,
+                             get_gai_error (n));
                 return -1;
         }
 
