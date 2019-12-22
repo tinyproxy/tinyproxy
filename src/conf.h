@@ -79,6 +79,8 @@ struct config_s {
 
         unsigned int disable_viaheader; /* boolean */
 
+        unsigned int enable_xffheader; /* boolean */
+
         /*
          * Error page support.  Map error numbers to file paths.
          */

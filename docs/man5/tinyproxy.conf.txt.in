@@ -227,6 +227,14 @@ AddHeader "X-My-Header" "Powered by Tinyproxy"
     enabling this option, you break compliance.
     Don't disable the `Via` header unless you know what you are doing...
 
+*EnableXffHeader*::
+
+    The 'X-Forwarded-For' header isn't required by the HTTP RFC,
+    but is a common method for identifying the originating IP address
+    of a client connecting to a web server through an HTTP proxy or
+    load balancer. Though, using this is a security concern.
+    So turn this on only for demand.
+
 *Filter*::
 
     Tinyproxy supports filtering of web sites based on URLs or

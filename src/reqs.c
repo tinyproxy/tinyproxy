@@ -838,6 +838,35 @@ done:
 }
 
 /*
+ * Create a 'X-Forwarded-For' header or append to the existing one.
+ * It isn't standard, but is a common method for identifying the originating 
+ * IP address of a client.
+ */
+static int
+write_xff_header(int fd, hashmap_t hashofheaders,
+                     char* client_ip_addr)
+{
+        ssize_t len;
+        char *data;
+        int ret;
+
+        len = hashmap_entry_by_key(hashofheaders, "x-forwarded-for", (void **)&data);
+        if (len > 0) {
+                ret = write_message(fd,
+                                    "X-Forwarded-For: %s, %s\r\n",
+                                    data, client_ip_addr);
+
+                hashmap_remove(hashofheaders, "x-forwarded-for");
+        } else {
+                ret = write_message(fd,
+                                    "X-Forwarded-For: %s\r\n",
+                                    client_ip_addr);
+        }
+
+        return ret;
+}
+
+/*
  * Number of buckets to use internally in the hashmap.
  */
 #define HEADER_BUCKETS 256
@@ -908,6 +937,21 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
                                      "trying to write data to the remote web server.",
                                      NULL);
                 goto PULL_CLIENT_DATA;
+        }
+
+        if (config.enable_xffheader) {
+                /* Send new or appended the 'X-Forwarded-For' header */
+                ret = write_xff_header(connptr->server_fd, hashofheaders,
+                                       connptr->client_ip_addr);
+                if (ret < 0) {
+                        indicate_http_error(connptr, 503,
+                                            "Could not send data to remote server",
+                                            "detail",
+                                            "A network error occurred while "
+                                            "trying to write data to the remote web server.",
+                                            NULL);
+                        goto PULL_CLIENT_DATA;
+                }
         }
 
         /*
@@ -1070,6 +1114,14 @@ retry:
                                 connptr->protocol.minor);
         if (ret < 0)
                 goto ERROR_EXIT;
+
+        if (config.enable_xffheader) {
+                /* Send new or appended the 'X-Forwarded-For' header */
+                ret = write_xff_header(connptr->client_fd, hashofheaders,
+                                       connptr->server_ip_addr);
+                if (ret < 0)
+                        goto ERROR_EXIT;
+        }
 
 #ifdef REVERSE_SUPPORT
         /* Write tracking cookie for the magical reverse proxy path hack */
