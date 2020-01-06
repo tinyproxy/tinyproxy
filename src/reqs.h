@@ -37,6 +37,7 @@ struct request_s {
         char *method;
         char *protocol;
 
+        char *url;
         char *host;
         uint16_t port;
 

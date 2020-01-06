@@ -64,6 +64,16 @@ if test x"$filter_enabled" = x"yes"; then
     AC_DEFINE(FILTER_ENABLE)
 fi
 
+dnl Include support for regex in upstream proxies?
+AH_TEMPLATE([UPSTREAM_REGEX],
+            [Include support for connecting to an upstream proxy based on a regex.])
+TP_ARG_ENABLE(upstream_regex,
+              [Enable upstream proxying (default is YES)],
+              yes)
+if test x"$upstream_regex_enabled" = x"yes"; then
+    AC_DEFINE(UPSTREAM_REGEX)
+fi
+
 dnl Include support for upstream proxies?
 AH_TEMPLATE([UPSTREAM_SUPPORT],
             [Include support for connecting to an upstream proxy.])

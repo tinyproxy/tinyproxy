@@ -31,27 +31,36 @@
 #include "basicauth.h"
 
 #ifdef UPSTREAM_SUPPORT
-const char *
-proxy_type_name(proxy_type type)
+const char *proxy_type_name (proxy_type type)
 {
-    switch(type) {
-        case PT_NONE: return "none";
-        case PT_HTTP: return "http";
-        case PT_SOCKS4: return "socks4";
-        case PT_SOCKS5: return "socks5";
-        default: return "unknown";
-    }
+        switch (type) {
+        case PT_NONE:
+                return "none";
+        case PT_HTTP:
+                return "http";
+        case PT_SOCKS4:
+                return "socks4";
+        case PT_SOCKS5:
+                return "socks5";
+        default:
+                return "unknown";
+        }
 }
 
 /**
  * Construct an upstream struct from input data.
  */
-static struct upstream *upstream_build (const char *host, int port, const char *domain,
-                        const char *user, const char *pass,
-			proxy_type type)
+static struct upstream *upstream_build (const char *host, int port,
+                                        const char *domain, const char *user,
+                                        const char *pass, proxy_type type)
 {
         char *ptr;
         struct upstream *up;
+#ifdef UPSTREAM_REGEX
+        int cflags = REG_NEWLINE | REG_NOSUB;
+        int rflag = 0;
+        const char *rptr = NULL;
+#endif
 
         up = (struct upstream *) safemalloc (sizeof (struct upstream));
         if (!up) {
@@ -62,12 +71,46 @@ static struct upstream *upstream_build (const char *host, int port, const char *
 
         up->type = type;
         up->host = up->domain = up->ua.user = up->pass = NULL;
+#ifdef UPSTREAM_REGEX
+        up->pat = NULL;
+        up->cpat = NULL;
+        if (domain && !strncasecmp (domain, "regex(", 6)) {     /* basic regex case senstive */
+                rflag = 1;
+                rptr = domain + 6;
+        }
+        if (domain && !strncasecmp (domain, "regexe(", 7)) {    /* extended regex case senstive */
+                rflag = 1;
+                rptr = domain + 7;
+                cflags |= REG_EXTENDED;
+        }
+        if (domain && !strncasecmp (domain, "regexi(", 7)) {    /* basic regex case insenstive */
+                rflag = 1;
+                rptr = domain + 7;
+                cflags |= REG_ICASE;
+        }
+        if ((domain && (!strncasecmp (domain, "regexie(", 8) || /* extended regex case insenstive */
+                        !strncasecmp (domain, "regexei(", 8)))) {       /* extended regex case insenstive */
+                rflag = 1;
+                rptr = domain + 8;
+                cflags |= REG_ICASE;
+                cflags |= REG_ICASE;
+        }
+        if (rflag) {
+                if (domain[strlen (domain) - 1] != ')') {
+                        log_message (LOG_WARNING, "Bad regex: %s", domain);
+                        goto fail;
+                } else {
+                        up->pat = safestrdup (rptr);
+                        up->pat[strlen (rptr) - 1] = '\0';
+                }
+        }
+#endif
         up->ip = up->mask = 0;
         if (user) {
                 if (type == PT_HTTP) {
-                        char b[BASE64ENC_BYTES((256+2)-1) + 1];
+                        char b[BASE64ENC_BYTES ((256 + 2) - 1) + 1];
                         ssize_t ret;
-                        ret = basicauth_string(user, pass, b, sizeof b);
+                        ret = basicauth_string (user, pass, b, sizeof b);
                         if (ret == 0) {
                                 log_message (LOG_ERR,
                                              "User / pass in upstream config too long");
@@ -91,35 +134,52 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                 up->port = port;
 
                 log_message (LOG_INFO, "Added upstream %s %s:%d for [default]",
-                             proxy_type_name(type), host, port);
+                             proxy_type_name (type), host, port);
         } else if (host == NULL || type == PT_NONE) {
                 if (!domain || domain[0] == '\0') {
                         log_message (LOG_WARNING,
                                      "Nonsense no-upstream rule: empty domain");
                         goto fail;
                 }
+#ifdef UPSTREAM_REGEX
+                if (!rflag) {
+#endif
+                        ptr = strchr (domain, '/');
+                        if (ptr) {
+                                struct in_addr addrstruct;
 
-                ptr = strchr (domain, '/');
-                if (ptr) {
-                        struct in_addr addrstruct;
+                                *ptr = '\0';
+                                if (inet_aton (domain, &addrstruct) != 0) {
+                                        up->ip = ntohl (addrstruct.s_addr);
+                                        *ptr++ = '/';
 
-                        *ptr = '\0';
-                        if (inet_aton (domain, &addrstruct) != 0) {
-                                up->ip = ntohl (addrstruct.s_addr);
-                                *ptr++ = '/';
-
-                                if (strchr (ptr, '.')) {
-                                        if (inet_aton (ptr, &addrstruct) != 0)
+                                        if (strchr (ptr, '.')) {
+                                                if (inet_aton (ptr, &addrstruct)
+                                                    != 0)
+                                                        up->mask =
+                                                            ntohl
+                                                            (addrstruct.s_addr);
+                                        } else {
                                                 up->mask =
-                                                    ntohl (addrstruct.s_addr);
-                                } else {
-                                        up->mask =
-                                            ~((1 << (32 - atoi (ptr))) - 1);
+                                                    ~((1 << (32 - atoi (ptr))) -
+                                                      1);
+                                        }
                                 }
+                        } else {
+                                up->domain = safestrdup (domain);
                         }
+#ifdef UPSTREAM_REGEX
                 } else {
-                        up->domain = safestrdup (domain);
+                        int err = 0;
+                        up->cpat = (regex_t *) safemalloc (sizeof (regex_t));
+                        err = regcomp (up->cpat, up->pat, cflags);
+                        if (err != 0) {
+                                log_message (LOG_WARNING,
+                                             "Bad regex: %s", up->pat);
+                                goto fail;
+                        }
                 }
+#endif
 
                 log_message (LOG_INFO, "Added no-upstream for %s", domain);
         } else {
@@ -133,9 +193,20 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                 up->host = safestrdup (host);
                 up->port = port;
                 up->domain = safestrdup (domain);
-
+#ifdef UPSTREAM_REGEX
+                if (rflag) {
+                        int err = 0;
+                        up->cpat = (regex_t *) safemalloc (sizeof (regex_t));
+                        err = regcomp (up->cpat, up->pat, cflags);
+                        if (err != 0) {
+                                log_message (LOG_WARNING,
+                                             "Bad regex: %s", up->pat);
+                                goto fail;
+                        }
+                }
+#endif
                 log_message (LOG_INFO, "Added upstream %s %s:%d for %s",
-                             proxy_type_name(type), host, port, domain);
+                             proxy_type_name (type), host, port, domain);
         }
 
         return up;
@@ -145,6 +216,10 @@ fail:
         safefree (up->pass);
         safefree (up->host);
         safefree (up->domain);
+#ifdef UPSTREAM_REGEX
+        safefree (up->pat);
+        safefree (up->cpat);
+#endif
         safefree (up);
 
         return NULL;
@@ -200,12 +275,27 @@ upstream_cleanup:
 /*
  * Check if a host is in the upstream list
  */
-struct upstream *upstream_get (char *host, struct upstream *up)
+struct upstream *upstream_get (struct request_s *request, struct upstream *up)
 {
+        char *host = request->host;
+
         in_addr_t my_ip = INADDR_NONE;
 
         while (up) {
+#ifdef UPSTREAM_REGEX
+                if (up->cpat) {
+                        int result;
+                        char *url = request->url;
+                        result =
+                            regexec (up->cpat, url, (size_t) 0,
+                                     (regmatch_t *) 0, 0);
+
+                        if (result == 0)
+                                break;  /* regex match */
+                } else if (up->domain) {
+#else
                 if (up->domain) {
+#endif
                         if (strcasecmp (host, up->domain) == 0)
                                 break;  /* exact match */
 
@@ -239,7 +329,8 @@ struct upstream *upstream_get (char *host, struct upstream *up)
 
         if (up)
                 log_message (LOG_INFO, "Found upstream proxy %s %s:%d for %s",
-                             proxy_type_name(up->type), up->host, up->port, host);
+                             proxy_type_name (up->type), up->host, up->port,
+                             host);
         else
                 log_message (LOG_INFO, "No upstream proxy for %s", host);
 

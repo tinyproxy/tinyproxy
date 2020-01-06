@@ -60,13 +60,13 @@
  * enabled.
  */
 #ifdef UPSTREAM_SUPPORT
-#  define UPSTREAM_CONFIGURED() (config.upstream_list != NULL)
-#  define UPSTREAM_HOST(host) upstream_get(host, config.upstream_list)
-#  define UPSTREAM_IS_HTTP(conn) (conn->upstream_proxy != NULL && conn->upstream_proxy->type == PT_HTTP)
+#define UPSTREAM_CONFIGURED() (config.upstream_list != NULL)
+#define UPSTREAM_REQUEST(request) upstream_get(request, config.upstream_list)
+#define UPSTREAM_IS_HTTP(conn) (conn->upstream_proxy != NULL && conn->upstream_proxy->type == PT_HTTP)
 #else
-#  define UPSTREAM_CONFIGURED() (0)
-#  define UPSTREAM_HOST(host) (NULL)
-#  define UPSTREAM_IS_HTTP(up) (0)
+#define UPSTREAM_CONFIGURED() (0)
+#define UPSTREAM_REQUEST(request) (request->host)
+#define UPSTREAM_IS_HTTP(up) (0)
 #endif
 
 /*
@@ -130,6 +130,7 @@ static void free_request_struct (struct request_s *request)
 
         safefree (request->method);
         safefree (request->protocol);
+        safefree (request->url);
 
         if (request->host)
                 safefree (request->host);
@@ -195,23 +196,25 @@ static int strip_return_port (char *host)
  * (proxied) ftp:// urls and https-requests that
  * come in without the proto:// part via CONNECT.
  */
-static int extract_url (const char *url, int default_port,
+static int extract_url (const char *lurl, const char *surl, int default_port,
                         struct request_s *request)
 {
         char *p;
         int port;
 
         /* Split the URL on the slash to separate host from path */
-        p = strchr (url, '/');
+
+        request->url = safestrdup (lurl);
+        p = strchr (surl, '/');
         if (p != NULL) {
                 int len;
-                len = p - url;
+                len = p - surl;
                 request->host = (char *) safemalloc (len + 1);
-                memcpy (request->host, url, len);
+                memcpy (request->host, surl, len);
                 request->host[len] = '\0';
                 request->path = safestrdup (p);
         } else {
-                request->host = safestrdup (url);
+                request->host = safestrdup (surl);
                 request->path = safestrdup ("/");
         }
 
@@ -228,8 +231,8 @@ static int extract_url (const char *url, int default_port,
         /* Remove any surrounding '[' and ']' from IPv6 literals */
         p = strrchr (request->host, ']');
         if (p && (*(request->host) == '[')) {
-                memmove(request->host, request->host + 1,
-                        strlen(request->host) - 2);
+                memmove (request->host, request->host + 1,
+                         strlen (request->host) - 2);
                 *p = '\0';
                 p--;
                 *p = '\0';
@@ -238,6 +241,7 @@ static int extract_url (const char *url, int default_port,
         return 0;
 
 ERROR_EXIT:
+        safefree (request->url);
         if (request->host)
                 safefree (request->host);
         if (request->path)
@@ -253,7 +257,7 @@ static int
 establish_http_connection (struct conn_s *connptr, struct request_s *request)
 {
         char portbuff[7];
-        char dst[sizeof(struct in6_addr)];
+        char dst[sizeof (struct in6_addr)];
 
         /* Build a port string if it's not a standard port */
         if (request->port != HTTP_PORT && request->port != HTTP_PORT_SSL)
@@ -261,7 +265,7 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
         else
                 portbuff[0] = '\0';
 
-        if (inet_pton(AF_INET6, request->host, dst) > 0) {
+        if (inet_pton (AF_INET6, request->host, dst) > 0) {
                 /* host is an IPv6 address literal, so surround it with
                  * [] */
                 return write_message (connptr->server_fd,
@@ -403,14 +407,14 @@ BAD_REQUEST_ERROR:
         {
                 char *skipped_type = strstr (url, "//") + 2;
 
-                if (extract_url (skipped_type, HTTP_PORT, request) < 0) {
+                if (extract_url (url, skipped_type, HTTP_PORT, request) < 0) {
                         indicate_http_error (connptr, 400, "Bad Request",
                                              "detail", "Could not parse URL",
                                              "url", url, NULL);
                         goto fail;
                 }
         } else if (strcmp (request->method, "CONNECT") == 0) {
-                if (extract_url (url, HTTP_PORT_SSL, request) < 0) {
+                if (extract_url (url, url, HTTP_PORT_SSL, request) < 0) {
                         indicate_http_error (connptr, 400, "Bad Request",
                                              "detail", "Could not parse URL",
                                              "url", url, NULL);
@@ -419,8 +423,7 @@ BAD_REQUEST_ERROR:
 
                 /* Verify that the port in the CONNECT method is allowed */
                 if (!check_allowed_connect_ports (request->port,
-                                                  config.connect_ports))
-                {
+                                                  config.connect_ports)) {
                         indicate_http_error (connptr, 403, "Access violation",
                                              "detail",
                                              "The CONNECT method not allowed "
@@ -481,7 +484,6 @@ BAD_REQUEST_ERROR:
         }
 #endif
 
-
         /*
          * Check to see if they're requesting the stat host
          */
@@ -539,8 +541,8 @@ static int pull_client_data (struct conn_s *connptr, long int length)
          */
         ret = socket_nonblocking (connptr->client_fd);
         if (ret != 0) {
-                log_message(LOG_ERR, "Failed to set the client socket "
-                            "to non-blocking: %s", strerror(errno));
+                log_message (LOG_ERR, "Failed to set the client socket "
+                             "to non-blocking: %s", strerror (errno));
                 goto ERROR_EXIT;
         }
 
@@ -548,8 +550,8 @@ static int pull_client_data (struct conn_s *connptr, long int length)
 
         ret = socket_blocking (connptr->client_fd);
         if (ret != 0) {
-                log_message(LOG_ERR, "Failed to set the client socket "
-                            "to blocking: %s", strerror(errno));
+                log_message (LOG_ERR, "Failed to set the client socket "
+                             "to blocking: %s", strerror (errno));
                 goto ERROR_EXIT;
         }
 
@@ -562,8 +564,8 @@ static int pull_client_data (struct conn_s *connptr, long int length)
                 bytes_read = read (connptr->client_fd, buffer, 2);
                 if (bytes_read == -1) {
                         log_message
-                                (LOG_WARNING,
-                                 "Could not read two bytes from POST message");
+                            (LOG_WARNING,
+                             "Could not read two bytes from POST message");
                 }
         }
 
@@ -870,7 +872,7 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
          * http proxy is in use.)
          */
         if (connptr->server_fd == -1 || connptr->show_stats
-            || (connptr->connect_method && ! UPSTREAM_IS_HTTP(connptr))) {
+            || (connptr->connect_method && !UPSTREAM_IS_HTTP (connptr))) {
                 log_message (LOG_INFO,
                              "Not sending client headers to remote machine");
                 return 0;
@@ -1089,8 +1091,8 @@ retry:
                 while (reverse) {
                         if (strncasecmp (header,
                                          reverse->url, (len =
-                                                        strlen (reverse->
-                                                                url))) == 0)
+                                                        strlen (reverse->url)))
+                            == 0)
                                 break;
                         reverse = reverse->next;
                 }
@@ -1161,15 +1163,15 @@ static void relay_connection (struct conn_s *connptr)
 
         ret = socket_nonblocking (connptr->client_fd);
         if (ret != 0) {
-                log_message(LOG_ERR, "Failed to set the client socket "
-                            "to non-blocking: %s", strerror(errno));
+                log_message (LOG_ERR, "Failed to set the client socket "
+                             "to non-blocking: %s", strerror (errno));
                 return;
         }
 
         ret = socket_nonblocking (connptr->server_fd);
         if (ret != 0) {
-                log_message(LOG_ERR, "Failed to set the server socket "
-                            "to non-blocking: %s", strerror(errno));
+                log_message (LOG_ERR, "Failed to set the server socket "
+                             "to non-blocking: %s", strerror (errno));
                 return;
         }
 
@@ -1248,9 +1250,9 @@ static void relay_connection (struct conn_s *connptr)
          */
         ret = socket_blocking (connptr->client_fd);
         if (ret != 0) {
-                log_message(LOG_ERR,
-                            "Failed to set client socket to blocking: %s",
-                            strerror(errno));
+                log_message (LOG_ERR,
+                             "Failed to set client socket to blocking: %s",
+                             strerror (errno));
                 return;
         }
 
@@ -1265,9 +1267,9 @@ static void relay_connection (struct conn_s *connptr)
          */
         ret = socket_blocking (connptr->server_fd);
         if (ret != 0) {
-                log_message(LOG_ERR,
-                            "Failed to set server socket to blocking: %s",
-                            strerror(errno));
+                log_message (LOG_ERR,
+                             "Failed to set server socket to blocking: %s",
+                             strerror (errno));
                 return;
         }
 
@@ -1280,120 +1282,127 @@ static void relay_connection (struct conn_s *connptr)
 }
 
 static int
-connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
+connect_to_upstream_proxy (struct conn_s *connptr, struct request_s *request)
 {
-	unsigned len;
-	unsigned char buff[512]; /* won't use more than 7 + 255 */
-	unsigned short port;
-	size_t ulen, passlen;
+        unsigned len;
+        unsigned char buff[512];        /* won't use more than 7 + 255 */
+        unsigned short port;
+        size_t ulen, passlen;
 
-	struct hostent *host;
-	struct upstream *cur_upstream = connptr->upstream_proxy;
+        struct hostent *host;
+        struct upstream *cur_upstream = connptr->upstream_proxy;
 
-	ulen = cur_upstream->ua.user ? strlen(cur_upstream->ua.user) : 0;
-	passlen = cur_upstream->pass ? strlen(cur_upstream->pass) : 0;
+        ulen = cur_upstream->ua.user ? strlen (cur_upstream->ua.user) : 0;
+        passlen = cur_upstream->pass ? strlen (cur_upstream->pass) : 0;
 
+        log_message (LOG_CONN,
+                     "Established connection to %s proxy \"%s\" using file descriptor %d.",
+                     proxy_type_name (cur_upstream->type), cur_upstream->host,
+                     connptr->server_fd);
 
-	log_message(LOG_CONN,
-		    "Established connection to %s proxy \"%s\" using file descriptor %d.",
-		    proxy_type_name(cur_upstream->type), cur_upstream->host, connptr->server_fd);
+        if (cur_upstream->type == PT_SOCKS4) {
 
-	if (cur_upstream->type == PT_SOCKS4) {
+                buff[0] = 4;    /* socks version */
+                buff[1] = 1;    /* connect command */
+                port = htons (request->port);
+                memcpy (&buff[2], &port, 2);    /* dest port */
+                host = gethostbyname (request->host);
+                memcpy (&buff[4], host->h_addr_list[0], 4);     /* dest ip */
+                buff[8] = 0;    /* user */
+                if (9 != safe_write (connptr->server_fd, buff, 9))
+                        return -1;
+                if (8 != safe_read (connptr->server_fd, buff, 8))
+                        return -1;
+                if (buff[0] != 0 || buff[1] != 90)
+                        return -1;
 
-		buff[0] = 4; /* socks version */
-		buff[1] = 1; /* connect command */
-		port = htons(request->port);
-		memcpy(&buff[2], &port, 2); /* dest port */
-		host = gethostbyname(request->host);
-		memcpy(&buff[4], host->h_addr_list[0], 4); /* dest ip */
-		buff[8] = 0; /* user */
-		if (9 != safe_write(connptr->server_fd, buff, 9))
-			return -1;
-		if (8 != safe_read(connptr->server_fd, buff, 8))
-			return -1;
-		if (buff[0]!=0 || buff[1]!=90)
-			return -1;
+        } else if (cur_upstream->type == PT_SOCKS5) {
 
-	} else if (cur_upstream->type == PT_SOCKS5) {
+                /* init */
+                int n_methods = ulen ? 2 : 1;
+                buff[0] = 5;    /* socks version */
+                buff[1] = n_methods;    /* number of methods  */
+                buff[2] = 0;    /* no auth method */
+                if (ulen)
+                        buff[3] = 2;    /* auth method -> username / password */
+                if (2 + n_methods !=
+                    safe_write (connptr->server_fd, buff, 2 + n_methods))
+                        return -1;
+                if (2 != safe_read (connptr->server_fd, buff, 2))
+                        return -1;
+                if (buff[0] != 5 || (buff[1] != 0 && buff[1] != 2))
+                        return -1;
 
-		/* init */
-		int n_methods = ulen ? 2 : 1;
-		buff[0] = 5; /* socks version */
-		buff[1] = n_methods; /* number of methods  */
-		buff[2] = 0; /* no auth method */
-		if (ulen) buff[3] = 2;  /* auth method -> username / password */
-		if (2+n_methods != safe_write(connptr->server_fd, buff, 2+n_methods))
-			return -1;
-		if (2 != safe_read(connptr->server_fd, buff, 2))
-			return -1;
-		if (buff[0] != 5 || (buff[1] != 0 && buff[1] != 2))
-			return -1;
+                if (buff[1] == 2) {
+                        /* authentication */
+                        char in[2];
+                        char out[515];
+                        char *cur = out;
+                        size_t c;
+                        *cur++ = 1;     /* version */
+                        c = ulen & 0xFF;
+                        *cur++ = c;
+                        memcpy (cur, cur_upstream->ua.user, c);
+                        cur += c;
+                        c = passlen & 0xFF;
+                        *cur++ = c;
+                        memcpy (cur, cur_upstream->pass, c);
+                        cur += c;
 
-		if (buff[1] == 2) {
-			/* authentication */
-			char in[2];
-			char out[515];
-			char *cur = out;
-			size_t c;
-			*cur++ = 1;	/* version */
-			c = ulen & 0xFF;
-			*cur++ = c;
-			memcpy(cur, cur_upstream->ua.user, c);
-			cur += c;
-			c = passlen & 0xFF;
-			*cur++ = c;
-			memcpy(cur, cur_upstream->pass, c);
-			cur += c;
+                        if ((cur - out) !=
+                            safe_write (connptr->server_fd, out, cur - out))
+                                return -1;
 
-			if((cur - out) != safe_write(connptr->server_fd, out, cur - out))
-				return -1;
+                        if (2 != safe_read (connptr->server_fd, in, 2))
+                                return -1;
+                        if (in[1] != 0 || !(in[0] == 5 || in[0] == 1)) {
+                                return -1;
+                        }
+                }
+                /* connect */
+                buff[0] = 5;    /* socks version */
+                buff[1] = 1;    /* connect */
+                buff[2] = 0;    /* reserved */
+                buff[3] = 3;    /* domainname */
+                len = strlen (request->host);
+                if (len > 255)
+                        return -1;
+                buff[4] = len;  /* length of domainname */
+                memcpy (&buff[5], request->host, len);  /* dest ip */
+                port = htons (request->port);
+                memcpy (&buff[5 + len], &port, 2);      /* dest port */
+                if (7 + len != safe_write (connptr->server_fd, buff, 7 + len))
+                        return -1;
+                if (4 != safe_read (connptr->server_fd, buff, 4))
+                        return -1;
+                if (buff[0] != 5 || buff[1] != 0)
+                        return -1;
+                switch (buff[3]) {
+                case 1:
+                        len = 4;
+                        break;  /* ip v4 */
+                case 4:
+                        len = 16;
+                        break;  /* ip v6 */
+                case 3:        /* domainname */
+                        if (1 != safe_read (connptr->server_fd, buff, 1))
+                                return -1;
+                        len = buff[0];  /* max = 255 */
+                        break;
+                default:
+                        return -1;
+                }
+                if (2 + len != safe_read (connptr->server_fd, buff, 2 + len))
+                        return -1;
+        } else {
+                return -1;
+        }
 
-			if(2 != safe_read(connptr->server_fd, in, 2))
-				return -1;
-			if(in[1] != 0 || !(in[0] == 5 || in[0] == 1)) {
-				return -1;
-			}
-		}
-		/* connect */
-		buff[0] = 5; /* socks version */
-		buff[1] = 1; /* connect */
-		buff[2] = 0; /* reserved */
-		buff[3] = 3; /* domainname */
-		len=strlen(request->host);
-		if(len>255)
-			return -1;
-		buff[4] = len; /* length of domainname */
-		memcpy(&buff[5], request->host, len); /* dest ip */
-		port = htons(request->port);
-		memcpy(&buff[5+len], &port, 2); /* dest port */
-		if (7+len != safe_write(connptr->server_fd, buff, 7+len))
-			return -1;
-		if (4 != safe_read(connptr->server_fd, buff, 4))
-			return -1;
-		if (buff[0]!=5 || buff[1]!=0)
-			return -1;
-		switch(buff[3]) {
-			case 1: len=4; break; /* ip v4 */
-			case 4: len=16; break; /* ip v6 */
-			case 3: /* domainname */
-				if (1 != safe_read(connptr->server_fd, buff, 1))
-					return -1;
-				len = buff[0]; /* max = 255 */
-				break;
-			default: return -1;
-		}
-		if (2+len != safe_read(connptr->server_fd, buff, 2+len))
-			return -1;
-	} else {
-		return -1;
-	}
+        if (connptr->connect_method)
+                return 0;
 
-	if (connptr->connect_method)
-		return 0;
-
-	return establish_http_connection(connptr, request);
+        return establish_http_connection (connptr, request);
 }
-
 
 /*
  * Establish a connection to the upstream proxy server.
@@ -1438,8 +1447,8 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
                 return -1;
         }
 
-	if (cur_upstream->type != PT_HTTP)
-		return connect_to_upstream_proxy(connptr, request);
+        if (cur_upstream->type != PT_HTTP)
+                return connect_to_upstream_proxy (connptr, request);
 
         log_message (LOG_CONN,
                      "Established connection to upstream proxy \"%s\" "
@@ -1480,8 +1489,7 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
 #endif
 }
 
-static int
-get_request_entity(struct conn_s *connptr)
+static int get_request_entity (struct conn_s *connptr)
 {
         int ret;
         fd_set rset;
@@ -1496,9 +1504,9 @@ get_request_entity(struct conn_s *connptr)
         if (ret == -1) {
                 log_message (LOG_ERR,
                              "Error calling select on client fd %d: %s",
-                             connptr->client_fd, strerror(errno));
+                             connptr->client_fd, strerror (errno));
         } else if (ret == 0) {
-               log_message (LOG_INFO, "no entity");
+                log_message (LOG_INFO, "no entity");
         } else if (ret == 1 && FD_ISSET (connptr->client_fd, &rset)) {
                 ssize_t nread;
                 nread = read_buffer (connptr->client_fd, connptr->cbuffer);
@@ -1509,8 +1517,7 @@ get_request_entity(struct conn_s *connptr)
                         ret = -1;
                 } else {
                         log_message (LOG_INFO,
-                                     "Read request entity of %d bytes",
-                                     nread);
+                                     "Read request entity of %d bytes", nread);
                         ret = 0;
                 }
         } else {
@@ -1522,7 +1529,6 @@ get_request_entity(struct conn_s *connptr)
 
         return ret;
 }
-
 
 /*
  * This is the main drive for each connection. As you can tell, for the
@@ -1612,34 +1618,44 @@ void handle_connection (int fd)
                 ssize_t len;
                 char *authstring;
                 int failure = 1, stathost_connect = 0;
-                len = hashmap_entry_by_key (hashofheaders, "proxy-authorization",
-                                            (void **) &authstring);
+                len =
+                    hashmap_entry_by_key (hashofheaders, "proxy-authorization",
+                                          (void **) &authstring);
 
                 if (len == 0 && config.stathost) {
                         len = hashmap_entry_by_key (hashofheaders, "host",
                                                     (void **) &authstring);
-                        if (len && !strncmp(authstring, config.stathost, strlen(config.stathost))) {
-                                len = hashmap_entry_by_key (hashofheaders, "authorization",
-                                                            (void **) &authstring);
+                        if (len
+                            && !strncmp (authstring, config.stathost,
+                                         strlen (config.stathost))) {
+                                len =
+                                    hashmap_entry_by_key (hashofheaders,
+                                                          "authorization",
+                                                          (void **)
+                                                          &authstring);
                                 stathost_connect = 1;
-                        } else len = 0;
+                        } else
+                                len = 0;
                 }
 
                 if (len == 0) {
-                        if (stathost_connect) goto e401;
+                        if (stathost_connect)
+                                goto e401;
                         update_stats (STAT_DENIED);
-                        indicate_http_error (connptr, 407, "Proxy Authentication Required",
+                        indicate_http_error (connptr, 407,
+                                             "Proxy Authentication Required",
                                              "detail",
                                              "This proxy requires authentication.",
                                              NULL);
                         goto fail;
                 }
-                if ( /* currently only "basic" auth supported */
-                        (strncmp(authstring, "Basic ", 6) == 0 ||
-                         strncmp(authstring, "basic ", 6) == 0) &&
-                        basicauth_check (config.basicauth_list, authstring + 6) == 1)
-                                failure = 0;
-                if(failure) {
+                if (            /* currently only "basic" auth supported */
+                           (strncmp (authstring, "Basic ", 6) == 0 ||
+                            strncmp (authstring, "basic ", 6) == 0) &&
+                           basicauth_check (config.basicauth_list,
+                                            authstring + 6) == 1)
+                        failure = 0;
+                if (failure) {
 e401:
                         update_stats (STAT_DENIED);
                         indicate_http_error (connptr, 401, "Unauthorized",
@@ -1658,7 +1674,7 @@ e401:
          */
         for (i = 0; i < vector_length (config.add_headers); i++) {
                 http_header_t *header = (http_header_t *)
-                        vector_getentry (config.add_headers, i, NULL);
+                    vector_getentry (config.add_headers, i, NULL);
 
                 hashmap_insert (hashofheaders,
                                 header->name,
@@ -1673,7 +1689,7 @@ e401:
                 goto fail;
         }
 
-        connptr->upstream_proxy = UPSTREAM_HOST (request->host);
+        connptr->upstream_proxy = UPSTREAM_REQUEST (request);
         if (connptr->upstream_proxy != NULL) {
                 if (connect_to_upstream (connptr, request) < 0) {
                         goto fail;
@@ -1704,7 +1720,7 @@ e401:
                 goto fail;
         }
 
-        if (!connptr->connect_method || UPSTREAM_IS_HTTP(connptr)) {
+        if (!connptr->connect_method || UPSTREAM_IS_HTTP (connptr)) {
                 if (process_server_headers (connptr) < 0) {
                         update_stats (STAT_BADCONN);
                         goto fail;
@@ -1736,8 +1752,7 @@ fail:
          * to send our data properly.
          */
         if (get_request_entity (connptr) < 0) {
-                log_message (LOG_WARNING,
-                             "Could not retrieve request entity");
+                log_message (LOG_WARNING, "Could not retrieve request entity");
                 indicate_http_error (connptr, 400, "Bad Request",
                                      "detail",
                                      "Could not retrieve the request entity "
