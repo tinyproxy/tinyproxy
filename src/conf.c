@@ -80,13 +80,14 @@
 #define IPV6MASK "(" IPV6 "(/[[:digit:]]+)?)"
 #define BEGIN "^[[:space:]]*"
 #define END "[[:space:]]*$"
+#define PIPE "\\|"
 
 /*
  * Limit the maximum number of substring matches to a reasonably high
  * number.  Given the usual structure of the configuration file, sixteen
  * substring matches should be plenty.
  */
-#define RE_MAX_MATCHES 16
+#define RE_MAX_MATCHES 50
 
 /*
  * All configuration handling functions are REQUIRED to be defined
@@ -163,6 +164,7 @@ static HANDLE_FUNC (handle_disableviaheader);
 static HANDLE_FUNC (handle_xtinyproxy);
 
 #ifdef UPSTREAM_SUPPORT
+static HANDLE_FUNC (handle_deadtime);
 static HANDLE_FUNC (handle_upstream);
 static HANDLE_FUNC (handle_upstream_no);
 #endif
@@ -195,91 +197,89 @@ struct {
 } directives[] = {
         /* comments */
         {
-                BEGIN "#", handle_nop, NULL
-        },
-        /* blank lines */
+        BEGIN "#", handle_nop, NULL},
+            /* blank lines */
         {
-                "^[[:space:]]+$", handle_nop, NULL
-        },
-        /* string arguments */
-        STDCONF ("logfile", STR, handle_logfile),
-        STDCONF ("pidfile", STR, handle_pidfile),
-        STDCONF ("anonymous", STR, handle_anonymous),
-        STDCONF ("viaproxyname", STR, handle_viaproxyname),
-        STDCONF ("defaulterrorfile", STR, handle_defaulterrorfile),
-        STDCONF ("statfile", STR, handle_statfile),
-        STDCONF ("stathost", STR, handle_stathost),
-        STDCONF ("xtinyproxy",  BOOL, handle_xtinyproxy),
-        /* boolean arguments */
-        STDCONF ("syslog", BOOL, handle_syslog),
-        STDCONF ("bindsame", BOOL, handle_bindsame),
-        STDCONF ("disableviaheader", BOOL, handle_disableviaheader),
-        /* integer arguments */
-        STDCONF ("port", INT, handle_port),
-        STDCONF ("maxclients", INT, handle_maxclients),
-        STDCONF ("maxspareservers", INT, handle_maxspareservers),
-        STDCONF ("minspareservers", INT, handle_minspareservers),
-        STDCONF ("startservers", INT, handle_startservers),
-        STDCONF ("maxrequestsperchild", INT, handle_maxrequestsperchild),
-        STDCONF ("timeout", INT, handle_timeout),
-        STDCONF ("connectport", INT, handle_connectport),
-        /* alphanumeric arguments */
-        STDCONF ("user", ALNUM, handle_user),
-        STDCONF ("group", ALNUM, handle_group),
-        /* ip arguments */
-        STDCONF ("listen", "(" IP "|" IPV6 ")", handle_listen),
-        STDCONF ("allow", "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
-                 handle_allow),
-        STDCONF ("deny", "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
-                 handle_deny),
-        STDCONF ("bind", "(" IP "|" IPV6 ")", handle_bind),
-        /* other */
-        STDCONF ("basicauth", ALNUM WS ALNUM, handle_basicauth),
-        STDCONF ("errorfile", INT WS STR, handle_errorfile),
-        STDCONF ("addheader",  STR WS STR, handle_addheader),
-
+        "^[[:space:]]+$", handle_nop, NULL},
+            /* string arguments */
+            STDCONF ("logfile", STR, handle_logfile),
+            STDCONF ("pidfile", STR, handle_pidfile),
+            STDCONF ("anonymous", STR, handle_anonymous),
+            STDCONF ("viaproxyname", STR, handle_viaproxyname),
+            STDCONF ("defaulterrorfile", STR, handle_defaulterrorfile),
+            STDCONF ("statfile", STR, handle_statfile),
+            STDCONF ("stathost", STR, handle_stathost),
+            STDCONF ("xtinyproxy", BOOL, handle_xtinyproxy),
+            /* boolean arguments */
+            STDCONF ("syslog", BOOL, handle_syslog),
+            STDCONF ("bindsame", BOOL, handle_bindsame),
+            STDCONF ("disableviaheader", BOOL, handle_disableviaheader),
+            /* integer arguments */
+            STDCONF ("port", INT, handle_port),
+            STDCONF ("maxclients", INT, handle_maxclients),
+            STDCONF ("maxspareservers", INT, handle_maxspareservers),
+            STDCONF ("minspareservers", INT, handle_minspareservers),
+            STDCONF ("startservers", INT, handle_startservers),
+            STDCONF ("maxrequestsperchild", INT, handle_maxrequestsperchild),
+            STDCONF ("timeout", INT, handle_timeout),
+#ifdef UPSTREAM_SUPPORT
+            STDCONF ("deadtime", INT, handle_deadtime),
+#endif
+            STDCONF ("connectport", INT, handle_connectport),
+            /* alphanumeric arguments */
+            STDCONF ("user", ALNUM, handle_user),
+            STDCONF ("group", ALNUM, handle_group),
+            /* ip arguments */
+            STDCONF ("listen", "(" IP "|" IPV6 ")", handle_listen),
+            STDCONF ("allow", "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
+                     handle_allow),
+            STDCONF ("deny", "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
+                     handle_deny),
+            STDCONF ("bind", "(" IP "|" IPV6 ")", handle_bind),
+            /* other */
+            STDCONF ("basicauth", ALNUM WS ALNUM, handle_basicauth),
+            STDCONF ("errorfile", INT WS STR, handle_errorfile),
+            STDCONF ("addheader", STR WS STR, handle_addheader),
 #ifdef FILTER_ENABLE
-        /* filtering */
-        STDCONF ("filter", STR, handle_filter),
-        STDCONF ("filterurls", BOOL, handle_filterurls),
-        STDCONF ("filterextended", BOOL, handle_filterextended),
-        STDCONF ("filterdefaultdeny", BOOL, handle_filterdefaultdeny),
-        STDCONF ("filtercasesensitive", BOOL, handle_filtercasesensitive),
+            /* filtering */
+            STDCONF ("filter", STR, handle_filter),
+            STDCONF ("filterurls", BOOL, handle_filterurls),
+            STDCONF ("filterextended", BOOL, handle_filterextended),
+            STDCONF ("filterdefaultdeny", BOOL, handle_filterdefaultdeny),
+            STDCONF ("filtercasesensitive", BOOL, handle_filtercasesensitive),
 #endif
 #ifdef REVERSE_SUPPORT
-        /* Reverse proxy arguments */
-        STDCONF ("reversebaseurl", STR, handle_reversebaseurl),
-        STDCONF ("reverseonly", BOOL, handle_reverseonly),
-        STDCONF ("reversemagic", BOOL, handle_reversemagic),
-        STDCONF ("reversepath", STR "(" WS STR ")?", handle_reversepath),
+            /* Reverse proxy arguments */
+            STDCONF ("reversebaseurl", STR, handle_reversebaseurl),
+            STDCONF ("reverseonly", BOOL, handle_reverseonly),
+            STDCONF ("reversemagic", BOOL, handle_reversemagic),
+            STDCONF ("reversepath", STR "(" WS STR ")?", handle_reversepath),
 #endif
 #ifdef UPSTREAM_SUPPORT
         {
-                BEGIN "(upstream)" WS "(none)" WS STR END, handle_upstream_no, NULL
-        },
+        BEGIN "(upstream)" WS "(none)" WS STR END, handle_upstream_no, NULL},
         {
                 BEGIN "(upstream)" WS "(http|socks4|socks5)" WS
-                      "(" USERNAME /*username*/ ":" PASSWORD /*password*/ "@" ")?"
-                      "(" IP "|" ALNUM ")"
-                      ":" INT "(" WS STR ")?"
-                END, handle_upstream, NULL
-        },
+                    "(" USERNAME /*username */ ":" PASSWORD /*password */ "@"
+        ")?"
+                    "(" IP "|" ALNUM ")" ":" INT "(" "(" PIPE "(" IP
+                    "|" ALNUM ")" ":" INT ")+" ")?" "(" WS STR ")?"
+                    END, handle_upstream, NULL},
 #endif
-        /* loglevel */
-        STDCONF ("loglevel", "(critical|error|warning|notice|connect|info)",
-                 handle_loglevel)
+            /* loglevel */
+            STDCONF ("loglevel", "(critical|error|warning|notice|connect|info)",
+                     handle_loglevel)
 };
 
 const unsigned int ndirectives = sizeof (directives) / sizeof (directives[0]);
 
-static void
-free_added_headers (vector_t add_headers)
+static void free_added_headers (vector_t add_headers)
 {
         ssize_t i;
 
         for (i = 0; i < vector_length (add_headers); i++) {
                 http_header_t *header = (http_header_t *)
-                        vector_getentry (add_headers, i, NULL);
+                    vector_getentry (add_headers, i, NULL);
 
                 safefree (header->name);
                 safefree (header->value);
@@ -288,25 +288,25 @@ free_added_headers (vector_t add_headers)
         vector_delete (add_headers);
 }
 
-static void free_config (struct config_s *conf)
+void free_config (struct config_s *conf)
 {
         safefree (conf->config_file);
         safefree (conf->logf_name);
         safefree (conf->stathost);
         safefree (conf->user);
         safefree (conf->group);
-        vector_delete(conf->listen_addrs);
-        vector_delete(conf->basicauth_list);
+        vector_delete (conf->listen_addrs);
+        vector_delete (conf->basicauth_list);
 #ifdef FILTER_ENABLE
         safefree (conf->filter);
-#endif                          /* FILTER_ENABLE */
+#endif /* FILTER_ENABLE */
 #ifdef REVERSE_SUPPORT
-        free_reversepath_list(conf->reversepath_list);
+        free_reversepath_list (conf->reversepath_list);
         safefree (conf->reversebaseurl);
 #endif
 #ifdef UPSTREAM_SUPPORT
         free_upstream_list (conf->upstream_list);
-#endif                          /* UPSTREAM_SUPPORT */
+#endif /* UPSTREAM_SUPPORT */
         safefree (conf->pidpath);
         safefree (conf->bind_address);
         safefree (conf->via_proxy_name);
@@ -318,7 +318,7 @@ static void free_config (struct config_s *conf)
         free_connect_ports_list (conf->connect_ports);
         hashmap_delete (conf->anonymous_map);
 
-        memset (conf, 0, sizeof(*conf));
+        memset (conf, 0, sizeof (*conf));
 }
 
 /*
@@ -327,8 +327,7 @@ static void free_config (struct config_s *conf)
  *
  * Returns 0 on success; negative upon failure.
  */
-int
-config_compile_regex (void)
+int config_compile_regex (void)
 {
         unsigned int i, r;
 
@@ -356,8 +355,7 @@ config_compile_regex (void)
  * Frees pre-compiled regular expressions used by the configuration
  * file. This function is registered to be automatically called at exit.
  */
-static void
-config_free_regex (void)
+static void config_free_regex (void)
 {
         unsigned int i;
 
@@ -384,7 +382,6 @@ static int check_match (struct config_s *conf, const char *line)
         unsigned int i;
 
         assert (ndirectives > 0);
-
         for (i = 0; i != ndirectives; ++i) {
                 assert (directives[i].cre);
                 if (!regexec
@@ -476,17 +473,16 @@ static void initialize_with_defaults (struct config_s *conf,
         if (defaults->listen_addrs) {
                 ssize_t i;
 
-                conf->listen_addrs = vector_create();
-                for (i=0; i < vector_length(defaults->listen_addrs); i++) {
+                conf->listen_addrs = vector_create ();
+                for (i = 0; i < vector_length (defaults->listen_addrs); i++) {
                         char *addr;
                         size_t size;
-                        addr = (char *)vector_getentry(defaults->listen_addrs,
-                                                       i, &size);
-                        vector_append(conf->listen_addrs, addr, size);
+                        addr = (char *) vector_getentry (defaults->listen_addrs,
+                                                         i, &size);
+                        vector_append (conf->listen_addrs, addr, size);
                 }
 
         }
-
 #ifdef FILTER_ENABLE
         if (defaults->filter) {
                 conf->filter = safestrdup (defaults->filter);
@@ -495,7 +491,7 @@ static void initialize_with_defaults (struct config_s *conf,
         conf->filter_url = defaults->filter_url;
         conf->filter_extended = defaults->filter_extended;
         conf->filter_casesensitive = defaults->filter_casesensitive;
-#endif                          /* FILTER_ENABLE */
+#endif /* FILTER_ENABLE */
 
 #ifdef XTINYPROXY_ENABLE
         conf->add_xtinyproxy = defaults->add_xtinyproxy;
@@ -513,13 +509,17 @@ static void initialize_with_defaults (struct config_s *conf,
 
 #ifdef UPSTREAM_SUPPORT
         /* struct upstream *upstream_list; */
-#endif                          /* UPSTREAM_SUPPORT */
+#endif /* UPSTREAM_SUPPORT */
 
         if (defaults->pidpath) {
                 conf->pidpath = safestrdup (defaults->pidpath);
         }
 
         conf->idletimeout = defaults->idletimeout;
+
+#ifdef UPSTREAM_SUPPORT
+        conf->deadtime = defaults->deadtime;
+#endif
 
         if (defaults->bind_address) {
                 conf->bind_address = safestrdup (defaults->bind_address);
@@ -589,6 +589,15 @@ int reload_config_file (const char *config_fname, struct config_s *conf,
                              MAX_IDLE_TIME);
                 conf->idletimeout = MAX_IDLE_TIME;
         }
+#ifdef UPSTREAM_SUPPORT
+        if (conf->deadtime == 0) {
+                log_message (LOG_WARNING, "Invalid dead time setting. "
+                             "Only values greater than zero are allowed. "
+                             "Therefore setting idle timeout to %u seconds.",
+                             MAX_DEAD_TIME);
+                conf->deadtime = MAX_DEAD_TIME;
+        }
+#endif
 
 done:
         return ret;
@@ -659,8 +668,7 @@ set_bool_arg (unsigned int *var, const char *line, regmatch_t * match)
         return 0;
 }
 
-static unsigned long
-get_long_arg (const char *line, regmatch_t * match)
+static unsigned long get_long_arg (const char *line, regmatch_t * match)
 {
         assert (line);
         assert (match && match->rm_so != -1);
@@ -668,8 +676,7 @@ get_long_arg (const char *line, regmatch_t * match)
         return strtoul (line + match->rm_so, NULL, 0);
 }
 
-static int
-set_int_arg (unsigned int *var, const char *line, regmatch_t * match)
+static int set_int_arg (unsigned int *var, const char *line, regmatch_t * match)
 {
         assert (var);
         assert (line);
@@ -726,8 +733,7 @@ static HANDLE_FUNC (handle_viaproxyname)
         if (r)
                 return r;
         log_message (LOG_INFO,
-                     "Setting \"Via\" header to '%s'",
-                     conf->via_proxy_name);
+                     "Setting \"Via\" header to '%s'", conf->via_proxy_name);
         return 0;
 }
 
@@ -739,8 +745,7 @@ static HANDLE_FUNC (handle_disableviaheader)
                 return r;
         }
 
-        log_message (LOG_INFO,
-                     "Disabling transmission of the \"Via\" header.");
+        log_message (LOG_INFO, "Disabling transmission of the \"Via\" header.");
         return 0;
 }
 
@@ -811,15 +816,13 @@ static HANDLE_FUNC (handle_maxclients)
 
 static HANDLE_FUNC (handle_maxspareservers)
 {
-        child_configure (CHILD_MAXSPARESERVERS,
-                         get_long_arg (line, &match[2]));
+        child_configure (CHILD_MAXSPARESERVERS, get_long_arg (line, &match[2]));
         return 0;
 }
 
 static HANDLE_FUNC (handle_minspareservers)
 {
-        child_configure (CHILD_MINSPARESERVERS,
-                         get_long_arg (line, &match[2]));
+        child_configure (CHILD_MINSPARESERVERS, get_long_arg (line, &match[2]));
         return 0;
 }
 
@@ -840,6 +843,13 @@ static HANDLE_FUNC (handle_timeout)
 {
         return set_int_arg (&conf->idletimeout, line, &match[2]);
 }
+
+#ifdef UPSTREAM_SUPPORT
+static HANDLE_FUNC (handle_deadtime)
+{
+        return set_int_arg (&conf->deadtime, line, &match[2]);
+}
+#endif
 
 static HANDLE_FUNC (handle_connectport)
 {
@@ -896,18 +906,18 @@ static HANDLE_FUNC (handle_listen)
         }
 
         if (conf->listen_addrs == NULL) {
-               conf->listen_addrs = vector_create();
-               if (conf->listen_addrs == NULL) {
-                       log_message(LOG_WARNING, "Could not create a list "
-                                   "of listen addresses.");
-                       safefree(arg);
-                       return -1;
-               }
+                conf->listen_addrs = vector_create ();
+                if (conf->listen_addrs == NULL) {
+                        log_message (LOG_WARNING, "Could not create a list "
+                                     "of listen addresses.");
+                        safefree (arg);
+                        return -1;
+                }
         }
 
-        vector_append (conf->listen_addrs, arg, strlen(arg) + 1);
+        vector_append (conf->listen_addrs, arg, strlen (arg) + 1);
 
-        log_message(LOG_INFO, "Added address [%s] to listen addresses.", arg);
+        log_message (LOG_INFO, "Added address [%s] to listen addresses.", arg);
 
         safefree (arg);
         return 0;
@@ -994,10 +1004,10 @@ static HANDLE_FUNC (handle_loglevel)
 static HANDLE_FUNC (handle_basicauth)
 {
         char *user, *pass;
-        user = get_string_arg(line, &match[2]);
+        user = get_string_arg (line, &match[2]);
         if (!user)
                 return -1;
-        pass = get_string_arg(line, &match[3]);
+        pass = get_string_arg (line, &match[3]);
         if (!pass) {
                 safefree (user);
                 return -1;
@@ -1089,58 +1099,90 @@ static HANDLE_FUNC (handle_reversepath)
 
 #ifdef UPSTREAM_SUPPORT
 
-static enum proxy_type pt_from_string(const char *s)
+static enum proxy_type pt_from_string (const char *s)
 {
-	static const char pt_map[][7] = {
-		[PT_NONE]   = "none",
-		[PT_HTTP]   = "http",
-		[PT_SOCKS4] = "socks4",
-		[PT_SOCKS5] = "socks5",
-	};
-	unsigned i;
-	for (i = 0; i < sizeof(pt_map)/sizeof(pt_map[0]); i++)
-		if (!strcmp(pt_map[i], s))
-			return i;
-	return PT_NONE;
+        static const char pt_map[][7] = {
+                [PT_NONE] = "none",
+                [PT_HTTP] = "http",
+                [PT_SOCKS4] = "socks4",
+                [PT_SOCKS5] = "socks5",
+        };
+        unsigned i;
+        for (i = 0; i < sizeof (pt_map) / sizeof (pt_map[0]); i++)
+                if (!strcmp (pt_map[i], s))
+                        return i;
+        return PT_NONE;
 }
 
 static HANDLE_FUNC (handle_upstream)
 {
-        char *ip;
-        int port, mi = 2;
+        struct upstream_proxy_list *pltr, *plist;
+        int mi = 2;
         char *domain = 0, *user = 0, *pass = 0, *tmp;
         enum proxy_type pt;
 
+        pltr = plist = (upstream_proxy_list_t *)
+            safemalloc (sizeof (upstream_proxy_list_t));
         tmp = get_string_arg (line, &match[mi]);
-        pt = pt_from_string(tmp);
-        safefree(tmp);
+        pt = pt_from_string (tmp);
+        safefree (tmp);
         mi += 2;
 
         if (match[mi].rm_so != -1)
                 user = get_string_arg (line, &match[mi]);
         mi++;
 
-	if (match[mi].rm_so != -1)
+        if (match[mi].rm_so != -1)
                 pass = get_string_arg (line, &match[mi]);
         mi++;
-
-        ip = get_string_arg (line, &match[mi]);
-        if (!ip)
+        plist->host = get_string_arg (line, &match[mi]);
+        if (!plist->host)
                 return -1;
+
         mi += 5;
+        plist->port = (int) get_long_arg (line, &match[mi]);
+        plist->last_failed_connect = (time_t) 0;
 
-        port = (int) get_long_arg (line, &match[mi]);
-        mi += 3;
+        mi += 2;
+        /* if != -1 we have a list of proxy hosts seperated by |. */
+        if (match[mi].rm_so != -1) {
+                /* loop over proxy host list */
+                char *phl, *pptr;
 
+                phl = get_string_arg (line, &match[mi]);
+                if (!phl)
+                        return -1;
+                pptr = strtok (phl, "|");
+                while (pptr) {
+                        char *cptr;
+                        plist->next = (upstream_proxy_list_t *)
+                            safemalloc (sizeof (upstream_proxy_list_t));
+                        plist = plist->next;
+                        cptr = strchr (pptr, ':');
+                        *cptr++ = '\0';
+                        plist->host = strdup (pptr);
+                        plist->port = strtoul (cptr, NULL, 0);
+                        plist->last_failed_connect = (time_t) 0;
+                        pptr = strtok (NULL, "|");
+                }
+                safefree (phl);
+        }
+
+        mi += 10;
         if (match[mi].rm_so != -1)
                 domain = get_string_arg (line, &match[mi]);
 
-        upstream_add (ip, port, domain, user, pass, pt, &conf->upstream_list);
+        upstream_add (pltr, domain, user, pass, pt, &conf->upstream_list);
 
         safefree (user);
         safefree (pass);
         safefree (domain);
-        safefree (ip);
+        while (pltr) {
+                struct upstream_proxy_list *tmpp = pltr;
+                pltr = pltr->next;
+                safefree (tmpp->host);
+                safefree (tmpp);
+        }
 
         return 0;
 }
@@ -1153,7 +1195,7 @@ static HANDLE_FUNC (handle_upstream_no)
         if (!domain)
                 return -1;
 
-        upstream_add (NULL, 0, domain, 0, 0, PT_NONE, &conf->upstream_list);
+        upstream_add (NULL, domain, 0, 0, PT_NONE, &conf->upstream_list);
         safefree (domain);
 
         return 0;

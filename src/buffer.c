@@ -244,9 +244,9 @@ ssize_t read_buffer (int fd, struct buffer_s * buffptr)
 #ifdef EWOULDBLOCK
                 case EWOULDBLOCK:
 #else
-#  ifdef EAGAIN
+#ifdef EAGAIN
                 case EAGAIN:
-#  endif
+#endif
 #endif
                 case EINTR:
                         bytesin = 0;
@@ -254,7 +254,7 @@ ssize_t read_buffer (int fd, struct buffer_s * buffptr)
                 default:
                         log_message (LOG_ERR,
                                      "read_buffer: read() failed on fd %d: %s",
-                                     fd, strerror(errno));
+                                     fd, strerror (errno));
                         bytesin = -1;
                         break;
                 }
@@ -298,9 +298,9 @@ ssize_t write_buffer (int fd, struct buffer_s * buffptr)
 #ifdef EWOULDBLOCK
                 case EWOULDBLOCK:
 #else
-#  ifdef EAGAIN
+#ifdef EAGAIN
                 case EAGAIN:
-#  endif
+#endif
 #endif
                 case EINTR:
                         return 0;

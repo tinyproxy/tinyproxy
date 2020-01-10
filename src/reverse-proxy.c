@@ -139,13 +139,10 @@ char *reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
                             && (reverse =
                                 reversepath_get (cookieval +
                                                  strlen (REVERSE_COOKIE) + 1,
-                                                 config.reversepath_list)))
-                        {
+                                                 config.reversepath_list))) {
 
                                 rewrite_url = (char *) safemalloc
-                                        (strlen (url) +
-                                         strlen (reverse->url) +
-                                         1);
+                                    (strlen (url) + strlen (reverse->url) + 1);
                                 strcpy (rewrite_url, reverse->url);
                                 strcat (rewrite_url, url + 1);
 

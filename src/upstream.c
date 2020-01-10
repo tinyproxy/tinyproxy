@@ -31,6 +31,25 @@
 #include "basicauth.h"
 
 #ifdef UPSTREAM_SUPPORT
+static const char *proxy_list_name (struct upstream_proxy_list *plist)
+{
+#define MAXBUF ((size_t)(1024 * 96))
+        static char hostport[MAXBUF];
+        static char pbuffer[MAXBUF];
+        struct upstream_proxy_list *upl = plist;
+
+        bzero (&pbuffer, MAXBUF);
+        snprintf (pbuffer, MAXBUF, "%s:%d", upl->host, upl->port);
+        upl = upl->next;
+        while (upl) {
+                bzero (&hostport, MAXBUF);
+                snprintf (hostport, MAXBUF, "|%s:%d", upl->host, upl->port);
+                strncat (pbuffer, hostport, MAXBUF - strlen (hostport));
+                upl = upl->next;
+        }
+        return pbuffer;
+}
+
 const char *proxy_type_name (proxy_type type)
 {
         switch (type) {
@@ -47,15 +66,43 @@ const char *proxy_type_name (proxy_type type)
         }
 }
 
+static struct upstream_proxy_list *uplcpy (const struct upstream_proxy_list
+                                           *plist)
+{
+        struct upstream_proxy_list *upr, *upp, *uptr;
+
+        if (!plist)
+                return NULL;
+
+        upr = upp = (upstream_proxy_list_t *)
+            safemalloc (sizeof (upstream_proxy_list_t));
+        upp->host = safestrdup (plist->host);
+        upp->port = plist->port;
+        upp->last_failed_connect = plist->last_failed_connect;
+        upp->next = NULL;
+        uptr = plist->next;
+        while (uptr) {
+                upp->next = (upstream_proxy_list_t *)
+                    safemalloc (sizeof (upstream_proxy_list_t));
+                upp = upp->next;
+                upp->host = safestrdup (uptr->host);
+                upp->port = uptr->port;
+                upp->next = NULL;
+                uptr = uptr->next;
+        }
+        return upr;
+}
+
 /**
  * Construct an upstream struct from input data.
  */
-static struct upstream *upstream_build (const char *host, int port,
+static struct upstream *upstream_build (const struct upstream_proxy_list *plist,
                                         const char *domain, const char *user,
                                         const char *pass, proxy_type type)
 {
         char *ptr;
         struct upstream *up;
+        struct upstream_proxy_list *upp;
 #ifdef UPSTREAM_REGEX
         int cflags = REG_NEWLINE | REG_NOSUB;
         int rflag = 0;
@@ -70,7 +117,8 @@ static struct upstream *upstream_build (const char *host, int port,
         }
 
         up->type = type;
-        up->host = up->domain = up->ua.user = up->pass = NULL;
+        up->domain = up->ua.user = up->pass = NULL;
+        up->plist = NULL;
 #ifdef UPSTREAM_REGEX
         up->pat = NULL;
         up->cpat = NULL;
@@ -124,18 +172,18 @@ static struct upstream *upstream_build (const char *host, int port,
         }
 
         if (domain == NULL) {
-                if (!host || host[0] == '\0' || port < 1) {
+                if (!plist || plist->host[0] == '\0' || plist->port < 1) {
                         log_message (LOG_WARNING,
                                      "Nonsense upstream rule: invalid host or port");
                         goto fail;
                 }
 
-                up->host = safestrdup (host);
-                up->port = port;
+                up->plist = uplcpy (plist);
 
-                log_message (LOG_INFO, "Added upstream %s %s:%d for [default]",
-                             proxy_type_name (type), host, port);
-        } else if (host == NULL || type == PT_NONE) {
+                log_message (LOG_INFO, "Added upstream %s %s for [default]",
+                             proxy_type_name (type),
+                             proxy_list_name (up->plist));
+        } else if (plist == NULL || type == PT_NONE) {
                 if (!domain || domain[0] == '\0') {
                         log_message (LOG_WARNING,
                                      "Nonsense no-upstream rule: empty domain");
@@ -183,15 +231,14 @@ static struct upstream *upstream_build (const char *host, int port,
 
                 log_message (LOG_INFO, "Added no-upstream for %s", domain);
         } else {
-                if (!host || host[0] == '\0' || port < 1 || !domain
-                    || domain[0] == '\0') {
+                if (!plist || plist->host[0] == '\0' || plist->port < 1
+                    || !domain || domain[0] == '\0') {
                         log_message (LOG_WARNING,
                                      "Nonsense upstream rule: invalid parameters");
                         goto fail;
                 }
 
-                up->host = safestrdup (host);
-                up->port = port;
+                up->plist = uplcpy (plist);
                 up->domain = safestrdup (domain);
 #ifdef UPSTREAM_REGEX
                 if (rflag) {
@@ -205,19 +252,29 @@ static struct upstream *upstream_build (const char *host, int port,
                         }
                 }
 #endif
-                log_message (LOG_INFO, "Added upstream %s %s:%d for %s",
-                             proxy_type_name (type), host, port, domain);
+                log_message (LOG_INFO, "Added upstream %s %s for %s",
+                             proxy_type_name (type),
+                             proxy_list_name (up->plist), domain);
         }
 
         return up;
 
 fail:
         safefree (up->ua.user);
+        safefree (up->ua.authstr);
         safefree (up->pass);
-        safefree (up->host);
+        upp = up->plist;
+        while (upp) {
+                struct upstream_proxy_list *tmpp = upp;
+                upp = upp->next;
+                safefree (tmpp->host);
+                safefree (tmpp);
+        }
         safefree (up->domain);
 #ifdef UPSTREAM_REGEX
         safefree (up->pat);
+        if (up->cpat)
+                regfree (up->cpat);
         safefree (up->cpat);
 #endif
         safefree (up);
@@ -228,13 +285,14 @@ fail:
 /*
  * Add an entry to the upstream list
  */
-void upstream_add (const char *host, int port, const char *domain,
+void upstream_add (const struct upstream_proxy_list *plist, const char *domain,
                    const char *user, const char *pass,
                    proxy_type type, struct upstream **upstream_list)
 {
         struct upstream *up;
+        struct upstream_proxy_list *upp;
 
-        up = upstream_build (host, port, domain, user, pass, type);
+        up = upstream_build (plist, domain, user, pass, type);
         if (up == NULL) {
                 return;
         }
@@ -265,8 +323,23 @@ void upstream_add (const char *host, int port, const char *domain,
         return;
 
 upstream_cleanup:
-        safefree (up->host);
+        upp = up->plist;
+        while (upp) {
+                struct upstream_proxy_list *tmpp = upp;
+                upp = upp->next;
+                safefree (tmpp->host);
+                safefree (tmpp);
+        }
         safefree (up->domain);
+        safefree (up->ua.user);
+        safefree (up->ua.authstr);
+        safefree (up->pass);
+#ifdef UPSTREAM_REGEX
+        safefree (up->pat);
+        if (up->cpat)
+                regfree (up->cpat);
+        safefree (up->cpat);
+#endif
         safefree (up);
 
         return;
@@ -323,14 +396,14 @@ struct upstream *upstream_get (struct request_s *request, struct upstream *up)
 
                 up = up->next;
         }
-
-        if (up && (!up->host || !up->port))
+        if (up && !up->plist)
                 up = NULL;
 
         if (up)
-                log_message (LOG_INFO, "Found upstream proxy %s %s:%d for %s",
-                             proxy_type_name (up->type), up->host, up->port,
-                             host);
+                log_message (LOG_INFO,
+                             "Found upstream proxy/proxies %s %s for %s",
+                             proxy_type_name (up->type),
+                             proxy_list_name (up->plist), host);
         else
                 log_message (LOG_INFO, "No upstream proxy for %s", host);
 
@@ -341,9 +414,24 @@ void free_upstream_list (struct upstream *up)
 {
         while (up) {
                 struct upstream *tmp = up;
+                struct upstream_proxy_list *upp = up->plist;
                 up = up->next;
+                while (upp) {
+                        struct upstream_proxy_list *tmpp = upp;
+                        upp = upp->next;
+                        safefree (tmpp->host);
+                        safefree (tmpp);
+                }
                 safefree (tmp->domain);
-                safefree (tmp->host);
+                safefree (tmp->ua.user);
+                safefree (tmp->ua.authstr);
+                safefree (tmp->pass);
+#ifdef UPSTREAM_REGEX
+                safefree (tmp->pat);
+                if (tmp->cpat)
+                        regfree (tmp->cpat);
+                safefree (tmp->cpat);
+#endif
                 safefree (tmp);
         }
 }

@@ -192,7 +192,7 @@ static void child_main (struct child_s *ptr)
         int ret;
 
         cliaddr = (struct sockaddr *)
-                        safemalloc (sizeof(struct sockaddr_storage));
+            safemalloc (sizeof (struct sockaddr_storage));
         if (!cliaddr) {
                 log_message (LOG_CRIT,
                              "Could not allocate memory for child address.");
@@ -200,7 +200,7 @@ static void child_main (struct child_s *ptr)
         }
 
         ptr->connects = 0;
-        srand(time(NULL));
+        srand (time (NULL));
 
         /*
          * We have to wait for connections on multiple fds,
@@ -210,45 +210,46 @@ static void child_main (struct child_s *ptr)
 
                 int listenfd = -1;
 
-                FD_ZERO(&rfds);
+                FD_ZERO (&rfds);
 
-                for (i = 0; i < vector_length(listen_fds); i++) {
-                        int *fd = (int *) vector_getentry(listen_fds, i, NULL);
+                for (i = 0; i < vector_length (listen_fds); i++) {
+                        int *fd = (int *) vector_getentry (listen_fds, i, NULL);
 
-                        ret = socket_nonblocking(*fd);
+                        ret = socket_nonblocking (*fd);
                         if (ret != 0) {
-                                log_message(LOG_ERR, "Failed to set the listening "
-                                            "socket %d to non-blocking: %s",
-                                            fd, strerror(errno));
-                                exit(1);
+                                log_message (LOG_ERR,
+                                             "Failed to set the listening "
+                                             "socket %d to non-blocking: %s",
+                                             fd, strerror (errno));
+                                exit (1);
                         }
 
-                        FD_SET(*fd, &rfds);
-                        maxfd = max(maxfd, *fd);
+                        FD_SET (*fd, &rfds);
+                        maxfd = max (maxfd, *fd);
                 }
 
                 ptr->status = T_WAITING;
 
-                clilen = sizeof(struct sockaddr_storage);
+                clilen = sizeof (struct sockaddr_storage);
 
-                ret = select(maxfd + 1, &rfds, NULL, NULL, NULL);
+                ret = select (maxfd + 1, &rfds, NULL, NULL, NULL);
                 if (ret == -1) {
                         if (errno == EINTR) {
                                 continue;
                         }
                         log_message (LOG_ERR, "error calling select: %s",
-                                     strerror(errno));
-                        exit(1);
+                                     strerror (errno));
+                        exit (1);
                 } else if (ret == 0) {
                         log_message (LOG_WARNING, "Strange: select returned 0 "
                                      "but we did not specify a timeout...");
                         continue;
                 }
 
-                for (i = 0; i < vector_length(listen_fds); i++) {
-                        int *fd = (int *) vector_getentry(listen_fds, i, NULL);
+                for (i = 0; i < vector_length (listen_fds); i++) {
+                        int *fd = (int *) vector_getentry (listen_fds, i, NULL);
 
-                        if (FD_ISSET(*fd, &rfds)) {
+                        if (FD_ISSET (*fd, &rfds)) {
                                 /*
                                  * only accept the connection on the first
                                  * fd that we find readable. - fair?
@@ -259,17 +260,17 @@ static void child_main (struct child_s *ptr)
                 }
 
                 if (listenfd == -1) {
-                        log_message(LOG_WARNING, "Strange: None of our listen "
-                                    "fds was readable after select");
+                        log_message (LOG_WARNING, "Strange: None of our listen "
+                                     "fds was readable after select");
                         continue;
                 }
 
-                ret = socket_blocking(listenfd);
+                ret = socket_blocking (listenfd);
                 if (ret != 0) {
-                        log_message(LOG_ERR, "Failed to set listening "
-                                    "socket %d to blocking for accept: %s",
-                                    listenfd, strerror(errno));
-                        exit(1);
+                        log_message (LOG_ERR, "Failed to set listening "
+                                     "socket %d to blocking for accept: %s",
+                                     listenfd, strerror (errno));
+                        exit (1);
                 }
 
                 /*
@@ -539,11 +540,10 @@ void child_kill_children (int sig)
         }
 }
 
-
 /**
  * Listen on the various configured interfaces
  */
-int child_listening_sockets(vector_t listen_addrs, uint16_t port)
+int child_listening_sockets (vector_t listen_addrs, uint16_t port)
 {
         int ret;
         ssize_t i;
@@ -551,7 +551,7 @@ int child_listening_sockets(vector_t listen_addrs, uint16_t port)
         assert (port > 0);
 
         if (listen_fds == NULL) {
-                listen_fds = vector_create();
+                listen_fds = vector_create ();
                 if (listen_fds == NULL) {
                         log_message (LOG_ERR, "Could not create the list "
                                      "of listening fds");
@@ -559,28 +559,26 @@ int child_listening_sockets(vector_t listen_addrs, uint16_t port)
                 }
         }
 
-        if ((listen_addrs == NULL) ||
-            (vector_length(listen_addrs) == 0))
-        {
+        if ((listen_addrs == NULL) || (vector_length (listen_addrs) == 0)) {
                 /*
                  * no Listen directive:
                  * listen on the wildcard address(es)
                  */
-                ret = listen_sock(NULL, port, listen_fds);
+                ret = listen_sock (NULL, port, listen_fds);
                 return ret;
         }
 
-        for (i = 0; i < vector_length(listen_addrs); i++) {
+        for (i = 0; i < vector_length (listen_addrs); i++) {
                 const char *addr;
 
-                addr = (char *)vector_getentry(listen_addrs, i, NULL);
+                addr = (char *) vector_getentry (listen_addrs, i, NULL);
                 if (addr == NULL) {
-                        log_message(LOG_WARNING,
-                                    "got NULL from listen_addrs - skipping");
+                        log_message (LOG_WARNING,
+                                     "got NULL from listen_addrs - skipping");
                         continue;
                 }
 
-                ret = listen_sock(addr, port, listen_fds);
+                ret = listen_sock (addr, port, listen_fds);
                 if (ret != 0) {
                         return ret;
                 }
@@ -593,12 +591,12 @@ void child_close_sock (void)
 {
         ssize_t i;
 
-        for (i = 0; i < vector_length(listen_fds); i++) {
-                int *fd = (int *) vector_getentry(listen_fds, i, NULL);
+        for (i = 0; i < vector_length (listen_fds); i++) {
+                int *fd = (int *) vector_getentry (listen_fds, i, NULL);
                 close (*fd);
         }
 
-        vector_delete(listen_fds);
+        vector_delete (listen_fds);
 
         listen_fds = NULL;
 }

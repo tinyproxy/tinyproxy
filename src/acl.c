@@ -111,7 +111,7 @@ fill_netmask_array (char *bitmask_string, int v6,
 /**
  * If the access list has not been set up, create it.
  */
-static int init_access_list(vector_t *access_list)
+static int init_access_list (vector_t *access_list)
 {
         if (!*access_list) {
                 *access_list = vector_create ();
@@ -143,7 +143,7 @@ insert_acl (char *location, acl_access_t access_type, vector_t *access_list)
 
         assert (location != NULL);
 
-        ret = init_access_list(access_list);
+        ret = init_access_list (access_list);
         if (ret != 0) {
                 return -1;
         }
@@ -170,7 +170,7 @@ insert_acl (char *location, acl_access_t access_type, vector_t *access_list)
                  */
                 p = strchr (location, '/');
                 if (p != NULL) {
-                        char dst[sizeof(struct in6_addr)];
+                        char dst[sizeof (struct in6_addr)];
                         int v6;
 
                         /*
@@ -185,7 +185,7 @@ insert_acl (char *location, acl_access_t access_type, vector_t *access_list)
 
                         /* Check if the IP address before the netmask is
                          * an IPv6 address */
-                        if (inet_pton(AF_INET6, location, dst) > 0)
+                        if (inet_pton (AF_INET6, location, dst) > 0)
                                 v6 = 1;
                         else
                                 v6 = 0;
@@ -197,7 +197,7 @@ insert_acl (char *location, acl_access_t access_type, vector_t *access_list)
 
                         for (i = 0; i < IPV6_LEN; i++)
                                 acl.address.ip.network[i] = ip_dst[i] &
-                                        acl.address.ip.mask[i];
+                                    acl.address.ip.mask[i];
                 } else {
                         /* In all likelihood a string */
                         acl.type = ACL_STRING;

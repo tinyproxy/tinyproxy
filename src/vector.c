@@ -111,10 +111,7 @@ typedef enum {
 } vector_pos_t;
 
 static int
-vector_insert (vector_t      vector,
-               void         *data,
-               size_t        len,
-               vector_pos_t  pos)
+vector_insert (vector_t vector, void *data, size_t len, vector_pos_t pos)
 {
         struct vectorentry_s *entry;
 

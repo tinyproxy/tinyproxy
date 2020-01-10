@@ -1417,12 +1417,13 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
          */
         return -1;
 #else
+        struct upstream_proxy_list *upp;
         char *combined_string;
         int len;
 
         struct upstream *cur_upstream = connptr->upstream_proxy;
 
-        if (!cur_upstream) {
+        if (!cur_upstream || !cur_upstream->plist) {
                 log_message (LOG_WARNING,
                              "No upstream proxy defined for %s.",
                              request->host);
@@ -1431,11 +1432,39 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
                 return -1;
         }
 
-        connptr->server_fd =
-            opensock (cur_upstream->host, cur_upstream->port,
-                      connptr->server_ip_addr);
+        upp = cur_upstream->plist;
+        while (upp) {
+                double tdiff;
+                if (upp->last_failed_connect > 0) {
+                        tdiff =
+                            difftime (time (NULL), upp->last_failed_connect);
+                        if (tdiff < config.deadtime) {
+                                log_message (LOG_INFO,
+                                             "Won't try to connect to upstream "
+                                             "proxy %s:%d during dead time.",
+                                             upp->host, upp->port);
+                                upp = upp->next;
+                                continue;
+                        } else {
+                                upp->last_failed_connect = (time_t) 0;
+                        }
+                }
+                connptr->server_fd =
+                    opensock (upp->host, upp->port, connptr->server_ip_addr);
 
-        if (connptr->server_fd < 0) {
+                if (connptr->server_fd < 0) {
+                        log_message (LOG_WARNING,
+                                     "Could not connect to upstream proxy. "
+                                     "Try next in list if available.");
+                        upp->last_failed_connect = time (NULL);
+                } else {
+                        cur_upstream->host = upp->host;
+                        cur_upstream->port = upp->port;
+                        break;
+                }
+                upp = upp->next;
+        }
+        if (!upp || connptr->server_fd < 0) {
                 log_message (LOG_WARNING,
                              "Could not connect to upstream proxy.");
                 indicate_http_error (connptr, 404,

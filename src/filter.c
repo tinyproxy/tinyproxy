@@ -104,13 +104,11 @@ void filter_init (void)
                 if (*s == '\0')
                         continue;
 
-                if (!p) /* head of list */
-                        fl = p =
-                            (struct filter_list *)
+                if (!p)         /* head of list */
+                        fl = p = (struct filter_list *)
                             safecalloc (1, sizeof (struct filter_list));
-                else {  /* next entry */
-                        p->next =
-                            (struct filter_list *)
+                else {          /* next entry */
+                        p->next = (struct filter_list *)
                             safecalloc (1, sizeof (struct filter_list));
                         p = p->next;
                 }

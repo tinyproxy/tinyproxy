@@ -36,7 +36,7 @@ ssize_t safe_write (int fd, const void *buf, size_t count)
 {
         ssize_t len;
         size_t bytestosend;
-	const char *buffer = buf;
+        const char *buffer = buf;
 
         assert (fd >= 0);
         assert (buffer != NULL);
@@ -204,8 +204,7 @@ ssize_t readline (int fd, char **whole_buffer)
                         break;
                 }
 
-                line_ptr->next =
-                    (struct read_lines_s *)
+                line_ptr->next = (struct read_lines_s *)
                     safecalloc (sizeof (struct read_lines_s), 1);
                 if (!line_ptr->next) {
                         ret = -ENOMEM;

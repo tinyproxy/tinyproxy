@@ -72,6 +72,11 @@ The possible keywords and their descriptions are as follows:
     The maximum number of seconds of inactivity a connection is
     allowed to have before it is closed by Tinyproxy.
 
+*DeadTime*::
+
+    The maximum number of seconds of marking a proxy dead i.e. proxy 
+    won't be used for a new connections by Tinyproxy during the deadtime.
+
 *ErrorFile*::
 
     This parameter controls which HTML file Tinyproxy returns when a
@@ -153,12 +158,16 @@ The possible keywords and their descriptions are as follows:
     rules exist:
 
     * 'upstream type host:port' turns proxy upstream support on generally.
+    host:port can be a list seperated by | e.g. host1:port1|host2:port2.
 
     * 'upstream type user:pass@host:port' does the same, but uses the
-    supplied credentials for authentication.
+    supplied credentials for authentication. host:port can be a list 
+    seperated by | e.g. host1:port1|host2:port2. Same user:pass will be 
+    used for the list.
 
     * 'upstream type host:port "site_spec"' turns on the upstream proxy
-    for the sites matching `site_spec`.
+    for the sites matching `site_spec`. host:port can be a list
+    seperated by | e.g. host1:port1|host2:port2.
 
     `type` can be one of `http`, `socks4`, `socks5`, `none`.
 
@@ -173,6 +182,11 @@ The possible keywords and their descriptions are as follows:
     * '.'        matches any host with no domain (in 'empty' domain)
     * 'IP/bits'  matches network/mask
     * 'IP/mask'  matches network/mask
+    * 'regex(<pat>)'  matches against basic case senstive regular expression
+    * 'regexe(<pat>)'  matches against extended case senstive regular expression
+    * 'regexi(<pat>)'  matches against basic case insenstive regular expression
+    * 'regexei(<pat>)'  matches against extended case insenstive regular expression
+    * 'regexie(<pat>)'  matches against extended case insenstive regular expression
 
 *MaxClients*::
 

@@ -27,6 +27,9 @@
 /* Global variables for the main controls of the program */
 #define MAXBUFFSIZE     ((size_t)(1024 * 96))   /* Max size of buffer */
 #define MAX_IDLE_TIME   (60 * 10)       /* 10 minutes of no activity */
+#ifdef UPSTREAM_SUPPORT
+#define MAX_DEAD_TIME   (60 * 10)       /* 10 minutes of no activity */
+#endif
 
 /* Global Structures used in the program */
 extern struct config_s config;

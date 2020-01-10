@@ -39,16 +39,25 @@ typedef enum proxy_type {
         PT_SOCKS5
 } proxy_type;
 
+typedef struct upstream_proxy_list {
+        struct upstream_proxy_list *next;
+        char *host;
+        int port;
+        time_t last_failed_connect;
+
+} upstream_proxy_list_t;
+
 struct upstream {
         struct upstream *next;
         char *domain;           /* optional */
+        struct upstream_proxy_list *plist;
         char *host;
+        int port;
         union {
                 char *user;
                 char *authstr;
         } ua;
         char *pass;
-        int port;
         in_addr_t ip, mask;
         proxy_type type;
 #if defined(UPSTREAM_SUPPORT) && defined(UPSTREAM_REGEX)
@@ -59,9 +68,10 @@ struct upstream {
 
 #ifdef UPSTREAM_SUPPORT
 const char *proxy_type_name (proxy_type type);
-extern void upstream_add (const char *host, int port, const char *domain,
-                          const char *user, const char *pass,
-                          proxy_type type, struct upstream **upstream_list);
+extern void upstream_add (const struct upstream_proxy_list *phost,
+                          const char *domain, const char *user,
+                          const char *pass, proxy_type type,
+                          struct upstream **upstream_list);
 extern struct upstream *upstream_get (struct request_s *request,
                                       struct upstream *up);
 extern void free_upstream_list (struct upstream *up);

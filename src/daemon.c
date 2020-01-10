@@ -41,10 +41,9 @@ void makedaemon (void)
         if (fork () != 0)
                 exit (0);
 
-	if (chdir ("/") != 0) {
-                log_message (LOG_WARNING,
-                             "Could not change directory to /");
-	}
+        if (chdir ("/") != 0) {
+                log_message (LOG_WARNING, "Could not change directory to /");
+        }
 
         umask (0177);
 

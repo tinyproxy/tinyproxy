@@ -55,7 +55,7 @@ struct config_s {
         unsigned int filter_casesensitive;      /* boolean */
 #endif                          /* FILTER_ENABLE */
 #ifdef XTINYPROXY_ENABLE
-        unsigned int add_xtinyproxy; /* boolean */
+        unsigned int add_xtinyproxy;    /* boolean */
 #endif
 #ifdef REVERSE_SUPPORT
         struct reversepath *reversepath_list;
@@ -68,6 +68,9 @@ struct config_s {
 #endif                          /* UPSTREAM_SUPPORT */
         char *pidpath;
         unsigned int idletimeout;
+#ifdef UPSTREAM_SUPPORT
+        unsigned int deadtime;
+#endif                          /* UPSTREAM_SUPPORT */
         char *bind_address;
         unsigned int bindsame;
 
@@ -115,6 +118,8 @@ struct config_s {
 
 extern int reload_config_file (const char *config_fname, struct config_s *conf,
                                struct config_s *defaults);
+
+extern void free_config (struct config_s *conf);
 
 int config_compile_regex (void);
 
