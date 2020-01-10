@@ -1142,6 +1142,7 @@ static HANDLE_FUNC (handle_upstream)
         mi += 5;
         plist->port = (int) get_long_arg (line, &match[mi]);
         plist->last_failed_connect = (time_t) 0;
+        plist->next = NULL;
 
         mi += 2;
         /* if != -1 we have a list of proxy hosts seperated by |. */
@@ -1158,6 +1159,7 @@ static HANDLE_FUNC (handle_upstream)
                         plist->next = (upstream_proxy_list_t *)
                             safemalloc (sizeof (upstream_proxy_list_t));
                         plist = plist->next;
+                        plist->next = NULL;
                         cptr = strchr (pptr, ':');
                         *cptr++ = '\0';
                         plist->host = strdup (pptr);

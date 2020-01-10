@@ -237,7 +237,6 @@ static struct upstream *upstream_build (const struct upstream_proxy_list *plist,
                                      "Nonsense upstream rule: invalid parameters");
                         goto fail;
                 }
-
                 up->plist = uplcpy (plist);
                 up->domain = safestrdup (domain);
 #ifdef UPSTREAM_REGEX
