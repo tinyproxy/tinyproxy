@@ -226,6 +226,7 @@ static struct upstream *upstream_build (const struct upstream_proxy_list *plist,
                                              "Bad regex: %s", up->pat);
                                 goto fail;
                         }
+                        up->domain = safestrdup (domain);
                 }
 #endif
 
