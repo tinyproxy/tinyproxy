@@ -475,6 +475,8 @@ struct upstream *upstream_get (struct request_s *request, struct upstream *up)
                         up->domain ? up->domain : "NULL");
                 if (up->ip && up->mask) {
                         struct in_addr tmp1, tmp2;
+			(void)(tmp1); /* Avoid gcc warning */
+			(void)(tmp2); /* Avoid gcc warning */
                         tmp1.s_addr = htonl (up->ip);
                         tmp2.s_addr = htonl (up->mask);
                         DEBUG2 ("Check against ip/mask: %s/%s\n",
