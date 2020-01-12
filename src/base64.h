@@ -23,6 +23,6 @@
 
 /* calculates number of bytes base64-encoded stream of N bytes will take. */
 #define BASE64ENC_BYTES(N) (((N+2)/3)*4)
-void base64enc (char *dst, const void *src, size_t count);
+void base64enc(char *dst, const void* src, size_t count);
 
 #endif

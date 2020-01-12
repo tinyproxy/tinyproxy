@@ -239,7 +239,7 @@ struct {
         STDCONF ("basicauth", ALNUM WS ALNUM, handle_basicauth),
         STDCONF ("errorfile", INT WS STR, handle_errorfile),
         STDCONF ("addheader",  STR WS STR, handle_addheader),
-	
+
 #ifdef FILTER_ENABLE
         /* filtering */
         STDCONF ("filter", STR, handle_filter),
@@ -259,7 +259,6 @@ struct {
         {
                 BEGIN "(upstream)" WS "(none)" WS STR END, handle_upstream_no, NULL
         },
-
         {
                 BEGIN "(upstream)" WS "(http|socks4|socks5)" WS
                       "(" USERNAME /*username*/ ":" PASSWORD /*password*/ "@" ")?"
@@ -388,7 +387,8 @@ static int check_match (struct config_s *conf, const char *line,
         unsigned int i;
 
         assert (ndirectives > 0);
-        for (i = 0; i != ndirectives; ++i) {
+
+	for (i = 0; i != ndirectives; ++i) {
                 assert (directives[i].cre);
                 if (!regexec
                     (directives[i].cre, line, RE_MAX_MATCHES, match, 0))
@@ -756,7 +756,7 @@ static HANDLE_FUNC (handle_disableviaheader)
                 return r;
         }
 
-        log_message (LOG_INFO, 
+        log_message (LOG_INFO,
                      "Disabling transmission of the \"Via\" header.");
         return 0;
 }
@@ -902,9 +902,9 @@ static HANDLE_FUNC (handle_listen)
         if (conf->listen_addrs == NULL) {
                conf->listen_addrs = vector_create();
                if (conf->listen_addrs == NULL) {
-                       log_message (LOG_WARNING, "Could not create a list "
-                                    "of listen addresses.");
-                       safefree (arg);
+                       log_message(LOG_WARNING, "Could not create a list "
+                                   "of listen addresses.");
+                       safefree(arg);
                        return -1;
                }
         }
@@ -1095,17 +1095,17 @@ static HANDLE_FUNC (handle_reversepath)
 
 static enum proxy_type pt_from_string(const char *s)
 {
-       static const char pt_map[][7] = {
-               [PT_NONE] = "none",
-               [PT_HTTP] = "http",
-               [PT_SOCKS4] = "socks4",
-               [PT_SOCKS5] = "socks5",
-       };
-       unsigned i;
-       for (i = 0; i < sizeof (pt_map) / sizeof (pt_map[0]); i++)
-               if (!strcmp (pt_map[i], s))
-                       return i;
-       return PT_NONE;
+      static const char pt_map[][7] = {
+              [PT_NONE] = "none",
+              [PT_HTTP] = "http",
+              [PT_SOCKS4] = "socks4",
+              [PT_SOCKS5] = "socks5",
+      };
+      unsigned i;
+      for (i = 0; i < sizeof (pt_map) / sizeof (pt_map[0]); i++)
+              if (!strcmp (pt_map[i], s))
+                      return i;
+      return PT_NONE;
 }
 
 static HANDLE_FUNC (handle_upstream)
@@ -1126,7 +1126,7 @@ static HANDLE_FUNC (handle_upstream)
                 user = get_string_arg (line, &match[mi]);
         mi++;
 
-        if (match[mi].rm_so != -1)
+      if (match[mi].rm_so != -1)
                 pass = get_string_arg (line, &match[mi]);
         mi++;
         plist->host = get_string_arg (line, &match[mi]);
