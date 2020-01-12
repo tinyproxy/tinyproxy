@@ -1096,14 +1096,14 @@ static HANDLE_FUNC (handle_reversepath)
 static enum proxy_type pt_from_string(const char *s)
 {
 	static const char pt_map[][7] = {
-		[PT_NONE] = "none",
-		[PT_HTTP] = "http",
+		[PT_NONE]   = "none",
+		[PT_HTTP]   = "http",
 		[PT_SOCKS4] = "socks4",
 		[PT_SOCKS5] = "socks5",
 	};
 	unsigned i;
-	for (i = 0; i < sizeof (pt_map) / sizeof (pt_map[0]); i++)
-		if (!strcmp (pt_map[i], s))
+	for (i = 0; i < sizeof(pt_map)/sizeof(pt_map[0]); i++)
+		if (!strcmp(pt_map[i], s))
 			return i;
 	return PT_NONE;
 }

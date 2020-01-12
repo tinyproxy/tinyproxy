@@ -1314,8 +1314,8 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 		buff[8] = 0; /* user */
 		if (9 != safe_write(connptr->server_fd, buff, 9))
 			return -1;
-                if (8 != safe_read(connptr->server_fd, buff, 8))
-                        return -1;
+		if (8 != safe_read(connptr->server_fd, buff, 8))
+			return -1;
 		if (buff[0]!=0 || buff[1]!=90)
 			return -1;
 
@@ -1326,8 +1326,8 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 		buff[0] = 5; /* socks version */
 		buff[1] = n_methods; /* number of methods  */
 		buff[2] = 0; /* no auth method */
-		if (ulen) buff[3] = 2; /* auth method -> username / password */
-		if (2 + n_methods != safe_write(connptr->server_fd, buff, 2 + n_methods))
+		if (ulen) buff[3] = 2;  /* auth method -> username / password */
+		if (2+n_methods != safe_write(connptr->server_fd, buff, 2+n_methods))
 			return -1;
 		if (2 != safe_read(connptr->server_fd, buff, 2))
 			return -1;
@@ -1340,7 +1340,7 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 			char out[515];
 			char *cur = out;
 			size_t c;
-			*cur++ = 1;     /* version */
+			*cur++ = 1;	/* version */
 			c = ulen & 0xFF;
 			*cur++ = c;
 			memcpy(cur, cur_upstream->ua.user, c);
@@ -1350,12 +1350,12 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 			memcpy(cur, cur_upstream->pass, c);
 			cur += c;
 
-			if ((cur - out) != safe_write(connptr->server_fd, out, cur - out))
+			if((cur - out) != safe_write(connptr->server_fd, out, cur - out))
 				return -1;
 
-			if (2 != safe_read(connptr->server_fd, in, 2))
+			if(2 != safe_read(connptr->server_fd, in, 2))
 				return -1;
-			if (in[1] != 0 || !(in[0] == 5 || in[0] == 1)) {
+			if(in[1] != 0 || !(in[0] == 5 || in[0] == 1)) {
 				return -1;
 			}
 		}
@@ -1364,22 +1364,22 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 		buff[1] = 1; /* connect */
 		buff[2] = 0; /* reserved */
 		buff[3] = 3; /* domainname */
-		len = strlen (request->host);
-		if (len > 255)
+		len=strlen (request->host);
+		if (len>255)
 			return -1;
 		buff[4] = len; /* length of domainname */
 		memcpy(&buff[5], request->host, len); /* dest ip */
-		port = htons (request->port);
-		memcpy(&buff[5 + len], &port, 2); /* dest port */
-		if (7 + len != safe_write(connptr->server_fd, buff, 7 + len))
+		port = htons(request->port);
+		memcpy(&buff[5+len], &port, 2); /* dest port */
+		if (7+len != safe_write(connptr->server_fd, buff, 7+len))
 			return -1;
 		if (4 != safe_read(connptr->server_fd, buff, 4))
 			return -1;
-		if (buff[0] != 5 || buff[1] != 0)
+		if (buff[0]!=5 || buff[1]!=0)
 			return -1;
-		switch (buff[3]) {
-			case 1: len = 4; break; /* ip v4 */
-			case 4: len = 16; break; /* ip v6 */
+		switch(buff[3]) {
+			case 1: len=4; break; /* ip v4 */
+			case 4: len=16; break; /* ip v6 */
 			case 3: /* domainname */
 				if (1 != safe_read(connptr->server_fd, buff, 1))
 					return -1;
@@ -1387,7 +1387,7 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 				break;
 			default: return -1;
 		}
-		if (2 + len != safe_read(connptr->server_fd, buff, 2 + len))
+		if (2+len != safe_read(connptr->server_fd, buff, 2+len))
 			return -1;
 	} else {
 		return -1;
@@ -1396,7 +1396,7 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 	if (connptr->connect_method)
 		return 0;
 
-	return establish_http_connection (connptr, request);
+	return establish_http_connection(connptr, request);
 }
 
 
@@ -1473,7 +1473,7 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
         }
 
 	if (cur_upstream->type != PT_HTTP)
-		return connect_to_upstream_proxy (connptr, request);
+		return connect_to_upstream_proxy(connptr, request);
 
         log_message (LOG_CONN,
                      "Established connection to upstream proxy \"%s\" "
