@@ -147,7 +147,7 @@ static char *get_hostip (int *lookup_err, char *host, in_addr_t ip,
 const char *
 proxy_type_name(proxy_type type)
 {
-    switch (type) {
+    switch(type) {
         case PT_NONE: return "none";
         case PT_HTTP: return "http";
         case PT_SOCKS4: return "socks4";
