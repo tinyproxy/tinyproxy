@@ -1301,7 +1301,7 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 
 	log_message(LOG_CONN,
 		    "Established connection to %s proxy \"%s\" using file descriptor %d.",
-		    proxy_type_name (cur_upstream->type), cur_upstream->host, connptr->server_fd);
+		    proxy_type_name(cur_upstream->type), cur_upstream->host, connptr->server_fd);
 
 	if (cur_upstream->type == PT_SOCKS4) {
 
@@ -1364,8 +1364,8 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 		buff[1] = 1; /* connect */
 		buff[2] = 0; /* reserved */
 		buff[3] = 3; /* domainname */
-		len=strlen (request->host);
-		if (len>255)
+		len=strlen(request->host);
+		if(len>255)
 			return -1;
 		buff[4] = len; /* length of domainname */
 		memcpy(&buff[5], request->host, len); /* dest ip */
