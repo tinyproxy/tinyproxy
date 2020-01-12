@@ -26,3 +26,4 @@
 void base64enc(char *dst, const void* src, size_t count);
 
 #endif
+

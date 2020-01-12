@@ -45,30 +45,30 @@
 #  include	<errno.h>
 #  include	<fcntl.h>
 #  include	<netdb.h>
-#  include        <signal.h>
-#  include        <stdarg.h>
+#  include      <signal.h>
+#  include      <stdarg.h>
 #  include	<strings.h>
-#  include        <syslog.h>
+#  include      <syslog.h>
 #  include	<wchar.h>
 #  include	<wctype.h>
-#  include        <sys/mman.h>
+#  include      <sys/mman.h>
 #  include	<sys/select.h>
 #  include	<sys/socket.h>
 #  include	<sys/stat.h>
-#  include        <sys/types.h>
+#  include      <sys/types.h>
 #  include	<sys/wait.h>
 #  include	<sys/uio.h>
 #  include	<sys/un.h>
 #  include	<sys/time.h>
 #  include	<time.h>
 #  include	<inttypes.h>
-#  include        <sys/resource.h>
+#  include      <sys/resource.h>
 #  include	<netinet/in.h>
-#  include        <assert.h>
+#  include      <assert.h>
 #  include	<arpa/inet.h>
 #  include	<grp.h>
 #  include	<pwd.h>
-#  include        <regex.h>
+#  include      <regex.h>
 
 /* rest - some oddball headers */
 #ifdef HAVE_VALUES_H
@@ -80,19 +80,19 @@
 #endif
 
 #ifdef HAVE_ALLOCA_H
-#  include    <alloca.h>
+#  include	<alloca.h>
 #endif
 
 #ifdef HAVE_MEMORY_H
-#  include    <memory.h>
+#  include	<memory.h>
 #endif
 
 #ifdef HAVE_MALLOC_H
-#  include    <malloc.h>
+#  include	<malloc.h>
 #endif
 
 #ifdef HAVE_SYSEXITS_H
-#  include    <sysexits.h>
+#  include	<sysexits.h>
 #endif
 
 /*
@@ -104,8 +104,8 @@
 #endif
 
 #ifndef SHUT_RD                 /* these three Posix.1g names are quite new */
-#  define SHUT_RD	0               /* shutdown for reading */
-#  define SHUT_WR	1               /* shutdown for writing */
+#  define SHUT_RD	0       /* shutdown for reading */
+#  define SHUT_WR	1       /* shutdown for writing */
 #  define SHUT_RDWR	2       /* shutdown for reading and writing */
 #endif
 
@@ -126,8 +126,8 @@
 
 /* Useful function macros */
 #if !defined(min) || !defined(max)
-#  define min(a,b)    ((a) < (b) ? (a) : (b))
-#  define max(a,b)    ((a) > (b) ? (a) : (b))
+#  define min(a,b)	((a) < (b) ? (a) : (b))
+#  define max(a,b)	((a) > (b) ? (a) : (b))
 #endif
 
 #endif

@@ -145,15 +145,15 @@ static char *get_hostip (int *lookup_err, char *host, in_addr_t ip,
 }
 
 const char *
-proxy_type_name (proxy_type type)
+proxy_type_name(proxy_type type)
 {
-       switch (type) {
-           case PT_NONE: return "none";
-           case PT_HTTP: return "http";
-           case PT_SOCKS4: return "socks4";
-           case PT_SOCKS5: return "socks5";
-           default: return "unknown";
-       }
+    switch (type) {
+        case PT_NONE: return "none";
+        case PT_HTTP: return "http";
+        case PT_SOCKS4: return "socks4";
+        case PT_SOCKS5: return "socks5";
+        default: return "unknown";
+    }
 }
 
 static struct upstream_proxy_list *uplcpy (const struct upstream_proxy_list
@@ -246,7 +246,7 @@ static struct upstream *upstream_build (const struct upstream_proxy_list *plist,
         up->ip = up->mask = 0;
         if (user) {
                 if (type == PT_HTTP) {
-                        char b[BASE64ENC_BYTES((256+2) - 1) + 1];
+                        char b[BASE64ENC_BYTES((256+2)-1) + 1];
                         ssize_t ret;
                         ret = basicauth_string(user, pass, b, sizeof b);
                         if (ret == 0) {

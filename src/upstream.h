@@ -33,10 +33,10 @@
  * structure still needs to be defined.
  */
 typedef enum proxy_type {
-      PT_NONE = 0,
-      PT_HTTP,
-      PT_SOCKS4,
-      PT_SOCKS5
+	PT_NONE = 0,
+	PT_HTTP,
+	PT_SOCKS4,
+	PT_SOCKS5
 } proxy_type;
 
 typedef struct upstream_proxy_list {
