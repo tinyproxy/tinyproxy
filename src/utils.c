@@ -185,7 +185,8 @@ int create_file_safely (const char *filename, unsigned int truncate_file)
  *
  * Returns: %0 on success, non-zero values on errors.
  **/
-int pidfile_create (const char *filename)
+int
+pidfile_create (const char *filename)
 {
         int fildes;
         FILE *fd;

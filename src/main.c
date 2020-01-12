@@ -54,7 +54,8 @@ unsigned int received_sighup = FALSE;   /* boolean */
 /*
  * Handle a signal
  */
-static void takesig (int sig)
+static void
+takesig (int sig)
 {
         pid_t pid;
         int status;
@@ -64,6 +65,7 @@ static void takesig (int sig)
                 received_sighup = TRUE;
                 break;
 
+        case SIGINT:
         case SIGTERM:
                 config.quit = TRUE;
                 break;
@@ -79,7 +81,8 @@ static void takesig (int sig)
 /*
  * Display the version information for the user.
  */
-static void display_version (void)
+static void
+display_version (void)
 {
         printf ("%s %s\n", PACKAGE, VERSION);
 }
@@ -87,7 +90,8 @@ static void display_version (void)
 /*
  * Display usage to the user.
  */
-static void display_usage (void)
+static void
+display_usage (void)
 {
         int features = 0;
 
@@ -140,7 +144,8 @@ static void display_usage (void)
                 "<https://tinyproxy.github.io/>.\n");
 }
 
-static int get_id (char *str)
+static int
+get_id (char *str)
 {
         char *tstr;
 
@@ -164,7 +169,8 @@ static int get_id (char *str)
  *
  * This function parses command line arguments.
  **/
-static void process_cmdline (int argc, char **argv, struct config_s *conf)
+static void
+process_cmdline (int argc, char **argv, struct config_s *conf)
 {
         int opt;
 
@@ -210,7 +216,8 @@ static void process_cmdline (int argc, char **argv, struct config_s *conf)
  * the config file. This function is typically called during
  * initialization when the effective user is root.
  **/
-static void change_user (const char *program)
+static void
+change_user (const char *program)
 {
         if (config.group && strlen (config.group) > 0) {
                 int gid = get_id (config.group);
@@ -234,6 +241,7 @@ static void change_user (const char *program)
                                  program, config.group);
                         exit (EX_NOPERM);
                 }
+
 #ifdef HAVE_SETGROUPS
                 /* Drop all supplementary groups, otherwise these are inherited from the calling process */
                 if (setgroups (0, NULL) < 0) {
@@ -278,7 +286,7 @@ static void change_user (const char *program)
 
 static void initialize_config_defaults (struct config_s *conf)
 {
-        memset (conf, 0, sizeof (*conf));
+        memset (conf, 0, sizeof(*conf));
 
         conf->config_file = safestrdup (SYSCONFDIR "/tinyproxy.conf");
         if (!conf->config_file) {
@@ -298,6 +306,7 @@ static void initialize_config_defaults (struct config_s *conf)
 #endif
         conf->logf_name = NULL;
         conf->pidpath = NULL;
+        conf->maxclients = 100;
 }
 
 /**
@@ -322,8 +331,11 @@ done:
         return ret;
 }
 
-int main (int argc, char **argv)
+int
+main (int argc, char **argv)
 {
+        srand(time(NULL)); /* for hashmap seeds */
+
         /* Only allow u+rw bits. This may be required for some versions
          * of glibc so that mkstemp() doesn't make us vulnerable.
          */
@@ -331,7 +343,7 @@ int main (int argc, char **argv)
 
         log_message (LOG_INFO, "Initializing " PACKAGE " ...");
 
-        if (config_compile_regex ()) {
+        if (config_compile_regex()) {
                 exit (EX_SOFTWARE);
         }
 
@@ -339,7 +351,8 @@ int main (int argc, char **argv)
         process_cmdline (argc, argv, &config_defaults);
 
         if (reload_config_file (config_defaults.config_file,
-                                &config, &config_defaults)) {
+                                &config,
+                                &config_defaults)) {
                 exit (EX_SOFTWARE);
         }
 
@@ -356,8 +369,8 @@ int main (int argc, char **argv)
 
         if (config.godaemon == TRUE) {
                 if (!config.syslog && config.logf_name == NULL)
-                        fprintf (stderr, "WARNING: logging deactivated "
-                                 "(can't log to stdout when daemonized)\n");
+                        fprintf(stderr, "WARNING: logging deactivated "
+                                "(can't log to stdout when daemonized)\n");
 
                 makedaemon ();
         }
@@ -367,13 +380,14 @@ int main (int argc, char **argv)
                          argv[0]);
                 exit (EX_OSERR);
         }
+
 #ifdef FILTER_ENABLE
         if (config.filter)
                 filter_init ();
 #endif /* FILTER_ENABLE */
 
         /* Start listening on the selected port. */
-        if (child_listening_sockets (config.listen_addrs, config.port) < 0) {
+        if (child_listening_sockets(config.listen_addrs, config.port) < 0) {
                 fprintf (stderr, "%s: Could not create listening sockets.\n",
                          argv[0]);
                 exit (EX_OSERR);
@@ -397,13 +411,6 @@ int main (int argc, char **argv)
 
         /* Create log file after we drop privileges */
         if (setup_logging ()) {
-                exit (EX_SOFTWARE);
-        }
-
-        if (child_pool_create () < 0) {
-                fprintf (stderr,
-                         "%s: Could not create the pool of children.\n",
-                         argv[0]);
                 exit (EX_SOFTWARE);
         }
 
@@ -444,6 +451,7 @@ int main (int argc, char **argv)
                              "Could not remove PID file \"%s\": %s.",
                              config.pidpath, strerror (errno));
         }
+
 #ifdef FILTER_ENABLE
         if (config.filter)
                 filter_destroy ();

@@ -104,7 +104,7 @@ hashmap_t hashmap_create (unsigned int nbuckets)
         if (!ptr)
                 return NULL;
 
-        ptr->seed = (uint32_t) rand ();
+        ptr->seed = (uint32_t)rand();
         ptr->size = nbuckets;
         ptr->buckets = (struct hashbucket_s *) safecalloc (nbuckets,
                                                            sizeof (struct
@@ -508,7 +508,8 @@ char *lookup_variable (hashmap_t map, const char *varname)
         if (hashmap_is_end (map, result_iter))
                 return (NULL);
 
-        if (hashmap_return_entry (map, result_iter, &key, (void **) &data) < 0)
+        if (hashmap_return_entry (map, result_iter,
+                                  &key, (void **) &data) < 0)
                 return (NULL);
 
         return (data);

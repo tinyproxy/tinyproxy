@@ -31,7 +31,7 @@
 #include "basicauth.h"
 
 #ifdef UPSTREAM_SUPPORT
-static const char *proxy_list_name (struct upstream_proxy_list *plist)
+static const char *proxy_list_string (struct upstream_proxy_list *plist)
 {
 #define MAXBUF ((size_t)(1024 * 96))
         static char hostport[MAXBUF];
@@ -48,6 +48,100 @@ static const char *proxy_list_name (struct upstream_proxy_list *plist)
                 upl = upl->next;
         }
         return pbuffer;
+}
+
+/* return 1 if IP string is valid, else return 0 */
+static int is_valid_ip (const char *str)
+{
+        int num, ret = 0, dots = 0;
+        char *ptr, *ip_str;
+
+        if (str == NULL)
+                return 0;
+
+        ip_str = safestrdup (str);
+        ptr = strtok (ip_str, ".");
+
+        if (ptr == NULL)
+                goto cleanup;
+
+        while (ptr) {
+                char *dptr = ptr;
+
+                /* after parsing string, it must contain only digits */
+                while (*dptr) {
+                        if (*dptr >= '0' && *dptr <= '9')
+                                ++dptr;
+                        else
+                                goto cleanup;
+                }
+
+                num = atoi (ptr);
+
+                /* check for valid IP */
+                if (num >= 0 && num <= 255) {
+                        /* parse remaining string */
+                        ptr = strtok (NULL, ".");
+                        if (ptr != NULL)
+                                ++dots;
+                } else
+                        goto cleanup;
+        }
+
+        /* valid IP string must contain 3 dots */
+        if (dots != 3)
+                goto cleanup;
+
+        ret = 1;
+cleanup:
+        safefree (ip_str);
+        return ret;
+}
+
+static char *get_hostip (int *lookup_err, char *host, in_addr_t ip,
+                         in_addr_t mask)
+{
+        char *hostip;
+
+        hostip = host;
+
+        if (!is_valid_ip (host)) {      /* resolve host and check ip */
+                int ret;
+                struct addrinfo *res, *ressave;
+
+                res = NULL;
+                ret = getaddrinfo (host, NULL, NULL, &res);
+                ressave = res;
+                if (ret != 0) {
+                        *lookup_err = ret;
+                        if (ret == EAI_SYSTEM)
+                                log_message (LOG_ERR,
+                                             "get_hostip: Could not retrieve address info for %s: %s",
+                                             host, strerror (errno));
+                        else
+                                log_message (LOG_ERR,
+                                             "get_hostip: Could not retrieve address info for %s: %s",
+                                             host, gai_strerror (ret));
+                } else {
+                        do {
+                                struct in_addr tmp;
+                                struct sockaddr_in *stmp;
+                                stmp = (struct sockaddr_in *) (res->ai_addr);
+                                tmp = stmp->sin_addr;
+
+                                if ((ntohl (inet_addr (inet_ntoa (tmp))) & mask)
+                                    == ip) {
+                                        /* return if IP matches */
+                                        hostip = inet_ntoa (tmp);
+                                        break;
+                                }
+
+                        } while ((res = res->ai_next) != NULL);
+                }
+                if (ressave)
+                        freeaddrinfo (ressave);
+        }
+        return safestrdup (hostip);
 }
 
 const char *proxy_type_name (proxy_type type)
@@ -140,7 +234,7 @@ static struct upstream *upstream_build (const struct upstream_proxy_list *plist,
                         !strncasecmp (domain, "regexei(", 8)))) {       /* extended regex case insenstive */
                 rflag = 1;
                 rptr = domain + 8;
-                cflags |= REG_ICASE;
+                cflags |= REG_EXTENDED;
                 cflags |= REG_ICASE;
         }
         if (rflag) {
@@ -182,7 +276,7 @@ static struct upstream *upstream_build (const struct upstream_proxy_list *plist,
 
                 log_message (LOG_INFO, "Added upstream %s %s for [default]",
                              proxy_type_name (type),
-                             proxy_list_name (up->plist));
+                             proxy_list_string (up->plist));
         } else if (plist == NULL || type == PT_NONE) {
                 if (!domain || domain[0] == '\0') {
                         log_message (LOG_WARNING,
@@ -197,31 +291,46 @@ static struct upstream *upstream_build (const struct upstream_proxy_list *plist,
                                 struct in_addr addrstruct;
 
                                 *ptr = '\0';
-                                if (inet_aton (domain, &addrstruct) != 0) {
-                                        up->ip = ntohl (addrstruct.s_addr);
-                                        *ptr++ = '/';
+                                if (is_valid_ip (domain)) {
+                                        if (inet_aton (domain, &addrstruct) !=
+                                            0) {
+                                                up->ip =
+                                                    ntohl (addrstruct.s_addr);
+                                                *ptr++ = '/';
 
-                                        if (strchr (ptr, '.')) {
-                                                if (inet_aton (ptr, &addrstruct)
-                                                    != 0)
+                                                if (is_valid_ip (ptr)) {
+                                                        if (inet_aton
+                                                            (ptr, &addrstruct)
+                                                            != 0)
+                                                                up->mask =
+                                                                    ntohl
+                                                                    (addrstruct.
+                                                                     s_addr);
+                                                } else if (atoi (ptr) < 33
+                                                           && atoi (ptr) > -1) {
                                                         up->mask =
-                                                            ntohl
-                                                            (addrstruct.s_addr);
-                                        } else {
-                                                up->mask =
-                                                    ~((1 << (32 - atoi (ptr))) -
-                                                      1);
+                                                            ~((1 <<
+                                                               (32 -
+                                                                atoi (ptr))) -
+                                                              1);
+                                                } else {
+                                                        up->domain =
+                                                            safestrdup (domain);
+                                                }
                                         }
+                                } else {
+                                        *ptr++ = '/';
+                                        up->domain = safestrdup (domain);
                                 }
                         } else {
                                 up->domain = safestrdup (domain);
                         }
 #ifdef UPSTREAM_REGEX
                 } else {
-                        int err = 0;
+                        int ret = 0;
                         up->cpat = (regex_t *) safemalloc (sizeof (regex_t));
-                        err = regcomp (up->cpat, up->pat, cflags);
-                        if (err != 0) {
+                        ret = regcomp (up->cpat, up->pat, cflags);
+                        if (ret != 0) {
                                 log_message (LOG_WARNING,
                                              "Bad regex: %s", up->pat);
                                 goto fail;
@@ -242,10 +351,10 @@ static struct upstream *upstream_build (const struct upstream_proxy_list *plist,
                 up->domain = safestrdup (domain);
 #ifdef UPSTREAM_REGEX
                 if (rflag) {
-                        int err = 0;
+                        int ret = 0;
                         up->cpat = (regex_t *) safemalloc (sizeof (regex_t));
-                        err = regcomp (up->cpat, up->pat, cflags);
-                        if (err != 0) {
+                        ret = regcomp (up->cpat, up->pat, cflags);
+                        if (ret != 0) {
                                 log_message (LOG_WARNING,
                                              "Bad regex: %s", up->pat);
                                 goto fail;
@@ -254,7 +363,7 @@ static struct upstream *upstream_build (const struct upstream_proxy_list *plist,
 #endif
                 log_message (LOG_INFO, "Added upstream %s %s for %s",
                              proxy_type_name (type),
-                             proxy_list_name (up->plist), domain);
+                             proxy_list_string (up->plist), domain);
         }
 
         return up;
@@ -285,14 +394,16 @@ fail:
 /*
  * Add an entry to the upstream list
  */
-void upstream_add (const struct upstream_proxy_list *plist, const char *domain,
-                   const char *user, const char *pass,
-                   proxy_type type, struct upstream **upstream_list)
+void upstream_add (const struct upstream_proxy_list *plist,
+                   const char *domain, const char *user,
+                   const char *pass, proxy_type type,
+                   struct upstream **upstream_list)
 {
         struct upstream *up;
         struct upstream_proxy_list *upp;
 
         up = upstream_build (plist, domain, user, pass, type);
+
         if (up == NULL) {
                 return;
         }
@@ -351,10 +462,30 @@ upstream_cleanup:
 struct upstream *upstream_get (struct request_s *request, struct upstream *up)
 {
         char *host = request->host;
+        int lookup_err;
 
         in_addr_t my_ip = INADDR_NONE;
+        lookup_err = 0;
 
+        DEBUG2 ("Given url %s", request->url ? request->url : "NULL");
+        DEBUG2 ("Given host %s", request->host);
         while (up) {
+                DEBUG2 ("Upstream type: %s\n", proxy_type_name (up->type));
+#ifdef UPSTREAM_REGEX
+                DEBUG2 (, "Check against pattern: %s\n",
+                        up->pat ? up->pat : "NULL");
+#endif
+                DEBUG2 (, "Check against domain: %s\n",
+                        up->domain ? up->domain : "NULL");
+                if (up->ip && up->mask) {
+                        struct in_addr tmp1, tmp2;
+                        tmp1.s_addr = htonl (up->ip);
+                        tmp2.s_addr = htonl (up->mask);
+                        DEBUG2 ("Check against ip/mask: %s/%s\n",
+                                inet_ntoa (tmp1), inet_ntoa (tmp2));
+                } else {
+                        DEBUG2 ("Check against ip/mask: NO\n");
+                }
 #ifdef UPSTREAM_REGEX
                 if (up->cpat) {
                         int result;
@@ -362,40 +493,69 @@ struct upstream *upstream_get (struct request_s *request, struct upstream *up)
                         result =
                             regexec (up->cpat, url, (size_t) 0,
                                      (regmatch_t *) 0, 0);
-
+                        if (up->type == PT_NONE && result == 0) {
+                                up = NULL;
+                                break;
+                        }
                         if (result == 0)
                                 break;  /* regex match */
                 } else if (up->domain) {
 #else
                 if (up->domain) {
 #endif
-                        if (strcasecmp (host, up->domain) == 0)
+                        if (strcasecmp (host, up->domain) == 0) {
+                                if (up->type == PT_NONE)
+                                        up = NULL;
                                 break;  /* exact match */
+                        }
 
                         if (up->domain[0] == '.') {
                                 char *dot = strchr (host, '.');
 
-                                if (!dot && !up->domain[1])
+                                if (!dot && !up->domain[1]) {
+                                        if (up->type == PT_NONE)
+                                                up = NULL;
                                         break;  /* local host matches "." */
+                                }
 
                                 while (dot && strcasecmp (dot, up->domain))
                                         dot = strchr (dot + 1, '.');
 
-                                if (dot)
+                                if (dot) {
+                                        if (up->type == PT_NONE)
+                                                up = NULL;
                                         break;  /* subdomain match */
+                                }
                         }
-                } else if (up->ip) {
-                        if (my_ip == INADDR_NONE)
-                                my_ip = ntohl (inet_addr (host));
+                } else if (up->ip && up->mask) {
+                        char *hostip = NULL;
 
-                        if ((my_ip & up->mask) == up->ip)
-                                break;
+                        if (!lookup_err) {
+                                hostip =
+                                    get_hostip (&lookup_err, host, up->ip,
+                                                up->mask);
+
+                                if (is_valid_ip (hostip)) {
+                                        if (my_ip == INADDR_NONE)
+                                                my_ip =
+                                                    ntohl (inet_addr (hostip));
+
+                                        if ((my_ip & up->mask) == up->ip) {
+                                                if (up->type == PT_NONE)
+                                                        up = NULL;
+                                                safefree (hostip);
+                                                break;
+                                        }
+                                }
+                                safefree (hostip);
+                        }
                 } else {
                         break;  /* No domain or IP, default upstream */
                 }
 
                 up = up->next;
         }
+
         if (up && !up->plist)
                 up = NULL;
 
@@ -403,7 +563,7 @@ struct upstream *upstream_get (struct request_s *request, struct upstream *up)
                 log_message (LOG_INFO,
                              "Found upstream proxy/proxies %s %s for %s",
                              proxy_type_name (up->type),
-                             proxy_list_name (up->plist), host);
+                             proxy_list_string (up->plist), host);
         else
                 log_message (LOG_INFO, "No upstream proxy for %s", host);
 

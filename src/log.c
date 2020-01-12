@@ -29,6 +29,7 @@
 #include "utils.h"
 #include "vector.h"
 #include "conf.h"
+#include <pthread.h>
 
 static const char *syslog_level[] = {
         NULL,
@@ -44,6 +45,8 @@ static const char *syslog_level[] = {
 
 #define TIME_LENGTH 16
 #define STRING_LENGTH 800
+
+static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*
  * Global file descriptor for the log file
@@ -63,7 +66,7 @@ static int log_level = LOG_INFO;
  */
 static vector_t log_message_storage;
 
-static unsigned int logging_initialized = FALSE;        /* boolean */
+static unsigned int logging_initialized = FALSE;     /* boolean */
 
 /*
  * Open the log file and store the file descriptor in a global location.
@@ -71,8 +74,8 @@ static unsigned int logging_initialized = FALSE;        /* boolean */
 int open_log_file (const char *log_file_name)
 {
         if (log_file_name == NULL) {
-                if (config.godaemon == FALSE)
-                        log_file_fd = fileno (stdout);
+                if(config.godaemon == FALSE)
+                        log_file_fd = fileno(stdout);
                 else
                         log_file_fd = -1;
         } else {
@@ -86,7 +89,7 @@ int open_log_file (const char *log_file_name)
  */
 void close_log_file (void)
 {
-        if (log_file_fd < 0 || log_file_fd == fileno (stdout)) {
+        if (log_file_fd < 0 || log_file_fd == fileno(stdout)) {
                 return;
         }
 
@@ -161,16 +164,18 @@ void log_message (int level, const char *fmt, ...)
                 goto out;
         }
 
-        if (!config.syslog && log_file_fd == -1)
+        if(!config.syslog && log_file_fd == -1)
                 goto out;
 
         if (config.syslog) {
+                pthread_mutex_lock(&log_mutex);
 #ifdef HAVE_VSYSLOG_H
                 vsyslog (level, fmt, args);
 #else
                 vsnprintf (str, STRING_LENGTH, fmt, args);
                 syslog (level, "%s", str);
 #endif
+                pthread_mutex_unlock(&log_mutex);
         } else {
                 char *p;
 
@@ -187,27 +192,33 @@ void log_message (int level, const char *fmt, ...)
                  * Overwrite the '\0' and leave room for a trailing '\n'
                  * be added next.
                  */
-                p = str + strlen (str);
-                vsnprintf (p, STRING_LENGTH - strlen (str) - 1, fmt, args);
+                p = str + strlen(str);
+                vsnprintf (p, STRING_LENGTH - strlen(str) - 1, fmt, args);
 
-                p = str + strlen (str);
+                p = str + strlen(str);
                 *p = '\n';
-                *(p + 1) = '\0';
+                *(p+1) = '\0';
 
                 assert (log_file_fd >= 0);
 
+                pthread_mutex_lock(&log_mutex);
                 ret = write (log_file_fd, str, strlen (str));
+                pthread_mutex_unlock(&log_mutex);
+
                 if (ret == -1) {
                         config.syslog = TRUE;
 
-                        log_message (LOG_CRIT, "ERROR: Could not write to log "
-                                     "file %s: %s.",
-                                     config.logf_name, strerror (errno));
-                        log_message (LOG_CRIT,
-                                     "Falling back to syslog logging");
+                        log_message(LOG_CRIT, "ERROR: Could not write to log "
+                                    "file %s: %s.",
+                                    config.logf_name, strerror(errno));
+                        log_message(LOG_CRIT,
+                                    "Falling back to syslog logging");
                 }
 
+                pthread_mutex_lock(&log_mutex);
                 fsync (log_file_fd);
+                pthread_mutex_unlock(&log_mutex);
+
         }
 
 out:
@@ -227,7 +238,7 @@ static void send_stored_logs (void)
         if (log_message_storage == NULL)
                 return;
 
-        log_message (LOG_DEBUG, "sending stored logs");
+        log_message(LOG_DEBUG, "sending stored logs");
 
         for (i = 0; (ssize_t) i != vector_length (log_message_storage); ++i) {
                 string =
@@ -252,7 +263,7 @@ static void send_stored_logs (void)
         vector_delete (log_message_storage);
         log_message_storage = NULL;
 
-        log_message (LOG_DEBUG, "done sending stored logs");
+        log_message(LOG_DEBUG, "done sending stored logs");
 }
 
 /**

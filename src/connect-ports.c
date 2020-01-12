@@ -25,7 +25,7 @@
  * Now, this routine adds a "port" to the list.  It also creates the list if
  * it hasn't already by done.
  */
-void add_connect_port_allowed (int port, vector_t * connect_ports)
+void add_connect_port_allowed (int port, vector_t *connect_ports)
 {
         if (!*connect_ports) {
                 *connect_ports = vector_create ();
@@ -53,8 +53,8 @@ int check_allowed_connect_ports (int port, vector_t connect_ports)
         int *data;
 
         /*
-         * The absence of ConnectPort options in the config file
-         * meanas that all ports are allowed for CONNECT.
+	 * The absence of ConnectPort options in the config file
+	 * meanas that all ports are allowed for CONNECT.
          */
         if (!connect_ports)
                 return 1;

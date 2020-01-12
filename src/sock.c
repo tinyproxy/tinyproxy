@@ -33,11 +33,12 @@
 #include "sock.h"
 #include "text.h"
 #include "conf.h"
+#include "loop.h"
 
 /*
  * Return a human readable error for getaddrinfo() and getnameinfo().
  */
-static const char *get_gai_error (int n)
+static const char * get_gai_error (int n)
 {
         if (n == EAI_SYSTEM)
                 return strerror (errno);
@@ -50,7 +51,8 @@ static const char *get_gai_error (int n)
  * returned if the bind succeeded.  Otherwise, -1 is returned
  * to indicate an error.
  */
-static int bind_socket (int sockfd, const char *addr, int family)
+static int
+bind_socket (int sockfd, const char *addr, int family)
 {
         struct addrinfo hints, *res, *ressave;
         int n;
@@ -66,8 +68,7 @@ static int bind_socket (int sockfd, const char *addr, int family)
         n = getaddrinfo (addr, NULL, &hints, &res);
         if (n != 0) {
                 log_message (LOG_INFO,
-                             "bind_socket: getaddrinfo failed for %s: ", addr,
-                             get_gai_error (n));
+                        "bind_socket: getaddrinfo failed for %s: ", addr, get_gai_error (n));
                 return -1;
         }
 
@@ -100,8 +101,8 @@ int opensock (const char *host, int port, const char *bind_to)
         assert (host != NULL);
         assert (port > 0);
 
-        log_message (LOG_INFO,
-                     "opensock: opening connection to %s:%d", host, port);
+        log_message(LOG_INFO,
+                    "opensock: opening connection to %s:%d", host, port);
 
         memset (&hints, 0, sizeof (struct addrinfo));
         hints.ai_family = AF_UNSPEC;
@@ -112,13 +113,12 @@ int opensock (const char *host, int port, const char *bind_to)
         n = getaddrinfo (host, portstr, &hints, &res);
         if (n != 0) {
                 log_message (LOG_ERR,
-                             "opensock: Could not retrieve address info for %s:%d: %s",
-                             host, port, get_gai_error (n));
+                             "opensock: Could not retrieve address info for %s:%d: %s", host, port, get_gai_error (n));
                 return -1;
         }
 
-        log_message (LOG_INFO,
-                     "opensock: getaddrinfo returned for %s:%d", host, port);
+        log_message(LOG_INFO,
+                    "opensock: getaddrinfo returned for %s:%d", host, port);
 
         ressave = res;
         do {
@@ -129,7 +129,8 @@ int opensock (const char *host, int port, const char *bind_to)
 
                 /* Bind to the specified address */
                 if (bind_to) {
-                        if (bind_socket (sockfd, bind_to, res->ai_family) < 0) {
+                        if (bind_socket (sockfd, bind_to,
+                                         res->ai_family) < 0) {
                                 close (sockfd);
                                 continue;       /* can't bind, so try again */
                         }
@@ -141,8 +142,17 @@ int opensock (const char *host, int port, const char *bind_to)
                         }
                 }
 
-                if (connect (sockfd, res->ai_addr, res->ai_addrlen) == 0)
+                if (connect (sockfd, res->ai_addr, res->ai_addrlen) == 0) {
+                        union sockaddr_union *p = (void*) res->ai_addr, u;
+			int af = res->ai_addr->sa_family;
+                        unsigned dport = ntohs(af == AF_INET ? p->v4.sin_port : p->v6.sin6_port);
+                        socklen_t slen = sizeof u;
+                        if (dport == config.port) {
+                                getsockname(sockfd, (void*)&u, &slen);
+                                loop_records_add(&u);
+                        }
                         break;  /* success */
+		}
 
                 close (sockfd);
         } while ((res = res->ai_next) != NULL);
@@ -151,7 +161,8 @@ int opensock (const char *host, int port, const char *bind_to)
         if (res == NULL) {
                 log_message (LOG_ERR,
                              "opensock: Could not establish a connection to %s:%d",
-                             host, port);
+                             host,
+                             port);
                 return -1;
         }
 
@@ -184,13 +195,14 @@ int socket_blocking (int sock)
         return fcntl (sock, F_SETFL, flags & ~O_NONBLOCK);
 }
 
+
 /**
  * Try to listen on one socket based on the addrinfo
  * as returned from getaddrinfo.
  *
  * Return the file descriptor upon success, -1 upon error.
  */
-static int listen_on_one_socket (struct addrinfo *ad)
+static int listen_on_one_socket(struct addrinfo *ad)
 {
         int listenfd;
         int ret;
@@ -198,60 +210,59 @@ static int listen_on_one_socket (struct addrinfo *ad)
         char numerichost[NI_MAXHOST];
         int flags = NI_NUMERICHOST;
 
-        ret = getnameinfo (ad->ai_addr, ad->ai_addrlen,
-                           numerichost, NI_MAXHOST, NULL, 0, flags);
+        ret = getnameinfo(ad->ai_addr, ad->ai_addrlen,
+                          numerichost, NI_MAXHOST, NULL, 0, flags);
         if (ret != 0) {
-                log_message (LOG_ERR, "getnameinfo failed: %s",
-                             get_gai_error (ret));
+                log_message(LOG_ERR, "getnameinfo failed: %s", get_gai_error (ret));
                 return -1;
         }
 
-        log_message (LOG_INFO, "trying to listen on host[%s], family[%d], "
-                     "socktype[%d], proto[%d]", numerichost,
-                     ad->ai_family, ad->ai_socktype, ad->ai_protocol);
+        log_message(LOG_INFO, "trying to listen on host[%s], family[%d], "
+                    "socktype[%d], proto[%d]", numerichost,
+                    ad->ai_family, ad->ai_socktype, ad->ai_protocol);
 
-        listenfd = socket (ad->ai_family, ad->ai_socktype, ad->ai_protocol);
+        listenfd = socket(ad->ai_family, ad->ai_socktype, ad->ai_protocol);
         if (listenfd == -1) {
-                log_message (LOG_ERR, "socket() failed: %s", strerror (errno));
+                log_message(LOG_ERR, "socket() failed: %s", strerror(errno));
                 return -1;
         }
 
-        ret = setsockopt (listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on));
+        ret = setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
         if (ret != 0) {
-                log_message (LOG_ERR,
-                             "setsockopt failed to set SO_REUSEADDR: %s",
-                             strerror (errno));
-                close (listenfd);
+                log_message(LOG_ERR,
+                            "setsockopt failed to set SO_REUSEADDR: %s",
+                            strerror(errno));
+                close(listenfd);
                 return -1;
         }
 
         if (ad->ai_family == AF_INET6) {
-                ret = setsockopt (listenfd, IPPROTO_IPV6, IPV6_V6ONLY, &on,
-                                  sizeof (on));
+                ret = setsockopt(listenfd, IPPROTO_IPV6, IPV6_V6ONLY, &on,
+                                 sizeof(on));
                 if (ret != 0) {
-                        log_message (LOG_ERR,
-                                     "setsockopt failed to set IPV6_V6ONLY: %s",
-                                     strerror (errno));
-                        close (listenfd);
+                        log_message(LOG_ERR,
+                                    "setsockopt failed to set IPV6_V6ONLY: %s",
+                                    strerror(errno));
+                        close(listenfd);
                         return -1;
                 }
         }
 
-        ret = bind (listenfd, ad->ai_addr, ad->ai_addrlen);
+        ret = bind(listenfd, ad->ai_addr, ad->ai_addrlen);
         if (ret != 0) {
-                log_message (LOG_ERR, "bind failed: %s", strerror (errno));
-                close (listenfd);
+               log_message(LOG_ERR, "bind failed: %s", strerror (errno));
+               close(listenfd);
+               return -1;
+        }
+
+        ret = listen(listenfd, MAXLISTEN);
+        if (ret != 0) {
+                log_message(LOG_ERR, "listen failed: %s", strerror(errno));
+                close(listenfd);
                 return -1;
         }
 
-        ret = listen (listenfd, MAXLISTEN);
-        if (ret != 0) {
-                log_message (LOG_ERR, "listen failed: %s", strerror (errno));
-                close (listenfd);
-                return -1;
-        }
-
-        log_message (LOG_INFO, "listening on fd [%d]", listenfd);
+        log_message(LOG_INFO, "listening on fd [%d]", listenfd);
 
         return listenfd;
 }
@@ -276,8 +287,8 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
         assert (port > 0);
         assert (listen_fds != NULL);
 
-        log_message (LOG_INFO, "listen_sock called with addr = '%s'",
-                     addr == NULL ? "(NULL)" : addr);
+        log_message(LOG_INFO, "listen_sock called with addr = '%s'",
+                    addr == NULL ? "(NULL)" : addr);
 
         memset (&hints, 0, sizeof (struct addrinfo));
         hints.ai_family = AF_UNSPEC;
@@ -290,19 +301,21 @@ int listen_sock (const char *addr, uint16_t port, vector_t listen_fds)
         if (n != 0) {
                 log_message (LOG_ERR,
                              "Unable to getaddrinfo() for %s:%d because of %s",
-                             addr, port, get_gai_error (n));
+                             addr,
+                             port,
+                             get_gai_error (n));
                 return -1;
         }
 
         for (rp = result; rp != NULL; rp = rp->ai_next) {
                 int listenfd;
 
-                listenfd = listen_on_one_socket (rp);
+                listenfd = listen_on_one_socket(rp);
                 if (listenfd == -1) {
                         continue;
                 }
 
-                vector_append (listen_fds, &listenfd, sizeof (int));
+                vector_append (listen_fds, &listenfd, sizeof(int));
 
                 /* success */
                 ret = 0;
@@ -351,27 +364,9 @@ int getsock_ip (int fd, char *ipaddr)
 /*
  * Return the peer's socket information.
  */
-int getpeer_information (int fd, char *ipaddr, char *string_addr)
+void getpeer_information (union sockaddr_union* addr, char *ipaddr, size_t ipaddr_len)
 {
-        struct sockaddr_storage sa;
-        socklen_t salen = sizeof sa;
-
-        assert (fd >= 0);
-        assert (ipaddr != NULL);
-        assert (string_addr != NULL);
-
-        /* Set the strings to default values */
-        ipaddr[0] = '\0';
-        strlcpy (string_addr, "[unknown]", HOSTNAME_LENGTH);
-
-        /* Look up the IP address */
-        if (getpeername (fd, (struct sockaddr *) &sa, &salen) != 0)
-                return -1;
-
-        if (get_ip_string ((struct sockaddr *) &sa, ipaddr, IP_LENGTH) == NULL)
-                return -1;
-
-        /* Get the full host name */
-        return getnameinfo ((struct sockaddr *) &sa, salen,
-                            string_addr, HOSTNAME_LENGTH, NULL, 0, 0);
+        int af = addr->v4.sin_family;
+        void *ipdata = af == AF_INET ? (void*)&addr->v4.sin_addr : (void*)&addr->v6.sin6_addr;
+        inet_ntop(af, ipdata, ipaddr, ipaddr_len);
 }

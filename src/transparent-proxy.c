@@ -111,21 +111,21 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                 return 1;
         }
 
-        for (i = 0; i < vector_length (conf->listen_addrs); i++) {
+        for (i = 0; i < vector_length(conf->listen_addrs); i++) {
                 const char *addr;
 
-                addr = (char *) vector_getentry (conf->listen_addrs, i, NULL);
+                addr = (char *)vector_getentry(conf->listen_addrs, i, NULL);
 
-                if (addr && strcmp (request->host, addr) == 0) {
-                        log_message (LOG_ERR,
-                                     "transparent: destination IP %s is local "
-                                     "on socket fd %d",
-                                     request->host, connptr->client_fd);
-                        indicate_http_error (connptr, 400, "Bad Request",
-                                             "detail",
-                                             "You tried to connect to the "
-                                             "machine the proxy is running on",
-                                             "url", *url, NULL);
+                if (addr && strcmp(request->host, addr) == 0) {
+                        log_message(LOG_ERR,
+                                    "transparent: destination IP %s is local "
+                                    "on socket fd %d",
+                                    request->host, connptr->client_fd);
+                        indicate_http_error(connptr, 400, "Bad Request",
+                                            "detail",
+                                            "You tried to connect to the "
+                                            "machine the proxy is running on",
+                                            "url", *url, NULL);
                         return 0;
                 }
         }

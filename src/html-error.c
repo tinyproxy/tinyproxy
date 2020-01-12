@@ -86,7 +86,8 @@ static char *get_html_file (unsigned int errornum)
 /*
  * Send an already-opened file to the client with variable substitution.
  */
-int send_html_file (FILE * infile, struct conn_s *connptr)
+int
+send_html_file (FILE *infile, struct conn_s *connptr)
 {
         char *inbuf;
         char *varstart = NULL;
@@ -104,9 +105,8 @@ int send_html_file (FILE * infile, struct conn_s *connptr)
                                 if (in_variable) {
                                         *p = '\0';
                                         varval = (const char *)
-                                            lookup_variable
-                                            (connptr->error_variables,
-                                             varstart);
+                                                lookup_variable (connptr->error_variables,
+                                                                 varstart);
                                         if (!varval)
                                                 varval = "(unknown)";
                                         r = write_message (connptr->client_fd,
@@ -160,21 +160,25 @@ int send_http_headers (struct conn_s *connptr, int code, const char *message)
         const char headers[] =
             "HTTP/1.0 %d %s\r\n"
             "Server: %s/%s\r\n"
-            "Content-Type: text/html\r\n" "%s" "Connection: close\r\n" "\r\n";
+            "Content-Type: text/html\r\n"
+            "%s"
+            "Connection: close\r\n" "\r\n";
 
         const char p_auth_str[] =
-            "Proxy-Authenticate: Basic realm=\"" PACKAGE_NAME "\"\r\n";
+            "Proxy-Authenticate: Basic realm=\""
+            PACKAGE_NAME "\"\r\n";
 
         const char w_auth_str[] =
-            "WWW-Authenticate: Basic realm=\"" PACKAGE_NAME "\"\r\n";
+            "WWW-Authenticate: Basic realm=\""
+            PACKAGE_NAME "\"\r\n";
 
-        /* according to rfc7235, the 407 error must be accompanied by
-         * a Proxy-Authenticate header field. */
-        const char *add =
-            code == 407 ? p_auth_str : (code == 401 ? w_auth_str : "");
+	/* according to rfc7235, the 407 error must be accompanied by
+           a Proxy-Authenticate header field. */
+        const char *add = code == 407 ? p_auth_str : (code == 401 ? w_auth_str : "");
 
         return (write_message (connptr->client_fd, headers,
-                               code, message, PACKAGE, VERSION, add));
+                               code, message, PACKAGE, VERSION,
+                               add));
 }
 
 /*
@@ -203,12 +207,12 @@ int send_http_error_message (struct conn_s *connptr)
 
         error_file = get_html_file (connptr->error_number);
         if (!(infile = fopen (error_file, "r"))) {
-                char *detail =
-                    lookup_variable (connptr->error_variables, "detail");
-                return (write_message
-                        (connptr->client_fd, fallback_error,
-                         connptr->error_number, connptr->error_string,
-                         connptr->error_string, detail, PACKAGE, VERSION));
+                char *detail = lookup_variable (connptr->error_variables, "detail");
+                return (write_message (connptr->client_fd, fallback_error,
+                                       connptr->error_number,
+                                       connptr->error_string,
+                                       connptr->error_string,
+                                       detail, PACKAGE, VERSION));
         }
 
         ret = send_html_file (infile, connptr);
@@ -258,7 +262,6 @@ int add_standard_vars (struct conn_s *connptr)
         ADD_VAR_RET ("cause", connptr->error_string);
         ADD_VAR_RET ("request", connptr->request_line);
         ADD_VAR_RET ("clientip", connptr->client_ip_addr);
-        ADD_VAR_RET ("clienthost", connptr->client_string_addr);
 
         /* The following value parts are all non-NULL and will
          * trigger warnings in ADD_VAR_RET(), so we use
@@ -270,7 +273,8 @@ int add_standard_vars (struct conn_s *connptr)
                   gmtime (&global_time));
         add_error_variable (connptr, "date", timebuf);
 
-        add_error_variable (connptr, "website", "https://tinyproxy.github.io/");
+        add_error_variable (connptr, "website",
+                            "https://tinyproxy.github.io/");
         add_error_variable (connptr, "version", VERSION);
         add_error_variable (connptr, "package", PACKAGE);
 

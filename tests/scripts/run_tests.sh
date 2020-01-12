@@ -84,10 +84,6 @@ Logfile "$TINYPROXY_LOG_DIR/tinyproxy.log"
 PidFile "$TINYPROXY_PID_FILE"
 LogLevel Info
 MaxClients 100
-MinSpareServers 5
-MaxSpareServers 20
-StartServers 10
-MaxRequestsPerChild 0
 Allow 127.0.0.0/8
 ViaProxyName "tinyproxy"
 #DisableViaHeader Yes

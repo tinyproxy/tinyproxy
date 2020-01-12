@@ -62,10 +62,9 @@ struct conn_s {
         char *server_ip_addr;
 
         /*
-         * Store the client's IP and hostname information
+         * Store the client's IP information
          */
         char *client_ip_addr;
-        char *client_string_addr;
 
         /*
          * Store the incoming request's HTTP protocol.
@@ -92,7 +91,6 @@ struct conn_s {
  * Functions for the creation and destruction of a connection structure.
  */
 extern struct conn_s *initialize_conn (int client_fd, const char *ipaddr,
-                                       const char *string_addr,
                                        const char *sock_ipaddr);
 extern void destroy_conn (struct conn_s *connptr);
 
