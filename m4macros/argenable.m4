@@ -10,10 +10,11 @@ dnl This macro also defines on variable in the form "option_enabled"
 dnl set to either "yes" or "no".
 dnl
 AC_DEFUN([TP_ARG_ENABLE],
-[AC_ARG_ENABLE([$1],
+[var=`echo $1 | tr - _`
+AC_ARG_ENABLE([$1],
   AS_HELP_STRING([--enable-$1], [$2]),
   [case "${enableval}" in
-    yes)  $1_enabled=yes ;;
-    no)   $1_enabled=no ;;
+    yes)  eval ${var}_enabled=yes ;;
+    no)   eval ${var}_enabled=no ;;
     *)    AC_MSG_ERROR([bad value ${enableval} for --enable-$1]) ;;
-   esac],[$1_enabled=$3])])
+   esac],[eval ${var}_enabled=$3])])
