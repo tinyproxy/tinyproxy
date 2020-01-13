@@ -53,6 +53,9 @@ Allows Tinyproxy to filter out certain domains and URLs.
 - `--enable-upstream`: 
 Enable support for proxying connections through another proxy server.
 
+- `--enable-upstream-regex`: 
+Enable support for proxying connections through another proxy server using a regex on the url.
+
 - `--enable-transparent`: 
 Allow Tinyproxy to be used as a transparent proxy daemon.
 
