@@ -74,10 +74,7 @@ static unsigned int logging_initialized = FALSE;     /* boolean */
 int open_log_file (const char *log_file_name)
 {
         if (log_file_name == NULL) {
-                if(config.godaemon == FALSE)
-                        log_file_fd = fileno(stdout);
-                else
-                        log_file_fd = -1;
+                log_file_fd = fileno(stdout);
         } else {
                 log_file_fd = create_file_safely (log_file_name, FALSE);
         }
