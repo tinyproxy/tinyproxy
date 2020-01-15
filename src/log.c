@@ -292,10 +292,7 @@ int setup_logging (void)
         }
 
         if (config.syslog) {
-                if (config.godaemon == TRUE)
-                        openlog ("tinyproxy", LOG_PID, LOG_DAEMON);
-                else
-                        openlog ("tinyproxy", LOG_PID, LOG_USER);
+                openlog ("tinyproxy", LOG_PID, LOG_USER);
         }
 
         logging_initialized = TRUE;
