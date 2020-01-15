@@ -114,6 +114,8 @@ struct config_s {
         vector_t add_headers;
 };
 
+void initialize_config_defaults (struct config_s *conf);
+
 extern int reload_config_file (const char *config_fname, struct config_s *conf,
                                struct config_s *defaults);
 
