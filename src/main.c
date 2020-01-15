@@ -250,8 +250,7 @@ int reload_config (int reload_logging)
 
         if (reload_logging) shutdown_logging ();
 
-        ret = reload_config_file (config_file, &config_main,
-                                  &config_defaults);
+        ret = reload_config_file (config_file, &config_main);
 
         if (ret != 0) {
                 goto done;
@@ -308,8 +307,6 @@ main (int argc, char **argv)
                         exit (EX_USAGE);
                 }
         }
-
-        initialize_config_defaults (&config_defaults);
 
         if (reload_config(0)) {
                 exit (EX_SOFTWARE);
