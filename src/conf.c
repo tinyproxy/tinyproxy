@@ -451,7 +451,6 @@ void initialize_config_defaults (struct config_s *conf)
                 fprintf (stderr, PACKAGE ": Could not allocate memory.\n");
                 exit (EX_SOFTWARE);
         }
-        conf->godaemon = TRUE;
         /*
          * Make sure the HTML error pages array is NULL to begin with.
          * (FIXME: Should have a better API for all this)
@@ -482,7 +481,6 @@ static void initialize_with_defaults (struct config_s *conf,
                 conf->stathost = safestrdup (defaults->stathost);
         }
 
-        conf->godaemon = defaults->godaemon;
         conf->quit = defaults->quit;
 
         if (defaults->user) {

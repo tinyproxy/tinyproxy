@@ -263,7 +263,7 @@ done:
 int
 main (int argc, char **argv)
 {
-        int opt;
+        int opt, daemonized = TRUE;
 
         srand(time(NULL)); /* for hashmap seeds */
 
@@ -287,7 +287,7 @@ main (int argc, char **argv)
                         exit (EX_OK);
 
                 case 'd':
-                        (&config_defaults)->godaemon = FALSE;
+                        daemonized = FALSE;
                         break;
 
                 case 'c':
@@ -330,7 +330,7 @@ main (int argc, char **argv)
                 anonymous_insert ("Content-Type");
         }
 
-        if (config.godaemon == TRUE) {
+        if (daemonized == TRUE) {
                 if (!config.syslog && config.logf_name == NULL)
                         fprintf(stderr, "WARNING: logging deactivated "
                                 "(can't log to stdout when daemonized)\n");

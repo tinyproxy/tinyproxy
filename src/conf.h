@@ -43,7 +43,6 @@ struct config_s {
         unsigned int syslog;    /* boolean */
         unsigned int port;
         char *stathost;
-        unsigned int godaemon;  /* boolean */
         unsigned int quit;      /* boolean */
         unsigned int maxclients;
         char *user;
