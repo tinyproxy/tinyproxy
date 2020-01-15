@@ -163,52 +163,6 @@ get_id (char *str)
 }
 
 /**
- * process_cmdline:
- * @argc: argc as passed to main()
- * @argv: argv as passed to main()
- *
- * This function parses command line arguments.
- **/
-static void
-process_cmdline (int argc, char **argv, struct config_s *conf)
-{
-        int opt;
-
-        while ((opt = getopt (argc, argv, "c:vdh")) != EOF) {
-                switch (opt) {
-                case 'v':
-                        display_version ();
-                        exit (EX_OK);
-
-                case 'd':
-                        conf->godaemon = FALSE;
-                        break;
-
-                case 'c':
-                        if (conf->config_file != NULL) {
-                                safefree (conf->config_file);
-                        }
-                        conf->config_file = safestrdup (optarg);
-                        if (!conf->config_file) {
-                                fprintf (stderr,
-                                         "%s: Could not allocate memory.\n",
-                                         argv[0]);
-                                exit (EX_SOFTWARE);
-                        }
-                        break;
-
-                case 'h':
-                        display_usage ();
-                        exit (EX_OK);
-
-                default:
-                        display_usage ();
-                        exit (EX_USAGE);
-                }
-        }
-}
-
-/**
  * change_user:
  * @program: The name of the program. Pass argv[0] here.
  *
@@ -309,6 +263,8 @@ done:
 int
 main (int argc, char **argv)
 {
+        int opt;
+
         srand(time(NULL)); /* for hashmap seeds */
 
         /* Only allow u+rw bits. This may be required for some versions
@@ -323,7 +279,39 @@ main (int argc, char **argv)
         }
 
         initialize_config_defaults (&config_defaults);
-        process_cmdline (argc, argv, &config_defaults);
+
+        while ((opt = getopt (argc, argv, "c:vdh")) != EOF) {
+                switch (opt) {
+                case 'v':
+                        display_version ();
+                        exit (EX_OK);
+
+                case 'd':
+                        (&config_defaults)->godaemon = FALSE;
+                        break;
+
+                case 'c':
+                        if ((&config_defaults)->config_file != NULL) {
+                                safefree ((&config_defaults)->config_file);
+                        }
+                        (&config_defaults)->config_file = safestrdup (optarg);
+                        if (!(&config_defaults)->config_file) {
+                                fprintf (stderr,
+                                         "%s: Could not allocate memory.\n",
+                                         argv[0]);
+                                exit (EX_SOFTWARE);
+                        }
+                        break;
+
+                case 'h':
+                        display_usage ();
+                        exit (EX_OK);
+
+                default:
+                        display_usage ();
+                        exit (EX_USAGE);
+                }
+        }
 
         if (reload_config_file (config_defaults.config_file,
                                 &config,
