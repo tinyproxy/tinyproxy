@@ -48,10 +48,16 @@
  * Global Structures
  */
 struct config_s *config;
-static struct config_s config_main;
-static struct config_s config_defaults;
+static struct config_s configs[2];
 static const char* config_file;
 unsigned int received_sighup = FALSE;   /* boolean */
+
+static struct config_s*
+get_next_config(void)
+{
+        if (config == &configs[0]) return &configs[1];
+        return &configs[0];
+}
 
 /*
  * Handle a signal
@@ -247,16 +253,17 @@ change_user (const char *program)
 int reload_config (int reload_logging)
 {
         int ret;
+        struct config_s *c_next = get_next_config();
 
         if (reload_logging) shutdown_logging ();
 
-        ret = reload_config_file (config_file, &config_main);
+        ret = reload_config_file (config_file, c_next);
 
         if (ret != 0) {
                 goto done;
         }
 
-        config = &config_main;
+        config = c_next;
 
         if (reload_logging) ret = setup_logging ();
 
