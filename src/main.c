@@ -49,6 +49,7 @@
  */
 struct config_s config;
 struct config_s config_defaults;
+static const char* config_file;
 unsigned int received_sighup = FALSE;   /* boolean */
 
 /*
@@ -248,7 +249,7 @@ int reload_config (void)
 
         shutdown_logging ();
 
-        ret = reload_config_file (config_defaults.config_file, &config,
+        ret = reload_config_file (config_file, &config,
                                   &config_defaults);
         if (ret != 0) {
                 goto done;
@@ -278,7 +279,7 @@ main (int argc, char **argv)
                 exit (EX_SOFTWARE);
         }
 
-        initialize_config_defaults (&config_defaults);
+        config_file = SYSCONFDIR "/tinyproxy.conf";
 
         while ((opt = getopt (argc, argv, "c:vdh")) != EOF) {
                 switch (opt) {
@@ -291,16 +292,7 @@ main (int argc, char **argv)
                         break;
 
                 case 'c':
-                        if ((&config_defaults)->config_file != NULL) {
-                                safefree ((&config_defaults)->config_file);
-                        }
-                        (&config_defaults)->config_file = safestrdup (optarg);
-                        if (!(&config_defaults)->config_file) {
-                                fprintf (stderr,
-                                         "%s: Could not allocate memory.\n",
-                                         argv[0]);
-                                exit (EX_SOFTWARE);
-                        }
+                        config_file = optarg;
                         break;
 
                 case 'h':
@@ -313,7 +305,9 @@ main (int argc, char **argv)
                 }
         }
 
-        if (reload_config_file (config_defaults.config_file,
+        initialize_config_defaults (&config_defaults);
+
+        if (reload_config_file (config_file,
                                 &config,
                                 &config_defaults)) {
                 exit (EX_SOFTWARE);

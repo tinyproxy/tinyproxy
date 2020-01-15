@@ -39,7 +39,6 @@ typedef struct {
 struct config_s {
         vector_t basicauth_list;
         char *logf_name;
-        char *config_file;
         unsigned int syslog;    /* boolean */
         unsigned int port;
         char *stathost;

@@ -287,7 +287,6 @@ free_added_headers (vector_t add_headers)
 
 static void free_config (struct config_s *conf)
 {
-        safefree (conf->config_file);
         safefree (conf->logf_name);
         safefree (conf->stathost);
         safefree (conf->user);
@@ -446,11 +445,6 @@ void initialize_config_defaults (struct config_s *conf)
 {
         memset (conf, 0, sizeof(*conf));
 
-        conf->config_file = safestrdup (SYSCONFDIR "/tinyproxy.conf");
-        if (!conf->config_file) {
-                fprintf (stderr, PACKAGE ": Could not allocate memory.\n");
-                exit (EX_SOFTWARE);
-        }
         /*
          * Make sure the HTML error pages array is NULL to begin with.
          * (FIXME: Should have a better API for all this)
@@ -468,10 +462,6 @@ static void initialize_with_defaults (struct config_s *conf,
 {
         if (defaults->logf_name) {
                 conf->logf_name = safestrdup (defaults->logf_name);
-        }
-
-        if (defaults->config_file) {
-                conf->config_file = safestrdup (defaults->config_file);
         }
 
         conf->syslog = defaults->syslog;
