@@ -114,11 +114,8 @@ void child_main_loop (void)
 
                 /* Handle log rotation if it was requested */
                 if (received_sighup) {
-                        /*
-                         * Ignore the return value of reload_config for now.
-                         * This should actually be handled somehow...
-                         */
-                        reload_config ();
+
+                        reload_config (1);
 
 #ifdef FILTER_ENABLE
                         filter_reload ();

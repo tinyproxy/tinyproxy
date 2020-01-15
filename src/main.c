@@ -244,21 +244,22 @@ change_user (const char *program)
  * convenience wrapper around reload_config_file
  * that also re-initializes logging.
  */
-int reload_config (void)
+int reload_config (int reload_logging)
 {
         int ret;
 
-        shutdown_logging ();
+        if (reload_logging) shutdown_logging ();
 
         ret = reload_config_file (config_file, &config_main,
                                   &config_defaults);
+
         if (ret != 0) {
                 goto done;
         }
 
         config = &config_main;
 
-        ret = setup_logging ();
+        if (reload_logging) ret = setup_logging ();
 
 done:
         return ret;
@@ -310,12 +311,9 @@ main (int argc, char **argv)
 
         initialize_config_defaults (&config_defaults);
 
-        if (reload_config_file (config_file,
-                                &config_main,
-                                &config_defaults)) {
+        if (reload_config(0)) {
                 exit (EX_SOFTWARE);
         }
-        config = &config_main;
 
         init_stats ();
 
