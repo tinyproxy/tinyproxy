@@ -86,7 +86,7 @@ void child_main_loop (void)
         pthread_attr_t *attrp, attr;
         struct child *child;
 
-        childs = sblist_new(sizeof (struct child*), config.maxclients);
+        childs = sblist_new(sizeof (struct child*), config->maxclients);
 
         loop_records_init();
 
@@ -94,11 +94,11 @@ void child_main_loop (void)
          * We have to wait for connections on multiple fds,
          * so use select.
          */
-        while (!config.quit) {
+        while (!config->quit) {
 
                 collect_threads();
 
-                if (sblist_getsize(childs) >= config.maxclients) {
+                if (sblist_getsize(childs) >= config->maxclients) {
                         if (!was_full)
                                 log_message (LOG_NOTICE,
                                              "Maximum number of connections reached. "

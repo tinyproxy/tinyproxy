@@ -47,8 +47,9 @@
 /*
  * Global Structures
  */
-struct config_s config;
-struct config_s config_defaults;
+struct config_s *config;
+static struct config_s config_main;
+static struct config_s config_defaults;
 static const char* config_file;
 unsigned int received_sighup = FALSE;   /* boolean */
 
@@ -68,7 +69,7 @@ takesig (int sig)
 
         case SIGINT:
         case SIGTERM:
-                config.quit = TRUE;
+                config->quit = TRUE;
                 break;
 
         case SIGCHLD:
@@ -174,16 +175,16 @@ get_id (char *str)
 static void
 change_user (const char *program)
 {
-        if (config.group && strlen (config.group) > 0) {
-                int gid = get_id (config.group);
+        if (config->group && strlen (config->group) > 0) {
+                int gid = get_id (config->group);
 
                 if (gid < 0) {
-                        struct group *thisgroup = getgrnam (config.group);
+                        struct group *thisgroup = getgrnam (config->group);
 
                         if (!thisgroup) {
                                 fprintf (stderr,
                                          "%s: Unable to find group \"%s\".\n",
-                                         program, config.group);
+                                         program, config->group);
                                 exit (EX_NOUSER);
                         }
 
@@ -193,7 +194,7 @@ change_user (const char *program)
                 if (setgid (gid) < 0) {
                         fprintf (stderr,
                                  "%s: Unable to change to group \"%s\".\n",
-                                 program, config.group);
+                                 program, config->group);
                         exit (EX_NOPERM);
                 }
 
@@ -208,19 +209,19 @@ change_user (const char *program)
 #endif
 
                 log_message (LOG_INFO, "Now running as group \"%s\".",
-                             config.group);
+                             config->group);
         }
 
-        if (config.user && strlen (config.user) > 0) {
-                int uid = get_id (config.user);
+        if (config->user && strlen (config->user) > 0) {
+                int uid = get_id (config->user);
 
                 if (uid < 0) {
-                        struct passwd *thisuser = getpwnam (config.user);
+                        struct passwd *thisuser = getpwnam (config->user);
 
                         if (!thisuser) {
                                 fprintf (stderr,
                                          "%s: Unable to find user \"%s\".\n",
-                                         program, config.user);
+                                         program, config->user);
                                 exit (EX_NOUSER);
                         }
 
@@ -230,12 +231,12 @@ change_user (const char *program)
                 if (setuid (uid) < 0) {
                         fprintf (stderr,
                                  "%s: Unable to change to user \"%s\".\n",
-                                 program, config.user);
+                                 program, config->user);
                         exit (EX_NOPERM);
                 }
 
                 log_message (LOG_INFO, "Now running as user \"%s\".",
-                             config.user);
+                             config->user);
         }
 }
 
@@ -249,11 +250,13 @@ int reload_config (void)
 
         shutdown_logging ();
 
-        ret = reload_config_file (config_file, &config,
+        ret = reload_config_file (config_file, &config_main,
                                   &config_defaults);
         if (ret != 0) {
                 goto done;
         }
+
+        config = &config_main;
 
         ret = setup_logging ();
 
@@ -308,10 +311,11 @@ main (int argc, char **argv)
         initialize_config_defaults (&config_defaults);
 
         if (reload_config_file (config_file,
-                                &config,
+                                &config_main,
                                 &config_defaults)) {
                 exit (EX_SOFTWARE);
         }
+        config = &config_main;
 
         init_stats ();
 
@@ -325,7 +329,7 @@ main (int argc, char **argv)
         }
 
         if (daemonized == TRUE) {
-                if (!config.syslog && config.logf_name == NULL)
+                if (!config->syslog && config->logf_name == NULL)
                         fprintf(stderr, "WARNING: logging deactivated "
                                 "(can't log to stdout when daemonized)\n");
 
@@ -339,20 +343,20 @@ main (int argc, char **argv)
         }
 
 #ifdef FILTER_ENABLE
-        if (config.filter)
+        if (config->filter)
                 filter_init ();
 #endif /* FILTER_ENABLE */
 
         /* Start listening on the selected port. */
-        if (child_listening_sockets(config.listen_addrs, config.port) < 0) {
+        if (child_listening_sockets(config->listen_addrs, config->port) < 0) {
                 fprintf (stderr, "%s: Could not create listening sockets.\n",
                          argv[0]);
                 exit (EX_OSERR);
         }
 
         /* Create pid file before we drop privileges */
-        if (config.pidpath) {
-                if (pidfile_create (config.pidpath) < 0) {
+        if (config->pidpath) {
+                if (pidfile_create (config->pidpath) < 0) {
                         fprintf (stderr, "%s: Could not create PID file.\n",
                                  argv[0]);
                         exit (EX_OSERR);
@@ -403,14 +407,14 @@ main (int argc, char **argv)
         child_close_sock ();
 
         /* Remove the PID file */
-        if (config.pidpath != NULL && unlink (config.pidpath) < 0) {
+        if (config->pidpath != NULL && unlink (config->pidpath) < 0) {
                 log_message (LOG_WARNING,
                              "Could not remove PID file \"%s\": %s.",
-                             config.pidpath, strerror (errno));
+                             config->pidpath, strerror (errno));
         }
 
 #ifdef FILTER_ENABLE
-        if (config.filter)
+        if (config->filter)
                 filter_destroy ();
 #endif /* FILTER_ENABLE */
 

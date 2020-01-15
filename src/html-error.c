@@ -41,13 +41,13 @@ int add_new_errorpage (char *filepath, unsigned int errornum)
 {
         char errornbuf[ERRORNUM_BUFSIZE];
 
-        config.errorpages = hashmap_create (ERRPAGES_BUCKETCOUNT);
-        if (!config.errorpages)
+        config->errorpages = hashmap_create (ERRPAGES_BUCKETCOUNT);
+        if (!config->errorpages)
                 return (-1);
 
         snprintf (errornbuf, ERRORNUM_BUFSIZE, "%u", errornum);
 
-        if (hashmap_insert (config.errorpages, errornbuf,
+        if (hashmap_insert (config->errorpages, errornbuf,
                             filepath, strlen (filepath) + 1) < 0)
                 return (-1);
 
@@ -66,19 +66,19 @@ static char *get_html_file (unsigned int errornum)
 
         assert (errornum >= 100 && errornum < 1000);
 
-        if (!config.errorpages)
-                return (config.errorpage_undef);
+        if (!config->errorpages)
+                return (config->errorpage_undef);
 
         snprintf (errornbuf, ERRORNUM_BUFSIZE, "%u", errornum);
 
-        result_iter = hashmap_find (config.errorpages, errornbuf);
+        result_iter = hashmap_find (config->errorpages, errornbuf);
 
-        if (hashmap_is_end (config.errorpages, result_iter))
-                return (config.errorpage_undef);
+        if (hashmap_is_end (config->errorpages, result_iter))
+                return (config->errorpage_undef);
 
-        if (hashmap_return_entry (config.errorpages, result_iter,
+        if (hashmap_return_entry (config->errorpages, result_iter,
                                   &key, (void **) &val) < 0)
-                return (config.errorpage_undef);
+                return (config->errorpage_undef);
 
         return (val);
 }

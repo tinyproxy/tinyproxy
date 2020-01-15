@@ -134,8 +134,8 @@ int opensock (const char *host, int port, const char *bind_to)
                                 close (sockfd);
                                 continue;       /* can't bind, so try again */
                         }
-                } else if (config.bind_address) {
-                        if (bind_socket (sockfd, config.bind_address,
+                } else if (config->bind_address) {
+                        if (bind_socket (sockfd, config->bind_address,
                                          res->ai_family) < 0) {
                                 close (sockfd);
                                 continue;       /* can't bind, so try again */
@@ -147,7 +147,7 @@ int opensock (const char *host, int port, const char *bind_to)
 			int af = res->ai_addr->sa_family;
                         unsigned dport = ntohs(af == AF_INET ? p->v4.sin_port : p->v6.sin6_port);
                         socklen_t slen = sizeof u;
-                        if (dport == config.port) {
+                        if (dport == config->port) {
                                 getsockname(sockfd, (void*)&u, &slen);
                                 loop_records_add(&u);
                         }

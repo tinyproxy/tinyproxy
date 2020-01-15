@@ -61,8 +61,8 @@
  * enabled.
  */
 #ifdef UPSTREAM_SUPPORT
-#  define UPSTREAM_CONFIGURED() (config.upstream_list != NULL)
-#  define UPSTREAM_HOST(host) upstream_get(host, config.upstream_list)
+#  define UPSTREAM_CONFIGURED() (config->upstream_list != NULL)
+#  define UPSTREAM_HOST(host) upstream_get(host, config->upstream_list)
 #  define UPSTREAM_IS_HTTP(conn) (conn->upstream_proxy != NULL && conn->upstream_proxy->type == PT_HTTP)
 #else
 #  define UPSTREAM_CONFIGURED() (0)
@@ -373,7 +373,7 @@ BAD_REQUEST_ERROR:
         }
 
 #ifdef REVERSE_SUPPORT
-        if (config.reversepath_list != NULL) {
+        if (config->reversepath_list != NULL) {
                 /*
                  * Rewrite the URL based on the reverse path.  After calling
                  * reverse_rewrite_url "url" can be freed since we either
@@ -387,7 +387,7 @@ BAD_REQUEST_ERROR:
                 if (reverse_url != NULL) {
                         safefree (url);
                         url = reverse_url;
-                } else if (config.reverseonly) {
+                } else if (config->reverseonly) {
                         log_message (LOG_ERR,
                                      "Bad request, no mapping for '%s' found",
                                      url);
@@ -420,7 +420,7 @@ BAD_REQUEST_ERROR:
 
                 /* Verify that the port in the CONNECT method is allowed */
                 if (!check_allowed_connect_ports (request->port,
-                                                  config.connect_ports))
+                                                  config->connect_ports))
                 {
                         indicate_http_error (connptr, 403, "Access violation",
                                              "detail",
@@ -437,7 +437,7 @@ BAD_REQUEST_ERROR:
         } else {
 #ifdef TRANSPARENT_PROXY
                 if (!do_transparent_proxy
-                    (connptr, hashofheaders, request, &config, &url)) {
+                    (connptr, hashofheaders, request, config, &url)) {
                         goto fail;
                 }
 #else
@@ -455,8 +455,8 @@ BAD_REQUEST_ERROR:
         /*
          * Filter restricted domains/urls
          */
-        if (config.filter) {
-                if (config.filter_url)
+        if (config->filter) {
+                if (config->filter_url)
                         ret = filter_url (url);
                 else
                         ret = filter_domain (request->host);
@@ -464,7 +464,7 @@ BAD_REQUEST_ERROR:
                 if (ret) {
                         update_stats (STAT_DENIED);
 
-                        if (config.filter_url)
+                        if (config->filter_url)
                                 log_message (LOG_NOTICE,
                                              "Proxying refused on filtered url \"%s\"",
                                              url);
@@ -486,7 +486,7 @@ BAD_REQUEST_ERROR:
         /*
          * Check to see if they're requesting the stat host
          */
-        if (config.stathost && strcmp (config.stathost, request->host) == 0) {
+        if (config->stathost && strcmp (config->stathost, request->host) == 0) {
                 log_message (LOG_NOTICE, "Request for the stathost.");
                 connptr->show_stats = TRUE;
                 goto fail;
@@ -804,13 +804,13 @@ write_via_header (int fd, hashmap_t hashofheaders,
         char *data;
         int ret;
 
-        if (config.disable_viaheader) {
+        if (config->disable_viaheader) {
                 ret = 0;
                 goto done;
         }
 
-        if (config.via_proxy_name) {
-                strlcpy (hostname, config.via_proxy_name, sizeof (hostname));
+        if (config->via_proxy_name) {
+                strlcpy (hostname, config->via_proxy_name, sizeof (hostname));
         } else if (gethostname (hostname, sizeof (hostname)) < 0) {
                 strlcpy (hostname, "unknown", 512);
         }
@@ -938,7 +938,7 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
                 }
         }
 #if defined(XTINYPROXY_ENABLE)
-        if (config.add_xtinyproxy)
+        if (config->add_xtinyproxy)
                 add_xtinyproxy_header (connptr);
 #endif
 
@@ -981,7 +981,7 @@ static int process_server_headers (struct conn_s *connptr)
         int ret;
 
 #ifdef REVERSE_SUPPORT
-        struct reversepath *reverse = config.reversepath_list;
+        struct reversepath *reverse = config->reversepath_list;
 #endif
 
         /* Get the response line from the remote server. */
@@ -1073,7 +1073,7 @@ retry:
 
 #ifdef REVERSE_SUPPORT
         /* Write tracking cookie for the magical reverse proxy path hack */
-        if (config.reversemagic && connptr->reversepath) {
+        if (config->reversemagic && connptr->reversepath) {
                 ret = write_message (connptr->client_fd,
                                      "Set-Cookie: " REVERSE_COOKIE
                                      "=%s; path=/\r\n", connptr->reversepath);
@@ -1082,7 +1082,7 @@ retry:
         }
 
         /* Rewrite the HTTP redirect if needed */
-        if (config.reversebaseurl &&
+        if (config->reversebaseurl &&
             hashmap_entry_by_key (hashofheaders, "location",
                                   (void **) &header) > 0) {
 
@@ -1100,14 +1100,14 @@ retry:
                         ret =
                             write_message (connptr->client_fd,
                                            "Location: %s%s%s\r\n",
-                                           config.reversebaseurl,
+                                           config->reversebaseurl,
                                            (reverse->path + 1), (header + len));
                         if (ret < 0)
                                 goto ERROR_EXIT;
 
                         log_message (LOG_INFO,
                                      "Rewriting HTTP redirect: %s -> %s%s%s",
-                                     header, config.reversebaseurl,
+                                     header, config->reversebaseurl,
                                      (reverse->path + 1), (header + len));
                         hashmap_remove (hashofheaders, "location");
                 }
@@ -1181,7 +1181,7 @@ static void relay_connection (struct conn_s *connptr)
                 FD_ZERO (&wset);
 
                 tv.tv_sec =
-                    config.idletimeout - difftime (time (NULL), last_access);
+                    config->idletimeout - difftime (time (NULL), last_access);
                 tv.tv_usec = 0;
 
                 if (buffer_size (connptr->sbuffer) > 0)
@@ -1197,10 +1197,10 @@ static void relay_connection (struct conn_s *connptr)
 
                 if (ret == 0) {
                         tdiff = difftime (time (NULL), last_access);
-                        if (tdiff > config.idletimeout) {
+                        if (tdiff > config->idletimeout) {
                                 log_message (LOG_INFO,
                                              "Idle Timeout (after select) as %g > %u.",
-                                             tdiff, config.idletimeout);
+                                             tdiff, config->idletimeout);
                                 return;
                         } else {
                                 continue;
@@ -1546,16 +1546,16 @@ void handle_connection (int fd, union sockaddr_union* addr)
 
         getpeer_information (addr, peer_ipaddr, sizeof(peer_ipaddr));
 
-        if (config.bindsame)
+        if (config->bindsame)
                 getsock_ip (fd, sock_ipaddr);
 
-        log_message (LOG_CONN, config.bindsame ?
+        log_message (LOG_CONN, config->bindsame ?
                      "Connect (file descriptor %d): %s at [%s]" :
                      "Connect (file descriptor %d): %s",
                      fd, peer_ipaddr, sock_ipaddr);
 
         connptr = initialize_conn (fd, peer_ipaddr,
-                                   config.bindsame ? sock_ipaddr : NULL);
+                                   config->bindsame ? sock_ipaddr : NULL);
         if (!connptr) {
                 close (fd);
                 return;
@@ -1575,7 +1575,7 @@ void handle_connection (int fd, union sockaddr_union* addr)
         }
 
 
-        if (check_acl (peer_ipaddr, addr, config.access_list) <= 0) {
+        if (check_acl (peer_ipaddr, addr, config->access_list) <= 0) {
                 update_stats (STAT_DENIED);
                 indicate_http_error (connptr, 403, "Access denied",
                                      "detail",
@@ -1622,17 +1622,17 @@ void handle_connection (int fd, union sockaddr_union* addr)
                 goto fail;
         }
 
-        if (config.basicauth_list != NULL) {
+        if (config->basicauth_list != NULL) {
                 ssize_t len;
                 char *authstring;
                 int failure = 1, stathost_connect = 0;
                 len = hashmap_entry_by_key (hashofheaders, "proxy-authorization",
                                             (void **) &authstring);
 
-                if (len == 0 && config.stathost) {
+                if (len == 0 && config->stathost) {
                         len = hashmap_entry_by_key (hashofheaders, "host",
                                                     (void **) &authstring);
-                        if (len && !strncmp(authstring, config.stathost, strlen(config.stathost))) {
+                        if (len && !strncmp(authstring, config->stathost, strlen(config->stathost))) {
                                 len = hashmap_entry_by_key (hashofheaders, "authorization",
                                                             (void **) &authstring);
                                 stathost_connect = 1;
@@ -1651,7 +1651,7 @@ void handle_connection (int fd, union sockaddr_union* addr)
                 if ( /* currently only "basic" auth supported */
                         (strncmp(authstring, "Basic ", 6) == 0 ||
                          strncmp(authstring, "basic ", 6) == 0) &&
-                        basicauth_check (config.basicauth_list, authstring + 6) == 1)
+                        basicauth_check (config->basicauth_list, authstring + 6) == 1)
                                 failure = 0;
                 if(failure) {
 e401:
@@ -1670,9 +1670,9 @@ e401:
          * Add any user-specified headers (AddHeader directive) to the
          * outgoing HTTP request.
          */
-        for (i = 0; i < vector_length (config.add_headers); i++) {
+        for (i = 0; i < vector_length (config->add_headers); i++) {
                 http_header_t *header = (http_header_t *)
-                        vector_getentry (config.add_headers, i, NULL);
+                        vector_getentry (config->add_headers, i, NULL);
 
                 hashmap_insert (hashofheaders,
                                 header->name,

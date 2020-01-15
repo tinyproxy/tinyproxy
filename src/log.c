@@ -129,7 +129,7 @@ void log_message (int level, const char *fmt, ...)
                 return;
 #endif
 
-        if (config.syslog && level == LOG_CONN)
+        if (config && config->syslog && level == LOG_CONN)
                 level = LOG_INFO;
 
         va_start (args, fmt);
@@ -161,10 +161,10 @@ void log_message (int level, const char *fmt, ...)
                 goto out;
         }
 
-        if(!config.syslog && log_file_fd == -1)
+        if(!config->syslog && log_file_fd == -1)
                 goto out;
 
-        if (config.syslog) {
+        if (config->syslog) {
                 pthread_mutex_lock(&log_mutex);
 #ifdef HAVE_VSYSLOG_H
                 vsyslog (level, fmt, args);
@@ -203,11 +203,11 @@ void log_message (int level, const char *fmt, ...)
                 pthread_mutex_unlock(&log_mutex);
 
                 if (ret == -1) {
-                        config.syslog = TRUE;
+                        config->syslog = TRUE;
 
                         log_message(LOG_CRIT, "ERROR: Could not write to log "
                                     "file %s: %s.",
-                                    config.logf_name, strerror(errno));
+                                    config->logf_name, strerror(errno));
                         log_message(LOG_CRIT,
                                     "Falling back to syslog logging");
                 }
@@ -272,23 +272,23 @@ static void send_stored_logs (void)
  */
 int setup_logging (void)
 {
-        if (!config.syslog) {
-                if (open_log_file (config.logf_name) < 0) {
+        if (!config->syslog) {
+                if (open_log_file (config->logf_name) < 0) {
                         /*
                          * If opening the log file fails, we try
                          * to fall back to syslog logging...
                          */
-                        config.syslog = TRUE;
+                        config->syslog = TRUE;
 
                         log_message (LOG_CRIT, "ERROR: Could not create log "
                                      "file %s: %s.",
-                                     config.logf_name, strerror (errno));
+                                     config->logf_name, strerror (errno));
                         log_message (LOG_CRIT,
                                      "Falling back to syslog logging.");
                 }
         }
 
-        if (config.syslog) {
+        if (config->syslog) {
                 openlog ("tinyproxy", LOG_PID, LOG_USER);
         }
 
@@ -307,7 +307,7 @@ void shutdown_logging (void)
                 return;
         }
 
-        if (config.syslog) {
+        if (config->syslog) {
                 closelog ();
         } else {
                 close_log_file ();

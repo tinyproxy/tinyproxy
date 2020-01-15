@@ -77,7 +77,7 @@ showstats (struct conn_s *connptr)
 
         pthread_mutex_lock(&stats_file_lock);
 
-        if (!config.statpage || (!(statfile = fopen (config.statpage, "r")))) {
+        if (!config->statpage || (!(statfile = fopen (config->statpage, "r")))) {
                 message_buffer = (char *) safemalloc (MAXBUFFSIZE);
                 if (!message_buffer) {
 err_minus_one:
