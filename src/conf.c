@@ -624,7 +624,7 @@ static HANDLE_FUNC (handle_anonymous)
         if (!arg)
                 return -1;
 
-        anonymous_insert (arg);
+        anonymous_insert (conf, arg);
         safefree (arg);
         return 0;
 }

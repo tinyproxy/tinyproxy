@@ -325,9 +325,9 @@ main (int argc, char **argv)
          * in the list of allowed headers, since it is required in a
          * HTTP/1.0 request. Also add the Content-Type header since it
          * goes hand in hand with Content-Length. */
-        if (is_anonymous_enabled ()) {
-                anonymous_insert ("Content-Length");
-                anonymous_insert ("Content-Type");
+        if (is_anonymous_enabled (config)) {
+                anonymous_insert (config, "Content-Length");
+                anonymous_insert (config, "Content-Type");
         }
 
         if (daemonized == TRUE) {

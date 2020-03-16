@@ -919,8 +919,8 @@ process_client_headers (struct conn_s *connptr, hashmap_t hashofheaders)
                         hashmap_return_entry (hashofheaders,
                                               iter, &data, (void **) &header);
 
-                        if (!is_anonymous_enabled ()
-                            || anonymous_search (data) > 0) {
+                        if (!is_anonymous_enabled (config)
+                            || anonymous_search (config, data) > 0) {
                                 ret =
                                     write_message (connptr->server_fd,
                                                    "%s: %s\r\n", data, header);

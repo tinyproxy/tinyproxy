@@ -28,21 +28,21 @@
 #include "log.h"
 #include "conf.h"
 
-short int is_anonymous_enabled (void)
+short int is_anonymous_enabled (struct config_s *conf)
 {
-        return (config->anonymous_map != NULL) ? 1 : 0;
+        return (conf->anonymous_map != NULL) ? 1 : 0;
 }
 
 /*
  * Search for the header.  This function returns a positive value greater than
  * zero if the string was found, zero if it wasn't and negative upon error.
  */
-int anonymous_search (const char *s)
+int anonymous_search (struct config_s *conf, const char *s)
 {
         assert (s != NULL);
-        assert (config->anonymous_map != NULL);
+        assert (conf->anonymous_map != NULL);
 
-        return hashmap_search (config->anonymous_map, s);
+        return hashmap_search (conf->anonymous_map, s);
 }
 
 /*
@@ -51,23 +51,23 @@ int anonymous_search (const char *s)
  * Return -1 if there is an error, otherwise a 0 is returned if the insert was
  * successful.
  */
-int anonymous_insert (const char *s)
+int anonymous_insert (struct config_s *conf, const char *s)
 {
         char data = 1;
 
         assert (s != NULL);
 
-        if (!config->anonymous_map) {
-                config->anonymous_map = hashmap_create (32);
-                if (!config->anonymous_map)
+        if (!conf->anonymous_map) {
+                conf->anonymous_map = hashmap_create (32);
+                if (!conf->anonymous_map)
                         return -1;
         }
 
-        if (hashmap_search (config->anonymous_map, s) > 0) {
+        if (hashmap_search (conf->anonymous_map, s) > 0) {
                 /* The key was already found, so return a positive number. */
                 return 0;
         }
 
         /* Insert the new key */
-        return hashmap_insert (config->anonymous_map, s, &data, sizeof (data));
+        return hashmap_insert (conf->anonymous_map, s, &data, sizeof (data));
 }
