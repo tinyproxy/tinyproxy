@@ -65,10 +65,11 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
         length = hashmap_entry_by_key (hashofheaders, "host", (void **) &data);
         if (length <= 0) {
                 struct sockaddr_in dest_addr;
+                length = sizeof(dest_addr);
 
                 if (getsockname
                     (connptr->client_fd, (struct sockaddr *) &dest_addr,
-                     &length) < 0) {
+                     &length) < 0 || length > sizeof(dest_addr)) {
                         log_message (LOG_ERR,
                                      "process_request: cannot get destination IP for %d",
                                      connptr->client_fd);

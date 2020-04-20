@@ -31,7 +31,6 @@
 #include "stats.h"
 
 struct conn_s *initialize_conn (int client_fd, const char *ipaddr,
-                                const char *string_addr,
                                 const char *sock_ipaddr)
 {
         struct conn_s *connptr;
@@ -79,7 +78,6 @@ struct conn_s *initialize_conn (int client_fd, const char *ipaddr,
         connptr->server_ip_addr = (sock_ipaddr ?
                                    safestrdup (sock_ipaddr) : NULL);
         connptr->client_ip_addr = safestrdup (ipaddr);
-        connptr->client_string_addr = safestrdup (string_addr);
 
         connptr->upstream_proxy = NULL;
 
@@ -134,8 +132,6 @@ void destroy_conn (struct conn_s *connptr)
                 safefree (connptr->server_ip_addr);
         if (connptr->client_ip_addr)
                 safefree (connptr->client_ip_addr);
-        if (connptr->client_string_addr)
-                safefree (connptr->client_string_addr);
 
 #ifdef REVERSE_SUPPORT
         if (connptr->reversepath)

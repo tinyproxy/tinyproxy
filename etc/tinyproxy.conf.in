@@ -190,30 +190,6 @@ LogLevel Info
 MaxClients 100
 
 #
-# MinSpareServers/MaxSpareServers: These settings set the upper and
-# lower limit for the number of spare servers which should be available.
-#
-# If the number of spare servers falls below MinSpareServers then new
-# server processes will be spawned.  If the number of servers exceeds
-# MaxSpareServers then the extras will be killed off.
-#
-MinSpareServers 5
-MaxSpareServers 20
-
-#
-# StartServers: The number of servers to start initially.
-#
-StartServers 10
-
-#
-# MaxRequestsPerChild: The number of connections a thread will handle
-# before it is killed. In practise this should be set to 0, which
-# disables thread reaping. If you do notice problems with memory
-# leakage, then set this to something like 10000.
-#
-MaxRequestsPerChild 0
-
-#
 # Allow: Customization of authorization controls. If there are any
 # access control keywords then the default action is to DENY. Otherwise,
 # the default action is ALLOW.
@@ -222,6 +198,7 @@ MaxRequestsPerChild 0
 # tested against the controls based on order.
 #
 Allow 127.0.0.1
+Allow ::1
 
 # BasicAuth: HTTP "Basic Authentication" for accessing the proxy.
 # If there are any entries specified, access is only granted for authenticated

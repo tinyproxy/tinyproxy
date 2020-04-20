@@ -59,7 +59,7 @@ void filter_init (void)
                 return;
         }
 
-        fd = fopen (config.filter, "r");
+        fd = fopen (config->filter, "r");
         if (!fd) {
                 return;
         }
@@ -67,9 +67,9 @@ void filter_init (void)
         p = NULL;
 
         cflags = REG_NEWLINE | REG_NOSUB;
-        if (config.filter_extended)
+        if (config->filter_extended)
                 cflags |= REG_EXTENDED;
-        if (!config.filter_casesensitive)
+        if (!config->filter_casesensitive)
                 cflags |= REG_ICASE;
 
         while (fgets (buf, FILTER_BUFFER_LEN, fd)) {
@@ -121,7 +121,7 @@ void filter_init (void)
                 if (err != 0) {
                         fprintf (stderr,
                                  "Bad regex in %s: %s\n",
-                                 config.filter, p->pat);
+                                 config->filter, p->pat);
                         exit (EX_DATAERR);
                 }
         }
@@ -157,7 +157,7 @@ void filter_destroy (void)
  */
 void filter_reload (void)
 {
-        if (config.filter) {
+        if (config->filter) {
                 log_message (LOG_NOTICE, "Re-reading filter file.");
                 filter_destroy ();
                 filter_init ();

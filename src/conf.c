@@ -27,7 +27,6 @@
 
 #include "acl.h"
 #include "anonymous.h"
-#include "child.h"
 #include "filter.h"
 #include "heap.h"
 #include "html-error.h"
@@ -92,7 +91,8 @@
  * All configuration handling functions are REQUIRED to be defined
  * with the same function template as below.
  */
-typedef int (*CONFFILE_HANDLER) (struct config_s *, const char *, regmatch_t[]);
+typedef int (*CONFFILE_HANDLER) (struct config_s *, const char *,
+             unsigned long, regmatch_t[]);
 
 /*
  * Define the pattern used by any directive handling function.  The
@@ -107,7 +107,7 @@ typedef int (*CONFFILE_HANDLER) (struct config_s *, const char *, regmatch_t[]);
  */
 #define HANDLE_FUNC(func) \
   int func(struct config_s* conf, const char* line, \
-           regmatch_t match[])
+           unsigned long lineno, regmatch_t match[])
 
 /*
  * List all the handling functions.  These are defined later, but they need
@@ -140,9 +140,7 @@ static HANDLE_FUNC (handle_listen);
 static HANDLE_FUNC (handle_logfile);
 static HANDLE_FUNC (handle_loglevel);
 static HANDLE_FUNC (handle_maxclients);
-static HANDLE_FUNC (handle_maxrequestsperchild);
-static HANDLE_FUNC (handle_maxspareservers);
-static HANDLE_FUNC (handle_minspareservers);
+static HANDLE_FUNC (handle_obsolete);
 static HANDLE_FUNC (handle_pidfile);
 static HANDLE_FUNC (handle_port);
 #ifdef REVERSE_SUPPORT
@@ -151,7 +149,6 @@ static HANDLE_FUNC (handle_reversemagic);
 static HANDLE_FUNC (handle_reverseonly);
 static HANDLE_FUNC (handle_reversepath);
 #endif
-static HANDLE_FUNC (handle_startservers);
 static HANDLE_FUNC (handle_statfile);
 static HANDLE_FUNC (handle_stathost);
 static HANDLE_FUNC (handle_syslog);
@@ -217,10 +214,10 @@ struct {
         /* integer arguments */
         STDCONF ("port", INT, handle_port),
         STDCONF ("maxclients", INT, handle_maxclients),
-        STDCONF ("maxspareservers", INT, handle_maxspareservers),
-        STDCONF ("minspareservers", INT, handle_minspareservers),
-        STDCONF ("startservers", INT, handle_startservers),
-        STDCONF ("maxrequestsperchild", INT, handle_maxrequestsperchild),
+        STDCONF ("maxspareservers", INT, handle_obsolete),
+        STDCONF ("minspareservers", INT, handle_obsolete),
+        STDCONF ("startservers", INT, handle_obsolete),
+        STDCONF ("maxrequestsperchild", INT, handle_obsolete),
         STDCONF ("timeout", INT, handle_timeout),
         STDCONF ("connectport", INT, handle_connectport),
         /* alphanumeric arguments */
@@ -290,7 +287,6 @@ free_added_headers (vector_t add_headers)
 
 static void free_config (struct config_s *conf)
 {
-        safefree (conf->config_file);
         safefree (conf->logf_name);
         safefree (conf->stathost);
         safefree (conf->user);
@@ -378,7 +374,8 @@ config_free_regex (void)
  * Returns 0 if a match was found and successfully processed; otherwise,
  * a negative number is returned.
  */
-static int check_match (struct config_s *conf, const char *line)
+static int check_match (struct config_s *conf, const char *line,
+                        unsigned long lineno)
 {
         regmatch_t match[RE_MAX_MATCHES];
         unsigned int i;
@@ -389,7 +386,7 @@ static int check_match (struct config_s *conf, const char *line)
                 assert (directives[i].cre);
                 if (!regexec
                     (directives[i].cre, line, RE_MAX_MATCHES, match, 0))
-                        return (*directives[i].handler) (conf, line, match);
+                        return (*directives[i].handler) (conf, line, lineno, match);
         }
 
         return -1;
@@ -404,7 +401,7 @@ static int config_parse (struct config_s *conf, FILE * f)
         unsigned long lineno = 1;
 
         while (fgets (buffer, sizeof (buffer), f)) {
-                if (check_match (conf, buffer)) {
+                if (check_match (conf, buffer, lineno)) {
                         printf ("Syntax error on line %ld\n", lineno);
                         return 1;
                 }
@@ -444,113 +441,26 @@ done:
         return ret;
 }
 
-static void initialize_with_defaults (struct config_s *conf,
-                                      struct config_s *defaults)
+static void initialize_config_defaults (struct config_s *conf)
 {
-        if (defaults->logf_name) {
-                conf->logf_name = safestrdup (defaults->logf_name);
-        }
+        memset (conf, 0, sizeof(*conf));
 
-        if (defaults->config_file) {
-                conf->config_file = safestrdup (defaults->config_file);
-        }
-
-        conf->syslog = defaults->syslog;
-        conf->port = defaults->port;
-
-        if (defaults->stathost) {
-                conf->stathost = safestrdup (defaults->stathost);
-        }
-
-        conf->godaemon = defaults->godaemon;
-        conf->quit = defaults->quit;
-
-        if (defaults->user) {
-                conf->user = safestrdup (defaults->user);
-        }
-
-        if (defaults->group) {
-                conf->group = safestrdup (defaults->group);
-        }
-
-        if (defaults->listen_addrs) {
-                ssize_t i;
-
-                conf->listen_addrs = vector_create();
-                for (i=0; i < vector_length(defaults->listen_addrs); i++) {
-                        char *addr;
-                        size_t size;
-                        addr = (char *)vector_getentry(defaults->listen_addrs,
-                                                       i, &size);
-                        vector_append(conf->listen_addrs, addr, size);
-                }
-
-        }
-
-#ifdef FILTER_ENABLE
-        if (defaults->filter) {
-                conf->filter = safestrdup (defaults->filter);
-        }
-
-        conf->filter_url = defaults->filter_url;
-        conf->filter_extended = defaults->filter_extended;
-        conf->filter_casesensitive = defaults->filter_casesensitive;
-#endif                          /* FILTER_ENABLE */
-
-#ifdef XTINYPROXY_ENABLE
-        conf->add_xtinyproxy = defaults->add_xtinyproxy;
-#endif
-
-#ifdef REVERSE_SUPPORT
-        /* struct reversepath *reversepath_list; */
-        conf->reverseonly = defaults->reverseonly;
-        conf->reversemagic = defaults->reversemagic;
-
-        if (defaults->reversebaseurl) {
-                conf->reversebaseurl = safestrdup (defaults->reversebaseurl);
-        }
-#endif
-
-#ifdef UPSTREAM_SUPPORT
-        /* struct upstream *upstream_list; */
-#endif                          /* UPSTREAM_SUPPORT */
-
-        if (defaults->pidpath) {
-                conf->pidpath = safestrdup (defaults->pidpath);
-        }
-
-        conf->idletimeout = defaults->idletimeout;
-
-        if (defaults->bind_address) {
-                conf->bind_address = safestrdup (defaults->bind_address);
-        }
-
-        conf->bindsame = defaults->bindsame;
-
-        if (defaults->via_proxy_name) {
-                conf->via_proxy_name = safestrdup (defaults->via_proxy_name);
-        }
-
-        conf->disable_viaheader = defaults->disable_viaheader;
-
-        if (defaults->errorpage_undef) {
-                conf->errorpage_undef = safestrdup (defaults->errorpage_undef);
-        }
-
-        if (defaults->statpage) {
-                conf->statpage = safestrdup (defaults->statpage);
-        }
-
-        /* vector_t access_list; */
-        /* vector_t connect_ports; */
-        /* hashmap_t anonymous_map; */
+        /*
+         * Make sure the HTML error pages array is NULL to begin with.
+         * (FIXME: Should have a better API for all this)
+         */
+        conf->errorpages = NULL;
+        conf->stathost = safestrdup (TINYPROXY_STATHOST);
+        conf->idletimeout = MAX_IDLE_TIME;
+        conf->logf_name = NULL;
+        conf->pidpath = NULL;
+        conf->maxclients = 100;
 }
 
 /**
  * Load the configuration.
  */
-int reload_config_file (const char *config_fname, struct config_s *conf,
-                        struct config_s *defaults)
+int reload_config_file (const char *config_fname, struct config_s *conf)
 {
         int ret;
 
@@ -558,7 +468,7 @@ int reload_config_file (const char *config_fname, struct config_s *conf,
 
         free_config (conf);
 
-        initialize_with_defaults (conf, defaults);
+        initialize_config_defaults (conf);
 
         ret = load_config_file (config_fname, conf);
         if (ret != 0) {
@@ -714,7 +624,7 @@ static HANDLE_FUNC (handle_anonymous)
         if (!arg)
                 return -1;
 
-        anonymous_insert (arg);
+        anonymous_insert (conf, arg);
         safefree (arg);
         return 0;
 }
@@ -805,34 +715,14 @@ static HANDLE_FUNC (handle_port)
 
 static HANDLE_FUNC (handle_maxclients)
 {
-        child_configure (CHILD_MAXCLIENTS, get_long_arg (line, &match[2]));
+        set_int_arg (&conf->maxclients, line, &match[2]);
         return 0;
 }
 
-static HANDLE_FUNC (handle_maxspareservers)
+static HANDLE_FUNC (handle_obsolete)
 {
-        child_configure (CHILD_MAXSPARESERVERS,
-                         get_long_arg (line, &match[2]));
-        return 0;
-}
-
-static HANDLE_FUNC (handle_minspareservers)
-{
-        child_configure (CHILD_MINSPARESERVERS,
-                         get_long_arg (line, &match[2]));
-        return 0;
-}
-
-static HANDLE_FUNC (handle_startservers)
-{
-        child_configure (CHILD_STARTSERVERS, get_long_arg (line, &match[2]));
-        return 0;
-}
-
-static HANDLE_FUNC (handle_maxrequestsperchild)
-{
-        child_configure (CHILD_MAXREQUESTSPERCHILD,
-                         get_long_arg (line, &match[2]));
+        fprintf (stderr, "WARNING: obsolete config item on line %lu\n",
+                 lineno);
         return 0;
 }
 

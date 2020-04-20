@@ -21,8 +21,8 @@
 #ifndef _TINYPROXY_ANONYMOUS_H_
 #define _TINYPROXY_ANONYMOUS_H_
 
-extern short int is_anonymous_enabled (void);
-extern int anonymous_search (const char *s);
-extern int anonymous_insert (const char *s);
+extern short int is_anonymous_enabled (struct config_s *conf);
+extern int anonymous_search (struct config_s *conf, const char *s);
+extern int anonymous_insert (struct config_s *conf, const char *s);
 
 #endif

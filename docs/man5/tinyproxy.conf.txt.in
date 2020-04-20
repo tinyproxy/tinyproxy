@@ -176,36 +176,10 @@ The possible keywords and their descriptions are as follows:
 
 *MaxClients*::
 
-    Tinyproxy creates one child process for each connected client.
+    Tinyproxy creates one thread for each connected client.
     This options specifies the absolute highest number processes that
     will be created. With other words, only MaxClients clients can be
     connected to Tinyproxy simultaneously.
-
-*MinSpareServers*::
-*MaxSpareServers*::
-
-    Tinyproxy always keeps a certain number of idle child processes
-    so that it can handle new incoming client requests quickly.
-    `MinSpareServer` and `MaxSpareServers` control the lower and upper
-    limits for the number of spare processes. I.e. when the number of
-    spare servers drops below `MinSpareServers` then Tinyproxy will
-    start forking new spare processes in the background and when the
-    number of spare processes exceeds `MaxSpareServers` then Tinyproxy
-    will kill off extra processes.
-
-*StartServers*::
-
-    The number of servers to start initially. This should usually be
-    set to a value between MinSpareServers and MaxSpareServers.
-
-*MaxRequestsPerChild*::
-
-    This limits the number of connections that a child process
-    will handle before it is killed. The default value is `0`
-    which disables this feature.  This option is meant as an
-    emergency measure in the case of problems with memory leakage.
-    In that case, setting `MaxRequestsPerChild` to a value of e.g.
-    1000, or 10000 can be useful.
 
 *Allow*::
 *Deny*::
@@ -222,6 +196,9 @@ The possible keywords and their descriptions are as follows:
     end of the client host name, i.e, this can be a full host name
     like `host.example.com` or a domain name like `.example.com` or
     even a top level domain name like `.com`.
+    Note that by adding a rule using a host or domain name, a costly name
+    lookup has to be done for every new connection, which could slow down
+    the service considerably.
 
 *AddHeader*::
 
