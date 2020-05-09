@@ -344,7 +344,7 @@ int check_acl (const char *ip, union sockaddr_union *addr, vector_t access_list)
         char string_addr[HOSTNAME_LENGTH];
 
         assert (ip != NULL);
-        assert (host != NULL);
+        assert (addr != NULL);
 
         string_addr[0] = 0;
 
