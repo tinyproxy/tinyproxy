@@ -34,6 +34,7 @@ start blocking some sites.
 
 Example "filter" file entries:
 
+# This is a comment
 bannerads.zwire.com
 ad.doubleclick.net
 ads.fortunecity.com
