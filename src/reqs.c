@@ -1539,6 +1539,7 @@ void handle_connection (int fd, union sockaddr_union* addr)
         ssize_t i;
         struct conn_s *connptr;
         struct request_s *request = NULL;
+        struct timeval tv;
         hashmap_t hashofheaders = NULL;
 
         char sock_ipaddr[IP_LENGTH];
@@ -1560,6 +1561,13 @@ void handle_connection (int fd, union sockaddr_union* addr)
                 close (fd);
                 return;
         }
+
+        tv.tv_usec = 0;
+        tv.tv_sec = config->idletimeout;
+        setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (void*) &tv, sizeof(tv));
+        tv.tv_usec = 0;
+        tv.tv_sec = config->idletimeout;
+        setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (void*) &tv, sizeof(tv));
 
         if (connection_loops (addr))  {
                 log_message (LOG_CONN,
