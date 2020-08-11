@@ -23,8 +23,10 @@ else
 endif
 endif
 
+MAINTAINERCLEANFILES = \
+	$(MAN8_FILES:.txt=.8)
+
 CLEANFILES = \
-	$(MAN8_FILES:.txt=.8) \
 	$(MAN8_FILES:.txt=.xml)
 
 EXTRA_DIST= \
