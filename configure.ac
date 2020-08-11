@@ -225,7 +225,7 @@ AC_OUTPUT
 # runtime, so we need to touch them after config.status terminated to prevent
 # make from rebuild them.
 
-if test "x$A2X" = "xno" -a "x$HAVE_ASCIIDOCTOR" = "xno" ; then
+if test "x$A2X" = "xno" -a "x$ASCIIDOCTOR" = "xno" ; then
   touch docs/man5/tinyproxy.conf.txt
   touch docs/man8/tinyproxy.txt
   if test -e docs/man5/tinyproxy.conf.5 ; then
