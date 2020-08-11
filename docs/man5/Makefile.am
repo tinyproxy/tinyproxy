@@ -1,5 +1,7 @@
+if HAVE_MANPAGE_INTEREST
 MAN5_FILES  = \
 	tinyproxy.conf.txt
+endif
 
 if HAVE_XMLLINT
 A2X_ARGS = -d manpage -f manpage

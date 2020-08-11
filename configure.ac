@@ -96,6 +96,15 @@ if test x"$transparent_enabled" = x"yes"; then
    AC_DEFINE(TRANSPARENT_PROXY)
 fi
 
+dnl Let user decide whether he wants support for manpages
+dnl Which require either a2x/asciidoctor or a tarball release
+AH_TEMPLATE([MANPAGE_SUPPORT],
+	    [Build manpages with a2x/asciidoctor if they are missing from the distribution.])
+TP_ARG_ENABLE(manpage_support,
+              [Enable support for building manpages (default is YES)],
+              yes)
+AM_CONDITIONAL(HAVE_MANPAGE_INTEREST, test x"$manpage_support_enabled" = x"yes")
+
 # This is required to build test programs below
 AC_PROG_CC
 
@@ -173,15 +182,14 @@ AC_SUBST(CPPFLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(ADDITIONAL_OBJECTS)
 
+if test x"$manpage_support_enabled" = x"yes"; then
 # Check for asciidoc
 AC_PATH_PROG(A2X, a2x, no)
-AM_CONDITIONAL(HAVE_A2X, test "x$A2X" != "xno")
-
+if test "x$A2X" = "xno" ; then
 # Check for asciidoctor
 AC_PATH_PROG(ASCIIDOCTOR, asciidoctor, no)
-AM_CONDITIONAL(HAVE_ASCIIDOCTOR, test "x$ASCIIDOCTOR" != "xno")
-
-# checking xmllint
+else
+# checking xmllint, which is only used together with a2x
 AC_PATH_PROG(XMLLINT, xmllint, no)
 if test "x$XMLLINT" != "xno"; then
   AS_ECHO_N("testing xmllint... ")
@@ -194,7 +202,20 @@ if test "x$XMLLINT" != "xno"; then
   fi
   rm -f conftest.txt conftest.xml
 fi
-AM_CONDITIONAL(HAVE_XMLLINT, test "x$XMLLINT" != "xno")
+fi #a2x installed
+
+if test "x$A2X" = "xno" -a "x$ASCIIDOCTOR" = "xno" && \
+ ! test -e docs/man5/tinyproxy.conf.5 -a -e docs/man8/tinyproxy.8 ; then
+AC_MSG_ERROR([
+  manpage generation requested, but neither a2x, asciidoctor
+  nor pre-generated manpages found.
+  Use --disable-manpage-support if you want to compile anyway.])
+fi
+fi #manpage_support_enabled
+
+AM_CONDITIONAL(HAVE_A2X, test "x$A2X" != "x" -a "x$A2X" != "xno")
+AM_CONDITIONAL(HAVE_XMLLINT, test "x$XMLLINT" != "x" -a "x$XMLLINT" != "xno")
+AM_CONDITIONAL(HAVE_ASCIIDOCTOR, test "x$ASCIIDOCTOR" != "x" -a "x$ASCIIDOCTOR" != "xno")
 
 AC_CONFIG_FILES([
 Makefile
