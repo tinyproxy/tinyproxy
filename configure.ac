@@ -173,10 +173,6 @@ AC_SUBST(CPPFLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(ADDITIONAL_OBJECTS)
 
-# Check for xml tools
-AC_PATH_PROG(XSLTPROC, xsltproc, no)
-AM_CONDITIONAL(HAVE_XSLTPROC, test "x$XSLTPROC" != "xno")
-
 # Check for asciidoc
 AC_PATH_PROG(A2X, a2x, no)
 AM_CONDITIONAL(HAVE_A2X, test "x$A2X" != "xno")
