@@ -163,7 +163,7 @@ The possible keywords and their descriptions are as follows:
     `type` can be one of `http`, `socks4`, `socks5`, `none`.
 
     * 'upstream none "site_spec"' turns off upstream support for sites
-    matching `site_spec`, that means the direction is done directly.
+    matching `site_spec`, that means the connection is done directly.
 
     The site can be specified in various forms as a hostname, domain
     name or as an IP range:
