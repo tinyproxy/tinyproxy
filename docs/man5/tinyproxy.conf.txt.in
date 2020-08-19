@@ -174,6 +174,10 @@ The possible keywords and their descriptions are as follows:
     * 'IP/bits'  matches network/mask
     * 'IP/mask'  matches network/mask
 
+    Note that the upstream directive can also be used to null-route
+    a specific target domain/host, e.g.:
+    `upstream http 0.0.0.0:0 ".adserver.com"`
+
 *MaxClients*::
 
     Tinyproxy creates one thread for each connected client.
