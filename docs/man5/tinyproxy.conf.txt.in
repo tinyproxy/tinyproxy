@@ -58,6 +58,8 @@ only on one specific address.
 
 This allows you to specify which address Tinyproxy will bind
 to for outgoing connections to web servers or upstream proxies.
+This parameter may be specified multiple times, then Tinyproxy
+will try all the specified addresses in order.
 
 =item B<BindSame>
 

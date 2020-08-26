@@ -68,7 +68,7 @@ struct config_s {
 #endif                          /* UPSTREAM_SUPPORT */
         char *pidpath;
         unsigned int idletimeout;
-        char *bind_address;
+        sblist *bind_addrs;
         unsigned int bindsame;
 
         /*

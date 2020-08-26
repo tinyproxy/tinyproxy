@@ -291,6 +291,7 @@ void free_config (struct config_s *conf)
         safefree (conf->group);
         stringlist_free(conf->basicauth_list);
         stringlist_free(conf->listen_addrs);
+        stringlist_free(conf->bind_addrs);
 #ifdef FILTER_ENABLE
         safefree (conf->filter);
 #endif                          /* FILTER_ENABLE */
@@ -302,7 +303,6 @@ void free_config (struct config_s *conf)
         free_upstream_list (conf->upstream_list);
 #endif                          /* UPSTREAM_SUPPORT */
         safefree (conf->pidpath);
-        safefree (conf->bind_address);
         safefree (conf->via_proxy_name);
         if (conf->errorpages) {
                 it = 0;
@@ -796,12 +796,27 @@ static HANDLE_FUNC (handle_deny)
 
 static HANDLE_FUNC (handle_bind)
 {
-        int r = set_string_arg (&conf->bind_address, line, &match[2]);
+        char *arg = get_string_arg (line, &match[2]);
 
-        if (r)
-                return r;
+        if (arg == NULL) {
+                return -1;
+        }
+
+        if (conf->bind_addrs == NULL) {
+               conf->bind_addrs = sblist_new(sizeof(char*), 16);
+               if (conf->bind_addrs == NULL) {
+                       CP_WARN ("Could not create a list "
+                                   "of bind addresses.", "");
+                       safefree(arg);
+                       return -1;
+               }
+        }
+
+        sblist_add (conf->bind_addrs, &arg);
+
         log_message (LOG_INFO,
-                     "Outgoing connections bound to IP %s", conf->bind_address);
+                     "Added bind address [%s] for outgoing connections.", arg);
+
         return 0;
 }
 
