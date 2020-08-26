@@ -68,7 +68,7 @@ bind_socket (int sockfd, const char *addr, int family)
         n = getaddrinfo (addr, NULL, &hints, &res);
         if (n != 0) {
                 log_message (LOG_INFO,
-                        "bind_socket: getaddrinfo failed for %s: ", addr, get_gai_error (n));
+                        "bind_socket: getaddrinfo failed for %s: %s", addr, get_gai_error (n));
                 return -1;
         }
 
