@@ -34,6 +34,7 @@
 #include "text.h"
 #include "conf.h"
 #include "loop.h"
+#include "sblist.h"
 
 /*
  * Return a human readable error for getaddrinfo() and getnameinfo().
@@ -87,6 +88,26 @@ bind_socket (int sockfd, const char *addr, int family)
         return sockfd;
 }
 
+/**
+ * Try binding the given socket to supplied addresses, stopping when one succeeds.
+ */
+static int
+bind_socket_list (int sockfd, sblist *addresses, int family)
+{
+        size_t nb_addresses = sblist_getsize(addresses);
+        size_t i;
+
+        for (i = 0; i < nb_addresses; i++) {
+                const char *address = *(const char **)sblist_get(addresses, i);
+                if (bind_socket(sockfd, address, family) >= 0) {
+                        log_message(LOG_INFO, "Bound to %s", address);
+                        return 0;
+                }
+        }
+
+        return -1;
+}
+
 /*
  * Open a connection to a remote host.  It's been re-written to use
  * the getaddrinfo() library function, which allows for a protocol
@@ -134,9 +155,9 @@ int opensock (const char *host, int port, const char *bind_to)
                                 close (sockfd);
                                 continue;       /* can't bind, so try again */
                         }
-                } else if (config->bind_address) {
-                        if (bind_socket (sockfd, config->bind_address,
-                                         res->ai_family) < 0) {
+                } else if (config->bind_addrs) {
+                        if (bind_socket_list (sockfd, config->bind_addrs,
+                                              res->ai_family) < 0) {
                                 close (sockfd);
                                 continue;       /* can't bind, so try again */
                         }
