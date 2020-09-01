@@ -100,7 +100,7 @@ void child_main_loop (void)
 
                 if (sblist_getsize(childs) >= config->maxclients) {
                         if (!was_full)
-                                log_message (LOG_NOTICE,
+                                log_message (LOG_WARNING,
                                              "Maximum number of connections reached. "
                                              "Refusing new connections.");
                         was_full = 1;
