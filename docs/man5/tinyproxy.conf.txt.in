@@ -256,6 +256,27 @@ Tinyproxy supports filtering of web sites based on URLs or
 domains. This option specifies the location of the file
 containing the filter rules, one rule per line.
 
+Rules are specified as POSIX basic regular expressions (BRE), unless
+FilterExtended is activated.
+Comment lines start with a `#` character.
+
+Example filter file contents:
+
+ # filter exactly cnn.com
+ ^cnn\.com$
+ 
+ # filter all subdomains of cnn.com, but not cnn.com itself
+ .*\.cnn.com$
+ 
+ # filter any domain that has cnn.com in it, like xcnn.comfy.org
+ cnn\.com
+ 
+ # filter any domain that ends in cnn.com
+ cnn\.com$
+ 
+ # filter any domain that starts with adserver
+ ^adserver
+
 =item B<FilterURLs>
 
 If this boolean option is set to `Yes` or `On`, filtering is
