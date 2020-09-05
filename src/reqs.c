@@ -457,9 +457,9 @@ BAD_REQUEST_ERROR:
          */
         if (config->filter) {
                 if (config->filter_url)
-                        ret = filter_url (url);
+                        ret = filter_run (url);
                 else
-                        ret = filter_domain (request->host);
+                        ret = filter_run (request->host);
 
                 if (ret) {
                         update_stats (STAT_DENIED);
