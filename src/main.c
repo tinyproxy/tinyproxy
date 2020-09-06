@@ -69,6 +69,7 @@ takesig (int sig)
         int status;
 
         switch (sig) {
+        case SIGUSR1:
         case SIGHUP:
                 received_sighup = TRUE;
                 break;
@@ -388,6 +389,7 @@ main (int argc, char **argv)
         setup_sig (SIGCHLD, takesig, "SIGCHLD", argv[0]);
         setup_sig (SIGTERM, takesig, "SIGTERM", argv[0]);
         if (daemonized) setup_sig (SIGHUP, takesig, "SIGHUP", argv[0]);
+        setup_sig (SIGUSR1, takesig, "SIGUSR1", argv[0]);
 
         /* Start the main loop */
         log_message (LOG_INFO, "Starting main loop. Accepting connections.");
