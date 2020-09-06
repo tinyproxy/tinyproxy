@@ -1,0 +1,21 @@
+<h2>
+<a id="support" class="anchor" href="#support" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support</h2>
+
+<ul>
+<li>Feel free to report a new bug or suggest features via github issues.</li>
+<li>Tinyproxy developers hang out in #tinyproxy on irc.freenode.net.</li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
