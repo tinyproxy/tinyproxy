@@ -150,9 +150,15 @@ if test -n "${MAINTAINER_MODE_FALSE}"; then
    DESIRED_FLAGS="-Werror $DESIRED_FLAGS"
 fi
 
+all_desired_work=false
+AS_COMPILER_FLAG([$DESIRED_FLAGS], [all_desired_work=true])
+if $all_desired_work ; then
+    CFLAGS="$CFLAGS $DESIRED_FLAGS"
+else
 for flag in $DESIRED_FLAGS; do
   AS_COMPILER_FLAG([$flag], [CFLAGS="$CFLAGS $flag"])
 done
+fi
 
 dnl Disable debugging if it's not specified
 if test x"$debug_enabled" != x"yes" ; then
