@@ -30,6 +30,7 @@ TINYPROXY_USER=$(id -un)
 TINYPROXY_PID_DIR=$TESTENV_DIR/var/run/tinyproxy
 TINYPROXY_PID_FILE=$TINYPROXY_PID_DIR/tinyproxy.pid
 TINYPROXY_LOG_DIR=$LOG_DIR/tinyproxy
+TINYPROXY_LOG_FILE=$TINYPROXY_LOG_DIR/tinyproxy.log
 TINYPROXY_DATA_DIR=$TESTENV_DIR/usr/share/tinyproxy
 TINYPROXY_CONF_DIR=$TESTENV_DIR/etc/tinyproxy
 TINYPROXY_CONF_FILE=$TINYPROXY_CONF_DIR/tinyproxy.conf
@@ -80,7 +81,7 @@ Timeout 600
 StatHost "$TINYPROXY_STATHOST_IP"
 DefaultErrorFile "$TINYPROXY_DATA_DIR/debug.html"
 StatFile "$TINYPROXY_DATA_DIR/stats.html"
-Logfile "$TINYPROXY_LOG_DIR/tinyproxy.log"
+Logfile "$TINYPROXY_LOG_FILE"
 PidFile "$TINYPROXY_PID_FILE"
 LogLevel Info
 MaxClients 100
@@ -111,6 +112,11 @@ stop_tinyproxy() {
 		echo " ok"
 	else
 		echo " error killing pid $pid"
+		ps aux | grep tinyproxy
+		echo "### printing logfile"
+		cat $TINYPROXY_LOG_FILE
+		echo "### printing stderr logfile"
+		cat $TINYPROXY_STDERR_LOG
 	fi
 }
 
