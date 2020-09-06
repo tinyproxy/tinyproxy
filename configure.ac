@@ -9,6 +9,11 @@ AC_INIT([Tinyproxy], [tinyproxy_version],
 	[https://tinyproxy.github.io/],
 	[tinyproxy])
 
+tpv=tinyproxy_version
+if test "x$tpv" = "x" ; then
+AC_MSG_ERROR([got empty result from version script!])
+fi
+
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([dist-bzip2 dist-xz])
 AC_CONFIG_HEADERS(config.h)
