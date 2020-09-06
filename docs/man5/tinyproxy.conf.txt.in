@@ -225,6 +225,14 @@ Note that by adding a rule using a host or domain name, a costly name
 lookup has to be done for every new connection, which could slow down
 the service considerably.
 
+=item B<BasicAuth>
+
+Configure HTTP "Basic Authentication" username and password
+for accessing the proxy.  If there are any entries specified,
+access is only granted for authenticated users.
+
+    BasicAuth user password
+
 =item B<AddHeader>
 
 Configure one or more HTTP request headers to be added to outgoing
