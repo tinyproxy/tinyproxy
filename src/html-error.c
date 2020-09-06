@@ -107,7 +107,7 @@ send_html_file (FILE *infile, struct conn_s *connptr)
                                         varval = (const char *)
                                                 lookup_variable (connptr->error_variables,
                                                                  varstart);
-                                        if (!varval)
+                                        if (!varval || !varval[0])
                                                 varval = "(unknown)";
                                         r = write_message (connptr->client_fd,
                                                            "%s", varval);
