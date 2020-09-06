@@ -59,6 +59,13 @@ information and to force certain events.
 Force Tinyproxy to do a garbage collection on the current
 connections linked list. This is usually done automatically after a
 certain number of connections have been handled.
+(Daemon mode only)
+
+=item B<SIGUSR1>
+
+Force reload of config file and filter list.
+This is handy to update the configuration if Tinyproxy is running
+in foreground without dropping active connections.
 
 =back
 
