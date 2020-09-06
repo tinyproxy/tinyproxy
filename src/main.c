@@ -271,6 +271,15 @@ done:
         return ret;
 }
 
+static void setup_sig(int sig, signal_func *sigh,
+                     const char* signame, const char* argv0) {
+        if (set_signal_handler (sig, sigh) == SIG_ERR) {
+                fprintf (stderr, "%s: Could not set the \"%s\" signal.\n",
+                         argv0, signame);
+                exit (EX_OSERR);
+        }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -338,11 +347,7 @@ main (int argc, char **argv)
                 makedaemon ();
         }
 
-        if (set_signal_handler (SIGPIPE, SIG_IGN) == SIG_ERR) {
-                fprintf (stderr, "%s: Could not set the \"SIGPIPE\" signal.\n",
-                         argv[0]);
-                exit (EX_OSERR);
-        }
+        setup_sig(SIGPIPE, SIG_IGN, "SIGPIPE", argv[0]);
 
 #ifdef FILTER_ENABLE
         if (config->filter)
@@ -380,23 +385,9 @@ main (int argc, char **argv)
         /* These signals are only for the parent process. */
         log_message (LOG_INFO, "Setting the various signals.");
 
-        if (set_signal_handler (SIGCHLD, takesig) == SIG_ERR) {
-                fprintf (stderr, "%s: Could not set the \"SIGCHLD\" signal.\n",
-                         argv[0]);
-                exit (EX_OSERR);
-        }
-
-        if (set_signal_handler (SIGTERM, takesig) == SIG_ERR) {
-                fprintf (stderr, "%s: Could not set the \"SIGTERM\" signal.\n",
-                         argv[0]);
-                exit (EX_OSERR);
-        }
-
-        if (daemonized && set_signal_handler (SIGHUP, takesig) == SIG_ERR) {
-                fprintf (stderr, "%s: Could not set the \"SIGHUP\" signal.\n",
-                         argv[0]);
-                exit (EX_OSERR);
-        }
+        setup_sig (SIGCHLD, takesig, "SIGCHLD", argv[0]);
+        setup_sig (SIGTERM, takesig, "SIGTERM", argv[0]);
+        if (daemonized) setup_sig (SIGHUP, takesig, "SIGHUP", argv[0]);
 
         /* Start the main loop */
         log_message (LOG_INFO, "Starting main loop. Accepting connections.");
