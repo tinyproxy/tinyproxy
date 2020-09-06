@@ -392,7 +392,7 @@ main (int argc, char **argv)
                 exit (EX_OSERR);
         }
 
-        if (set_signal_handler (SIGHUP, takesig) == SIG_ERR) {
+        if (daemonized && set_signal_handler (SIGHUP, takesig) == SIG_ERR) {
                 fprintf (stderr, "%s: Could not set the \"SIGHUP\" signal.\n",
                          argv[0]);
                 exit (EX_OSERR);
