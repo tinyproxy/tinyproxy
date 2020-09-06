@@ -105,11 +105,12 @@ start_tinyproxy() {
 
 stop_tinyproxy() {
 	echo -n "killing tinyproxy..."
-	kill $(cat $TINYPROXY_PID_FILE)
+	pid=$(cat $TINYPROXY_PID_FILE)
+	kill $pid
 	if test "x$?" = "x0" ; then
 		echo " ok"
 	else
-		echo " error"
+		echo " error killing pid $pid"
 	fi
 }
 
