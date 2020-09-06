@@ -162,6 +162,7 @@ static HANDLE_FUNC (handle_xtinyproxy);
 #ifdef UPSTREAM_SUPPORT
 static HANDLE_FUNC (handle_upstream);
 static HANDLE_FUNC (handle_upstream_no);
+static HANDLE_FUNC (handle_upstream_command);
 #endif
 
 static void config_free_regex (void);
@@ -260,6 +261,12 @@ struct {
                       "(" IP "|" ALNUM ")"
                       ":" INT "(" WS STR ")?"
                 END, handle_upstream, NULL
+        },
+        {
+                BEGIN "(upstream)" WS "(command)" WS
+                      STR /* path to script */
+                      "(" WS STR ")?" /* host filter */
+                END, handle_upstream_command, NULL
         },
 #endif
         /* loglevel */
@@ -1025,7 +1032,7 @@ static HANDLE_FUNC (handle_upstream)
         if (match[mi].rm_so != -1)
                 domain = get_string_arg (line, &match[mi]);
 
-        upstream_add (ip, port, domain, user, pass, pt, &conf->upstream_list);
+        upstream_add (ip, port, domain, user, pass, NULL, pt, &conf->upstream_list);
 
         safefree (user);
         safefree (pass);
@@ -1043,9 +1050,31 @@ static HANDLE_FUNC (handle_upstream_no)
         if (!domain)
                 return -1;
 
-        upstream_add (NULL, 0, domain, 0, 0, PT_NONE, &conf->upstream_list);
+        upstream_add (NULL, 0, domain, 0, 0, NULL, PT_NONE, &conf->upstream_list);
         safefree (domain);
 
         return 0;
 }
-#endif
+
+static HANDLE_FUNC (handle_upstream_command)
+{
+        int mi = 3;
+        char *command = 0, *domain = 0;
+
+        command = get_string_arg (line, &match[mi]);
+        mi++;
+
+        if (match[mi].rm_so != -1)
+                domain = get_string_arg (line, &match[mi]);
+        mi++;
+
+        upstream_add (NULL, 0, domain, 0, 0, command, PT_NONE, &conf->upstream_list);
+
+        safefree (command);
+        safefree (domain);
+
+        return 0;
+}
+
+
+#endif /* UPSTREAM_SUPPORT */
