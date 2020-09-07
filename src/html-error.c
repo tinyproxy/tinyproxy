@@ -83,76 +83,49 @@ static char *get_html_file (unsigned int errornum)
         return (val);
 }
 
+static void varsubst_sendline(struct conn_s *connptr, regex_t *re, char *p) {
+	int fd = connptr->client_fd;
+	while(*p) {
+		regmatch_t match;
+		char varname[32+1], *varval;
+		size_t l;
+		int st = regexec(re, p, 1, &match, 0);
+		if(st == 0) {
+			if(match.rm_so > 0) safe_write(fd, p, match.rm_so);
+			l = match.rm_eo - match.rm_so;
+			assert(l>2 && l-2 < sizeof(varname));
+			p += match.rm_so;
+			memcpy(varname, p+1, l-2);
+			varname[l-2] = 0;
+			varval = lookup_variable(connptr->error_variables, varname);
+			if(varval) write_message(fd, "%s", varval);
+			else if(varval && !*varval) write_message(fd, "(unknown)");
+			else safe_write(fd, p, l);
+			p += l;
+		} else {
+			write_message(fd, "%s", p);
+			break;
+		}
+	}
+}
+
 /*
  * Send an already-opened file to the client with variable substitution.
  */
 int
 send_html_file (FILE *infile, struct conn_s *connptr)
 {
-        char *inbuf;
-        char *varstart = NULL;
-        char *p;
-        const char *varval;
-        int in_variable = 0;
-        int r = 0;
+        regex_t re;
+        char *inbuf = safemalloc (4096);
+        (void) regcomp(&re, "{[a-z]\\{1,32\\}}", 0);
 
-        inbuf = (char *) safemalloc (4096);
-
-        while (fgets (inbuf, 4096, infile) != NULL) {
-                for (p = inbuf; *p; p++) {
-                        switch (*p) {
-                        case '}':
-                                if (in_variable) {
-                                        *p = '\0';
-                                        varval = (const char *)
-                                                lookup_variable (connptr->error_variables,
-                                                                 varstart);
-                                        if (!varval || !varval[0])
-                                                varval = "(unknown)";
-                                        r = write_message (connptr->client_fd,
-                                                           "%s", varval);
-                                        in_variable = 0;
-                                } else {
-                                        r = write_message (connptr->client_fd,
-                                                           "%c", *p);
-                                }
-
-                                break;
-
-                        case '{':
-                                /* a {{ will print a single {.  If we are NOT
-                                 * already in a { variable, then proceed with
-                                 * setup.  If we ARE already in a { variable,
-                                 * this code will fallthrough to the code that
-                                 * just dumps a character to the client fd.
-                                 */
-                                if (!in_variable) {
-                                        varstart = p + 1;
-                                        in_variable++;
-                                } else
-                                        in_variable = 0;
-
-                                /* FALL THROUGH */
-                        default:
-                                if (!in_variable) {
-                                        r = write_message (connptr->client_fd,
-                                                           "%c", *p);
-                                }
-                        }
-
-                        if (r)
-                                break;
-                }
-
-                if (r)
-                        break;
-
-                in_variable = 0;
+        while (fgets (inbuf, 4096, infile)) {
+                varsubst_sendline(connptr, &re, inbuf);
         }
 
+        regfree (&re);
         safefree (inbuf);
-
-        return r;
+        return 1;
 }
 
 int send_http_headers (struct conn_s *connptr, int code, const char *message)
