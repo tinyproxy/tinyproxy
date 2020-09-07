@@ -24,6 +24,7 @@
 
 #include "hashmap.h"
 #include "vector.h"
+#include "acl.h"
 
 /*
  * Stores a HTTP header created using the AddHeader directive.
@@ -93,7 +94,7 @@ struct config_s {
          */
         char *statpage;
 
-        vector_t access_list;
+        acl_list_t access_list;
 
         /*
          * Store the list of port allowed by CONNECT.

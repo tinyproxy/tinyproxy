@@ -111,7 +111,7 @@ fill_netmask_array (char *bitmask_string, int v6,
 /**
  * If the access list has not been set up, create it.
  */
-static int init_access_list(vector_t *access_list)
+static int init_access_list(acl_list_t *access_list)
 {
         if (!*access_list) {
                 *access_list = vector_create ();
@@ -135,7 +135,7 @@ static int init_access_list(vector_t *access_list)
  *     0 otherwise.
  */
 int
-insert_acl (char *location, acl_access_t access_type, vector_t *access_list)
+insert_acl (char *location, acl_access_t access_type, acl_list_t *access_list)
 {
         struct acl_s acl;
         int ret;
@@ -332,7 +332,7 @@ static int check_numeric_acl (const struct acl_s *acl, uint8_t addr[IPV6_LEN])
  *     1 if allowed
  *     0 if denied
  */
-int check_acl (const char *ip, union sockaddr_union *addr, vector_t access_list)
+int check_acl (const char *ip, union sockaddr_union *addr, acl_list_t access_list)
 {
         struct acl_s *acl;
         int perm = 0, is_numeric_addr;
@@ -388,7 +388,7 @@ int check_acl (const char *ip, union sockaddr_union *addr, vector_t access_list)
         return 0;
 }
 
-void flush_access_list (vector_t access_list)
+void flush_access_list (acl_list_t access_list)
 {
         struct acl_s *acl;
         size_t i;
