@@ -1490,7 +1490,7 @@ get_request_entity(struct conn_s *connptr)
 
         FD_ZERO (&rset);
         FD_SET (connptr->client_fd, &rset);
-        tv.tv_sec = 0;
+        tv.tv_sec = config->idletimeout;
         tv.tv_usec = 0;
         ret = select (connptr->client_fd + 1, &rset, NULL, NULL, &tv);
 
