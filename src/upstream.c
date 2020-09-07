@@ -81,7 +81,13 @@ static struct upstream *upstream_build (const char *host, int port, const char *
         }
 
         if (domain == NULL) {
-                if (!host || host[0] == '\0' || port < 1) {
+                if (type == PT_NONE) {
+                e_nonedomain:;
+                        log_message (LOG_WARNING,
+                                     "Nonsense upstream none rule: empty domain");
+                        goto fail;
+                }
+                if (!host || !host[0] || port < 1) {
                         log_message (LOG_WARNING,
                                      "Nonsense upstream rule: invalid host or port");
                         goto fail;
@@ -92,11 +98,17 @@ static struct upstream *upstream_build (const char *host, int port, const char *
 
                 log_message (LOG_INFO, "Added upstream %s %s:%d for [default]",
                              proxy_type_name(type), host, port);
-        } else if (host == NULL || type == PT_NONE) {
-                if (!domain || domain[0] == '\0') {
-                        log_message (LOG_WARNING,
-                                     "Nonsense no-upstream rule: empty domain");
-                        goto fail;
+        } else {
+                if (type == PT_NONE) {
+                        if (!domain[0]) goto e_nonedomain;
+                } else {
+                        if (!host || !host[0] || !domain[0]) {
+                                log_message (LOG_WARNING,
+                                             "Nonsense upstream rule: invalid parameters");
+                                goto fail;
+                        }
+                        up->host = safestrdup (host);
+                        up->port = port;
                 }
 
                 ptr = strchr (domain, '/');
@@ -116,26 +128,21 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                                         up->mask =
                                             ~((1 << (32 - atoi (ptr))) - 1);
                                 }
+                                up->ip = up->ip & up->mask;
+                        } else {
+                                log_message (LOG_WARNING,
+                                             "Nonsense upstream rule: failed to parse netmask");
+                                goto fail;
                         }
                 } else {
                         up->domain = safestrdup (domain);
                 }
 
-                log_message (LOG_INFO, "Added no-upstream for %s", domain);
-        } else {
-                if (!host || host[0] == '\0' || !domain
-                    || domain[0] == '\0') {
-                        log_message (LOG_WARNING,
-                                     "Nonsense upstream rule: invalid parameters");
-                        goto fail;
-                }
-
-                up->host = safestrdup (host);
-                up->port = port;
-                up->domain = safestrdup (domain);
-
-                log_message (LOG_INFO, "Added upstream %s %s:%d for %s",
-                             proxy_type_name(type), host, port, domain);
+                if (type == PT_NONE)
+                        log_message (LOG_INFO, "Added upstream none for %s", domain);
+                else
+                        log_message (LOG_INFO, "Added upstream %s %s:%d for %s",
+                                     proxy_type_name(type), host, port, domain);
         }
 
         return up;
