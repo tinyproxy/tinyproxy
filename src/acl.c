@@ -305,16 +305,12 @@ STRING_TEST:
  *   0  IP address is denied
  *  -1  neither allowed nor denied.
  */
-static int check_numeric_acl (const struct acl_s *acl, const char *ip)
+static int check_numeric_acl (const struct acl_s *acl, uint8_t addr[IPV6_LEN])
 {
-        uint8_t addr[IPV6_LEN], x, y;
+        uint8_t x, y;
         int i;
 
         assert (acl && acl->type == ACL_NUMERIC);
-        assert (ip && strlen (ip) > 0);
-
-        if (full_inet_pton (ip, &addr) <= 0)
-                return -1;
 
         for (i = 0; i != IPV6_LEN; ++i) {
                 x = addr[i] & acl->address.ip.mask[i];
@@ -339,9 +335,10 @@ static int check_numeric_acl (const struct acl_s *acl, const char *ip)
 int check_acl (const char *ip, union sockaddr_union *addr, vector_t access_list)
 {
         struct acl_s *acl;
-        int perm = 0;
+        int perm = 0, is_numeric_addr;
         size_t i;
         char string_addr[HOSTNAME_LENGTH];
+        uint8_t numeric_addr[IPV6_LEN];
 
         assert (ip != NULL);
         assert (addr != NULL);
@@ -354,6 +351,8 @@ int check_acl (const char *ip, union sockaddr_union *addr, vector_t access_list)
         if (!access_list)
                 return 1;
 
+        is_numeric_addr = (full_inet_pton (ip, &numeric_addr) > 0);
+
         for (i = 0; i != (size_t) vector_length (access_list); ++i) {
                 acl = (struct acl_s *) vector_getentry (access_list, i, NULL);
                 switch (acl->type) {
@@ -364,7 +363,10 @@ int check_acl (const char *ip, union sockaddr_union *addr, vector_t access_list)
                 case ACL_NUMERIC:
                         if (ip[0] == '\0')
                                 continue;
-                        perm = check_numeric_acl (acl, ip);
+
+                        perm = is_numeric_addr
+                               ? check_numeric_acl (acl, numeric_addr)
+                               : -1;
                         break;
                 }
 
