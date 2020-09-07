@@ -397,7 +397,7 @@ static int check_match (struct config_s *conf, const char *line,
  */
 static int config_parse (struct config_s *conf, FILE * f)
 {
-        char buffer[1024];      /* 1KB lines should be plenty */
+        char buffer[LINE_MAX];
         unsigned long lineno = 1;
 
         while (fgets (buffer, sizeof (buffer), f)) {
