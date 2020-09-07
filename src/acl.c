@@ -28,7 +28,7 @@
 #include "log.h"
 #include "network.h"
 #include "sock.h"
-#include "vector.h"
+#include "sblist.h"
 
 #include <limits.h>
 
@@ -114,7 +114,7 @@ fill_netmask_array (char *bitmask_string, int v6,
 static int init_access_list(acl_list_t *access_list)
 {
         if (!*access_list) {
-                *access_list = vector_create ();
+                *access_list = sblist_new(sizeof(struct acl_s), 16);
                 if (!*access_list) {
                         log_message (LOG_ERR,
                                      "Unable to allocate memory for access list");
@@ -207,8 +207,8 @@ insert_acl (char *location, acl_access_t access_type, acl_list_t *access_list)
                 }
         }
 
-        ret = vector_append (*access_list, &acl, sizeof (struct acl_s));
-        return ret;
+        if(!sblist_add(*access_list, &acl)) return -1;
+        return 0;
 }
 
 /*
@@ -353,8 +353,8 @@ int check_acl (const char *ip, union sockaddr_union *addr, acl_list_t access_lis
 
         is_numeric_addr = (full_inet_pton (ip, &numeric_addr) > 0);
 
-        for (i = 0; i != (size_t) vector_length (access_list); ++i) {
-                acl = (struct acl_s *) vector_getentry (access_list, i, NULL);
+        for (i = 0; i < sblist_getsize (access_list); ++i) {
+                acl = sblist_get (access_list, i);
                 switch (acl->type) {
                 case ACL_STRING:
                         perm = acl_string_processing (acl, ip, addr, string_addr);
@@ -402,12 +402,12 @@ void flush_access_list (acl_list_t access_list)
          * before we can free the acl entries themselves.
          * A hierarchical memory system would be great...
          */
-        for (i = 0; i != (size_t) vector_length (access_list); ++i) {
-                acl = (struct acl_s *) vector_getentry (access_list, i, NULL);
+        for (i = 0; i < sblist_getsize (access_list); ++i) {
+                acl = sblist_get (access_list, i);
                 if (acl->type == ACL_STRING) {
                         safefree (acl->address.string);
                 }
         }
 
-        vector_delete (access_list);
+        sblist_free (access_list);
 }
