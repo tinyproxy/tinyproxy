@@ -55,6 +55,9 @@ Enable support for proxying connections through another proxy server.
 
 - `--enable-transparent`: 
 Allow Tinyproxy to be used as a transparent proxy daemon.
+Unlike other work modes, transparent proxying doesn't require explicit
+configuration and works automatically when traffic is redirected to
+the proxy using the appropriate firewall rules.
 
 - `--enable-reverse`: 
 Enable reverse proxying.
