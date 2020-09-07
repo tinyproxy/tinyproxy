@@ -1,24 +1,20 @@
-TINYPROXY(8)
-============
-:man source:   Version @VERSION@
-:man manual:   Tinyproxy manual
+=pod
 
-NAME
-----
+=encoding utf8
+
+=head1 NAME
 
 tinyproxy - A light-weight HTTP proxy daemon
 
 
-SYNOPSIS
---------
+=head1 SYNOPSIS
 
-*tinyproxy* [-vdch]
+B<tinyproxy> [-vdch]
 
 
-DESCRIPTION
------------
+=head1 DESCRIPTION
 
-*tinyproxy* is a light-weight HTTP proxy daemon designed to consume a
+B<tinyproxy> is a light-weight HTTP proxy daemon designed to consume a
 minimum amount of system resources. It listens on a given TCP port and
 handles HTTP proxy requests. Designed from the ground up to be fast and
 yet small, it is an ideal solution for use cases such as embedded
@@ -26,46 +22,66 @@ deployments where a full featured HTTP proxy is required, but the system
 resources for a larger proxy are unavailable.
 
 
-OPTIONS
--------
+=head1 OPTIONS
 
-*tinyproxy* accepts the following options:
+B<tinyproxy> accepts the following options:
 
-*-c <config-file>*::
-    Use an alternate configuration file.
+=over 4
 
-*-d*::
-    Don't daemonize and stay in the foreground. Useful for debugging purposes.
+=item B<-c <config-file>>
 
-*-h*::
-    Display a short help screen of command line arguments and exit.
+Use an alternate configuration file.
 
-*-v*::
-    Display version information and exit.
+=item B<-d>
 
+Don't daemonize and stay in the foreground. Useful for debugging purposes.
 
-SIGNALS
--------
+=item B<-h>
+
+Display a short help screen of command line arguments and exit.
+
+=item B<-v>
+
+Display version information and exit.
+
+=back
+
+=head1 SIGNALS
 
 In addition to command-line options, there are also several signals that
-can be sent to *tinyproxy* while it is running to generate debugging
+can be sent to B<tinyproxy> while it is running to generate debugging
 information and to force certain events.
 
-*SIGHUP*::
-    Force Tinyproxy to do a garbage collection on the current
-    connections linked list. This is usually done automatically after a
-    certain number of connections have been handled.
+=over 4
 
+=item B<SIGHUP>
 
-TEMPLATE FILES
---------------
+Force Tinyproxy to do a garbage collection on the current
+connections linked list. This is usually done automatically after a
+certain number of connections have been handled.
+(Daemon mode only)
+
+=item B<SIGUSR1>
+
+Force reload of config file and filter list.
+This is handy to update the configuration if Tinyproxy is running
+in foreground without dropping active connections.
+
+=back
+
+=head1 TEMPLATE FILES
 
 There are two occasions when Tinyproxy delivers HTML pages to
 the client on it's own right:
 
-. When an error occurred, a corresponding error page is returned.
-. When a request for the stathost is made, a page summarizing the
-  connection statistics is returned. (See STATHOST below.)
+=over 4
+
+=item * When an error occurred, a corresponding error page is returned.
+
+=item * When a request for the stathost is made, a page summarizing the
+connection statistics is returned. (See STATHOST below.)
+
+=back
 
 The layout of both error pages and the statistics page can be
 controlled via configurable HTML template files that are plain
@@ -73,46 +89,60 @@ HTML files that additionally understand a few template
 variables.
 
 
-TEMPLATE VARIABLES
-------------------
+=head1 TEMPLATE VARIABLES
 
 There are several standard HTML variables that are available in every
 template file:
 
-*request*::
-    The full HTTP request line.
+=over 4
 
-*cause*::
-    The abbreviated cause of the error condition.
+=item B<request>
 
-*clientip*::
-    The IP address of the client making the request.
+The full HTTP request line.
 
-*clienthost*::
-    The hostname of the client making the request.
+=item B<cause>
 
-*version*::
-    The version of Tinyproxy.
+The abbreviated cause of the error condition.
 
-*package*::
-    The package name. Presently, resolves to 'tinyproxy'.
+=item B<clientip>
 
-*date*::
-    The current date/time in HTTP format.
+The IP address of the client making the request.
+
+=item B<clienthost>
+
+The hostname of the client making the request.
+
+=item B<version>
+
+The version of Tinyproxy.
+
+=item B<package>
+
+The package name. Presently, resolves to 'tinyproxy'.
+
+=item B<date>
+
+The current date/time in HTTP format.
+
+=back
 
 In addition, almost all templates support:
 
-*detail*::
-    A detailed, plain English explanation of the error and possible
-    causes.
+=over 4
+
+=item B<detail>
+
+A detailed, plain English explanation of the error and possible
+causes.
+
+=back
 
 When Tinyproxy finds a variable name enclosed in braces, e.g.
-"\{request}", then this is replaced by the value of the corresponding
+"{request}", then this is replaced by the value of the corresponding
 variable before delivery of the page.
 
 
-STATHOST
---------
+=head1 STATHOST
 
 Tinyproxy returns a HTML page with connection statistics when it
 receives a HTTP request for a certain host -- the stathost.  The
@@ -124,33 +154,29 @@ The stat file template can be changed at runtime through the
 configuration variable `StatFile`.
 
 
-FILES
------
+=head1 FILES
 
 `/etc/tinyproxy/tinyproxy.conf`, `/var/run/tinyproxy/tinyproxy.pid`, `/var/log/tinyproxy/tinyproxy.log`
 
-BUGS
-----
+=head1 BUGS
 
 To report bugs in Tinyproxy, please visit
-<https://tinyproxy.github.io/[https://tinyproxy.github.io/]>.
+L<https://tinyproxy.github.io/>.
 
 
-SEE ALSO
---------
-tinyproxy.conf(5)
+=head1 SEE ALSO
+
+L<tinyproxy.conf(5)>
 
 
-AUTHOR
-------
+=head1 AUTHOR
 
 This manpage was written by the Tinyproxy project team.
 
 
-COPYRIGHT
----------
+=head1 COPYRIGHT
 
-Copyright (c) 1998-2018 the Tinyproxy authors.
+Copyright (c) 1998-2020 the Tinyproxy authors.
 
 This program is distributed under the terms of the GNU General Public
 License version 2 or above. See the COPYING file for additional

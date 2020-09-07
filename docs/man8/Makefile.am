@@ -1,25 +1,25 @@
-MAN8_FILES = \
+if HAVE_MANPAGE_INTEREST
+MAN8_FILES  = \
 	tinyproxy.txt
-
-if HAVE_XMLLINT
-A2X_ARGS = -d manpage -f manpage
-else
-A2X_ARGS = -d manpage -f manpage -L
 endif
+
+M_SECTION=8
+M_NAME=TINYPROXY
 
 man_MANS = \
 	$(MAN8_FILES:.txt=.8)
 
 .txt.8:
-if HAVE_A2X
-	$(AM_V_GEN) $(A2X) $(A2X_ARGS) $<
+if HAVE_POD2MAN
+	$(AM_V_GEN) $(POD2MAN) --center="Tinyproxy manual" \
+	--section=$(M_SECTION) --name=$(M_NAME) --release="Version @VERSION@" \
+	$< > $@
 else
-	@echo "*** a2x (asciidoc) is required to regenerate $(@) ***"; exit 1;
+	@echo "*** pod2man is required to regenerate $(@) ***"; exit 1;
 endif
 
-CLEANFILES = \
-	$(MAN8_FILES:.txt=.8) \
-	$(MAN8_FILES:.txt=.xml)
+MAINTAINERCLEANFILES = \
+	$(MAN8_FILES:.txt=.8)
 
-EXTRA_DIST= \
+EXTRA_DIST = \
 	$(MAN8_FILES:.txt=.8)

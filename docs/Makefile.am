@@ -4,6 +4,5 @@ SUBDIRS = \
 
 EXTRA_DIST = \
 	http-error-codes.txt \
-	http-rfcs.txt \
-	filter-howto.txt
+	http-rfcs.txt
 

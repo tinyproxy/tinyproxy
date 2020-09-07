@@ -9,6 +9,11 @@ AC_INIT([Tinyproxy], [tinyproxy_version],
 	[https://tinyproxy.github.io/],
 	[tinyproxy])
 
+tpv=tinyproxy_version
+if test "x$tpv" = "x" ; then
+AC_MSG_ERROR([got empty result from version script!])
+fi
+
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([dist-bzip2 dist-xz])
 AC_CONFIG_HEADERS(config.h)
@@ -96,6 +101,15 @@ if test x"$transparent_enabled" = x"yes"; then
    AC_DEFINE(TRANSPARENT_PROXY)
 fi
 
+dnl Let user decide whether he wants support for manpages
+dnl Which require either pod2man or a tarball release
+AH_TEMPLATE([MANPAGE_SUPPORT],
+	    [Build manpages with pod2man if they are missing from the distribution.])
+TP_ARG_ENABLE(manpage_support,
+              [Enable support for building manpages (default is YES)],
+              yes)
+AM_CONDITIONAL(HAVE_MANPAGE_INTEREST, test x"$manpage_support_enabled" = x"yes")
+
 # This is required to build test programs below
 AC_PROG_CC
 
@@ -131,10 +145,7 @@ AC_CHECK_HEADERS([sys/ioctl.h alloca.h memory.h malloc.h sysexits.h \
 
 dnl Checks for libary functions
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
 
-AC_CHECK_FUNCS([inet_ntoa strdup])
 AC_CHECK_FUNCS([strlcpy strlcat setgroups])
 
 dnl Enable extra warnings
@@ -144,9 +155,15 @@ if test -n "${MAINTAINER_MODE_FALSE}"; then
    DESIRED_FLAGS="-Werror $DESIRED_FLAGS"
 fi
 
+all_desired_work=false
+AS_COMPILER_FLAG([$DESIRED_FLAGS], [all_desired_work=true])
+if $all_desired_work ; then
+    CFLAGS="$CFLAGS $DESIRED_FLAGS"
+else
 for flag in $DESIRED_FLAGS; do
   AS_COMPILER_FLAG([$flag], [CFLAGS="$CFLAGS $flag"])
 done
+fi
 
 dnl Disable debugging if it's not specified
 if test x"$debug_enabled" != x"yes" ; then
@@ -173,28 +190,19 @@ AC_SUBST(CPPFLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(ADDITIONAL_OBJECTS)
 
-# Check for xml tools
-AC_PATH_PROG(XSLTPROC, xsltproc, no)
-AM_CONDITIONAL(HAVE_XSLTPROC, test "x$XSLTPROC" != "xno")
+if test x"$manpage_support_enabled" = x"yes"; then
+AC_PATH_PROG(POD2MAN, pod2man, no)
 
-# Check for asciidoc
-AC_PATH_PROG(A2X, a2x, no)
-AM_CONDITIONAL(HAVE_A2X, test "x$A2X" != "xno")
-
-# checking xmllint
-AC_PATH_PROG(XMLLINT, xmllint, no)
-if test "x$XMLLINT" != "xno"; then
-  AS_ECHO_N("testing xmllint... ")
-  echo "TEST" > conftest.txt
-  if $A2X -f docbook conftest.txt 2>/dev/null; then
-    AS_ECHO("ok")
-  else
-    AS_ECHO("failed")
-    XMLLINT="no"
-  fi
-  rm -f conftest.txt conftest.xml
+if test "x$POD2MAN" = "xno" && \
+ ! test -e docs/man5/tinyproxy.conf.5 -a -e docs/man8/tinyproxy.8 ; then
+AC_MSG_ERROR([
+  manpage generation requested, but neither pod2man
+  nor pre-generated manpages found.
+  Use --disable-manpage-support if you want to compile anyway.])
 fi
-AM_CONDITIONAL(HAVE_XMLLINT, test "x$XMLLINT" != "xno")
+fi #manpage_support_enabled
+
+AM_CONDITIONAL(HAVE_POD2MAN, test "x$POD2MAN" != "x" -a "x$POD2MAN" != "xno")
 
 AC_CONFIG_FILES([
 Makefile
@@ -216,12 +224,12 @@ scripts/Makefile
 AC_OUTPUT
 
 # the manpages are shipped in the release tarball and we don't want them to
-# get regenerated if a2x is not available. the intermediate files from
+# get regenerated if pod2man is not available. the intermediate files from
 # AC_CONFIG_FILES are created with config.status, which is created at configure
 # runtime, so we need to touch them after config.status terminated to prevent
 # make from rebuild them.
 
-if test "x$A2X" = "xno"; then
+if test "x$POD2MAN" = "xno" ; then
   touch docs/man5/tinyproxy.conf.txt
   touch docs/man8/tinyproxy.txt
   if test -e docs/man5/tinyproxy.conf.5 ; then

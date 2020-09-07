@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Tinyproxy : lightweight http(s) proxy daemon">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Tinyproxy</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/tinyproxy">View on GitHub</a>
+
+          <h1 id="project_title">Tinyproxy</h1>
+          <h2 id="project_tagline">lightweight http(s) proxy daemon</h2>
+
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="tinyproxy" class="anchor" href="#tinyproxy" aria-hidden="true"><span class="octicon octicon-link"></span></a>Tinyproxy</h1>
+
+<p>Tinyproxy is a light-weight HTTP/HTTPS proxy daemon for POSIX operating systems. Designed from the ground up to be fast and yet small, it is an ideal solution for use cases such as embedded deployments where a full featured HTTP proxy is required, but the system resources for a larger proxy are unavailable.</p>
+
+<p>Tinyproxy is distributed using the GNU GPL license (version 2 or above).</p>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<p>Tinyproxy has a <strong>small footprint</strong> and requires very little in the way of system resources. The memory footprint tends to be around 2 MB with glibc, and the CPU load increases linearly with the number of simultaneous connections (depending on the speed of the connection). Thus, Tinyproxy can be run on an older machine, or on a network appliance such as a Linux-based broadband router, without any noticeable impact on performance.</p>
+
+<p>Tinyproxy requires only a <strong>minimal POSIX environment</strong> to build and operate. It can use additional libraries to add functionality though.</p>
+
+<p>Tinyproxy allows forwarding of <strong>HTTPS connections</strong> without modifying traffic in any way through the <code>CONNECT</code> method (see the <code>ConnectPort</code> directive).</p>
+
+<p>Tinyproxy supports being configured as a <strong>transparent proxy</strong>, so that a proxy can be used without requiring any client-side configuration. You can also use it as a <strong>reverse proxy</strong> front-end to your websites.</p>
+
+<p>Using the <code>AddHeader</code> directive, you can <strong>add/insert HTTP headers</strong> to outgoing traffic.</p>
+
+<p>If you're looking to build a custom web proxy, Tinyproxy is <strong>easy to modify</strong> to your custom needs. The source is straightforward, adhering to the KISS principle. As such, it can be used as a foundation for anything you may need a web proxy to do.</p>
+
+<p>Tinyproxy has <strong>privacy features</strong> which can let you configure which HTTP headers should be allowed through, and which should be blocked. This allows you to restrict both what data comes to your web browser from the HTTP server (e.g., cookies), and to restrict what data is allowed through from your web browser to the HTTP server (e.g., version information).</p>
+
+<p>Using the <strong>remote monitoring</strong> facility, you can access proxy statistics from afar, letting you know exactly how busy the proxy is.</p>
+
+<p>You can configure Tinyproxy to <strong>control access</strong> by only allowing requests from a certain subnet, or from a certain interface, thus ensuring that random, unauthorized people will not be using your proxy.</p>
+
+<p>With a bit of configuration (specifically, making Tinyproxy created files owned by a non-root user and running it on a port greater than 1024), Tinyproxy can be made to run without any special privileges, thus minimizing the chance of system compromise. Furthermore, it was designed with an eye towards preventing buffer overflows. The simplicity of the code ensures it remains easy to spot such bugs.</p>
+
+<h2>
+<a id="downloads" class="anchor" href="#downloads" aria-hidden="true"><span class="octicon octicon-link"></span></a>Downloads</h2>
+
+<ul>
+<li>On Red Hat Enterprise Linux, or its derivatives such as CentOS, install Tinyproxy from the EPEL repository by running yum install tinyproxy.</li>
+<li>On Fedora, install Tinyproxy by running yum install tinyproxy.</li>
+<li>On Debian and derived distributions, run apt-get install tinyproxy to install Tinyproxy.</li>
+<li>For openSUSE run: zypper in tinyproxy</li>
+<li>Arch users can install the Tinyproxy package from the community repository. Run pacman -S tinyproxy to install it.</li>
+<li>FreeBSD, OpenBSD or NetBSD users can use the pkg_add utility to install the tinyproxy package.</li>
+<li>Mac OS X users can check MacPorts to see if the Tinyproxy port there is recent enough.</li>
+</ul>
+
+<p>If you feel that the Tinyproxy binary package in your operating system is not recent, please contact the package maintainer for that particular operating system. If this fails, you can always compile the latest stable version from source code.</p>
+
+<p>We distribute Tinyproxy in source code form, and it has to be compiled in order to be used on your system. Please see the INSTALL file in the source code tree for build instructions. The current stable version of Tinyproxy is available on the <a href="https://github.com/tinyproxy/tinyproxy/releases">releases page</a>. The Tinyproxy NEWS file contains the release notes. You can verify the tarball using its PGP signature. You can also browse the older releases of Tinyproxy.</p>
+
+<p>We use Git as the version control system for the Tinyproxy source code repository. To get a copy of the Tinyproxy repository, use the command:</p>
+
+<p>git clone <a href="https://github.com/tinyproxy/tinyproxy.git">https://github.com/tinyproxy/tinyproxy.git</a></p>
+
+<h2>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h2>

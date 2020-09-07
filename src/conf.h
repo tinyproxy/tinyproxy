@@ -39,12 +39,11 @@ typedef struct {
 struct config_s {
         vector_t basicauth_list;
         char *logf_name;
-        char *config_file;
         unsigned int syslog;    /* boolean */
         unsigned int port;
         char *stathost;
-        unsigned int godaemon;  /* boolean */
         unsigned int quit;      /* boolean */
+        unsigned int maxclients;
         char *user;
         char *group;
         vector_t listen_addrs;
@@ -113,8 +112,7 @@ struct config_s {
         vector_t add_headers;
 };
 
-extern int reload_config_file (const char *config_fname, struct config_s *conf,
-                               struct config_s *defaults);
+extern int reload_config_file (const char *config_fname, struct config_s *conf);
 
 int config_compile_regex (void);
 

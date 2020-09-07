@@ -64,11 +64,16 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
 
         length = hashmap_entry_by_key (hashofheaders, "host", (void **) &data);
         if (length <= 0) {
-                struct sockaddr_in dest_addr;
+                union sockaddr_union dest_addr;
+                const void *dest_inaddr;
+                char namebuf[INET6_ADDRSTRLEN+1];
+                int af;
+                length = sizeof(dest_addr);
 
                 if (getsockname
-                    (connptr->client_fd, (struct sockaddr *) &dest_addr,
-                     &length) < 0) {
+                    (connptr->client_fd, (void *) &dest_addr,
+                     &length) < 0 || length > sizeof(dest_addr)) {
+                addr_err:;
                         log_message (LOG_ERR,
                                      "process_request: cannot get destination IP for %d",
                                      connptr->client_fd);
@@ -78,10 +83,16 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                         return 0;
                 }
 
-                request->host = (char *) safemalloc (17);
-                strlcpy (request->host, inet_ntoa (dest_addr.sin_addr), 17);
+                af = length == sizeof(dest_addr.v4) ? AF_INET : AF_INET6;
+                if (af == AF_INET) dest_inaddr = &dest_addr.v4.sin_addr;
+                else dest_inaddr = &dest_addr.v6.sin6_addr;
 
-                request->port = ntohs (dest_addr.sin_port);
+                if (!inet_ntop(af, dest_inaddr, namebuf, sizeof namebuf))
+                        goto addr_err;
+
+                request->host = safestrdup (namebuf);
+                request->port = ntohs (af == AF_INET ? dest_addr.v4.sin_port
+                                       : dest_addr.v6.sin6_port);
 
                 request->path = (char *) safemalloc (ulen + 1);
                 strlcpy (request->path, *url, ulen + 1);

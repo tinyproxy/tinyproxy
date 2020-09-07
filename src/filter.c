@@ -29,18 +29,17 @@
 #include "log.h"
 #include "reqs.h"
 #include "conf.h"
+#include "sblist.h"
 
 #define FILTER_BUFFER_LEN (512)
 
 static int err;
 
 struct filter_list {
-        struct filter_list *next;
-        char *pat;
-        regex_t *cpat;
+        regex_t cpatb;
 };
 
-static struct filter_list *fl = NULL;
+static sblist *fl = NULL;
 static int already_init = 0;
 static filter_policy_t default_policy = FILTER_DEFAULT_ALLOW;
 
@@ -50,34 +49,38 @@ static filter_policy_t default_policy = FILTER_DEFAULT_ALLOW;
 void filter_init (void)
 {
         FILE *fd;
-        struct filter_list *p;
+        struct filter_list fe;
         char buf[FILTER_BUFFER_LEN];
-        char *s;
-        int cflags;
+        char *s, *start;
+        int cflags, lineno = 0;
 
         if (fl || already_init) {
                 return;
         }
 
-        fd = fopen (config.filter, "r");
+        fd = fopen (config->filter, "r");
         if (!fd) {
                 return;
         }
 
-        p = NULL;
-
         cflags = REG_NEWLINE | REG_NOSUB;
-        if (config.filter_extended)
+        if (config->filter_extended)
                 cflags |= REG_EXTENDED;
-        if (!config.filter_casesensitive)
+        if (!config->filter_casesensitive)
                 cflags |= REG_ICASE;
 
         while (fgets (buf, FILTER_BUFFER_LEN, fd)) {
+                ++lineno;
+                /* skip leading whitespace */
+                s = buf;
+                while (*s && isspace ((unsigned char) *s))
+                        s++;
+                start = s;
+
                 /*
                  * Remove any trailing white space and
                  * comments.
                  */
-                s = buf;
                 while (*s) {
                         if (isspace ((unsigned char) *s))
                                 break;
@@ -93,34 +96,28 @@ void filter_init (void)
                         ++s;
                 }
                 *s = '\0';
-
-                /* skip leading whitespace */
-                s = buf;
-                while (*s && isspace ((unsigned char) *s))
-                        s++;
+                s = start;
 
                 /* skip blank lines and comments */
                 if (*s == '\0')
                         continue;
 
-                if (!p) /* head of list */
-                        fl = p =
-                            (struct filter_list *)
-                            safecalloc (1, sizeof (struct filter_list));
-                else {  /* next entry */
-                        p->next =
-                            (struct filter_list *)
-                            safecalloc (1, sizeof (struct filter_list));
-                        p = p->next;
-                }
+                if (!fl) fl = sblist_new(sizeof(struct filter_list),
+                                         4096/sizeof(struct filter_list));
 
-                p->pat = safestrdup (s);
-                p->cpat = (regex_t *) safemalloc (sizeof (regex_t));
-                err = regcomp (p->cpat, p->pat, cflags);
+                err = regcomp (&fe.cpatb, s, cflags);
                 if (err != 0) {
+                        if (err == REG_ESPACE) goto oom;
                         fprintf (stderr,
-                                 "Bad regex in %s: %s\n",
-                                 config.filter, p->pat);
+                                 "Bad regex in %s: line %d - %s\n",
+                                 config->filter, lineno, s);
+                        exit (EX_DATAERR);
+                }
+                if (!sblist_add(fl, &fe)) {
+                oom:;
+                        fprintf (stderr,
+                                 "out of memory parsing filter file %s: line %d\n",
+                                 config->filter, lineno);
                         exit (EX_DATAERR);
                 }
         }
@@ -136,15 +133,16 @@ void filter_init (void)
 /* unlink the list */
 void filter_destroy (void)
 {
-        struct filter_list *p, *q;
+        struct filter_list *p;
+        size_t i;
 
         if (already_init) {
-                for (p = q = fl; p; p = q) {
-                        regfree (p->cpat);
-                        safefree (p->cpat);
-                        safefree (p->pat);
-                        q = p->next;
-                        safefree (p);
+                if (fl) {
+                        for (i = 0; i < sblist_getsize(fl); ++i) {
+                                p = sblist_get(fl, i);
+                                regfree (&p->cpatb);
+                        }
+                        sblist_free(fl);
                 }
                 fl = NULL;
                 already_init = 0;
@@ -156,7 +154,7 @@ void filter_destroy (void)
  */
 void filter_reload (void)
 {
-        if (config.filter) {
+        if (config->filter) {
                 log_message (LOG_NOTICE, "Re-reading filter file.");
                 filter_destroy ();
                 filter_init ();
@@ -164,45 +162,19 @@ void filter_reload (void)
 }
 
 /* Return 0 to allow, non-zero to block */
-int filter_domain (const char *host)
+int filter_run (const char *str)
 {
         struct filter_list *p;
+        size_t i;
         int result;
 
         if (!fl || !already_init)
                 goto COMMON_EXIT;
 
-        for (p = fl; p; p = p->next) {
+        for (i = 0; i < sblist_getsize(fl); ++i) {
+                p = sblist_get(fl, i);
                 result =
-                    regexec (p->cpat, host, (size_t) 0, (regmatch_t *) 0, 0);
-
-                if (result == 0) {
-                        if (default_policy == FILTER_DEFAULT_ALLOW)
-                                return 1;
-                        else
-                                return 0;
-                }
-        }
-
-COMMON_EXIT:
-        if (default_policy == FILTER_DEFAULT_ALLOW)
-                return 0;
-        else
-                return 1;
-}
-
-/* returns 0 to allow, non-zero to block */
-int filter_url (const char *url)
-{
-        struct filter_list *p;
-        int result;
-
-        if (!fl || !already_init)
-                goto COMMON_EXIT;
-
-        for (p = fl; p; p = p->next) {
-                result =
-                    regexec (p->cpat, url, (size_t) 0, (regmatch_t *) 0, 0);
+                    regexec (&p->cpatb, str, (size_t) 0, (regmatch_t *) 0, 0);
 
                 if (result == 0) {
                         if (default_policy == FILTER_DEFAULT_ALLOW)

@@ -4,15 +4,15 @@ sudo: true
 
 before_install:
 - sudo apt-get update -qq
-- sudo apt-get install --assume-yes asciidoc valgrind
+- sudo apt-get install --assume-yes valgrind
 
 script:
 - ./autogen.sh
 - ./configure
 - make
 - make test
+- make clean
 - ./configure --enable-debug --enable-transparent --enable-reverse
 - make
 - make test
 - make valgrind-test
-- make distcheck

@@ -41,13 +41,13 @@ int add_new_errorpage (char *filepath, unsigned int errornum)
 {
         char errornbuf[ERRORNUM_BUFSIZE];
 
-        config.errorpages = hashmap_create (ERRPAGES_BUCKETCOUNT);
-        if (!config.errorpages)
+        config->errorpages = hashmap_create (ERRPAGES_BUCKETCOUNT);
+        if (!config->errorpages)
                 return (-1);
 
         snprintf (errornbuf, ERRORNUM_BUFSIZE, "%u", errornum);
 
-        if (hashmap_insert (config.errorpages, errornbuf,
+        if (hashmap_insert (config->errorpages, errornbuf,
                             filepath, strlen (filepath) + 1) < 0)
                 return (-1);
 
@@ -66,19 +66,19 @@ static char *get_html_file (unsigned int errornum)
 
         assert (errornum >= 100 && errornum < 1000);
 
-        if (!config.errorpages)
-                return (config.errorpage_undef);
+        if (!config->errorpages)
+                return (config->errorpage_undef);
 
         snprintf (errornbuf, ERRORNUM_BUFSIZE, "%u", errornum);
 
-        result_iter = hashmap_find (config.errorpages, errornbuf);
+        result_iter = hashmap_find (config->errorpages, errornbuf);
 
-        if (hashmap_is_end (config.errorpages, result_iter))
-                return (config.errorpage_undef);
+        if (hashmap_is_end (config->errorpages, result_iter))
+                return (config->errorpage_undef);
 
-        if (hashmap_return_entry (config.errorpages, result_iter,
+        if (hashmap_return_entry (config->errorpages, result_iter,
                                   &key, (void **) &val) < 0)
-                return (config.errorpage_undef);
+                return (config->errorpage_undef);
 
         return (val);
 }
@@ -107,7 +107,7 @@ send_html_file (FILE *infile, struct conn_s *connptr)
                                         varval = (const char *)
                                                 lookup_variable (connptr->error_variables,
                                                                  varstart);
-                                        if (!varval)
+                                        if (!varval || !varval[0])
                                                 varval = "(unknown)";
                                         r = write_message (connptr->client_fd,
                                                            "%s", varval);
@@ -164,13 +164,17 @@ int send_http_headers (struct conn_s *connptr, int code, const char *message)
             "%s"
             "Connection: close\r\n" "\r\n";
 
-        const char auth_str[] =
+        const char p_auth_str[] =
             "Proxy-Authenticate: Basic realm=\""
+            PACKAGE_NAME "\"\r\n";
+
+        const char w_auth_str[] =
+            "WWW-Authenticate: Basic realm=\""
             PACKAGE_NAME "\"\r\n";
 
 	/* according to rfc7235, the 407 error must be accompanied by
            a Proxy-Authenticate header field. */
-        const char *add = code == 407 ? auth_str : "";
+        const char *add = code == 407 ? p_auth_str : (code == 401 ? w_auth_str : "");
 
         return (write_message (connptr->client_fd, headers,
                                code, message, PACKAGE, VERSION,
@@ -258,7 +262,6 @@ int add_standard_vars (struct conn_s *connptr)
         ADD_VAR_RET ("cause", connptr->error_string);
         ADD_VAR_RET ("request", connptr->request_line);
         ADD_VAR_RET ("clientip", connptr->client_ip_addr);
-        ADD_VAR_RET ("clienthost", connptr->client_string_addr);
 
         /* The following value parts are all non-NULL and will
          * trigger warnings in ADD_VAR_RET(), so we use

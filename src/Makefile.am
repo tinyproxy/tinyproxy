@@ -48,10 +48,12 @@ tinyproxy_SOURCES = \
 	upstream.c upstream.h \
 	basicauth.c basicauth.h \
 	base64.c base64.h \
+	sblist.c sblist.h \
+	loop.c loop.h \
 	connect-ports.c connect-ports.h
 
 EXTRA_tinyproxy_SOURCES = filter.c filter.h \
 	reverse-proxy.c reverse-proxy.h \
 	transparent-proxy.c transparent-proxy.h
 tinyproxy_DEPENDENCIES = @ADDITIONAL_OBJECTS@
-tinyproxy_LDADD = @ADDITIONAL_OBJECTS@
+tinyproxy_LDADD = @ADDITIONAL_OBJECTS@ -lpthread
