@@ -464,7 +464,7 @@ int reload_config_file (const char *config_fname, struct config_s *conf)
 {
         int ret;
 
-        log_message (LOG_INFO, "Reloading config file");
+        log_message (LOG_NOTICE, "Reloading config file");
 
         free_config (conf);
 

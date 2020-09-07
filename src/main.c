@@ -293,7 +293,7 @@ main (int argc, char **argv)
          */
         umask (0177);
 
-        log_message (LOG_INFO, "Initializing " PACKAGE " ...");
+        log_message (LOG_NOTICE, "Initializing " PACKAGE " ...");
 
         if (config_compile_regex()) {
                 exit (EX_SOFTWARE);
@@ -396,7 +396,7 @@ main (int argc, char **argv)
 
         child_main_loop ();
 
-        log_message (LOG_INFO, "Shutting down.");
+        log_message (LOG_NOTICE, "Shutting down.");
 
         child_kill_children (SIGTERM);
         child_close_sock ();
