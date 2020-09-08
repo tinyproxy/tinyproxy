@@ -1485,14 +1485,15 @@ static int
 get_request_entity(struct conn_s *connptr)
 {
         int ret;
-        fd_set rset;
+        fd_set rset, wset;
         struct timeval tv;
 
         FD_ZERO (&rset);
         FD_SET (connptr->client_fd, &rset);
+        memcpy(&wset, &rset, sizeof wset);
         tv.tv_sec = config->idletimeout;
         tv.tv_usec = 0;
-        ret = select (connptr->client_fd + 1, &rset, NULL, NULL, &tv);
+        ret = select (connptr->client_fd + 1, &rset, &wset, NULL, &tv);
 
         if (ret == -1) {
                 log_message (LOG_ERR,
@@ -1514,6 +1515,8 @@ get_request_entity(struct conn_s *connptr)
                                      nread);
                         ret = 0;
                 }
+        } else if (ret == 1 && FD_ISSET (connptr->client_fd, &wset) && connptr->connect_method) {
+               ret = 0;
         } else {
                 log_message (LOG_ERR, "strange situation after select: "
                              "ret = %d, but client_fd (%d) is not readable...",
