@@ -131,7 +131,7 @@ send_html_file (FILE *infile, struct conn_s *connptr)
 int send_http_headers (struct conn_s *connptr, int code, const char *message)
 {
         const char headers[] =
-            "HTTP/1.0 %d %s\r\n"
+            "HTTP/1.%u %d %s\r\n"
             "Server: %s/%s\r\n"
             "Content-Type: text/html\r\n"
             "%s"
@@ -150,6 +150,7 @@ int send_http_headers (struct conn_s *connptr, int code, const char *message)
         const char *add = code == 407 ? p_auth_str : (code == 401 ? w_auth_str : "");
 
         return (write_message (connptr->client_fd, headers,
+                               connptr->protocol.major != 1 ? 0 : connptr->protocol.minor,
                                code, message, PACKAGE, VERSION,
                                add));
 }
