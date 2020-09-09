@@ -1177,12 +1177,17 @@ static void relay_connection (struct conn_s *connptr)
         last_access = time (NULL);
 
         for (;;) {
-                FD_ZERO (&rset);
-                FD_ZERO (&wset);
-
                 tv.tv_sec =
                     config->idletimeout - difftime (time (NULL), last_access);
                 tv.tv_usec = 0;
+
+                if (tv.tv_sec < 0) {
+                        tdiff = config->idletimeout + 1;
+                        goto e_timedout;
+                }
+
+                FD_ZERO (&rset);
+                FD_ZERO (&wset);
 
                 if (buffer_size (connptr->sbuffer) > 0)
                         FD_SET (connptr->client_fd, &wset);
@@ -1198,6 +1203,7 @@ static void relay_connection (struct conn_s *connptr)
                 if (ret == 0) {
                         tdiff = difftime (time (NULL), last_access);
                         if (tdiff > config->idletimeout) {
+                        e_timedout:;
                                 log_message (LOG_INFO,
                                              "Idle Timeout (after select) as %g > %u.",
                                              tdiff, config->idletimeout);
