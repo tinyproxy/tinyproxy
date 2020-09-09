@@ -1154,37 +1154,13 @@ static void relay_connection (struct conn_s *connptr)
 {
         fd_set rset, wset;
         struct timeval tv;
-        time_t last_access;
         int ret;
-        double tdiff;
         int maxfd = max (connptr->client_fd, connptr->server_fd) + 1;
         ssize_t bytes_received;
 
-        ret = socket_nonblocking (connptr->client_fd);
-        if (ret != 0) {
-                log_message(LOG_ERR, "Failed to set the client socket "
-                            "to non-blocking: %s", strerror(errno));
-                return;
-        }
-
-        ret = socket_nonblocking (connptr->server_fd);
-        if (ret != 0) {
-                log_message(LOG_ERR, "Failed to set the server socket "
-                            "to non-blocking: %s", strerror(errno));
-                return;
-        }
-
-        last_access = time (NULL);
-
         for (;;) {
-                tv.tv_sec =
-                    config->idletimeout - difftime (time (NULL), last_access);
+                tv.tv_sec = config->idletimeout;
                 tv.tv_usec = 0;
-
-                if (tv.tv_sec < 0) {
-                        tdiff = config->idletimeout + 1;
-                        goto e_timedout;
-                }
 
                 FD_ZERO (&rset);
                 FD_ZERO (&wset);
@@ -1201,16 +1177,9 @@ static void relay_connection (struct conn_s *connptr)
                 ret = select (maxfd, &rset, &wset, NULL, &tv);
 
                 if (ret == 0) {
-                        tdiff = difftime (time (NULL), last_access);
-                        if (tdiff > config->idletimeout) {
-                        e_timedout:;
-                                log_message (LOG_INFO,
-                                             "Idle Timeout (after select) as %g > %u.",
-                                             tdiff, config->idletimeout);
+                        log_message (LOG_INFO,
+                                     "Idle Timeout (after select)");
                                 return;
-                        } else {
-                                continue;
-                        }
                 } else if (ret < 0) {
                         log_message (LOG_ERR,
                                      "relay_connection: select() error \"%s\". "
@@ -1218,11 +1187,6 @@ static void relay_connection (struct conn_s *connptr)
                                      strerror (errno), connptr->client_fd,
                                      connptr->server_fd);
                         return;
-                } else {
-                        /*
-                         * All right, something was actually selected so mark it.
-                         */
-                        last_access = time (NULL);
                 }
 
                 if (FD_ISSET (connptr->server_fd, &rset)) {
@@ -1247,18 +1211,6 @@ static void relay_connection (struct conn_s *connptr)
                     && write_buffer (connptr->client_fd, connptr->sbuffer) < 0) {
                         break;
                 }
-        }
-
-        /*
-         * Here the server has closed the connection... write the
-         * remainder to the client and then exit.
-         */
-        ret = socket_blocking (connptr->client_fd);
-        if (ret != 0) {
-                log_message(LOG_ERR,
-                            "Failed to set client socket to blocking: %s",
-                            strerror(errno));
-                return;
         }
 
         while (buffer_size (connptr->sbuffer) > 0) {

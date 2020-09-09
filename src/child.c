@@ -130,14 +130,6 @@ void child_main_loop (void)
                 for (i = 0; i < vector_length(listen_fds); i++) {
                         int *fd = (int *) vector_getentry(listen_fds, i, NULL);
 
-                        ret = socket_nonblocking(*fd);
-                        if (ret != 0) {
-                                log_message(LOG_ERR, "Failed to set the listening "
-                                            "socket %d to non-blocking: %s",
-                                            fd, strerror(errno));
-                                continue;
-                        }
-
                         FD_SET(*fd, &rfds);
                         maxfd = max(maxfd, *fd);
                 }
@@ -172,14 +164,6 @@ void child_main_loop (void)
                 if (listenfd == -1) {
                         log_message(LOG_WARNING, "Strange: None of our listen "
                                     "fds was readable after select");
-                        continue;
-                }
-
-                ret = socket_blocking(listenfd);
-                if (ret != 0) {
-                        log_message(LOG_ERR, "Failed to set listening "
-                                    "socket %d to blocking for accept: %s",
-                                    listenfd, strerror(errno));
                         continue;
                 }
 
