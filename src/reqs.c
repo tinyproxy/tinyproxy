@@ -1713,12 +1713,24 @@ e401:
 
         if (process_client_headers (connptr, hashofheaders) < 0) {
                 update_stats (STAT_BADCONN);
+                log_message (LOG_INFO,
+                             "process_client_headers failed: %s. host \"%s\" using "
+                             "file descriptor %d.", strerror(errno),
+                             request->host,
+                             connptr->server_fd);
+
                 HC_FAIL();
         }
 
         if (!connptr->connect_method || UPSTREAM_IS_HTTP(connptr)) {
                 if (process_server_headers (connptr) < 0) {
                         update_stats (STAT_BADCONN);
+                        log_message (LOG_INFO,
+                             "process_server_headers failed: %s. host \"%s\" using "
+                             "file descriptor %d.", strerror(errno),
+                             request->host,
+                             connptr->server_fd);
+
                         HC_FAIL();
                 }
         } else {
