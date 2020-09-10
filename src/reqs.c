@@ -1522,6 +1522,10 @@ static void handle_connection_failure(struct conn_s *connptr)
  */
 void handle_connection (int fd, union sockaddr_union* addr)
 {
+
+#define HC_FAIL() \
+        do {handle_connection_failure(connptr); goto done;} while(0)
+
         ssize_t i;
         struct conn_s *connptr;
         struct request_s *request = NULL;
@@ -1565,7 +1569,7 @@ void handle_connection (int fd, union sockaddr_union* addr)
                                     "You tried to connect to the "
                                     "machine the proxy is running on",
                                     NULL);
-                goto fail;
+                HC_FAIL();
         }
 
 
@@ -1576,7 +1580,7 @@ void handle_connection (int fd, union sockaddr_union* addr)
                                      "The administrator of this proxy has not configured "
                                      "it to service requests from your host.",
                                      NULL);
-                goto fail;
+                HC_FAIL();
         }
 
         if (read_request_line (connptr) < 0) {
@@ -1585,7 +1589,7 @@ void handle_connection (int fd, union sockaddr_union* addr)
                                      "detail",
                                      "Server timeout waiting for the HTTP request "
                                      "from the client.", NULL);
-                goto fail;
+                HC_FAIL();
         }
 
         /*
@@ -1599,7 +1603,7 @@ void handle_connection (int fd, union sockaddr_union* addr)
                                      "An internal server error occurred while processing "
                                      "your request. Please contact the administrator.",
                                      NULL);
-                goto fail;
+                HC_FAIL();
         }
 
         /*
@@ -1613,7 +1617,7 @@ void handle_connection (int fd, union sockaddr_union* addr)
                                      "Could not retrieve all the headers from "
                                      "the client.", NULL);
                 update_stats (STAT_BADCONN);
-                goto fail;
+                HC_FAIL();
         }
 
         if (config->basicauth_list != NULL) {
@@ -1640,7 +1644,7 @@ void handle_connection (int fd, union sockaddr_union* addr)
                                              "detail",
                                              "This proxy requires authentication.",
                                              NULL);
-                        goto fail;
+                        HC_FAIL();
                 }
                 if ( /* currently only "basic" auth supported */
                         (strncmp(authstring, "Basic ", 6) == 0 ||
@@ -1655,7 +1659,7 @@ e401:
                                              "The administrator of this proxy has not configured "
                                              "it to service requests from you.",
                                              NULL);
-                        goto fail;
+                        HC_FAIL();
                 }
                 hashmap_remove (hashofheaders, "proxy-authorization");
         }
@@ -1678,13 +1682,13 @@ e401:
                 if (!connptr->show_stats) {
                         update_stats (STAT_BADCONN);
                 }
-                goto fail;
+                HC_FAIL();
         }
 
         connptr->upstream_proxy = UPSTREAM_HOST (request->host);
         if (connptr->upstream_proxy != NULL) {
                 if (connect_to_upstream (connptr, request) < 0) {
-                        goto fail;
+                        HC_FAIL();
                 }
         } else {
                 connptr->server_fd = opensock (request->host, request->port,
@@ -1695,7 +1699,7 @@ e401:
                                              PACKAGE_NAME " "
                                              "was unable to connect to the remote web server.",
                                              "error", strerror (errno), NULL);
-                        goto fail;
+                        HC_FAIL();
                 }
 
                 log_message (LOG_CONN,
@@ -1709,13 +1713,13 @@ e401:
 
         if (process_client_headers (connptr, hashofheaders) < 0) {
                 update_stats (STAT_BADCONN);
-                goto fail;
+                HC_FAIL();
         }
 
         if (!connptr->connect_method || UPSTREAM_IS_HTTP(connptr)) {
                 if (process_server_headers (connptr) < 0) {
                         update_stats (STAT_BADCONN);
-                        goto fail;
+                        HC_FAIL();
                 }
         } else {
                 if (send_ssl_response (connptr) < 0) {
@@ -1723,7 +1727,7 @@ e401:
                                      "handle_connection: Could not send SSL greeting "
                                      "to client.");
                         update_stats (STAT_BADCONN);
-                        goto fail;
+                        HC_FAIL();
                 }
         }
 
@@ -1734,14 +1738,10 @@ e401:
                      "and remote client (fd:%d)",
                      connptr->client_fd, connptr->server_fd);
 
-        goto done;
-
-fail:
-        handle_connection_failure(connptr);
-
 done:
         free_request_struct (request);
         hashmap_delete (hashofheaders);
         destroy_conn (connptr);
         return;
+#undef HC_FAIL
 }
