@@ -21,6 +21,8 @@
 #ifndef _VECTOR_H
 #define _VECTOR_H
 
+#include <unistd.h>
+
 /*
  * We're using a typedef here to "hide" the implementation details of the
  * vector.  Sure, it's a pointer, but the struct is hidden in the C file.
