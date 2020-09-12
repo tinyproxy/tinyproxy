@@ -288,6 +288,9 @@ free_added_headers (vector_t add_headers)
 
 void free_config (struct config_s *conf)
 {
+        char *k;
+        htab_value *v;
+        size_t it;
         safefree (conf->logf_name);
         safefree (conf->stathost);
         safefree (conf->user);
@@ -307,13 +310,25 @@ void free_config (struct config_s *conf)
         safefree (conf->pidpath);
         safefree (conf->bind_address);
         safefree (conf->via_proxy_name);
-        hashmap_delete (conf->errorpages);
+        if (conf->errorpages) {
+                it = 0;
+                while((it = htab_next(conf->errorpages, it, &k, &v))) {
+                        safefree(k);
+                        safefree(v->p);
+                }
+                htab_destroy (conf->errorpages);
+        }
         free_added_headers (conf->add_headers);
         safefree (conf->errorpage_undef);
         safefree (conf->statpage);
         flush_access_list (conf->access_list);
         free_connect_ports_list (conf->connect_ports);
-        hashmap_delete (conf->anonymous_map);
+        if (conf->anonymous_map) {
+                it = 0;
+                while((it = htab_next(conf->anonymous_map, it, &k, &v)))
+                       safefree(k);
+                htab_destroy (conf->anonymous_map);
+        }
 
         memset (conf, 0, sizeof(*conf));
 }
@@ -623,8 +638,14 @@ static HANDLE_FUNC (handle_anonymous)
         if (!arg)
                 return -1;
 
-        anonymous_insert (conf, arg);
-        safefree (arg);
+        if(anonymous_insert (conf, arg) < 0) {
+                log_message (LOG_WARNING,
+                             "anonymous_insert() failed: '%s'",
+                             arg);
+                safefree(arg);
+                return -1;
+        }
+
         return 0;
 }
 
@@ -814,8 +835,12 @@ static HANDLE_FUNC (handle_errorfile)
         unsigned long int err = get_long_arg (line, &match[2]);
         char *page = get_string_arg (line, &match[4]);
 
-        add_new_errorpage (conf, page, err);
-        safefree (page);
+        if(add_new_errorpage (conf, page, err) < 0) {
+                log_message (LOG_WARNING,
+                             "add_new_errorpage() failed: '%s'",
+                             page);
+                safefree (page);
+        }
         return 0;
 }
 

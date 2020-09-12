@@ -122,8 +122,16 @@ void destroy_conn (struct conn_s *connptr)
         if (connptr->request_line)
                 safefree (connptr->request_line);
 
-        if (connptr->error_variables)
-                hashmap_delete (connptr->error_variables);
+        if (connptr->error_variables) {
+                char *k;
+                htab_value *v;
+                size_t it = 0;
+                while((it = htab_next(connptr->error_variables, it, &k, &v))) {
+                        safefree(v->p);
+                        safefree(k);
+                }
+                htab_destroy (connptr->error_variables);
+        }
 
         if (connptr->error_string)
                 safefree (connptr->error_string);

@@ -337,8 +337,8 @@ main (int argc, char **argv)
          * HTTP/1.0 request. Also add the Content-Type header since it
          * goes hand in hand with Content-Length. */
         if (is_anonymous_enabled (config)) {
-                anonymous_insert (config, "Content-Length");
-                anonymous_insert (config, "Content-Type");
+                anonymous_insert (config, safestrdup("Content-Length"));
+                anonymous_insert (config, safestrdup("Content-Type"));
         }
 
         if (daemonized == TRUE) {

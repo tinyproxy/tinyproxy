@@ -23,7 +23,7 @@
 #include "main.h"
 
 #include "anonymous.h"
-#include "hashmap.h"
+#include "hsearch.h"
 #include "heap.h"
 #include "log.h"
 #include "conf.h"
@@ -42,7 +42,7 @@ int anonymous_search (struct config_s *conf, const char *s)
         assert (s != NULL);
         assert (conf->anonymous_map != NULL);
 
-        return hashmap_search (conf->anonymous_map, s);
+        return !!htab_find (conf->anonymous_map, s);
 }
 
 /*
@@ -51,23 +51,21 @@ int anonymous_search (struct config_s *conf, const char *s)
  * Return -1 if there is an error, otherwise a 0 is returned if the insert was
  * successful.
  */
-int anonymous_insert (struct config_s *conf, const char *s)
+int anonymous_insert (struct config_s *conf, char *s)
 {
-        char data = 1;
-
         assert (s != NULL);
 
         if (!conf->anonymous_map) {
-                conf->anonymous_map = hashmap_create (32);
+                conf->anonymous_map = htab_create (32);
                 if (!conf->anonymous_map)
                         return -1;
         }
 
-        if (hashmap_search (conf->anonymous_map, s) > 0) {
-                /* The key was already found, so return a positive number. */
+        if (htab_find (conf->anonymous_map, s)) {
+                /* The key was already found. */
                 return 0;
         }
 
         /* Insert the new key */
-        return hashmap_insert (conf->anonymous_map, s, &data, sizeof (data));
+        return htab_insert (conf->anonymous_map, s, HTV_N(1)) ? 0 : -1;
 }

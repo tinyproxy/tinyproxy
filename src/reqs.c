@@ -32,7 +32,7 @@
 #include "buffer.h"
 #include "conns.h"
 #include "filter.h"
-#include "hashmap.h"
+#include "hsearch.h"
 #include "orderedmap.h"
 #include "heap.h"
 #include "html-error.h"
