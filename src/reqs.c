@@ -1439,19 +1439,21 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
 #endif
 }
 
+/* this function "drains" remaining bytes in the read pipe from
+   the client. it's usually only called on error before displaying
+   an error code/page. */
 static int
 get_request_entity(struct conn_s *connptr)
 {
         int ret;
-        fd_set rset, wset;
+        fd_set rset;
         struct timeval tv;
 
         FD_ZERO (&rset);
         FD_SET (connptr->client_fd, &rset);
-        memcpy(&wset, &rset, sizeof wset);
         tv.tv_sec = config->idletimeout;
         tv.tv_usec = 0;
-        ret = select (connptr->client_fd + 1, &rset, &wset, NULL, &tv);
+        ret = select (connptr->client_fd + 1, &rset, NULL, NULL, &tv);
 
         if (ret == -1) {
                 log_message (LOG_ERR,
@@ -1473,8 +1475,6 @@ get_request_entity(struct conn_s *connptr)
                                      nread);
                         ret = 0;
                 }
-        } else if (ret == 1 && FD_ISSET (connptr->client_fd, &wset) && connptr->connect_method) {
-               ret = 0;
         } else {
                 log_message (LOG_ERR, "strange situation after select: "
                              "ret = %d, but client_fd (%d) is not readable...",
@@ -1485,7 +1485,7 @@ get_request_entity(struct conn_s *connptr)
         return ret;
 }
 
-static void handle_connection_failure(struct conn_s *connptr)
+static void handle_connection_failure(struct conn_s *connptr, int got_headers)
 {
         /*
          * First, get the body if there is one.
@@ -1493,7 +1493,7 @@ static void handle_connection_failure(struct conn_s *connptr)
          * it is still marked for reading and we won't be able
          * to send our data properly.
          */
-        if (get_request_entity (connptr) < 0) {
+        if (!got_headers && get_request_entity (connptr) < 0) {
                 log_message (LOG_WARNING,
                              "Could not retrieve request entity");
                 indicate_http_error (connptr, 400, "Bad Request",
@@ -1524,8 +1524,10 @@ void handle_connection (int fd, union sockaddr_union* addr)
 {
 
 #define HC_FAIL() \
-        do {handle_connection_failure(connptr); goto done;} while(0)
+        do {handle_connection_failure(connptr, got_headers); goto done;} \
+        while(0)
 
+        int got_headers = 0;
         ssize_t i;
         struct conn_s *connptr;
         struct request_s *request = NULL;
@@ -1619,6 +1621,7 @@ void handle_connection (int fd, union sockaddr_union* addr)
                 update_stats (STAT_BADCONN);
                 HC_FAIL();
         }
+        got_headers = 1;
 
         if (config->basicauth_list != NULL) {
                 ssize_t len;
