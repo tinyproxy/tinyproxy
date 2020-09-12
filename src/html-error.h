@@ -23,8 +23,9 @@
 
 /* Forward declaration */
 struct conn_s;
+struct config_s;
 
-extern int add_new_errorpage (char *filepath, unsigned int errornum);
+extern int add_new_errorpage (struct config_s *, char *filepath, unsigned int errornum);
 extern int send_http_error_message (struct conn_s *connptr);
 extern int indicate_http_error (struct conn_s *connptr, int number,
                                 const char *message, ...);

@@ -815,7 +815,7 @@ static HANDLE_FUNC (handle_errorfile)
         unsigned long int err = get_long_arg (line, &match[2]);
         char *page = get_string_arg (line, &match[4]);
 
-        add_new_errorpage (page, err);
+        add_new_errorpage (conf, page, err);
         safefree (page);
         return 0;
 }

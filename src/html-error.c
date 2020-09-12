@@ -37,17 +37,18 @@
 #define ERRORNUM_BUFSIZE 8      /* this is more than required */
 #define ERRPAGES_BUCKETCOUNT 16
 
-int add_new_errorpage (char *filepath, unsigned int errornum)
+int add_new_errorpage (struct config_s *conf, char *filepath,
+                       unsigned int errornum)
 {
         char errornbuf[ERRORNUM_BUFSIZE];
 
-        config->errorpages = hashmap_create (ERRPAGES_BUCKETCOUNT);
-        if (!config->errorpages)
+        conf->errorpages = hashmap_create (ERRPAGES_BUCKETCOUNT);
+        if (!conf->errorpages)
                 return (-1);
 
         snprintf (errornbuf, ERRORNUM_BUFSIZE, "%u", errornum);
 
-        if (hashmap_insert (config->errorpages, errornbuf,
+        if (hashmap_insert (conf->errorpages, errornbuf,
                             filepath, strlen (filepath) + 1) < 0)
                 return (-1);
 
