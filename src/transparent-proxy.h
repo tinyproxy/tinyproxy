@@ -26,11 +26,11 @@
 #ifdef TRANSPARENT_PROXY
 
 #include "conns.h"
-#include "hashmap.h"
+#include "orderedmap.h"
 #include "reqs.h"
 
 extern int do_transparent_proxy (struct conn_s *connptr,
-                                 hashmap_t hashofheaders,
+                                 orderedmap hashofheaders,
                                  struct request_s *request,
                                  struct config_s *config, char **url);
 

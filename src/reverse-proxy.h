@@ -22,6 +22,7 @@
 #define TINYPROXY_REVERSE_PROXY_H
 
 #include "conns.h"
+#include "orderedmap.h"
 
 struct reversepath {
         struct reversepath *next;
@@ -37,6 +38,6 @@ extern struct reversepath *reversepath_get (char *url,
                                             struct reversepath *reverse);
 void free_reversepath_list (struct reversepath *reverse);
 extern char *reverse_rewrite_url (struct conn_s *connptr,
-                                  hashmap_t hashofheaders, char *url);
+                                  orderedmap hashofheaders, char *url);
 
 #endif

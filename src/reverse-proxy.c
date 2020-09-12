@@ -111,7 +111,7 @@ void free_reversepath_list (struct reversepath *reverse)
 /*
  * Rewrite the URL for reverse proxying.
  */
-char *reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
+char *reverse_rewrite_url (struct conn_s *connptr, orderedmap hashofheaders,
                            char *url)
 {
         char *rewrite_url = NULL;
@@ -130,9 +130,8 @@ char *reverse_rewrite_url (struct conn_s *connptr, hashmap_t hashofheaders,
                         strcpy (rewrite_url, reverse->url);
                         strcat (rewrite_url, url + strlen (reverse->path));
                 } else if (config->reversemagic
-                           && hashmap_entry_by_key (hashofheaders,
-                                                    "cookie",
-                                                    (void **) &cookie) > 0) {
+                           && (cookie = orderedmap_find (hashofheaders,
+                                                    "cookie"))) {
 
                         /* No match - try the magical tracking cookie next */
                         if ((cookieval = strstr (cookie, REVERSE_COOKIE "="))
