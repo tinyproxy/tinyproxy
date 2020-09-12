@@ -53,7 +53,7 @@ static int build_url (char **url, const char *host, int port, const char *path)
 }
 
 int
-do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
+do_transparent_proxy (struct conn_s *connptr, orderedmap hashofheaders,
                       struct request_s *request, struct config_s *conf,
                       char **url)
 {
@@ -62,8 +62,8 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
         size_t ulen = strlen (*url);
         ssize_t i;
 
-        length = hashmap_entry_by_key (hashofheaders, "host", (void **) &data);
-        if (length <= 0) {
+        data = orderedmap_find (hashofheaders, "host");
+        if (!data) {
                 union sockaddr_union dest_addr;
                 const void *dest_inaddr;
                 char namebuf[INET6_ADDRSTRLEN+1];
@@ -102,6 +102,7 @@ do_transparent_proxy (struct conn_s *connptr, hashmap_t hashofheaders,
                              "process_request: trans IP %s %s for %d",
                              request->method, *url, connptr->client_fd);
         } else {
+                length = strlen (data);
                 request->host = (char *) safemalloc (length + 1);
                 if (sscanf (data, "%[^:]:%hu", request->host, &request->port) !=
                     2) {

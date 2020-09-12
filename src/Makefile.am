@@ -49,6 +49,8 @@ tinyproxy_SOURCES = \
 	basicauth.c basicauth.h \
 	base64.c base64.h \
 	sblist.c sblist.h \
+	hsearch.c hsearch.h \
+	orderedmap.c orderedmap.h \
 	loop.c loop.h \
 	connect-ports.c connect-ports.h
 
