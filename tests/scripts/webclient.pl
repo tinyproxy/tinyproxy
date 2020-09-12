@@ -122,11 +122,16 @@ foreach my $document (@ARGV) {
 
 	print $remote $request;
 
+	$_ = <$remote>;
+	print; # /* HTTP/1.0 400 Bad Request */
+	my($errn) = ($_ =~ /HTTP\/\d\.\d (\d{3})/);
+
 	while (<$remote>) {
 		print;
 	}
 
 	close $remote;
+	exit($errn - 399) if($errn > 399);
 }
 
 exit(0);
