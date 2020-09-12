@@ -22,7 +22,7 @@
 #define TINYPROXY_CONNS_H
 
 #include "main.h"
-#include "hashmap.h"
+#include "hsearch.h"
 
 /*
  * Connection Definition
@@ -45,7 +45,7 @@ struct conn_s {
          * This structure stores key -> value mappings for substitution
          * in the error HTML files.
          */
-        hashmap_t error_variables;
+        struct htab *error_variables;
 
         int error_number;
         char *error_string;

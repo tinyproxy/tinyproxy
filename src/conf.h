@@ -22,7 +22,7 @@
 #ifndef TINYPROXY_CONF_H
 #define TINYPROXY_CONF_H
 
-#include "hashmap.h"
+#include "hsearch.h"
 #include "vector.h"
 #include "acl.h"
 
@@ -81,7 +81,7 @@ struct config_s {
         /*
          * Error page support.  Map error numbers to file paths.
          */
-        hashmap_t errorpages;
+        struct htab *errorpages;
 
         /*
          * Error page to be displayed if appropriate page cannot be located
@@ -105,7 +105,7 @@ struct config_s {
          * Map of headers which should be let through when the
          * anonymous feature is turned on.
          */
-        hashmap_t anonymous_map;
+        struct htab *anonymous_map;
 
         /*
          * Extra headers to be added to outgoing HTTP requests.

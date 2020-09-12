@@ -40,17 +40,22 @@
 int add_new_errorpage (struct config_s *conf, char *filepath,
                        unsigned int errornum)
 {
-        char errornbuf[ERRORNUM_BUFSIZE];
+        char errornbuf[ERRORNUM_BUFSIZE], *k;
 
-        conf->errorpages = hashmap_create (ERRPAGES_BUCKETCOUNT);
+        if (!conf->errorpages)
+                conf->errorpages = htab_create (ERRPAGES_BUCKETCOUNT);
         if (!conf->errorpages)
                 return (-1);
 
         snprintf (errornbuf, ERRORNUM_BUFSIZE, "%u", errornum);
 
-        if (hashmap_insert (conf->errorpages, errornbuf,
-                            filepath, strlen (filepath) + 1) < 0)
+        k = safestrdup(errornbuf);
+        if (!k) return -1;
+
+        if (!htab_insert (conf->errorpages, k, HTV_P(filepath))) {
+                safefree(k);
                 return (-1);
+        }
 
         return (0);
 }
@@ -60,10 +65,8 @@ int add_new_errorpage (struct config_s *conf, char *filepath,
  */
 static char *get_html_file (unsigned int errornum)
 {
-        hashmap_iter result_iter;
         char errornbuf[ERRORNUM_BUFSIZE];
-        char *key;
-        char *val;
+        htab_value *hv;
 
         assert (errornum >= 100 && errornum < 1000);
 
@@ -72,16 +75,15 @@ static char *get_html_file (unsigned int errornum)
 
         snprintf (errornbuf, ERRORNUM_BUFSIZE, "%u", errornum);
 
-        result_iter = hashmap_find (config->errorpages, errornbuf);
+        hv = htab_find (config->errorpages, errornbuf);
+        if (!hv) return (config->errorpage_undef);
+        return hv->p;
+}
 
-        if (hashmap_is_end (config->errorpages, result_iter))
-                return (config->errorpage_undef);
-
-        if (hashmap_return_entry (config->errorpages, result_iter,
-                                  &key, (void **) &val) < 0)
-                return (config->errorpage_undef);
-
-        return (val);
+static char *lookup_variable (struct htab *map, const char *varname) {
+	htab_value *v;
+	v = htab_find(map, varname);
+	return v ? v->p : 0;
 }
 
 static void varsubst_sendline(struct conn_s *connptr, regex_t *re, char *p) {
@@ -203,14 +205,25 @@ int send_http_error_message (struct conn_s *connptr)
 int
 add_error_variable (struct conn_s *connptr, const char *key, const char *val)
 {
+	char *k, *v;
+
         if (!connptr->error_variables)
                 if (!
                     (connptr->error_variables =
-                     hashmap_create (ERRVAR_BUCKETCOUNT)))
+                     htab_create (ERRVAR_BUCKETCOUNT)))
                         return (-1);
 
-        return hashmap_insert (connptr->error_variables, key, val,
-                               strlen (val) + 1);
+        k = safestrdup(key);
+        v = safestrdup(val);
+
+        if (!v || !k) goto oom;
+
+        if(htab_insert (connptr->error_variables, k, HTV_P(v)))
+                return 1;
+oom:;
+	safefree(k);
+	safefree(v);
+	return -1;
 }
 
 #define ADD_VAR_RET(x, y)				   \
