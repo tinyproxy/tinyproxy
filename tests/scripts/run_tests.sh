@@ -80,6 +80,9 @@ Listen $TINYPROXY_IP
 Timeout 600
 StatHost "$TINYPROXY_STATHOST_IP"
 DefaultErrorFile "$TINYPROXY_DATA_DIR/debug.html"
+ErrorFile 400 "$TINYPROXY_DATA_DIR/debug.html"
+ErrorFile 403 "$TINYPROXY_DATA_DIR/debug.html"
+ErrorFile 501 "$TINYPROXY_DATA_DIR/debug.html"
 StatFile "$TINYPROXY_DATA_DIR/stats.html"
 Logfile "$TINYPROXY_LOG_FILE"
 PidFile "$TINYPROXY_PID_FILE"
@@ -90,18 +93,27 @@ ViaProxyName "tinyproxy"
 #DisableViaHeader Yes
 ConnectPort 443
 ConnectPort 563
-FilterURLs On
+#FilterURLs On
 Filter "$TINYPROXY_FILTER_FILE"
 XTinyproxy Yes
 EOF
 
-	touch $TINYPROXY_FILTER_FILE
+cat << 'EOF' > $TINYPROXY_FILTER_FILE
+.*\.google-analytics\.com$
+EOF
 }
 
 start_tinyproxy() {
 	echo -n "starting tinyproxy..."
 	$VALGRIND $TINYPROXY_BIN -c $TINYPROXY_CONF_FILE 2> $TINYPROXY_STDERR_LOG
 	echo " done (listening on $TINYPROXY_IP:$TINYPROXY_PORT)"
+}
+
+reload_config() {
+	echo -n "signaling tinyproxy to reload config..."
+	pid=$(cat $TINYPROXY_PID_FILE)
+	kill -s SIGHUP $pid
+	echo
 }
 
 stop_tinyproxy() {
@@ -157,7 +169,7 @@ wait_for_some_seconds() {
 }
 
 run_basic_webclient_request() {
-	$WEBCLIENT_BIN $1 $2 >> $WEBCLIENT_LOG 2>&1
+	$WEBCLIENT_BIN $1 $2 > $WEBCLIENT_LOG 2>&1
 	WEBCLIENT_EXIT_CODE=$?
 	if test "x$WEBCLIENT_EXIT_CODE" = "x0" ; then
 		echo " ok"
@@ -165,9 +177,29 @@ run_basic_webclient_request() {
 		echo "ERROR ($WEBCLIENT_EXIT_CODE)"
 		echo "webclient output:"
 		cat $WEBCLIENT_LOG
+		echo "######################################"
 	fi
 
 	return $WEBCLIENT_EXIT_CODE
+}
+
+run_failure_webclient_request() {
+	ec=$1
+	expected_error=$(($1 - 399))
+	shift
+	$WEBCLIENT_BIN "$1" "$2" "$3" "$4" > $WEBCLIENT_LOG 2>&1
+	WEBCLIENT_EXIT_CODE=$?
+	if test "x$WEBCLIENT_EXIT_CODE" = "x$expected_error" ; then
+		echo " ok, got expected error code $ec"
+		return 0
+	else
+		echo "ERROR ($WEBCLIENT_EXIT_CODE)"
+		echo "webclient output:"
+		cat $WEBCLIENT_LOG
+		echo "######################################"
+	fi
+
+	return 1
 }
 
 # "main"
@@ -179,10 +211,11 @@ provision_webserver
 start_webserver
 start_tinyproxy
 
-wait_for_some_seconds 3
+wait_for_some_seconds 1
 
 FAILED=0
 
+basic_test() {
 echo -n "checking direct connection to web server..."
 run_basic_webclient_request "$WEBSERVER_IP:$WEBSERVER_PORT" /
 test "x$?" = "x0" || FAILED=$((FAILED + 1))
@@ -194,6 +227,26 @@ test "x$?" = "x0" || FAILED=$((FAILED + 1))
 echo -n "requesting statspage via stathost url..."
 run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$TINYPROXY_STATHOST_IP"
 test "x$?" = "x0" || FAILED=$((FAILED + 1))
+}
+
+ext_test() {
+echo -n "checking bogus request..."
+run_failure_webclient_request 400 --method="BIG FART" "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT"
+test "x$?" = "x0" || FAILED=$((FAILED + 1))
+
+echo -n "testing connection to filtered domain..."
+run_failure_webclient_request 403 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://badgoy.google-analytics.com/"
+test "x$?" = "x0" || FAILED=$((FAILED + 1))
+
+echo -n "requesting connect method to denied port..."
+run_failure_webclient_request 403 --method=CONNECT "$TINYPROXY_IP:$TINYPROXY_PORT" "localhost:12345"
+test "x$?" = "x0" || FAILED=$((FAILED + 1))
+}
+
+basic_test
+reload_config
+basic_test
+ext_test
 
 echo "$FAILED errors"
 
