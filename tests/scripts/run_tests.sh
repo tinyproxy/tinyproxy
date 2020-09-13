@@ -112,8 +112,8 @@ start_tinyproxy() {
 reload_config() {
 	echo -n "signaling tinyproxy to reload config..."
 	pid=$(cat $TINYPROXY_PID_FILE)
-	kill -s SIGHUP $pid
-	echo
+	#1: SIGHUP
+	kill -1 $pid && echo "ok" || echo "fail"
 }
 
 stop_tinyproxy() {
