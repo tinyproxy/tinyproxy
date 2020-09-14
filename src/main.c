@@ -388,6 +388,7 @@ main (int argc, char **argv)
 
         setup_sig (SIGCHLD, takesig, "SIGCHLD", argv[0]);
         setup_sig (SIGTERM, takesig, "SIGTERM", argv[0]);
+        setup_sig (SIGINT, takesig, "SIGINT", argv[0]);
         if (daemonized) setup_sig (SIGHUP, takesig, "SIGHUP", argv[0]);
         setup_sig (SIGUSR1, takesig, "SIGUSR1", argv[0]);
 
