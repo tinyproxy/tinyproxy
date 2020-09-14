@@ -24,6 +24,7 @@
 
 #include "common.h"
 #include "sock.h"
+#include "conns.h"
 
 /*
  * Port constants for HTTP (80) and SSL (443)
@@ -44,6 +45,6 @@ struct request_s {
         char *path;
 };
 
-extern void handle_connection (int fd, union sockaddr_union* addr);
+extern void handle_connection (struct conn_s *, union sockaddr_union* addr);
 
 #endif

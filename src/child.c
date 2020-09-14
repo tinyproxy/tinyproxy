@@ -33,25 +33,26 @@
 #include "conf.h"
 #include "sblist.h"
 #include "loop.h"
+#include "conns.h"
 #include <pthread.h>
 
 static vector_t listen_fds;
 
 struct client {
         union sockaddr_union addr;
-        int fd;
 };
 
 struct child {
 	pthread_t thread;
 	struct client client;
+	struct conn_s conn;
 	volatile int done;
 };
 
 static void* child_thread(void* data)
 {
 	struct child *c = data;
-	handle_connection (c->client.fd, &c->client.addr);
+	handle_connection (&c->conn, &c->client.addr);
 	c->done = 1;
 	return NULL;
 }
@@ -185,7 +186,7 @@ void child_main_loop (void)
                         continue;
                 }
 
-                child = safemalloc(sizeof(struct child));
+                child = safecalloc(1, sizeof(struct child));
                 if (!child) {
 oom:
                         close(connfd);
@@ -202,7 +203,9 @@ oom:
                         goto oom;
                 }
 
-                child->client.fd = connfd;
+                conn_struct_init(&child->conn);
+                child->conn.client_fd = connfd;
+
                 memcpy(&child->client.addr, &cliaddr_storage, sizeof(cliaddr_storage));
 
                 attrp = 0;
@@ -233,7 +236,7 @@ void child_kill_children (int sig)
 		if (!c->done) {
 			/* interrupt blocking operations.
 			   this should cause the threads to shutdown orderly. */
-			close(c->client.fd);
+			close(c->conn.client_fd);
 		}
 	}
 	usleep(16);

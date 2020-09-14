@@ -30,13 +30,20 @@
 #include "log.h"
 #include "stats.h"
 
-struct conn_s *initialize_conn (int client_fd, const char *ipaddr,
+void conn_struct_init(struct conn_s *connptr) {
+        connptr->error_number = -1;
+        connptr->client_fd = -1;
+        connptr->server_fd = -1;
+        /* There is _no_ content length initially */
+        connptr->content_length.server = connptr->content_length.client = -1;
+}
+
+int conn_init_contents (struct conn_s *connptr, const char *ipaddr,
                                 const char *sock_ipaddr)
 {
-        struct conn_s *connptr;
         struct buffer_s *cbuffer, *sbuffer;
 
-        assert (client_fd >= 0);
+        assert (connptr->client_fd >= 0);
 
         /*
          * Allocate the memory for all the internal components
@@ -47,47 +54,16 @@ struct conn_s *initialize_conn (int client_fd, const char *ipaddr,
         if (!cbuffer || !sbuffer)
                 goto error_exit;
 
-        /*
-         * Allocate the space for the conn_s structure itself.
-         */
-        connptr = (struct conn_s *) safemalloc (sizeof (struct conn_s));
-        if (!connptr)
-                goto error_exit;
-
-        connptr->client_fd = client_fd;
-        connptr->server_fd = -1;
-
         connptr->cbuffer = cbuffer;
         connptr->sbuffer = sbuffer;
-
-        connptr->request_line = NULL;
-
-        /* These store any error strings */
-        connptr->error_variables = NULL;
-        connptr->error_string = NULL;
-        connptr->error_number = -1;
-
-        connptr->connect_method = FALSE;
-        connptr->show_stats = FALSE;
-
-        connptr->protocol.major = connptr->protocol.minor = 0;
-
-        /* There is _no_ content length initially */
-        connptr->content_length.server = connptr->content_length.client = -1;
 
         connptr->server_ip_addr = (sock_ipaddr ?
                                    safestrdup (sock_ipaddr) : NULL);
         connptr->client_ip_addr = safestrdup (ipaddr);
 
-        connptr->upstream_proxy = NULL;
-
         update_stats (STAT_OPEN);
 
-#ifdef REVERSE_SUPPORT
-        connptr->reversepath = NULL;
-#endif
-
-        return connptr;
+        return 1;
 
 error_exit:
         /*
@@ -98,10 +74,10 @@ error_exit:
         if (sbuffer)
                 delete_buffer (sbuffer);
 
-        return NULL;
+        return 0;
 }
 
-void destroy_conn (struct conn_s *connptr)
+void conn_destroy_contents (struct conn_s *connptr)
 {
         assert (connptr != NULL);
 
@@ -109,10 +85,12 @@ void destroy_conn (struct conn_s *connptr)
                 if (close (connptr->client_fd) < 0)
                         log_message (LOG_INFO, "Client (%d) close message: %s",
                                      connptr->client_fd, strerror (errno));
+        connptr->client_fd = -1;
         if (connptr->server_fd != -1)
                 if (close (connptr->server_fd) < 0)
                         log_message (LOG_INFO, "Server (%d) close message: %s",
                                      connptr->server_fd, strerror (errno));
+        connptr->server_fd = -1;
 
         if (connptr->cbuffer)
                 delete_buffer (connptr->cbuffer);
@@ -145,8 +123,6 @@ void destroy_conn (struct conn_s *connptr)
         if (connptr->reversepath)
                 safefree (connptr->reversepath);
 #endif
-
-        safefree (connptr);
 
         update_stats (STAT_CLOSE);
 }
