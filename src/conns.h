@@ -87,11 +87,13 @@ struct conn_s {
         struct upstream *upstream_proxy;
 };
 
-/*
- * Functions for the creation and destruction of a connection structure.
- */
-extern struct conn_s *initialize_conn (int client_fd, const char *ipaddr,
+/* expects pointer to zero-initialized struct, set up struct
+   with default values for initial use */
+extern void conn_struct_init(struct conn_s *connptr);
+
+/* second stage initializiation, sets up buffers and connection details */
+extern int conn_init_contents (struct conn_s *connptr, const char *ipaddr,
                                        const char *sock_ipaddr);
-extern void destroy_conn (struct conn_s *connptr);
+extern void conn_destroy_contents (struct conn_s *connptr);
 
 #endif

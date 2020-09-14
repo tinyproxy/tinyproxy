@@ -1509,16 +1509,15 @@ static void handle_connection_failure(struct conn_s *connptr, int got_headers)
  * tinyproxy code, which was confusing, redundant. Hail progress.
  * 	- rjkaes
  */
-void handle_connection (int fd, union sockaddr_union* addr)
+void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
 {
 
 #define HC_FAIL() \
         do {handle_connection_failure(connptr, got_headers); goto done;} \
         while(0)
 
-        int got_headers = 0;
+        int got_headers = 0, fd = connptr->client_fd;
         ssize_t i;
-        struct conn_s *connptr;
         struct request_s *request = NULL;
         struct timeval tv;
         orderedmap hashofheaders = NULL;
@@ -1536,9 +1535,8 @@ void handle_connection (int fd, union sockaddr_union* addr)
                      "Connect (file descriptor %d): %s",
                      fd, peer_ipaddr, sock_ipaddr);
 
-        connptr = initialize_conn (fd, peer_ipaddr,
-                                   config->bindsame ? sock_ipaddr : NULL);
-        if (!connptr) {
+        if(!conn_init_contents (connptr, peer_ipaddr,
+                                   config->bindsame ? sock_ipaddr : NULL)) {
                 close (fd);
                 return;
         }
@@ -1739,7 +1737,7 @@ e401:
 done:
         free_request_struct (request);
         orderedmap_destroy (hashofheaders);
-        destroy_conn (connptr);
+        conn_destroy_contents (connptr);
         return;
 #undef HC_FAIL
 }
