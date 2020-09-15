@@ -217,7 +217,6 @@ oom:
                         goto oom;
 		}
         }
-	sblist_free(childs);
 }
 
 /*
