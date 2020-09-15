@@ -48,6 +48,7 @@ struct htab {
 	struct elem *elems;
 	size_t mask;
 	size_t used;
+	size_t seed;
 };
 
 #define MINSIZE 8
@@ -64,10 +65,10 @@ struct htab {
 #define STRCMP(X, Y) strcmp(X, Y)
 #endif
 
-static size_t keyhash(const char *k)
+static size_t keyhash(const char *k, size_t seed)
 {
 	const unsigned char *p = (const void *)k;
-	size_t h = 0;
+	size_t h = seed;
 
 	while (*p)
 		h = 31*h + LOWER_OR_NOT(*p++);
@@ -127,6 +128,7 @@ struct htab *htab_create(size_t nel)
 		free(r);
 		r = 0;
 	}
+	r->seed = rand();
 	return r;
 }
 
@@ -138,7 +140,7 @@ void htab_destroy(struct htab *htab)
 
 static htab_entry *htab_find_item(struct htab *htab, const char* key)
 {
-	size_t hash = keyhash(key);
+	size_t hash = keyhash(key, htab->seed);
 	struct elem *e = lookup(htab, key, hash);
 
 	if (e->item.key) {
@@ -164,7 +166,7 @@ int htab_delete(struct htab *htab, const char* key)
 
 int htab_insert(struct htab *htab, char* key, htab_value value)
 {
-	size_t hash = keyhash(key);
+	size_t hash = keyhash(key, htab->seed);
 	struct elem *e = lookup(htab, key, hash);
 	if(e->item.key) {
 		/* it's not allowed to overwrite existing data */
