@@ -245,6 +245,10 @@ void child_kill_children (int sig)
 		);
 }
 
+void child_free_children(void) {
+	sblist_free(childs);
+	childs = 0;
+}
 
 /**
  * Listen on the various configured interfaces

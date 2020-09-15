@@ -401,6 +401,7 @@ main (int argc, char **argv)
 
         child_kill_children (SIGTERM);
         child_close_sock ();
+        child_free_children();
 
         /* Remove the PID file */
         if (config->pidpath != NULL && unlink (config->pidpath) < 0) {
