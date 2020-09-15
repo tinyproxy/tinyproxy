@@ -393,6 +393,8 @@ main (int argc, char **argv)
         if (daemonized) setup_sig (SIGHUP, takesig, "SIGHUP", argv[0]);
         setup_sig (SIGUSR1, takesig, "SIGUSR1", argv[0]);
 
+        loop_records_init();
+
         /* Start the main loop */
         log_message (LOG_INFO, "Starting main loop. Accepting connections.");
 
@@ -403,6 +405,8 @@ main (int argc, char **argv)
         child_kill_children (SIGTERM);
         child_close_sock ();
         child_free_children();
+
+        loop_records_destroy();
 
         /* Remove the PID file */
         if (config->pidpath != NULL && unlink (config->pidpath) < 0) {

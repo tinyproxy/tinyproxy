@@ -18,6 +18,11 @@ void loop_records_init(void) {
 	loop_records = sblist_new(sizeof (struct loop_record), 32);
 }
 
+void loop_records_destroy(void) {
+	sblist_free(loop_records);
+	loop_records = 0;
+}
+
 #if 0
 static void su_to_str(union sockaddr_union *addr, char *buf) {
 	int af = addr->v4.sin_family;

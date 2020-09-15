@@ -91,8 +91,6 @@ void child_main_loop (void)
 
         childs = sblist_new(sizeof (struct child*), config->maxclients);
 
-        loop_records_init();
-
         for (i = 0; i < nfds; i++) {
                 int *fd = (int *) vector_getentry(listen_fds, i, NULL);
                 fds[i].fd = *fd;
