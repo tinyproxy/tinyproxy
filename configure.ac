@@ -141,7 +141,7 @@ AC_HEADER_STDC
 AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([sys/ioctl.h alloca.h memory.h malloc.h sysexits.h \
-		  values.h])
+		  values.h poll.h])
 
 dnl Checks for libary functions
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
