@@ -43,7 +43,7 @@ struct stat_s {
         unsigned long int num_denied;
 };
 
-static struct stat_s *stats;
+static struct stat_s stats_buf, *stats;
 static pthread_mutex_t stats_update_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t stats_file_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -52,11 +52,7 @@ static pthread_mutex_t stats_file_lock = PTHREAD_MUTEX_INITIALIZER;
  */
 void init_stats (void)
 {
-        stats = (struct stat_s *) safemalloc (sizeof (struct stat_s));
-        if (!stats)
-                return;
-
-        memset (stats, 0, sizeof (struct stat_s));
+        stats = &stats_buf;
 }
 
 /*
