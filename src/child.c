@@ -34,6 +34,7 @@
 #include "sblist.h"
 #include "loop.h"
 #include "conns.h"
+#include "mypoll.h"
 #include <pthread.h>
 
 static vector_t listen_fds;
@@ -81,15 +82,22 @@ void child_main_loop (void)
         union sockaddr_union cliaddr_storage;
         struct sockaddr *cliaddr = (void*) &cliaddr_storage;
         socklen_t clilen = sizeof(cliaddr_storage);
-        fd_set rfds;
+        int nfds = vector_length(listen_fds);
+        pollfd_struct *fds = safecalloc(nfds, sizeof *fds);
         ssize_t i;
-        int ret, listenfd, maxfd, was_full = 0;
+        int ret, listenfd, was_full = 0;
         pthread_attr_t *attrp, attr;
         struct child *child;
 
         childs = sblist_new(sizeof (struct child*), config->maxclients);
 
         loop_records_init();
+
+        for (i = 0; i < nfds; i++) {
+                int *fd = (int *) vector_getentry(listen_fds, i, NULL);
+                fds[i].fd = *fd;
+                fds[i].events |= MYPOLL_READ;
+        }
 
         /*
          * We have to wait for connections on multiple fds,
@@ -111,7 +119,6 @@ void child_main_loop (void)
 
                 was_full = 0;
                 listenfd = -1;
-                maxfd = 0;
 
                 /* Handle log rotation if it was requested */
                 if (received_sighup) {
@@ -125,17 +132,8 @@ void child_main_loop (void)
                         received_sighup = FALSE;
                 }
 
+                ret = mypoll(fds, nfds, -1);
 
-                FD_ZERO(&rfds);
-
-                for (i = 0; i < vector_length(listen_fds); i++) {
-                        int *fd = (int *) vector_getentry(listen_fds, i, NULL);
-
-                        FD_SET(*fd, &rfds);
-                        maxfd = max(maxfd, *fd);
-                }
-
-                ret = select(maxfd + 1, &rfds, NULL, NULL, NULL);
                 if (ret == -1) {
                         if (errno == EINTR) {
                                 continue;
@@ -149,15 +147,13 @@ void child_main_loop (void)
                         continue;
                 }
 
-                for (i = 0; i < vector_length(listen_fds); i++) {
-                        int *fd = (int *) vector_getentry(listen_fds, i, NULL);
-
-                        if (FD_ISSET(*fd, &rfds)) {
+                for (i = 0; i < nfds; i++) {
+                        if (fds[i].revents & MYPOLL_READ) {
                                 /*
                                  * only accept the connection on the first
                                  * fd that we find readable. - fair?
                                  */
-                                listenfd = *fd;
+                                listenfd = fds[i].fd;
                                 break;
                         }
                 }
@@ -220,6 +216,7 @@ oom:
                         goto oom;
 		}
         }
+	safefree(fds);
 }
 
 /*

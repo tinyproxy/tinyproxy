@@ -51,6 +51,7 @@
 #include "conf.h"
 #include "basicauth.h"
 #include "loop.h"
+#include "mypoll.h"
 
 /*
  * Maximum length of a HTTP line
@@ -1141,29 +1142,24 @@ ERROR_EXIT:
  */
 static void relay_connection (struct conn_s *connptr)
 {
-        fd_set rset, wset;
-        struct timeval tv;
         int ret;
-        int maxfd = max (connptr->client_fd, connptr->server_fd) + 1;
         ssize_t bytes_received;
 
         for (;;) {
-                tv.tv_sec = config->idletimeout;
-                tv.tv_usec = 0;
-
-                FD_ZERO (&rset);
-                FD_ZERO (&wset);
+                pollfd_struct fds[2] = {0};
+                fds[0].fd = connptr->client_fd;
+                fds[1].fd = connptr->server_fd;
 
                 if (buffer_size (connptr->sbuffer) > 0)
-                        FD_SET (connptr->client_fd, &wset);
+                        fds[0].events |= MYPOLL_WRITE;
                 if (buffer_size (connptr->cbuffer) > 0)
-                        FD_SET (connptr->server_fd, &wset);
+                        fds[1].events |= MYPOLL_WRITE;
                 if (buffer_size (connptr->sbuffer) < MAXBUFFSIZE)
-                        FD_SET (connptr->server_fd, &rset);
+                        fds[1].events |= MYPOLL_READ;
                 if (buffer_size (connptr->cbuffer) < MAXBUFFSIZE)
-                        FD_SET (connptr->client_fd, &rset);
+                        fds[0].events |= MYPOLL_READ;
 
-                ret = select (maxfd, &rset, &wset, NULL, &tv);
+                ret = mypoll(fds, 2, config->idletimeout);
 
                 if (ret == 0) {
                         log_message (LOG_INFO,
@@ -1178,7 +1174,7 @@ static void relay_connection (struct conn_s *connptr)
                         return;
                 }
 
-                if (FD_ISSET (connptr->server_fd, &rset)) {
+                if (fds[1].revents & MYPOLL_READ) {
                         bytes_received =
                             read_buffer (connptr->server_fd, connptr->sbuffer);
                         if (bytes_received < 0)
@@ -1188,15 +1184,15 @@ static void relay_connection (struct conn_s *connptr)
                         if (connptr->content_length.server == 0)
                                 break;
                 }
-                if (FD_ISSET (connptr->client_fd, &rset)
+                if ((fds[0].revents & MYPOLL_READ)
                     && read_buffer (connptr->client_fd, connptr->cbuffer) < 0) {
                         break;
                 }
-                if (FD_ISSET (connptr->server_fd, &wset)
+                if ((fds[1].revents & MYPOLL_WRITE)
                     && write_buffer (connptr->server_fd, connptr->cbuffer) < 0) {
                         break;
                 }
-                if (FD_ISSET (connptr->client_fd, &wset)
+                if ((fds[0].revents & MYPOLL_WRITE)
                     && write_buffer (connptr->client_fd, connptr->sbuffer) < 0) {
                         break;
                 }
@@ -1435,14 +1431,12 @@ static int
 get_request_entity(struct conn_s *connptr)
 {
         int ret;
-        fd_set rset;
-        struct timeval tv;
+        pollfd_struct fds[1] = {0};
 
-        FD_ZERO (&rset);
-        FD_SET (connptr->client_fd, &rset);
-        tv.tv_sec = config->idletimeout;
-        tv.tv_usec = 0;
-        ret = select (connptr->client_fd + 1, &rset, NULL, NULL, &tv);
+        fds[0].fd = connptr->client_fd;
+        fds[0].events |= MYPOLL_READ;
+
+        ret = mypoll(fds, 1, config->idletimeout);
 
         if (ret == -1) {
                 log_message (LOG_ERR,
@@ -1450,7 +1444,7 @@ get_request_entity(struct conn_s *connptr)
                              connptr->client_fd, strerror(errno));
         } else if (ret == 0) {
                log_message (LOG_INFO, "no entity");
-        } else if (ret == 1 && FD_ISSET (connptr->client_fd, &rset)) {
+        } else if (ret == 1 && (fds[0].revents & MYPOLL_READ)) {
                 ssize_t nread;
                 nread = read_buffer (connptr->client_fd, connptr->cbuffer);
                 if (nread < 0) {
