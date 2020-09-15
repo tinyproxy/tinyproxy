@@ -51,6 +51,7 @@ tinyproxy_SOURCES = \
 	hsearch.c hsearch.h \
 	orderedmap.c orderedmap.h \
 	loop.c loop.h \
+	mypoll.c mypoll.h \
 	connect-ports.c connect-ports.h
 
 EXTRA_tinyproxy_SOURCES = filter.c filter.h \
