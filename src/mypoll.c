@@ -1,8 +1,14 @@
 #include "mypoll.h"
 
-#define MYPOLL_READ (1<<1)
-#define MYPOLL_WRITE (1<<2)
-
+#ifdef HAVE_POLL_H
+int mypoll(pollfd_struct* fds, int nfds, int timeout) {
+	int i, ret;
+	for(i=0; i<nfds; ++i) if(!fds[i].events) fds[i].fd=~fds[i].fd;
+	ret = poll(fds, nfds, timeout <= 0 ? timeout : timeout*1000);
+	for(i=0; i<nfds; ++i) if(!fds[i].events) fds[i].fd=~fds[i].fd;
+	return ret;
+}
+#else
 int mypoll(pollfd_struct* fds, int nfds, int timeout) {
 	fd_set rset, wset, *r=0, *w=0;
 	int i, ret, maxfd=-1;
@@ -39,4 +45,4 @@ int mypoll(pollfd_struct* fds, int nfds, int timeout) {
 	}
 	return ret;
 }
-
+#endif
