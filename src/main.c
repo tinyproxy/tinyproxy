@@ -38,6 +38,7 @@
 #include "heap.h"
 #include "filter.h"
 #include "child.h"
+#include "loop.h"
 #include "log.h"
 #include "reqs.h"
 #include "sock.h"
