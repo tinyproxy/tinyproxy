@@ -264,6 +264,7 @@ int reload_config (int reload_logging)
                 goto done;
         }
 
+        if(config) free_config (config);
         config = c_next;
 
         if (reload_logging) ret = setup_logging ();
@@ -414,6 +415,8 @@ main (int argc, char **argv)
         if (config->filter)
                 filter_destroy ();
 #endif /* FILTER_ENABLE */
+
+        free_config (config);
 
         shutdown_logging ();
 

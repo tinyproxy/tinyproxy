@@ -286,7 +286,7 @@ free_added_headers (vector_t add_headers)
         vector_delete (add_headers);
 }
 
-static void free_config (struct config_s *conf)
+void free_config (struct config_s *conf)
 {
         safefree (conf->logf_name);
         safefree (conf->stathost);
@@ -466,8 +466,6 @@ int reload_config_file (const char *config_fname, struct config_s *conf)
         int ret;
 
         log_message (LOG_NOTICE, "Reloading config file");
-
-        free_config (conf);
 
         initialize_config_defaults (conf);
 
