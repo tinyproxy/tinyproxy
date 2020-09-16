@@ -774,11 +774,16 @@ static HANDLE_FUNC (handle_group)
         return set_string_arg (&conf->group, line, &match[2]);
 }
 
+static void warn_invalid_address(char *arg, unsigned long lineno) {
+        log_message (LOG_WARNING, "Invalid address %s on line %lu", arg, lineno);
+}
+
 static HANDLE_FUNC (handle_allow)
 {
         char *arg = get_string_arg (line, &match[2]);
 
-        insert_acl (arg, ACL_ALLOW, &conf->access_list);
+        if(insert_acl (arg, ACL_ALLOW, &conf->access_list) < 0)
+                warn_invalid_address (arg, lineno);
         safefree (arg);
         return 0;
 }
@@ -787,7 +792,8 @@ static HANDLE_FUNC (handle_deny)
 {
         char *arg = get_string_arg (line, &match[2]);
 
-        insert_acl (arg, ACL_DENY, &conf->access_list);
+        if(insert_acl (arg, ACL_DENY, &conf->access_list) < 0)
+                warn_invalid_address (arg, lineno);
         safefree (arg);
         return 0;
 }
