@@ -115,7 +115,7 @@ struct config_s {
 
 extern int reload_config_file (const char *config_fname, struct config_s *conf);
 
-int config_compile_regex (void);
+int config_init (void);
 void free_config (struct config_s *conf);
 
 #endif

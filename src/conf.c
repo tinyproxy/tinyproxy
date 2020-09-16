@@ -37,6 +37,7 @@
 #include "upstream.h"
 #include "connect-ports.h"
 #include "basicauth.h"
+#include "conf-tokens.h"
 
 /*
  * The configuration directives are defined in the structure below.  Each
@@ -98,10 +99,13 @@ typedef int (*CONFFILE_HANDLER) (struct config_s *, const char *,
  * List all the handling functions.  These are defined later, but they need
  * to be in-scope before the big structure below.
  */
-static HANDLE_FUNC (handle_nop)
+static HANDLE_FUNC (handle_disabled_feature)
 {
-        return 0;
-}                               /* do nothing function */
+        fprintf (stderr, "ERROR: accessing feature that was disabled at compiletime on line %lu\n",
+                 lineno);
+
+        return -1;
+}
 
 static HANDLE_FUNC (handle_allow);
 static HANDLE_FUNC (handle_basicauth);
@@ -161,7 +165,7 @@ static void config_free_regex (void);
  * do not follow the pattern above.  This macro is for convenience
  * only.
  */
-#define STDCONF(d, re, func) { BEGIN "(" #d ")" WS re END, func, NULL }
+#define STDCONF(d, re, func) [CD_ ## d] = { BEGIN "()" WS re END, func, NULL }
 
 /*
  * Holds the regular expression used to match the configuration directive,
@@ -174,14 +178,6 @@ struct {
         CONFFILE_HANDLER handler;
         regex_t *cre;
 } directives[] = {
-        /* comments */
-        {
-                BEGIN "#", handle_nop, NULL
-        },
-        /* blank lines */
-        {
-                "^[[:space:]]+$", handle_nop, NULL
-        },
         /* string arguments */
         STDCONF (logfile, STR, handle_logfile),
         STDCONF (pidfile, STR, handle_pidfile),
@@ -326,19 +322,24 @@ void free_config (struct config_s *conf)
 }
 
 /*
+ * Initializes Config parser. Currently this means:
  * Compiles the regular expressions used by the configuration file.  This
  * routine MUST be called before trying to parse the configuration file.
  *
  * Returns 0 on success; negative upon failure.
  */
 int
-config_compile_regex (void)
+config_init (void)
 {
         unsigned int i, r;
 
         for (i = 0; i != ndirectives; ++i) {
-                assert (directives[i].handler);
                 assert (!directives[i].cre);
+
+                if (!directives[i].handler) {
+                        directives[i].handler = handle_disabled_feature;
+                        continue;
+                }
 
                 directives[i].cre = (regex_t *) safemalloc (sizeof (regex_t));
                 if (!directives[i].cre)
@@ -383,20 +384,17 @@ config_free_regex (void)
  * a negative number is returned.
  */
 static int check_match (struct config_s *conf, const char *line,
-                        unsigned long lineno)
+                        unsigned long lineno, enum config_directive cd)
 {
         regmatch_t match[RE_MAX_MATCHES];
-        unsigned int i;
+        unsigned int i = cd;
 
-        assert (ndirectives > 0);
+        if (!directives[i].cre)
+                return (*directives[i].handler) (conf, line, lineno, match);
 
-        for (i = 0; i != ndirectives; ++i) {
-                assert (directives[i].cre);
-                if (!regexec
-                    (directives[i].cre, line, RE_MAX_MATCHES, match, 0))
-                        return (*directives[i].handler) (conf, line, lineno, match);
-        }
-
+        if (!regexec
+            (directives[i].cre, line, RE_MAX_MATCHES, match, 0))
+                return (*directives[i].handler) (conf, line, lineno, match);
         return -1;
 }
 
@@ -405,15 +403,25 @@ static int check_match (struct config_s *conf, const char *line,
  */
 static int config_parse (struct config_s *conf, FILE * f)
 {
-        char buffer[LINE_MAX];
+        char buffer[LINE_MAX], *p, *q, c;
+        const struct config_directive_entry *e;
         unsigned long lineno = 1;
 
-        while (fgets (buffer, sizeof (buffer), f)) {
-                if (check_match (conf, buffer, lineno)) {
-                        printf ("Syntax error on line %ld\n", lineno);
+        for (;fgets (buffer, sizeof (buffer), f);++lineno) {
+                if(buffer[0] == '#') continue;
+                p = buffer;
+                while(isspace(*p))p++;
+                if(!*p) continue;
+                q = p;
+                while(!isspace(*q))q++;
+                c = *q;
+                *q = 0;
+                e = config_directive_find(p, strlen(p));
+                *q = c;
+                if (!e || e->value == CD_NIL || check_match (conf, q, lineno, e->value)) {
+                        fprintf (stderr, "ERROR: Syntax error on line %lu\n", lineno);
                         return 1;
                 }
-                ++lineno;
         }
         return 0;
 }

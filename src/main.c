@@ -300,7 +300,7 @@ main (int argc, char **argv)
 
         log_message (LOG_NOTICE, "Initializing " PACKAGE " ...");
 
-        if (config_compile_regex()) {
+        if (config_init()) {
                 exit (EX_SOFTWARE);
         }
 

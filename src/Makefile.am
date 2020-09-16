@@ -29,6 +29,7 @@ tinyproxy_SOURCES = \
 	buffer.c buffer.h \
 	child.c child.h \
 	common.h \
+	conf-tokens.c conf-tokens.h \
 	conf.c conf.h \
 	conns.c conns.h \
 	daemon.c daemon.h \
@@ -58,3 +59,6 @@ EXTRA_tinyproxy_SOURCES = filter.c filter.h \
 	transparent-proxy.c transparent-proxy.h
 tinyproxy_DEPENDENCIES = @ADDITIONAL_OBJECTS@
 tinyproxy_LDADD = @ADDITIONAL_OBJECTS@ -lpthread
+
+conf-tokens.c: conf-tokens.gperf
+	gperf $< > $@

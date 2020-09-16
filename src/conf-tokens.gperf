@@ -1,0 +1,61 @@
+%{
+#include <string.h>
+#include <stdlib.h>
+#include "conf-tokens.h"
+%}
+
+struct config_directive_entry { const char* name; enum config_directive value; };
+
+%struct-type
+%define slot-name name
+%define initializer-suffix ,CD_NIL
+%define lookup-function-name config_directive_find
+%ignore-case
+%7bit
+%compare-lengths
+%readonly-tables
+%define constants-prefix CDS_
+%omit-struct-type
+
+%%
+logfile, CD_logfile
+pidfile, CD_pidfile
+anonymous, CD_anonymous
+viaproxyname, CD_viaproxyname
+defaulterrorfile, CD_defaulterrorfile
+statfile, CD_statfile
+stathost, CD_stathost
+xtinyproxy, CD_xtinyproxy
+syslog, CD_syslog
+bindsame, CD_bindsame
+disableviaheader, CD_disableviaheader
+port, CD_port
+maxclients, CD_maxclients
+maxspareservers, CD_maxspareservers
+minspareservers, CD_minspareservers
+startservers, CD_startservers
+maxrequestsperchild, CD_maxrequestsperchild
+timeout, CD_timeout
+connectport, CD_connectport
+user, CD_user
+group, CD_group
+listen, CD_listen
+allow, CD_allow
+deny, CD_deny
+bind, CD_bind
+basicauth, CD_basicauth
+errorfile, CD_errorfile
+addheader, CD_addheader
+filter, CD_filter
+filterurls, CD_filterurls
+filterextended, CD_filterextended
+filterdefaultdeny, CD_filterdefaultdeny
+filtercasesensitive, CD_filtercasesensitive
+reversebaseurl, CD_reversebaseurl
+reverseonly, CD_reverseonly
+reversemagic, CD_reversemagic
+reversepath, CD_reversepath
+upstream, CD_upstream
+loglevel, CD_loglevel
+%%
+
