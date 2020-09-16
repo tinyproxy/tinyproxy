@@ -96,6 +96,9 @@ ConnectPort 563
 #FilterURLs On
 Filter "$TINYPROXY_FILTER_FILE"
 XTinyproxy Yes
+AddHeader "X-My-Header1" "Powered by Tinyproxy"
+AddHeader "X-My-Header2" "Powered by Tinyproxy"
+AddHeader "X-My-Header3" "Powered by Tinyproxy"
 EOF
 
 cat << 'EOF' > $TINYPROXY_FILTER_FILE
