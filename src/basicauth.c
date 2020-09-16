@@ -48,10 +48,10 @@ ssize_t basicauth_string(const char *user, const char *pass,
 /*
  * Add entry to the basicauth list
  */
-void basicauth_add (vector_t authlist,
+void basicauth_add (sblist *authlist,
 	const char *user, const char *pass)
 {
-	char b[BASE64ENC_BYTES((256+2)-1) + 1];
+	char b[BASE64ENC_BYTES((256+2)-1) + 1], *s;
 	ssize_t ret;
 
         ret = basicauth_string(user, pass, b, sizeof b);
@@ -65,7 +65,8 @@ void basicauth_add (vector_t authlist,
                 return;
         }
 
-        if (vector_append(authlist, b, ret + 1) == -ENOMEM) {
+        if (!(s = safestrdup(b)) || !sblist_add(authlist, &s)) {
+                safefree(s);
                 log_message (LOG_ERR,
                              "Unable to allocate memory in basicauth_add()");
                 return;
@@ -80,18 +81,16 @@ void basicauth_add (vector_t authlist,
  * is in the basicauth list.
  * return 1 on success, 0 on failure.
  */
-int basicauth_check (vector_t authlist, const char *authstring)
+int basicauth_check (sblist *authlist, const char *authstring)
 {
-        ssize_t vl, i;
-        size_t el;
-        const char* entry;
+        size_t i;
+        char** entry;
 
-        vl = vector_length (authlist);
-        if (vl == -EINVAL) return 0;
+        if (!authlist) return 0;
 
-        for (i = 0; i < vl; i++) {
-                entry = vector_getentry (authlist, i, &el);
-                if (strcmp (authstring, entry) == 0)
+        for (i = 0; i < sblist_getsize(authlist); i++) {
+                entry = sblist_get (authlist, i);
+                if (entry && strcmp (authstring, *entry) == 0)
                         return 1;
         }
 	return 0;

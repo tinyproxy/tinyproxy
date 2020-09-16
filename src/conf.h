@@ -38,7 +38,7 @@ typedef struct {
  * Hold all the configuration time information.
  */
 struct config_s {
-        vector_t basicauth_list;
+        sblist *basicauth_list;
         char *logf_name;
         unsigned int syslog;    /* boolean */
         unsigned int port;

@@ -289,7 +289,7 @@ free_added_headers (sblist* add_headers)
 
 void free_config (struct config_s *conf)
 {
-        char *k;
+        char *k, **s;
         htab_value *v;
         size_t it;
         safefree (conf->logf_name);
@@ -297,7 +297,13 @@ void free_config (struct config_s *conf)
         safefree (conf->user);
         safefree (conf->group);
         vector_delete(conf->listen_addrs);
-        vector_delete(conf->basicauth_list);
+        if(conf->basicauth_list) {
+                for(it = 0; it < sblist_getsize(conf->basicauth_list); it++) {
+                        s = sblist_get(conf->basicauth_list, it);
+                        if(s) safefree(*s);
+		}
+                sblist_free(conf->basicauth_list);
+        }
 #ifdef FILTER_ENABLE
         safefree (conf->filter);
 #endif                          /* FILTER_ENABLE */
@@ -915,7 +921,7 @@ static HANDLE_FUNC (handle_basicauth)
                 return -1;
         }
         if (!conf->basicauth_list) {
-                conf->basicauth_list = vector_create ();
+                conf->basicauth_list = sblist_new (sizeof(char*), 16);
         }
 
         basicauth_add (conf->basicauth_list, user, pass);
