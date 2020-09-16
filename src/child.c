@@ -37,7 +37,7 @@
 #include "mypoll.h"
 #include <pthread.h>
 
-static vector_t listen_fds;
+static sblist* listen_fds;
 
 struct client {
         union sockaddr_union addr;
@@ -82,7 +82,7 @@ void child_main_loop (void)
         union sockaddr_union cliaddr_storage;
         struct sockaddr *cliaddr = (void*) &cliaddr_storage;
         socklen_t clilen = sizeof(cliaddr_storage);
-        int nfds = vector_length(listen_fds);
+        int nfds = sblist_getsize(listen_fds);
         pollfd_struct *fds = safecalloc(nfds, sizeof *fds);
         ssize_t i;
         int ret, listenfd, was_full = 0;
@@ -92,7 +92,7 @@ void child_main_loop (void)
         childs = sblist_new(sizeof (struct child*), config->maxclients);
 
         for (i = 0; i < nfds; i++) {
-                int *fd = (int *) vector_getentry(listen_fds, i, NULL);
+                int *fd = sblist_get(listen_fds, i);
                 fds[i].fd = *fd;
                 fds[i].events |= MYPOLL_READ;
         }
@@ -259,7 +259,7 @@ int child_listening_sockets(vector_t listen_addrs, uint16_t port)
         assert (port > 0);
 
         if (listen_fds == NULL) {
-                listen_fds = vector_create();
+                listen_fds = sblist_new(sizeof(int), 16);
                 if (listen_fds == NULL) {
                         log_message (LOG_ERR, "Could not create the list "
                                      "of listening fds");
@@ -299,14 +299,14 @@ int child_listening_sockets(vector_t listen_addrs, uint16_t port)
 
 void child_close_sock (void)
 {
-        ssize_t i;
+        size_t i;
 
-        for (i = 0; i < vector_length(listen_fds); i++) {
-                int *fd = (int *) vector_getentry(listen_fds, i, NULL);
+        for (i = 0; i < sblist_getsize(listen_fds); i++) {
+                int *fd = sblist_get(listen_fds, i);
                 close (*fd);
         }
 
-        vector_delete(listen_fds);
+        sblist_free(listen_fds);
 
         listen_fds = NULL;
 }

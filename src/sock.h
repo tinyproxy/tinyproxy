@@ -29,7 +29,7 @@
 #define MAXLINE (1024 * 4)
 
 #include "common.h"
-#include "vector.h"
+#include "sblist.h"
 
 union sockaddr_union {
         struct sockaddr_in  v4;
@@ -37,7 +37,7 @@ union sockaddr_union {
 };
 
 extern int opensock (const char *host, int port, const char *bind_to);
-extern int listen_sock (const char *addr, uint16_t port, vector_t listen_fds);
+extern int listen_sock (const char *addr, uint16_t port, sblist* listen_fds);
 
 extern int socket_nonblocking (int sock);
 extern int socket_blocking (int sock);
