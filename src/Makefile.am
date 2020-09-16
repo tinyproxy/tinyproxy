@@ -60,5 +60,8 @@ EXTRA_tinyproxy_SOURCES = filter.c filter.h \
 tinyproxy_DEPENDENCIES = @ADDITIONAL_OBJECTS@
 tinyproxy_LDADD = @ADDITIONAL_OBJECTS@ -lpthread
 
-conf-tokens.c: conf-tokens.gperf
-	gperf $< > $@
+if HAVE_GPERF
+conf-tokens.c: conf-tokens-gperf.inc
+conf-tokens-gperf.inc: conf-tokens.gperf
+	$(GPERF) $< > $@
+endif

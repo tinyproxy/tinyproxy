@@ -204,6 +204,15 @@ fi #manpage_support_enabled
 
 AM_CONDITIONAL(HAVE_POD2MAN, test "x$POD2MAN" != "x" -a "x$POD2MAN" != "xno")
 
+AC_PATH_PROG(GPERF, gperf, no)
+AM_CONDITIONAL(HAVE_GPERF, test "x$GPERF" != "x" -a "x$GPERF" != "xno")
+AH_TEMPLATE([HAVE_GPERF],
+	    [Whether you have gperf installed for faster config parsing.])
+
+if test "x$GPERF" != "x" -a "x$GPERF" != "xno" ; then
+    AC_DEFINE(HAVE_GPERF)
+fi
+
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
