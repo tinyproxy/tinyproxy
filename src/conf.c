@@ -177,7 +177,7 @@ static void config_free_regex (void);
  * do not follow the pattern above.  This macro is for convenience
  * only.
  */
-#define STDCONF(d, re, func) { BEGIN "(" d ")" WS re END, func, NULL }
+#define STDCONF(d, re, func) { BEGIN "(" #d ")" WS re END, func, NULL }
 
 /*
  * Holds the regular expression used to match the configuration directive,
@@ -199,59 +199,59 @@ struct {
                 "^[[:space:]]+$", handle_nop, NULL
         },
         /* string arguments */
-        STDCONF ("logfile", STR, handle_logfile),
-        STDCONF ("pidfile", STR, handle_pidfile),
-        STDCONF ("anonymous", STR, handle_anonymous),
-        STDCONF ("viaproxyname", STR, handle_viaproxyname),
-        STDCONF ("defaulterrorfile", STR, handle_defaulterrorfile),
-        STDCONF ("statfile", STR, handle_statfile),
-        STDCONF ("stathost", STR, handle_stathost),
-        STDCONF ("xtinyproxy",  BOOL, handle_xtinyproxy),
+        STDCONF (logfile, STR, handle_logfile),
+        STDCONF (pidfile, STR, handle_pidfile),
+        STDCONF (anonymous, STR, handle_anonymous),
+        STDCONF (viaproxyname, STR, handle_viaproxyname),
+        STDCONF (defaulterrorfile, STR, handle_defaulterrorfile),
+        STDCONF (statfile, STR, handle_statfile),
+        STDCONF (stathost, STR, handle_stathost),
+        STDCONF (xtinyproxy,  BOOL, handle_xtinyproxy),
         /* boolean arguments */
-        STDCONF ("syslog", BOOL, handle_syslog),
-        STDCONF ("bindsame", BOOL, handle_bindsame),
-        STDCONF ("disableviaheader", BOOL, handle_disableviaheader),
+        STDCONF (syslog, BOOL, handle_syslog),
+        STDCONF (bindsame, BOOL, handle_bindsame),
+        STDCONF (disableviaheader, BOOL, handle_disableviaheader),
         /* integer arguments */
-        STDCONF ("port", INT, handle_port),
-        STDCONF ("maxclients", INT, handle_maxclients),
-        STDCONF ("maxspareservers", INT, handle_obsolete),
-        STDCONF ("minspareservers", INT, handle_obsolete),
-        STDCONF ("startservers", INT, handle_obsolete),
-        STDCONF ("maxrequestsperchild", INT, handle_obsolete),
-        STDCONF ("timeout", INT, handle_timeout),
-        STDCONF ("connectport", INT, handle_connectport),
+        STDCONF (port, INT, handle_port),
+        STDCONF (maxclients, INT, handle_maxclients),
+        STDCONF (maxspareservers, INT, handle_obsolete),
+        STDCONF (minspareservers, INT, handle_obsolete),
+        STDCONF (startservers, INT, handle_obsolete),
+        STDCONF (maxrequestsperchild, INT, handle_obsolete),
+        STDCONF (timeout, INT, handle_timeout),
+        STDCONF (connectport, INT, handle_connectport),
         /* alphanumeric arguments */
-        STDCONF ("user", ALNUM, handle_user),
-        STDCONF ("group", ALNUM, handle_group),
+        STDCONF (user, ALNUM, handle_user),
+        STDCONF (group, ALNUM, handle_group),
         /* ip arguments */
-        STDCONF ("listen", "(" IP "|" IPV6 ")", handle_listen),
-        STDCONF ("allow", "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
+        STDCONF (listen, "(" IP "|" IPV6 ")", handle_listen),
+        STDCONF (allow, "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
                  handle_allow),
-        STDCONF ("deny", "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
+        STDCONF (deny, "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
                  handle_deny),
-        STDCONF ("bind", "(" IP "|" IPV6 ")", handle_bind),
+        STDCONF (bind, "(" IP "|" IPV6 ")", handle_bind),
         /* other */
-        STDCONF ("basicauth", ALNUM WS ALNUM, handle_basicauth),
-        STDCONF ("errorfile", INT WS STR, handle_errorfile),
-        STDCONF ("addheader",  STR WS STR, handle_addheader),
+        STDCONF (basicauth, ALNUM WS ALNUM, handle_basicauth),
+        STDCONF (errorfile, INT WS STR, handle_errorfile),
+        STDCONF (addheader,  STR WS STR, handle_addheader),
 
 #ifdef FILTER_ENABLE
         /* filtering */
-        STDCONF ("filter", STR, handle_filter),
-        STDCONF ("filterurls", BOOL, handle_filterurls),
-        STDCONF ("filterextended", BOOL, handle_filterextended),
-        STDCONF ("filterdefaultdeny", BOOL, handle_filterdefaultdeny),
-        STDCONF ("filtercasesensitive", BOOL, handle_filtercasesensitive),
+        STDCONF (filter, STR, handle_filter),
+        STDCONF (filterurls, BOOL, handle_filterurls),
+        STDCONF (filterextended, BOOL, handle_filterextended),
+        STDCONF (filterdefaultdeny, BOOL, handle_filterdefaultdeny),
+        STDCONF (filtercasesensitive, BOOL, handle_filtercasesensitive),
 #endif
 #ifdef REVERSE_SUPPORT
         /* Reverse proxy arguments */
-        STDCONF ("reversebaseurl", STR, handle_reversebaseurl),
-        STDCONF ("reverseonly", BOOL, handle_reverseonly),
-        STDCONF ("reversemagic", BOOL, handle_reversemagic),
-        STDCONF ("reversepath", STR "(" WS STR ")?", handle_reversepath),
+        STDCONF (reversebaseurl, STR, handle_reversebaseurl),
+        STDCONF (reverseonly, BOOL, handle_reverseonly),
+        STDCONF (reversemagic, BOOL, handle_reversemagic),
+        STDCONF (reversepath, STR "(" WS STR ")?", handle_reversepath),
 #endif
 #ifdef UPSTREAM_SUPPORT
-        STDCONF ("upstream",
+        STDCONF (upstream,
                  "(" "(none)" WS STR ")|" \
                  "(" "(http|socks4|socks5)" WS \
                      "(" USERNAME /*username*/ ":" PASSWORD /*password*/ "@" ")?"
@@ -259,7 +259,7 @@ struct {
                      ":" INT "(" WS STR ")?" ")", handle_upstream),
 #endif
         /* loglevel */
-        STDCONF ("loglevel", "(critical|error|warning|notice|connect|info)",
+        STDCONF (loglevel, "(critical|error|warning|notice|connect|info)",
                  handle_loglevel)
 };
 
