@@ -271,19 +271,20 @@ struct {
 const unsigned int ndirectives = sizeof (directives) / sizeof (directives[0]);
 
 static void
-free_added_headers (vector_t add_headers)
+free_added_headers (sblist* add_headers)
 {
-        ssize_t i;
+        size_t i;
 
-        for (i = 0; i < vector_length (add_headers); i++) {
-                http_header_t *header = (http_header_t *)
-                        vector_getentry (add_headers, i, NULL);
+        if (!add_headers) return;
+
+        for (i = 0; i < sblist_getsize (add_headers); i++) {
+                http_header_t *header = sblist_get (add_headers, i);
 
                 safefree (header->name);
                 safefree (header->value);
         }
 
-        vector_delete (add_headers);
+        sblist_free (add_headers);
 }
 
 void free_config (struct config_s *conf)
@@ -848,19 +849,16 @@ static HANDLE_FUNC (handle_addheader)
 {
         char *name = get_string_arg (line, &match[2]);
         char *value = get_string_arg (line, &match[3]);
-        http_header_t *header;
+        http_header_t header;
 
         if (!conf->add_headers) {
-                conf->add_headers = vector_create ();
+                conf->add_headers = sblist_new (sizeof(http_header_t), 16);
         }
 
-        header = (http_header_t *) safemalloc (sizeof (http_header_t));
-        header->name = name;
-        header->value = value;
+        header.name = name;
+        header.value = value;
 
-        vector_prepend (conf->add_headers, header, sizeof *header);
-
-        safefree (header);
+        sblist_add (conf->add_headers, &header);
 
         /* Don't free name or value here, as they are referenced in the
          * struct inserted into the vector. */

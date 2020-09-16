@@ -110,7 +110,7 @@ struct config_s {
         /*
          * Extra headers to be added to outgoing HTTP requests.
          */
-        vector_t add_headers;
+        sblist* add_headers;
 };
 
 extern int reload_config_file (const char *config_fname, struct config_s *conf);

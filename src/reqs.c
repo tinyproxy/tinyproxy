@@ -1511,7 +1511,7 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
         while(0)
 
         int got_headers = 0, fd = connptr->client_fd;
-        ssize_t i;
+        size_t i;
         struct request_s *request = NULL;
         struct timeval tv;
         orderedmap hashofheaders = NULL;
@@ -1648,9 +1648,9 @@ e401:
          * Add any user-specified headers (AddHeader directive) to the
          * outgoing HTTP request.
          */
-        for (i = 0; i < vector_length (config->add_headers); i++) {
-                http_header_t *header = (http_header_t *)
-                        vector_getentry (config->add_headers, i, NULL);
+        if (config->add_headers)
+        for (i = 0; i < sblist_getsize (config->add_headers); i++) {
+                http_header_t *header = sblist_get (config->add_headers, i);
 
                 orderedmap_append (hashofheaders, header->name, header->value);
         }
