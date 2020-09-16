@@ -43,7 +43,6 @@ tinyproxy_SOURCES = \
 	text.c text.h \
 	main.c main.h \
 	utils.c utils.h \
-	vector.c vector.h \
 	upstream.c upstream.h \
 	basicauth.c basicauth.h \
 	base64.c base64.h \

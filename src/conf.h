@@ -23,7 +23,7 @@
 #define TINYPROXY_CONF_H
 
 #include "hsearch.h"
-#include "vector.h"
+#include "sblist.h"
 #include "acl.h"
 
 /*

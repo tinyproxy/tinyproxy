@@ -43,7 +43,7 @@
 #include "stats.h"
 #include "text.h"
 #include "utils.h"
-#include "vector.h"
+#include "sblist.h"
 #include "reverse-proxy.h"
 #include "transparent-proxy.h"
 #include "upstream.h"
