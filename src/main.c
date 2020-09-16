@@ -301,6 +301,7 @@ main (int argc, char **argv)
         log_message (LOG_NOTICE, "Initializing " PACKAGE " ...");
 
         if (config_init()) {
+                fprintf(stderr, "ERROR: config_init() failed\n");
                 exit (EX_SOFTWARE);
         }
 
