@@ -99,7 +99,7 @@ struct config_s {
         /*
          * Store the list of port allowed by CONNECT.
          */
-        vector_t connect_ports;
+        sblist *connect_ports;
 
         /*
          * Map of headers which should be let through when the

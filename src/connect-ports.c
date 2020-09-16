@@ -25,10 +25,10 @@
  * Now, this routine adds a "port" to the list.  It also creates the list if
  * it hasn't already by done.
  */
-void add_connect_port_allowed (int port, vector_t *connect_ports)
+void add_connect_port_allowed (int port, sblist **connect_ports)
 {
         if (!*connect_ports) {
-                *connect_ports = vector_create ();
+                *connect_ports = sblist_new (sizeof(int), 16);
                 if (!*connect_ports) {
                         log_message (LOG_WARNING,
                                      "Could not create a list of allowed CONNECT ports");
@@ -38,7 +38,7 @@ void add_connect_port_allowed (int port, vector_t *connect_ports)
 
         log_message (LOG_INFO,
                      "Adding Port [%d] to the list allowed by CONNECT", port);
-        vector_append (*connect_ports, &port, sizeof (port));
+        sblist_add (*connect_ports, &port);
 }
 
 /*
@@ -47,7 +47,7 @@ void add_connect_port_allowed (int port, vector_t *connect_ports)
  * Returns: 1 if allowed
  *          0 if denied
  */
-int check_allowed_connect_ports (int port, vector_t connect_ports)
+int check_allowed_connect_ports (int port, sblist *connect_ports)
 {
         size_t i;
         int *data;
@@ -59,8 +59,8 @@ int check_allowed_connect_ports (int port, vector_t connect_ports)
         if (!connect_ports)
                 return 1;
 
-        for (i = 0; i != (size_t) vector_length (connect_ports); ++i) {
-                data = (int *) vector_getentry (connect_ports, i, NULL);
+        for (i = 0; i < sblist_getsize (connect_ports); ++i) {
+                data = sblist_get (connect_ports, i);
                 if (data && *data == port)
                         return 1;
         }
@@ -71,7 +71,7 @@ int check_allowed_connect_ports (int port, vector_t connect_ports)
 /**
  * Free a connect_ports list.
  */
-void free_connect_ports_list (vector_t connect_ports)
+void free_connect_ports_list (sblist *connect_ports)
 {
-        vector_delete (connect_ports);
+        sblist_free (connect_ports);
 }
