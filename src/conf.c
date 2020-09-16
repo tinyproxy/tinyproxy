@@ -86,7 +86,7 @@
  * number.  Given the usual structure of the configuration file, sixteen
  * substring matches should be plenty.
  */
-#define RE_MAX_MATCHES 16
+#define RE_MAX_MATCHES 24
 
 /*
  * All configuration handling functions are REQUIRED to be defined
@@ -162,7 +162,6 @@ static HANDLE_FUNC (handle_xtinyproxy);
 
 #ifdef UPSTREAM_SUPPORT
 static HANDLE_FUNC (handle_upstream);
-static HANDLE_FUNC (handle_upstream_no);
 #endif
 
 static void config_free_regex (void);
@@ -252,16 +251,12 @@ struct {
         STDCONF ("reversepath", STR "(" WS STR ")?", handle_reversepath),
 #endif
 #ifdef UPSTREAM_SUPPORT
-        {
-                BEGIN "(upstream)" WS "(none)" WS STR END, handle_upstream_no, NULL
-        },
-        {
-                BEGIN "(upstream)" WS "(http|socks4|socks5)" WS
-                      "(" USERNAME /*username*/ ":" PASSWORD /*password*/ "@" ")?"
-                      "(" IP "|" ALNUM ")"
-                      ":" INT "(" WS STR ")?"
-                END, handle_upstream, NULL
-        },
+        STDCONF ("upstream",
+                 "(" "(none)" WS STR ")|" \
+                 "(" "(http|socks4|socks5)" WS \
+                     "(" USERNAME /*username*/ ":" PASSWORD /*password*/ "@" ")?"
+                     "(" IP "|" ALNUM ")"
+                     ":" INT "(" WS STR ")?" ")", handle_upstream),
 #endif
         /* loglevel */
         STDCONF ("loglevel", "(critical|error|warning|notice|connect|info)",
@@ -1028,9 +1023,25 @@ static enum proxy_type pt_from_string(const char *s)
 static HANDLE_FUNC (handle_upstream)
 {
         char *ip;
-        int port, mi = 2;
+        int port, mi;
         char *domain = 0, *user = 0, *pass = 0, *tmp;
         enum proxy_type pt;
+
+        if (match[3].rm_so != -1) {
+                tmp = get_string_arg (line, &match[3]);
+                if(!strcmp(tmp, "none")) {
+                        safefree(tmp);
+                        if (match[4].rm_so == -1) return -1;
+                        domain = get_string_arg (line, &match[4]);
+                        if (!domain)
+                                return -1;
+                        upstream_add (NULL, 0, domain, 0, 0, PT_NONE, &conf->upstream_list);
+                        safefree (domain);
+                        return 0;
+                }
+        }
+
+        mi = 6;
 
         tmp = get_string_arg (line, &match[mi]);
         pt = pt_from_string(tmp);
@@ -1066,17 +1077,4 @@ static HANDLE_FUNC (handle_upstream)
         return 0;
 }
 
-static HANDLE_FUNC (handle_upstream_no)
-{
-        char *domain;
-
-        domain = get_string_arg (line, &match[3]);
-        if (!domain)
-                return -1;
-
-        upstream_add (NULL, 0, domain, 0, 0, PT_NONE, &conf->upstream_list);
-        safefree (domain);
-
-        return 0;
-}
 #endif
