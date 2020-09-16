@@ -27,7 +27,7 @@
 #include "heap.h"
 #include "log.h"
 #include "utils.h"
-#include "vector.h"
+#include "sblist.h"
 #include "conf.h"
 #include <pthread.h>
 
@@ -64,7 +64,7 @@ static int log_level = LOG_INFO;
  * The key is the actual messages (already filled in full), and the value
  * is the log level.
  */
-static vector_t log_message_storage;
+static sblist *log_message_storage;
 
 static unsigned int logging_initialized = FALSE;     /* boolean */
 
@@ -142,7 +142,7 @@ void log_message (int level, const char *fmt, ...)
                 char *entry_buffer;
 
                 if (!log_message_storage) {
-                        log_message_storage = vector_create ();
+                        log_message_storage = sblist_new (sizeof(char*), 64);
                         if (!log_message_storage)
                                 goto out;
                 }
@@ -154,10 +154,8 @@ void log_message (int level, const char *fmt, ...)
                         goto out;
 
                 sprintf (entry_buffer, "%d %s", level, str);
-                vector_append (log_message_storage, entry_buffer,
-                               strlen (entry_buffer) + 1);
-
-                safefree (entry_buffer);
+                if(!sblist_add (log_message_storage, &entry_buffer))
+                        safefree (entry_buffer);
                 goto out;
         }
 
@@ -227,7 +225,7 @@ out:
  */
 static void send_stored_logs (void)
 {
-        char *string;
+        char **string;
         char *ptr;
         int level;
         size_t i;
@@ -237,12 +235,12 @@ static void send_stored_logs (void)
 
         log_message(LOG_DEBUG, "sending stored logs");
 
-        for (i = 0; (ssize_t) i != vector_length (log_message_storage); ++i) {
-                string =
-                    (char *) vector_getentry (log_message_storage, i, NULL);
+        for (i = 0; i < sblist_getsize (log_message_storage); ++i) {
+                string = sblist_get (log_message_storage, i);
+                if (!string || !*string) continue;
 
-                ptr = strchr (string, ' ') + 1;
-                level = atoi (string);
+                ptr = strchr (*string, ' ') + 1;
+                level = atoi (*string);
 
 #ifdef NDEBUG
                 if (log_level == LOG_CONN && level == LOG_INFO)
@@ -255,9 +253,10 @@ static void send_stored_logs (void)
 #endif
 
                 log_message (level, "%s", ptr);
+                safefree(*string);
         }
 
-        vector_delete (log_message_storage);
+        sblist_free (log_message_storage);
         log_message_storage = NULL;
 
         log_message(LOG_DEBUG, "done sending stored logs");
