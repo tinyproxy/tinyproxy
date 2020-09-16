@@ -287,23 +287,29 @@ free_added_headers (sblist* add_headers)
         sblist_free (add_headers);
 }
 
+static void stringlist_free(sblist *sl) {
+        size_t i;
+        char **s;
+        if(sl) {
+                for(i = 0; i < sblist_getsize(sl); i++) {
+                        s = sblist_get(sl, i);
+                        if(s) safefree(*s);
+		}
+                sblist_free(sl);
+        }
+}
+
 void free_config (struct config_s *conf)
 {
-        char *k, **s;
+        char *k;
         htab_value *v;
         size_t it;
         safefree (conf->logf_name);
         safefree (conf->stathost);
         safefree (conf->user);
         safefree (conf->group);
-        vector_delete(conf->listen_addrs);
-        if(conf->basicauth_list) {
-                for(it = 0; it < sblist_getsize(conf->basicauth_list); it++) {
-                        s = sblist_get(conf->basicauth_list, it);
-                        if(s) safefree(*s);
-		}
-                sblist_free(conf->basicauth_list);
-        }
+        stringlist_free(conf->basicauth_list);
+        stringlist_free(conf->listen_addrs);
 #ifdef FILTER_ENABLE
         safefree (conf->filter);
 #endif                          /* FILTER_ENABLE */
@@ -813,7 +819,7 @@ static HANDLE_FUNC (handle_listen)
         }
 
         if (conf->listen_addrs == NULL) {
-               conf->listen_addrs = vector_create();
+               conf->listen_addrs = sblist_new(sizeof(char*), 16);
                if (conf->listen_addrs == NULL) {
                        log_message(LOG_WARNING, "Could not create a list "
                                    "of listen addresses.");
@@ -822,11 +828,10 @@ static HANDLE_FUNC (handle_listen)
                }
         }
 
-        vector_append (conf->listen_addrs, arg, strlen(arg) + 1);
+        sblist_add (conf->listen_addrs, &arg);
 
         log_message(LOG_INFO, "Added address [%s] to listen addresses.", arg);
 
-        safefree (arg);
         return 0;
 }
 

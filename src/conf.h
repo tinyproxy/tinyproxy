@@ -47,7 +47,7 @@ struct config_s {
         unsigned int maxclients;
         char *user;
         char *group;
-        vector_t listen_addrs;
+        sblist *listen_addrs;
 #ifdef FILTER_ENABLE
         char *filter;
         unsigned int filter_url;        /* boolean */

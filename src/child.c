@@ -251,10 +251,10 @@ void child_free_children(void) {
 /**
  * Listen on the various configured interfaces
  */
-int child_listening_sockets(vector_t listen_addrs, uint16_t port)
+int child_listening_sockets(sblist *listen_addrs, uint16_t port)
 {
         int ret;
-        ssize_t i;
+        size_t i;
 
         assert (port > 0);
 
@@ -267,8 +267,7 @@ int child_listening_sockets(vector_t listen_addrs, uint16_t port)
                 }
         }
 
-        if ((listen_addrs == NULL) ||
-            (vector_length(listen_addrs) == 0))
+        if (!listen_addrs || !sblist_getsize(listen_addrs))
         {
                 /*
                  * no Listen directive:
@@ -278,17 +277,17 @@ int child_listening_sockets(vector_t listen_addrs, uint16_t port)
                 return ret;
         }
 
-        for (i = 0; i < vector_length(listen_addrs); i++) {
-                const char *addr;
+        for (i = 0; i < sblist_getsize(listen_addrs); i++) {
+                char **addr;
 
-                addr = (char *)vector_getentry(listen_addrs, i, NULL);
-                if (addr == NULL) {
+                addr = sblist_get(listen_addrs, i);
+                if (!addr || !*addr) {
                         log_message(LOG_WARNING,
                                     "got NULL from listen_addrs - skipping");
                         continue;
                 }
 
-                ret = listen_sock(addr, port, listen_fds);
+                ret = listen_sock(*addr, port, listen_fds);
                 if (ret != 0) {
                         return ret;
                 }

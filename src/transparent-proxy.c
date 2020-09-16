@@ -60,7 +60,7 @@ do_transparent_proxy (struct conn_s *connptr, orderedmap hashofheaders,
         socklen_t length;
         char *data;
         size_t ulen = strlen (*url);
-        ssize_t i;
+        size_t i;
 
         data = orderedmap_find (hashofheaders, "host");
         if (!data) {
@@ -123,12 +123,12 @@ do_transparent_proxy (struct conn_s *connptr, orderedmap hashofheaders,
                 return 1;
         }
 
-        for (i = 0; i < vector_length(conf->listen_addrs); i++) {
-                const char *addr;
+        for (i = 0; i < sblist_getsize(conf->listen_addrs); i++) {
+                char **addr;
 
-                addr = (char *)vector_getentry(conf->listen_addrs, i, NULL);
+                addr = sblist_get(conf->listen_addrs, i);
 
-                if (addr && strcmp(request->host, addr) == 0) {
+                if (addr && *addr && strcmp(request->host, *addr) == 0) {
                         log_message(LOG_ERR,
                                     "transparent: destination IP %s is local "
                                     "on socket fd %d",
