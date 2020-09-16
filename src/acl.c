@@ -163,6 +163,9 @@ insert_acl (char *location, acl_access_t access_type, acl_list_t *access_list)
                 memset (acl.address.ip.mask, 0xff, IPV6_LEN);
         } else {
                 int i;
+                /* bogus ipv6 ? */
+                if (strchr (location, ':'))
+                        return -1;
 
                 /*
                  * At this point we're either a hostname or an
