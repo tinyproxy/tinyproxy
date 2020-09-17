@@ -222,20 +222,24 @@ oom:
  */
 void child_kill_children (int sig)
 {
-	size_t i;
+	size_t i, tries = 0;
 
 	if (sig != SIGTERM) return;
+	log_message (LOG_INFO,
+	             "trying to bring down %zu threads...",
+	             sblist_getsize(childs)
+	);
 
+
+again:
 	for (i = 0; i < sblist_getsize(childs); i++) {
 		struct child *c = *((struct child**)sblist_get(childs, i));
-		if (!c->done) {
-			/* interrupt blocking operations.
-			   this should cause the threads to shutdown orderly. */
-			close(c->conn.client_fd);
-		}
+		if (!c->done) pthread_kill(c->thread, SIGCHLD);
 	}
-	usleep(16);
+	usleep(8192);
 	collect_threads();
+	if (sblist_getsize(childs) != 0)
+		if(tries++ < 8) goto again;
 	if (sblist_getsize(childs) != 0)
 		log_message (LOG_CRIT,
 		             "child_kill_children: %zu threads still alive!",
