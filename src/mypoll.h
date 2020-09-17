@@ -4,6 +4,7 @@
 #include "config.h"
 
 #ifdef HAVE_POLL_H
+#define SELECT_OR_POLL "poll"
 
 #include <poll.h>
 typedef struct pollfd pollfd_struct;
@@ -13,6 +14,7 @@ typedef struct pollfd pollfd_struct;
 
 #else
 
+#define SELECT_OR_POLL "select"
 #include <sys/select.h>
 typedef struct mypollfd {
 	int   fd;

@@ -1163,11 +1163,11 @@ static void relay_connection (struct conn_s *connptr)
 
                 if (ret == 0) {
                         log_message (LOG_INFO,
-                                     "Idle Timeout (after select)");
+                                     "Idle Timeout (after " SELECT_OR_POLL ")");
                                 return;
                 } else if (ret < 0) {
                         log_message (LOG_ERR,
-                                     "relay_connection: select() error \"%s\". "
+                                     "relay_connection: " SELECT_OR_POLL "() error \"%s\". "
                                      "Closing connection (client_fd:%d, server_fd:%d)",
                                      strerror (errno), connptr->client_fd,
                                      connptr->server_fd);
@@ -1440,7 +1440,7 @@ get_request_entity(struct conn_s *connptr)
 
         if (ret == -1) {
                 log_message (LOG_ERR,
-                             "Error calling select on client fd %d: %s",
+                             "Error calling " SELECT_OR_POLL " on client fd %d: %s",
                              connptr->client_fd, strerror(errno));
         } else if (ret == 0) {
                log_message (LOG_INFO, "no entity");
@@ -1459,7 +1459,7 @@ get_request_entity(struct conn_s *connptr)
                         ret = 0;
                 }
         } else {
-                log_message (LOG_ERR, "strange situation after select: "
+                log_message (LOG_ERR, "strange situation after " SELECT_OR_POLL ": "
                              "ret = %d, but client_fd (%d) is not readable...",
                              ret, connptr->client_fd);
                 ret = -1;

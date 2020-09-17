@@ -99,7 +99,7 @@ void child_main_loop (void)
 
         /*
          * We have to wait for connections on multiple fds,
-         * so use select.
+         * so use select/poll/whatever.
          */
         while (!config->quit) {
 
@@ -136,11 +136,11 @@ void child_main_loop (void)
                         if (errno == EINTR) {
                                 continue;
                         }
-                        log_message (LOG_ERR, "error calling select: %s",
+                        log_message (LOG_ERR, "error calling " SELECT_OR_POLL ": %s",
                                      strerror(errno));
                         continue;
                 } else if (ret == 0) {
-                        log_message (LOG_WARNING, "Strange: select returned 0 "
+                        log_message (LOG_WARNING, "Strange: " SELECT_OR_POLL " returned 0 "
                                      "but we did not specify a timeout...");
                         continue;
                 }
@@ -158,7 +158,7 @@ void child_main_loop (void)
 
                 if (listenfd == -1) {
                         log_message(LOG_WARNING, "Strange: None of our listen "
-                                    "fds was readable after select");
+                                    "fds was readable after " SELECT_OR_POLL);
                         continue;
                 }
 
