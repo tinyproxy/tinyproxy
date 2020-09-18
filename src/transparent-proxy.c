@@ -83,16 +83,14 @@ do_transparent_proxy (struct conn_s *connptr, orderedmap hashofheaders,
                         return 0;
                 }
 
-                af = length == sizeof(dest_addr.v4) ? AF_INET : AF_INET6;
-                if (af == AF_INET) dest_inaddr = &dest_addr.v4.sin_addr;
-                else dest_inaddr = &dest_addr.v6.sin6_addr;
+                af = SOCKADDR_UNION_AF(&dest_addr);
+                dest_inaddr = SOCKADDR_UNION_ADDRESS(&dest_addr);
 
                 if (!inet_ntop(af, dest_inaddr, namebuf, sizeof namebuf))
                         goto addr_err;
 
                 request->host = safestrdup (namebuf);
-                request->port = ntohs (af == AF_INET ? dest_addr.v4.sin_port
-                                       : dest_addr.v6.sin6_port);
+                request->port = ntohs (SOCKADDR_UNION_PORT(&dest_addr));
 
                 request->path = (char *) safemalloc (ulen + 1);
                 strlcpy (request->path, *url, ulen + 1);
