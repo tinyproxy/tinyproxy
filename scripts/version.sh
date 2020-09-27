@@ -9,7 +9,7 @@ if test -d "${GIT_DIR}" ; then
 		if test "x$?" != x0 ; then
 			sed 's/$/-git/' < VERSION
 		else
-			printf "%s\n" "$gitstr" | sed -e 's/-/-git-/'
+			printf "%s\n" "$gitstr" | sed -e 's/-g/-git-/'
 		fi
 	else
 		sed 's/$/-git/' < VERSION
