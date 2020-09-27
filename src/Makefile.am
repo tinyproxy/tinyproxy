@@ -65,3 +65,6 @@ conf-tokens.c: conf-tokens-gperf.inc
 conf-tokens-gperf.inc: conf-tokens.gperf
 	$(GPERF) $< > $@
 endif
+
+EXTRA_DIST = conf-tokens.gperf
+
