@@ -49,21 +49,22 @@
  * can (and likely should) be used when building the regex for the
  * given directive.
  */
+#define DIGIT "[0-9]"
 #define WS "[[:space:]]+"
 #define STR "\"([^\"]+)\""
 #define BOOL "(yes|on|no|off)"
-#define INT "(()[[:digit:]]+)"
+#define INT "(()" DIGIT "+)"
 #define ALNUM "([-a-z0-9._]+)"
 #define USERNAME "([^:]*)"
 #define PASSWORD "([^@]*)"
 #define IP "((([0-9]{1,3})\\.){3}[0-9]{1,3})"
-#define IPMASK "(" IP "(/[[:digit:]]+)?)"
+#define IPMASK "(" IP "(/" DIGIT "+)?)"
 #define IPV6 "(" \
         "(([0-9a-f:]{2,39}))|" \
         "(([0-9a-f:]{0,29}:" IP "))" \
         ")"
 
-#define IPV6MASK "(" IPV6 "(/[[:digit:]]+)?)"
+#define IPV6MASK "(" IPV6 "(/" DIGIT "+)?)"
 #define BEGIN "^[[:space:]]*"
 #define END "[[:space:]]*$"
 
