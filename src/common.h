@@ -68,7 +68,6 @@
 #  include	<arpa/inet.h>
 #  include	<grp.h>
 #  include	<pwd.h>
-#  include      <regex.h>
 
 /* rest - some oddball headers */
 #ifdef HAVE_VALUES_H

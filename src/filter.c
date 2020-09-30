@@ -24,6 +24,7 @@
 
 #include "main.h"
 
+#include <regex.h>
 #include "filter.h"
 #include "heap.h"
 #include "log.h"

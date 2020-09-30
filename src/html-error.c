@@ -20,6 +20,7 @@
  * HTML error pages with variable substitution.
  */
 
+#include <regex.h>
 #include "main.h"
 
 #include "common.h"
