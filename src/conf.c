@@ -74,6 +74,9 @@
  */
 #define RE_MAX_MATCHES 24
 
+#define CP_WARN(FMT, ...) \
+        log_message (LOG_WARNING, "line %lu: " FMT, lineno, __VA_ARGS__)
+
 /*
  * All configuration handling functions are REQUIRED to be defined
  * with the same function template as below.
@@ -638,9 +641,7 @@ static HANDLE_FUNC (handle_anonymous)
                 return -1;
 
         if(anonymous_insert (conf, arg) < 0) {
-                log_message (LOG_WARNING,
-                             "anonymous_insert() failed: '%s'",
-                             arg);
+                CP_WARN ("anonymous_insert() failed: '%s'", arg);
                 safefree(arg);
                 return -1;
         }
@@ -768,7 +769,7 @@ static HANDLE_FUNC (handle_group)
 }
 
 static void warn_invalid_address(char *arg, unsigned long lineno) {
-        log_message (LOG_WARNING, "Invalid address %s on line %lu", arg, lineno);
+        CP_WARN ("Invalid address %s", arg);
 }
 
 static HANDLE_FUNC (handle_allow)
@@ -813,8 +814,8 @@ static HANDLE_FUNC (handle_listen)
         if (conf->listen_addrs == NULL) {
                conf->listen_addrs = sblist_new(sizeof(char*), 16);
                if (conf->listen_addrs == NULL) {
-                       log_message(LOG_WARNING, "Could not create a list "
-                                   "of listen addresses.");
+                       CP_WARN ("Could not create a list "
+                                   "of listen addresses.", "");
                        safefree(arg);
                        return -1;
                }
@@ -840,9 +841,7 @@ static HANDLE_FUNC (handle_errorfile)
         char *page = get_string_arg (line, &match[4]);
 
         if(add_new_errorpage (conf, page, err) < 0) {
-                log_message (LOG_WARNING,
-                             "add_new_errorpage() failed: '%s'",
-                             page);
+                CP_WARN ("add_new_errorpage() failed: '%s'", page);
                 safefree (page);
         }
         return 0;
@@ -1025,6 +1024,7 @@ static HANDLE_FUNC (handle_upstream)
         int port, mi;
         char *domain = 0, *user = 0, *pass = 0, *tmp;
         enum proxy_type pt;
+        enum upstream_build_error ube;
 
         if (match[3].rm_so != -1) {
                 tmp = get_string_arg (line, &match[3]);
@@ -1034,9 +1034,9 @@ static HANDLE_FUNC (handle_upstream)
                         domain = get_string_arg (line, &match[4]);
                         if (!domain)
                                 return -1;
-                        upstream_add (NULL, 0, domain, 0, 0, PT_NONE, &conf->upstream_list);
+                        ube = upstream_add (NULL, 0, domain, 0, 0, PT_NONE, &conf->upstream_list);
                         safefree (domain);
-                        return 0;
+                        goto check_err;
                 }
         }
 
@@ -1066,13 +1066,16 @@ static HANDLE_FUNC (handle_upstream)
         if (match[mi].rm_so != -1)
                 domain = get_string_arg (line, &match[mi]);
 
-        upstream_add (ip, port, domain, user, pass, pt, &conf->upstream_list);
+        ube = upstream_add (ip, port, domain, user, pass, pt, &conf->upstream_list);
 
         safefree (user);
         safefree (pass);
         safefree (domain);
         safefree (ip);
 
+check_err:;
+        if(ube != UBE_SUCCESS)
+                CP_WARN("%s", upstream_build_error_string(ube));
         return 0;
 }
 
