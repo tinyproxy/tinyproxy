@@ -108,7 +108,7 @@ void set_log_level (int level)
 void log_message (int level, const char *fmt, ...)
 {
         va_list args;
-        time_t nowtime;
+        struct timespec nowtime;
 
         char time_string[TIME_LENGTH];
         char str[STRING_LENGTH];
@@ -174,13 +174,14 @@ void log_message (int level, const char *fmt, ...)
         } else {
                 char *p;
 
-                nowtime = time (NULL);
+                clock_gettime(CLOCK_REALTIME, &nowtime);
                 /* Format is month day hour:minute:second (24 time) */
                 strftime (time_string, TIME_LENGTH, "%b %d %H:%M:%S",
-                          localtime (&nowtime));
+                          localtime (&nowtime.tv_sec));
 
-                snprintf (str, STRING_LENGTH, "%-9s %s [%ld]: ",
+                snprintf (str, STRING_LENGTH, "%-9s %s.%03u [%ld]: ",
                           syslog_level[level], time_string,
+                          nowtime.tv_nsec/1000000u,
                           (long int) getpid ());
 
                 /*
