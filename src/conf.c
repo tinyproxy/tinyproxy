@@ -50,7 +50,8 @@
  * given directive.
  */
 #define DIGIT "[0-9]"
-#define WS "[[:space:]]+"
+#define SPACE "[ \t]"
+#define WS SPACE "+"
 #define STR "\"([^\"]+)\""
 #define BOOL "(yes|on|no|off)"
 #define INT "(()" DIGIT "+)"
@@ -65,8 +66,8 @@
         ")"
 
 #define IPV6MASK "(" IPV6 "(/" DIGIT "+)?)"
-#define BEGIN "^[[:space:]]*"
-#define END "[[:space:]]*$"
+#define BEGIN "^" SPACE "*"
+#define END SPACE "*$"
 
 /*
  * Limit the maximum number of substring matches to a reasonably high
