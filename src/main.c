@@ -381,7 +381,7 @@ main (int argc, char **argv)
         if (geteuid () == 0)
                 change_user (argv[0]);
         else
-                log_message (LOG_WARNING,
+                log_message (LOG_INFO,
                              "Not running as root, so not changing UID/GID.");
 
         /* Create log file after we drop privileges */
