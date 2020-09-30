@@ -52,7 +52,7 @@
 #define WS "[[:space:]]+"
 #define STR "\"([^\"]+)\""
 #define BOOL "(yes|on|no|off)"
-#define INT "((0x)?[[:digit:]]+)"
+#define INT "(()[[:digit:]]+)"
 #define ALNUM "([-a-z0-9._]+)"
 #define USERNAME "([^:]*)"
 #define PASSWORD "([^@]*)"
