@@ -27,6 +27,16 @@
 
 #include "common.h"
 
+enum upstream_build_error {
+	UBE_SUCCESS = 0,
+	UBE_OOM,
+	UBE_USERLEN,
+	UBE_EDOMAIN,
+	UBE_INVHOST,
+	UBE_INVPARAMS,
+	UBE_NETMASK,
+};
+
 /*
  * Even if upstream support is not compiled into tinyproxy, this
  * structure still needs to be defined.
@@ -54,11 +64,13 @@ struct upstream {
 
 #ifdef UPSTREAM_SUPPORT
 const char *proxy_type_name(proxy_type type);
-extern void upstream_add (const char *host, int port, const char *domain,
+extern enum upstream_build_error upstream_add (
+                          const char *host, int port, const char *domain,
                           const char *user, const char *pass,
                           proxy_type type, struct upstream **upstream_list);
 extern struct upstream *upstream_get (char *host, struct upstream *up);
 extern void free_upstream_list (struct upstream *up);
+extern const char* upstream_build_error_string(enum upstream_build_error);
 #endif /* UPSTREAM_SUPPORT */
 
 #endif /* _TINYPROXY_UPSTREAM_H_ */

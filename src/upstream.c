@@ -43,20 +43,34 @@ proxy_type_name(proxy_type type)
     }
 }
 
+
+const char* upstream_build_error_string(enum upstream_build_error ube) {
+        static const char *emap[] = {
+        [UBE_SUCCESS] = "",
+        [UBE_OOM] = "Unable to allocate memory in upstream_build()",
+        [UBE_USERLEN] = "User / pass in upstream config too long",
+        [UBE_EDOMAIN] = "Nonsense upstream none rule: empty domain",
+        [UBE_INVHOST] = "Nonsense upstream rule: invalid host or port",
+        [UBE_INVPARAMS] = "Nonsense upstream rule: invalid parameters",
+        [UBE_NETMASK] = "Nonsense upstream rule: failed to parse netmask",
+        };
+        return emap[ube];
+}
+
 /**
  * Construct an upstream struct from input data.
  */
 static struct upstream *upstream_build (const char *host, int port, const char *domain,
                         const char *user, const char *pass,
-			proxy_type type)
+			proxy_type type, enum upstream_build_error *ube)
 {
         char *ptr;
         struct upstream *up;
 
+        *ube = UBE_SUCCESS;
         up = (struct upstream *) safemalloc (sizeof (struct upstream));
         if (!up) {
-                log_message (LOG_ERR,
-                             "Unable to allocate memory in upstream_build()");
+                *ube = UBE_OOM;
                 return NULL;
         }
 
@@ -69,8 +83,7 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                         ssize_t ret;
                         ret = basicauth_string(user, pass, b, sizeof b);
                         if (ret == 0) {
-                                log_message (LOG_ERR,
-                                             "User / pass in upstream config too long");
+                                *ube = UBE_USERLEN;
                                 return NULL;
                         }
                         up->ua.authstr = safestrdup (b);
@@ -83,13 +96,11 @@ static struct upstream *upstream_build (const char *host, int port, const char *
         if (domain == NULL) {
                 if (type == PT_NONE) {
                 e_nonedomain:;
-                        log_message (LOG_WARNING,
-                                     "Nonsense upstream none rule: empty domain");
+                        *ube = UBE_EDOMAIN;
                         goto fail;
                 }
                 if (!host || !host[0] || port < 1) {
-                        log_message (LOG_WARNING,
-                                     "Nonsense upstream rule: invalid host or port");
+                        *ube = UBE_INVHOST;
                         goto fail;
                 }
 
@@ -103,8 +114,7 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                         if (!domain[0]) goto e_nonedomain;
                 } else {
                         if (!host || !host[0] || !domain[0]) {
-                                log_message (LOG_WARNING,
-                                             "Nonsense upstream rule: invalid parameters");
+                                *ube = UBE_INVPARAMS;
                                 goto fail;
                         }
                         up->host = safestrdup (host);
@@ -130,8 +140,7 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                                 }
                                 up->ip = up->ip & up->mask;
                         } else {
-                                log_message (LOG_WARNING,
-                                             "Nonsense upstream rule: failed to parse netmask");
+                                *ube = UBE_NETMASK;
                                 goto fail;
                         }
                 } else {
@@ -160,15 +169,17 @@ fail:
 /*
  * Add an entry to the upstream list
  */
-void upstream_add (const char *host, int port, const char *domain,
+enum upstream_build_error upstream_add (
+                   const char *host, int port, const char *domain,
                    const char *user, const char *pass,
                    proxy_type type, struct upstream **upstream_list)
 {
         struct upstream *up;
+        enum upstream_build_error ube;
 
-        up = upstream_build (host, port, domain, user, pass, type);
+        up = upstream_build (host, port, domain, user, pass, type, &ube);
         if (up == NULL) {
-                return;
+                return ube;
         }
 
         if (!up->domain && !up->ip) {   /* always add default to end */
@@ -184,7 +195,7 @@ void upstream_add (const char *host, int port, const char *domain,
                         if (!tmp->next) {
                                 up->next = NULL;
                                 tmp->next = up;
-                                return;
+                                return ube;
                         }
 
                         tmp = tmp->next;
@@ -194,14 +205,14 @@ void upstream_add (const char *host, int port, const char *domain,
         up->next = *upstream_list;
         *upstream_list = up;
 
-        return;
+        return ube;
 
 upstream_cleanup:
         safefree (up->host);
         safefree (up->domain);
         safefree (up);
 
-        return;
+        return ube;
 }
 
 /*

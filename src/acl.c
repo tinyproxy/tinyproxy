@@ -138,15 +138,12 @@ int
 insert_acl (char *location, acl_access_t access_type, acl_list_t *access_list)
 {
         struct acl_s acl;
-        int ret;
-        char *p, ip_dst[IPV6_LEN];
+        char *mask, ip_dst[IPV6_LEN];
 
         assert (location != NULL);
 
-        ret = init_access_list(access_list);
-        if (ret != 0) {
+        if (init_access_list(access_list) != 0)
                 return -1;
-        }
 
         /*
          * Start populating the access control structure.
@@ -154,38 +151,19 @@ insert_acl (char *location, acl_access_t access_type, acl_list_t *access_list)
         memset (&acl, 0, sizeof (struct acl_s));
         acl.access = access_type;
 
+        if ((mask = strrchr(location, '/')))
+                *(mask++) = 0;
+
         /*
          * Check for a valid IP address (the simplest case) first.
          */
         if (full_inet_pton (location, ip_dst) > 0) {
                 acl.type = ACL_NUMERIC;
                 memcpy (acl.address.ip.network, ip_dst, IPV6_LEN);
-                memset (acl.address.ip.mask, 0xff, IPV6_LEN);
-        } else {
-                int i;
-                /* bogus ipv6 ? */
-                if (strchr (location, ':'))
-                        return -1;
-
-                /*
-                 * At this point we're either a hostname or an
-                 * IP address with a slash.
-                 */
-                p = strchr (location, '/');
-                if (p != NULL) {
+                if(!mask) memset (acl.address.ip.mask, 0xff, IPV6_LEN);
+                else {
                         char dst[sizeof(struct in6_addr)];
-                        int v6;
-
-                        /*
-                         * We have a slash, so it's intended to be an
-                         * IP address with mask
-                         */
-                        *p = '\0';
-                        if (full_inet_pton (location, ip_dst) <= 0)
-                                return -1;
-
-                        acl.type = ACL_NUMERIC;
-
+                        int v6, i;
                         /* Check if the IP address before the netmask is
                          * an IPv6 address */
                         if (inet_pton(AF_INET6, location, dst) > 0)
@@ -194,24 +172,33 @@ insert_acl (char *location, acl_access_t access_type, acl_list_t *access_list)
                                 v6 = 0;
 
                         if (fill_netmask_array
-                            (p + 1, v6, &(acl.address.ip.mask[0]), IPV6_LEN)
+                            (mask, v6, &(acl.address.ip.mask[0]), IPV6_LEN)
                             < 0)
-                                return -1;
+                                goto err;
 
                         for (i = 0; i < IPV6_LEN; i++)
                                 acl.address.ip.network[i] = ip_dst[i] &
                                         acl.address.ip.mask[i];
-                } else {
-                        /* In all likelihood a string */
-                        acl.type = ACL_STRING;
-                        acl.address.string = safestrdup (location);
-                        if (!acl.address.string)
-                                return -1;
                 }
+        } else {
+                /* either bogus IP or hostname */
+                            /* bogus ipv6 ? */
+                if (mask || strchr (location, ':'))
+                        goto err;
+
+                /* In all likelihood a string */
+                acl.type = ACL_STRING;
+                acl.address.string = safestrdup (location);
+                if (!acl.address.string)
+                        goto err;
         }
 
         if(!sblist_add(*access_list, &acl)) return -1;
         return 0;
+err:;
+	/* restore mask for proper error message */
+	if(mask) *(--mask) = '/';
+	return -1;
 }
 
 /*
