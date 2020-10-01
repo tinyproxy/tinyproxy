@@ -23,8 +23,8 @@
  * add new directives to.  Who knows if I'm right though.
  */
 
-#include <regex.h>
 #include "common.h"
+#include <regex.h>
 #include "conf.h"
 
 #include "acl.h"
