@@ -8,7 +8,7 @@
  * given directive.
  */
 #define DIGIT "[0-9]"
-#define SPACE "[ \t]"
+#define SPACE "[ \\t]"
 #define WS SPACE "+"
 #define STR "\"([^\"]+)\""
 #define BOOL "(yes|on|no|off)"
