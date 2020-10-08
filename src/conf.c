@@ -142,7 +142,7 @@ static void config_free_regex (void);
  * do not follow the pattern above.  This macro is for convenience
  * only.
  */
-#define STDCONF(d, re, func) [CD_ ## d] = { BEGIN "()" WS re END, func, NULL }
+#define STDCONF(d, re, func) [CD_ ## d] = { BEGIN WS re END, func, NULL }
 
 /*
  * Holds the regular expression used to match the configuration directive,
@@ -534,19 +534,21 @@ set_int_arg (unsigned int *var, const char *line, regmatch_t * match)
  *
  ***********************************************************************/
 
+#define MGROUP1 -1
+
 static HANDLE_FUNC (handle_logfile)
 {
-        return set_string_arg (&conf->logf_name, line, &match[2]);
+        return set_string_arg (&conf->logf_name, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_pidfile)
 {
-        return set_string_arg (&conf->pidpath, line, &match[2]);
+        return set_string_arg (&conf->pidpath, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_anonymous)
 {
-        char *arg = get_string_arg (line, &match[2]);
+        char *arg = get_string_arg (line, &match[MGROUP1+2]);
 
         if (!arg)
                 return -1;
@@ -562,7 +564,7 @@ static HANDLE_FUNC (handle_anonymous)
 
 static HANDLE_FUNC (handle_viaproxyname)
 {
-        int r = set_string_arg (&conf->via_proxy_name, line, &match[2]);
+        int r = set_string_arg (&conf->via_proxy_name, line, &match[MGROUP1+2]);
 
         if (r)
                 return r;
@@ -574,7 +576,7 @@ static HANDLE_FUNC (handle_viaproxyname)
 
 static HANDLE_FUNC (handle_disableviaheader)
 {
-        int r = set_bool_arg (&conf->disable_viaheader, line, &match[2]);
+        int r = set_bool_arg (&conf->disable_viaheader, line, &match[MGROUP1+2]);
 
         if (r) {
                 return r;
@@ -587,17 +589,17 @@ static HANDLE_FUNC (handle_disableviaheader)
 
 static HANDLE_FUNC (handle_defaulterrorfile)
 {
-        return set_string_arg (&conf->errorpage_undef, line, &match[2]);
+        return set_string_arg (&conf->errorpage_undef, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_statfile)
 {
-        return set_string_arg (&conf->statpage, line, &match[2]);
+        return set_string_arg (&conf->statpage, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_stathost)
 {
-        int r = set_string_arg (&conf->stathost, line, &match[2]);
+        int r = set_string_arg (&conf->stathost, line, &match[MGROUP1+2]);
 
         if (r)
                 return r;
@@ -608,7 +610,7 @@ static HANDLE_FUNC (handle_stathost)
 static HANDLE_FUNC (handle_xtinyproxy)
 {
 #ifdef XTINYPROXY_ENABLE
-        return set_bool_arg (&conf->add_xtinyproxy, line, &match[2]);
+        return set_bool_arg (&conf->add_xtinyproxy, line, &match[MGROUP1+2]);
 #else
         fprintf (stderr,
                  "XTinyproxy NOT Enabled! Recompile with --enable-xtinyproxy\n");
@@ -618,12 +620,12 @@ static HANDLE_FUNC (handle_xtinyproxy)
 
 static HANDLE_FUNC (handle_syslog)
 {
-        return set_bool_arg (&conf->syslog, line, &match[2]);
+        return set_bool_arg (&conf->syslog, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_bindsame)
 {
-        int r = set_bool_arg (&conf->bindsame, line, &match[2]);
+        int r = set_bool_arg (&conf->bindsame, line, &match[MGROUP1+2]);
 
         if (r)
                 return r;
@@ -633,7 +635,7 @@ static HANDLE_FUNC (handle_bindsame)
 
 static HANDLE_FUNC (handle_port)
 {
-        set_int_arg (&conf->port, line, &match[2]);
+        set_int_arg (&conf->port, line, &match[MGROUP1+2]);
 
         if (conf->port > 65535) {
                 fprintf (stderr, "Bad port number (%d) supplied for Port.\n",
@@ -646,7 +648,7 @@ static HANDLE_FUNC (handle_port)
 
 static HANDLE_FUNC (handle_maxclients)
 {
-        set_int_arg (&conf->maxclients, line, &match[2]);
+        set_int_arg (&conf->maxclients, line, &match[MGROUP1+2]);
         return 0;
 }
 
@@ -659,24 +661,24 @@ static HANDLE_FUNC (handle_obsolete)
 
 static HANDLE_FUNC (handle_timeout)
 {
-        return set_int_arg (&conf->idletimeout, line, &match[2]);
+        return set_int_arg (&conf->idletimeout, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_connectport)
 {
-        add_connect_port_allowed (get_long_arg (line, &match[2]),
+        add_connect_port_allowed (get_long_arg (line, &match[MGROUP1+2]),
                                   &conf->connect_ports);
         return 0;
 }
 
 static HANDLE_FUNC (handle_user)
 {
-        return set_string_arg (&conf->user, line, &match[2]);
+        return set_string_arg (&conf->user, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_group)
 {
-        return set_string_arg (&conf->group, line, &match[2]);
+        return set_string_arg (&conf->group, line, &match[MGROUP1+2]);
 }
 
 static void warn_invalid_address(char *arg, unsigned long lineno) {
@@ -685,7 +687,7 @@ static void warn_invalid_address(char *arg, unsigned long lineno) {
 
 static HANDLE_FUNC (handle_allow)
 {
-        char *arg = get_string_arg (line, &match[2]);
+        char *arg = get_string_arg (line, &match[MGROUP1+2]);
 
         if(insert_acl (arg, ACL_ALLOW, &conf->access_list) < 0)
                 warn_invalid_address (arg, lineno);
@@ -695,7 +697,7 @@ static HANDLE_FUNC (handle_allow)
 
 static HANDLE_FUNC (handle_deny)
 {
-        char *arg = get_string_arg (line, &match[2]);
+        char *arg = get_string_arg (line, &match[MGROUP1+2]);
 
         if(insert_acl (arg, ACL_DENY, &conf->access_list) < 0)
                 warn_invalid_address (arg, lineno);
@@ -705,7 +707,7 @@ static HANDLE_FUNC (handle_deny)
 
 static HANDLE_FUNC (handle_bind)
 {
-        int r = set_string_arg (&conf->bind_address, line, &match[2]);
+        int r = set_string_arg (&conf->bind_address, line, &match[MGROUP1+2]);
 
         if (r)
                 return r;
@@ -716,7 +718,7 @@ static HANDLE_FUNC (handle_bind)
 
 static HANDLE_FUNC (handle_listen)
 {
-        char *arg = get_string_arg (line, &match[2]);
+        char *arg = get_string_arg (line, &match[MGROUP1+2]);
 
         if (arg == NULL) {
                 return -1;
@@ -748,8 +750,8 @@ static HANDLE_FUNC (handle_errorfile)
          * present.  This is why the "string" is located at
          * match[4] (rather than the more intuitive match[3].
          */
-        unsigned long int err = get_long_arg (line, &match[2]);
-        char *page = get_string_arg (line, &match[4]);
+        unsigned long int err = get_long_arg (line, &match[MGROUP1+2]);
+        char *page = get_string_arg (line, &match[MGROUP1+4]);
 
         if(add_new_errorpage (conf, page, err) < 0) {
                 CP_WARN ("add_new_errorpage() failed: '%s'", page);
@@ -760,8 +762,8 @@ static HANDLE_FUNC (handle_errorfile)
 
 static HANDLE_FUNC (handle_addheader)
 {
-        char *name = get_string_arg (line, &match[2]);
-        char *value = get_string_arg (line, &match[3]);
+        char *name = get_string_arg (line, &match[MGROUP1+2]);
+        char *value = get_string_arg (line, &match[MGROUP1+3]);
         http_header_t header;
 
         if (!conf->add_headers) {
@@ -802,7 +804,7 @@ static HANDLE_FUNC (handle_loglevel)
             sizeof (log_levels) / sizeof (log_levels[0]);
         unsigned int i;
 
-        char *arg = get_string_arg (line, &match[2]);
+        char *arg = get_string_arg (line, &match[MGROUP1+2]);
 
         for (i = 0; i != nlevels; ++i) {
                 if (!strcasecmp (arg, log_levels[i].string)) {
@@ -819,10 +821,10 @@ static HANDLE_FUNC (handle_loglevel)
 static HANDLE_FUNC (handle_basicauth)
 {
         char *user, *pass;
-        user = get_string_arg(line, &match[2]);
+        user = get_string_arg(line, &match[MGROUP1+2]);
         if (!user)
                 return -1;
-        pass = get_string_arg(line, &match[3]);
+        pass = get_string_arg(line, &match[MGROUP1+3]);
         if (!pass) {
                 safefree (user);
                 return -1;
@@ -840,48 +842,48 @@ static HANDLE_FUNC (handle_basicauth)
 #ifdef FILTER_ENABLE
 static HANDLE_FUNC (handle_filter)
 {
-        return set_string_arg (&conf->filter, line, &match[2]);
+        return set_string_arg (&conf->filter, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_filterurls)
 {
-        return set_bool_arg (&conf->filter_url, line, &match[2]);
+        return set_bool_arg (&conf->filter_url, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_filterextended)
 {
-        return set_bool_arg (&conf->filter_extended, line, &match[2]);
+        return set_bool_arg (&conf->filter_extended, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_filterdefaultdeny)
 {
-        assert (match[2].rm_so != -1);
+        assert (match[MGROUP1+2].rm_so != -1);
 
-        if (get_bool_arg (line, &match[2]))
+        if (get_bool_arg (line, &match[MGROUP1+2]))
                 filter_set_default_policy (FILTER_DEFAULT_DENY);
         return 0;
 }
 
 static HANDLE_FUNC (handle_filtercasesensitive)
 {
-        return set_bool_arg (&conf->filter_casesensitive, line, &match[2]);
+        return set_bool_arg (&conf->filter_casesensitive, line, &match[MGROUP1+2]);
 }
 #endif
 
 #ifdef REVERSE_SUPPORT
 static HANDLE_FUNC (handle_reverseonly)
 {
-        return set_bool_arg (&conf->reverseonly, line, &match[2]);
+        return set_bool_arg (&conf->reverseonly, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_reversemagic)
 {
-        return set_bool_arg (&conf->reversemagic, line, &match[2]);
+        return set_bool_arg (&conf->reversemagic, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_reversebaseurl)
 {
-        return set_string_arg (&conf->reversebaseurl, line, &match[2]);
+        return set_string_arg (&conf->reversebaseurl, line, &match[MGROUP1+2]);
 }
 
 static HANDLE_FUNC (handle_reversepath)
@@ -891,12 +893,12 @@ static HANDLE_FUNC (handle_reversepath)
          */
         char *arg1, *arg2;
 
-        arg1 = get_string_arg (line, &match[2]);
+        arg1 = get_string_arg (line, &match[MGROUP1+2]);
         if (!arg1)
                 return -1;
 
-        if (match[4].rm_so != -1) {
-                arg2 = get_string_arg (line, &match[4]);
+        if (match[MGROUP1+4].rm_so != -1) {
+                arg2 = get_string_arg (line, &match[MGROUP1+4]);
                 if (!arg2) {
                         safefree (arg1);
                         return -1;
@@ -937,12 +939,12 @@ static HANDLE_FUNC (handle_upstream)
         enum proxy_type pt;
         enum upstream_build_error ube;
 
-        if (match[3].rm_so != -1) {
-                tmp = get_string_arg (line, &match[3]);
+        if (match[MGROUP1+3].rm_so != -1) {
+                tmp = get_string_arg (line, &match[MGROUP1+3]);
                 if(!strcmp(tmp, "none")) {
                         safefree(tmp);
-                        if (match[4].rm_so == -1) return -1;
-                        domain = get_string_arg (line, &match[4]);
+                        if (match[MGROUP1+4].rm_so == -1) return -1;
+                        domain = get_string_arg (line, &match[MGROUP1+4]);
                         if (!domain)
                                 return -1;
                         ube = upstream_add (NULL, 0, domain, 0, 0, PT_NONE, &conf->upstream_list);
@@ -951,7 +953,7 @@ static HANDLE_FUNC (handle_upstream)
                 }
         }
 
-        mi = 6;
+        mi = MGROUP1+6;
 
         tmp = get_string_arg (line, &match[mi]);
         pt = pt_from_string(tmp);
