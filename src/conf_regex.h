@@ -24,7 +24,7 @@
         ")"
 
 #define IPV6MASK "(" IPV6 "(/" DIGIT "+)?)"
-#define BEGIN "^" SPACE "*"
+#define BEGIN "^"
 #define END SPACE "*$"
 
 
