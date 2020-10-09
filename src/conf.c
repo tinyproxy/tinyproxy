@@ -743,15 +743,8 @@ static HANDLE_FUNC (handle_listen)
 
 static HANDLE_FUNC (handle_errorfile)
 {
-        /*
-         * Because an integer is defined as ((0x)?[[:digit:]]+) _two_
-         * match places are used.  match[2] matches the full digit
-         * string, while match[3] matches only the "0x" part if
-         * present.  This is why the "string" is located at
-         * match[4] (rather than the more intuitive match[3].
-         */
         unsigned long int err = get_long_arg (line, &match[MGROUP1+2]);
-        char *page = get_string_arg (line, &match[MGROUP1+4]);
+        char *page = get_string_arg (line, &match[MGROUP1+3]);
 
         if(add_new_errorpage (conf, page, err) < 0) {
                 CP_WARN ("add_new_errorpage() failed: '%s'", page);
@@ -974,7 +967,7 @@ static HANDLE_FUNC (handle_upstream)
         mi += 5;
 
         port = (int) get_long_arg (line, &match[mi]);
-        mi += 3;
+        mi += 2;
 
         if (match[mi].rm_so != -1)
                 domain = get_string_arg (line, &match[mi]);

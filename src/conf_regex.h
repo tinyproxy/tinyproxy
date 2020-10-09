@@ -12,7 +12,7 @@
 #define WS SPACE "+"
 #define STR "\"([^\"]+)\""
 #define BOOL "(yes|on|no|off)"
-#define INT "(()" DIGIT "+)"
+#define INT "(" DIGIT "+)"
 #define ALNUM "([-a-z0-9._]+)"
 #define USERNAME "([^:]*)"
 #define PASSWORD "([^@]*)"
