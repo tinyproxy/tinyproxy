@@ -142,7 +142,7 @@ static void config_free_regex (void);
  * do not follow the pattern above.  This macro is for convenience
  * only.
  */
-#define STDCONF(d, re, func) [CD_ ## d] = { BEGIN WS re END, func, NULL }
+#define STDCONF(d, re, func) [CD_ ## d] = { BEGIN re END, func, NULL }
 
 /*
  * Holds the regular expression used to match the configuration directive,
@@ -318,7 +318,7 @@ static int check_match (struct config_s *conf, const char *line,
  */
 static int config_parse (struct config_s *conf, FILE * f)
 {
-        char buffer[LINE_MAX], *p, *q, c;
+        char buffer[LINE_MAX], *p, *q;
         const struct config_directive_entry *e;
         unsigned long lineno = 1;
 
@@ -329,10 +329,10 @@ static int config_parse (struct config_s *conf, FILE * f)
                 if(!*p) continue;
                 q = p;
                 while(!isspace(*q))q++;
-                c = *q;
                 *q = 0;
                 e = config_directive_find(p, strlen(p));
-                *q = c;
+                ++q;
+                while(isspace(*q))++q;
                 if (!e || e->value == CD_NIL || check_match (conf, q, lineno, e->value)) {
                         fprintf (stderr, "ERROR: Syntax error on line %lu\n", lineno);
                         return 1;
