@@ -11,16 +11,16 @@
 #define SPACE "[ \\t]"
 #define WS SPACE "+"
 #define STR "\"([^\"]+)\""
-#define BOOL "(yes|on|no|off)"
+#define BOOL "([Yy][Ee][Ss]|[Oo][Nn]|[Nn][Oo]|[Oo][Ff][Ff])"
 #define INT "(" DIGIT "+)"
-#define ALNUM "([-a-z0-9._]+)"
+#define ALNUM "([-A-Za-z0-9._]+)"
 #define USERNAME "([^:]*)"
 #define PASSWORD "([^@]*)"
 #define IP "((([0-9]{1,3})\\.){3}[0-9]{1,3})"
 #define IPMASK "(" IP "(/" DIGIT "+)?)"
 #define IPV6 "(" \
-        "(([0-9a-f:]{2,39}))|" \
-        "(([0-9a-f:]{0,29}:" IP "))" \
+        "(([0-9a-fA-F:]{2,39}))|" \
+        "(([0-9a-fA-F:]{0,29}:" IP "))" \
         ")"
 
 #define IPV6MASK "(" IPV6 "(/" DIGIT "+)?)"
@@ -88,6 +88,6 @@ STDCONF (upstream,
      ":" INT "(" WS STR ")?" ")", handle_upstream),
 #endif
 /* loglevel */
-STDCONF (loglevel, "(critical|error|warning|notice|connect|info)",
+STDCONF (loglevel, "([Cc]ritical|[Ee]rror|[Ww]arning|[Nn]otice|[Cc]onnect|[Ii]nfo)",
  handle_loglevel)
 

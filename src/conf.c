@@ -262,7 +262,7 @@ config_init (void)
 
                 r = regcomp (directives[i].cre,
                              directives[i].re,
-                             REG_EXTENDED | REG_ICASE | REG_NEWLINE);
+                             REG_EXTENDED | REG_NEWLINE);
                 if (r)
                         return r;
         }
