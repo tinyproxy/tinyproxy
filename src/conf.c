@@ -964,7 +964,7 @@ static HANDLE_FUNC (handle_upstream)
         ip = get_string_arg (line, &match[mi]);
         if (!ip)
                 return -1;
-        mi += 5;
+        mi += 3;
 
         port = (int) get_long_arg (line, &match[mi]);
         mi += 2;

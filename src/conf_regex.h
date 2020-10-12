@@ -16,7 +16,7 @@
 #define ALNUM "([-A-Za-z0-9._]+)"
 #define USERNAME "([^:]*)"
 #define PASSWORD "([^@]*)"
-#define IP "((([0-9]{1,3})\\.){3}[0-9]{1,3})"
+#define IP "([0-9]+[.][0-9]+[.][0-9]+[.][0-9]+)"
 #define IPMASK "(" IP "(/" DIGIT "+)?)"
 #define IPV6 "(" \
         "(([0-9a-fA-F:]{2,39}))|" \
