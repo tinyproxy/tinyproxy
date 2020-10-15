@@ -249,7 +249,6 @@ config_init (void)
         unsigned int i, r;
 
         for (i = 0; i != ndirectives; ++i) {
-                assert (!directives[i].cre);
 
                 if (!directives[i].handler) {
                         directives[i].handler = handle_disabled_feature;
