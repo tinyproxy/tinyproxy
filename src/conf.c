@@ -333,6 +333,9 @@ static int config_parse (struct config_s *conf, FILE * f)
                 e = config_directive_find(p, strlen(p));
                 ++q;
                 while(isspace(*q))++q;
+                p = q;
+                while(*p && *p != '\n') ++p;
+                while(isspace(*p)) *(p--) = 0;
                 if (!e || e->value == CD_NIL || check_match (conf, q, lineno, e->value)) {
                         fprintf (stderr, "ERROR: Syntax error on line %lu\n", lineno);
                         return 1;

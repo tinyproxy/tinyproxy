@@ -25,7 +25,7 @@
 
 #define IPV6MASK "(" IPV6 "(/" DIGIT "+)?)"
 #define BEGIN "^"
-#define END SPACE "*$"
+#define END "$"
 
 
 STDCONF (logfile, STR, handle_logfile),
