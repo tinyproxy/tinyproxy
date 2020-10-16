@@ -45,7 +45,7 @@
  * number.  Given the usual structure of the configuration file, sixteen
  * substring matches should be plenty.
  */
-#define RE_MAX_MATCHES 24
+#define RE_MAX_MATCHES 16
 
 #define CP_WARN(FMT, ...) \
         log_message (LOG_WARNING, "line %lu: " FMT, lineno, __VA_ARGS__)
