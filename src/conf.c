@@ -142,7 +142,14 @@ static void config_free_regex (void);
  * do not follow the pattern above.  This macro is for convenience
  * only.
  */
-#define STDCONF(d, re, func) [CD_ ## d] = { BEGIN re END, func, NULL }
+#ifdef HAVE_RAGEL
+#define RE2R_EXPORT static
+#include "conf_regex.inc"
+typedef int (*matchfunc)(const char*, const char*, size_t, regmatch_t[]);
+#define STDCONF(d, re, func) [CD_ ## d] = { func, re2r_match_ ## d }
+#else
+#define STDCONF(d, re, func) [CD_ ## d] = { func, BEGIN re END, NULL }
+#endif
 
 /*
  * Holds the regular expression used to match the configuration directive,
@@ -151,9 +158,13 @@ static void config_free_regex (void);
  * to be compiled one.
  */
 struct {
-        const char *re;
         CONFFILE_HANDLER handler;
+#ifndef HAVE_RAGEL
+        const char *re;
         regex_t *cre;
+#else
+	matchfunc mf;
+#endif
 } directives[] = {
 #include "conf_regex.h"
 };
@@ -248,6 +259,8 @@ config_init (void)
 {
         unsigned int i, r;
 
+	(void) r;
+
         for (i = 0; i != ndirectives; ++i) {
 
                 if (!directives[i].handler) {
@@ -255,6 +268,7 @@ config_init (void)
                         continue;
                 }
 
+#ifndef HAVE_RAGEL
                 directives[i].cre = (regex_t *) safemalloc (sizeof (regex_t));
                 if (!directives[i].cre)
                         return -1;
@@ -264,6 +278,7 @@ config_init (void)
                              REG_EXTENDED | REG_NEWLINE);
                 if (r)
                         return r;
+#endif
         }
 
         atexit (config_free_regex);
@@ -278,6 +293,7 @@ config_init (void)
 static void
 config_free_regex (void)
 {
+#ifndef HAVE_RAGEL
         unsigned int i;
 
         for (i = 0; i < ndirectives; i++) {
@@ -287,6 +303,7 @@ config_free_regex (void)
                         directives[i].cre = NULL;
                 }
         }
+#endif
 }
 
 /*
@@ -297,18 +314,25 @@ config_free_regex (void)
  * Returns 0 if a match was found and successfully processed; otherwise,
  * a negative number is returned.
  */
-static int check_match (struct config_s *conf, const char *line,
+static int check_match (struct config_s *conf,
+                        const char *line, const char* lineend,
                         unsigned long lineno, enum config_directive cd)
 {
         regmatch_t match[RE_MAX_MATCHES];
         unsigned int i = cd;
 
+#ifndef HAVE_RAGEL
+        (void) lineend;
         if (!directives[i].cre)
                 return (*directives[i].handler) (conf, line, lineno, match);
 
         if (!regexec
             (directives[i].cre, line, RE_MAX_MATCHES, match, 0))
                 return (*directives[i].handler) (conf, line, lineno, match);
+#else
+	if (!directives[i].mf(line, lineend, RE_MAX_MATCHES, match))
+		return (*directives[i].handler) (conf, line, lineno, match);
+#endif
         return -1;
 }
 
@@ -335,7 +359,7 @@ static int config_parse (struct config_s *conf, FILE * f)
                 p = q;
                 while(*p && *p != '\n') ++p;
                 while(isspace(*p)) *(p--) = 0;
-                if (!e || e->value == CD_NIL || check_match (conf, q, lineno, e->value)) {
+                if (!e || e->value == CD_NIL || check_match (conf, q, ++p, lineno, e->value)) {
                         fprintf (stderr, "ERROR: Syntax error on line %lu\n", lineno);
                         return 1;
                 }

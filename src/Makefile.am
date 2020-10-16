@@ -60,11 +60,22 @@ EXTRA_tinyproxy_SOURCES = filter.c filter.h \
 tinyproxy_DEPENDENCIES = @ADDITIONAL_OBJECTS@
 tinyproxy_LDADD = @ADDITIONAL_OBJECTS@ -lpthread
 
+CLEANFILES =
+
 if HAVE_GPERF
 conf-tokens.c: conf-tokens-gperf.inc
 conf-tokens-gperf.inc: conf-tokens.gperf
 	$(GPERF) $< > $@
 endif
 
-EXTRA_DIST = conf-tokens.gperf
+if HAVE_RAGEL
+conf.c: conf_regex.inc
+conf_regex.inc: conf_regex.rl
+	$(RAGEL) $(RAGEL_FLAGS) -o $@ $<
+
+CLEANFILES += conf_regex.inc
+endif
+
+
+EXTRA_DIST = conf-tokens.gperf conf_regex.rl
 

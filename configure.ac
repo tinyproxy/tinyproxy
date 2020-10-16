@@ -213,6 +213,16 @@ if test "x$GPERF" != "x" -a "x$GPERF" != "xno" ; then
     AC_DEFINE(HAVE_GPERF)
 fi
 
+AC_PATH_PROG(RAGEL, ragel, no)
+AM_CONDITIONAL(HAVE_RAGEL, test "x$RAGEL" != "x" -a "x$RAGEL" != "xno")
+AH_TEMPLATE([HAVE_RAGEL],
+	    [Whether you have ragel installed for faster config parsing.])
+
+if test "x$RAGEL" != "x" -a "x$RAGEL" != "xno" ; then
+    AC_DEFINE(HAVE_RAGEL)
+fi
+
+
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
