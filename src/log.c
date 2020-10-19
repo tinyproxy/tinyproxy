@@ -179,9 +179,9 @@ void log_message (int level, const char *fmt, ...)
                 strftime (time_string, TIME_LENGTH, "%b %d %H:%M:%S",
                           localtime (&nowtime.tv_sec));
 
-                snprintf (str, STRING_LENGTH, "%-9s %s.%03u [%ld]: ",
+                snprintf (str, STRING_LENGTH, "%-9s %s.%03lu [%ld]: ",
                           syslog_level[level], time_string,
-                          nowtime.tv_nsec/1000000u,
+                          (unsigned long) nowtime.tv_nsec/1000000ul,
                           (long int) getpid ());
 
                 /*
