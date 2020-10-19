@@ -20,10 +20,9 @@
  * HTML error pages with variable substitution.
  */
 
-#include <regex.h>
+#include "common.h"
 #include "main.h"
 
-#include "common.h"
 #include "buffer.h"
 #include "conns.h"
 #include "heap.h"
@@ -31,6 +30,8 @@
 #include "network.h"
 #include "utils.h"
 #include "conf.h"
+
+#include <regex.h>
 
 /*
  * Add an error number -> filename mapping to the errorpages list.
