@@ -244,6 +244,7 @@ int add_standard_vars (struct conn_s *connptr)
         char errnobuf[16];
         char timebuf[30];
         time_t global_time;
+        struct tm tm_buf;
 
         snprintf (errnobuf, sizeof errnobuf, "%d", connptr->error_number);
         ADD_VAR_RET ("errno", errnobuf);
@@ -259,7 +260,7 @@ int add_standard_vars (struct conn_s *connptr)
 
         global_time = time (NULL);
         strftime (timebuf, sizeof (timebuf), "%a, %d %b %Y %H:%M:%S GMT",
-                  gmtime (&global_time));
+                  gmtime_r (&global_time, &tm_buf));
         add_error_variable (connptr, "date", timebuf);
 
         add_error_variable (connptr, "website",

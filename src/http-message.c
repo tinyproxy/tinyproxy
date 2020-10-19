@@ -232,6 +232,7 @@ int http_message_send (http_message_t msg, int fd)
         char timebuf[30];
         time_t global_time;
         unsigned int i;
+        struct tm tm_buf;
 
         assert (is_http_message_valid (msg));
 
@@ -254,7 +255,7 @@ int http_message_send (http_message_t msg, int fd)
         /* Output the date */
         global_time = time (NULL);
         strftime (timebuf, sizeof (timebuf), "%a, %d %b %Y %H:%M:%S GMT",
-                  gmtime (&global_time));
+                  gmtime_r (&global_time, &tm_buf));
         write_message (fd, "Date: %s\r\n", timebuf);
 
         /* Output the content-length */
