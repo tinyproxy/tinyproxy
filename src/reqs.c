@@ -1454,8 +1454,8 @@ get_request_entity(struct conn_s *connptr)
                         ret = -1;
                 } else {
                         log_message (LOG_INFO,
-                                     "Read request entity of %d bytes",
-                                     nread);
+                                     "Read request entity of %ld bytes",
+                                     (long) nread);
                         ret = 0;
                 }
         } else {
