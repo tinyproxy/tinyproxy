@@ -109,6 +109,7 @@ void log_message (int level, const char *fmt, ...)
 {
         va_list args;
         struct timespec nowtime;
+        struct tm tm_buf;
 
         char time_string[TIME_LENGTH];
         char str[STRING_LENGTH];
@@ -177,7 +178,7 @@ void log_message (int level, const char *fmt, ...)
                 clock_gettime(CLOCK_REALTIME, &nowtime);
                 /* Format is month day hour:minute:second (24 time) */
                 strftime (time_string, TIME_LENGTH, "%b %d %H:%M:%S",
-                          localtime (&nowtime.tv_sec));
+                          localtime_r (&nowtime.tv_sec, &tm_buf));
 
                 snprintf (str, STRING_LENGTH, "%-9s %s.%03lu [%ld]: ",
                           syslog_level[level], time_string,
