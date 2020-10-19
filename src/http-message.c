@@ -259,7 +259,7 @@ int http_message_send (http_message_t msg, int fd)
         write_message (fd, "Date: %s\r\n", timebuf);
 
         /* Output the content-length */
-        write_message (fd, "Content-length: %u\r\n", msg->body.length);
+        write_message (fd, "Content-length: %lu\r\n", (unsigned long) msg->body.length);
 
         /* Write the separator between the headers and body */
         safe_write (fd, "\r\n", 2);
