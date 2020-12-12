@@ -3,8 +3,8 @@ templatesdir = $(pkgdatadir)
 TEMPLATES = \
 	debug.html \
 	default.html \
-	stats.txt \
-	prometheus.html
+	stats.html \
+	prometheus.txt
 
 templates_DATA = \
 	$(TEMPLATES)
