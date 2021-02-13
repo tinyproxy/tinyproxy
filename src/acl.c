@@ -191,7 +191,7 @@ static int check_numeric_acl (const struct acl_s *acl, uint8_t addr[IPV6_LEN])
         uint8_t x, y;
         int i;
 
-        assert (acl && acl->h.type == ACL_NUMERIC);
+        assert (acl && acl->h.type == HST_NUMERIC);
 
         for (i = 0; i != IPV6_LEN; ++i) {
                 x = addr[i] & acl->h.address.ip.mask[i];
