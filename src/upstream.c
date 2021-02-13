@@ -60,11 +60,10 @@ const char* upstream_build_error_string(enum upstream_build_error ube) {
 /**
  * Construct an upstream struct from input data.
  */
-static struct upstream *upstream_build (const char *host, int port, const char *domain,
+static struct upstream *upstream_build (const char *host, int port, char *domain,
                         const char *user, const char *pass,
 			proxy_type type, enum upstream_build_error *ube)
 {
-        char *ptr;
         struct upstream *up;
 
         *ube = UBE_SUCCESS;
@@ -75,8 +74,8 @@ static struct upstream *upstream_build (const char *host, int port, const char *
         }
 
         up->type = type;
-        up->host = up->domain = up->ua.user = up->pass = NULL;
-        up->ip = up->mask = 0;
+        up->target.type = HST_NONE;
+        up->host = up->ua.user = up->pass = NULL;
         if (user) {
                 if (type == PT_HTTP) {
                         char b[BASE64ENC_BYTES((256+2)-1) + 1];
@@ -121,30 +120,10 @@ static struct upstream *upstream_build (const char *host, int port, const char *
                         up->port = port;
                 }
 
-                ptr = strchr (domain, '/');
-                if (ptr) {
-                        struct in_addr addrstruct;
-
-                        *ptr = '\0';
-                        if (inet_aton (domain, &addrstruct) != 0) {
-                                up->ip = ntohl (addrstruct.s_addr);
-                                *ptr++ = '/';
-
-                                if (strchr (ptr, '.')) {
-                                        if (inet_aton (ptr, &addrstruct) != 0)
-                                                up->mask =
-                                                    ntohl (addrstruct.s_addr);
-                                } else {
-                                        up->mask =
-                                            ~((1 << (32 - atoi (ptr))) - 1);
-                                }
-                                up->ip = up->ip & up->mask;
-                        } else {
-                                *ube = UBE_NETMASK;
-                                goto fail;
-                        }
-                } else {
-                        up->domain = safestrdup (domain);
+                if (hostspec_parse(domain, &up->target)
+                   || up->target.type == HST_NONE) {
+                        *ube = UBE_NETMASK;
+                        goto fail;
                 }
 
                 if (type == PT_NONE)
@@ -160,7 +139,8 @@ fail:
         safefree (up->ua.user);
         safefree (up->pass);
         safefree (up->host);
-        safefree (up->domain);
+        if(up->target.type == HST_STRING)
+                safefree (up->target.address.string);
         safefree (up);
 
         return NULL;
@@ -170,7 +150,7 @@ fail:
  * Add an entry to the upstream list
  */
 enum upstream_build_error upstream_add (
-                   const char *host, int port, const char *domain,
+                   const char *host, int port, char *domain,
                    const char *user, const char *pass,
                    proxy_type type, struct upstream **upstream_list)
 {
@@ -182,11 +162,11 @@ enum upstream_build_error upstream_add (
                 return ube;
         }
 
-        if (!up->domain && !up->ip) {   /* always add default to end */
+        if (up->target.type == HST_NONE) {   /* always add default to end */
                 struct upstream *tmp = *upstream_list;
 
                 while (tmp) {
-                        if (!tmp->domain && !tmp->ip) {
+                        if (tmp->target.type == HST_NONE) {
                                 log_message (LOG_WARNING,
                                              "Duplicate default upstream");
                                 goto upstream_cleanup;
@@ -209,7 +189,8 @@ enum upstream_build_error upstream_add (
 
 upstream_cleanup:
         safefree (up->host);
-        safefree (up->domain);
+        if(up->target.type == HST_STRING)
+                safefree (up->target.address.string);
         safefree (up);
 
         return ube;
@@ -220,34 +201,12 @@ upstream_cleanup:
  */
 struct upstream *upstream_get (char *host, struct upstream *up)
 {
-        in_addr_t my_ip = INADDR_NONE;
-
         while (up) {
-                if (up->domain) {
-                        if (strcasecmp (host, up->domain) == 0)
-                                break;  /* exact match */
+                if (up->target.type == HST_NONE)
+                        break;
 
-                        if (up->domain[0] == '.') {
-                                char *dot = strchr (host, '.');
-
-                                if (!dot && !up->domain[1])
-                                        break;  /* local host matches "." */
-
-                                while (dot && strcasecmp (dot, up->domain))
-                                        dot = strchr (dot + 1, '.');
-
-                                if (dot)
-                                        break;  /* subdomain match */
-                        }
-                } else if (up->ip) {
-                        if (my_ip == INADDR_NONE)
-                                my_ip = ntohl (inet_addr (host));
-
-                        if ((my_ip & up->mask) == up->ip)
-                                break;
-                } else {
-                        break;  /* No domain or IP, default upstream */
-                }
+                if (hostspec_match(host, &up->target))
+                        break;
 
                 up = up->next;
         }
@@ -269,7 +228,8 @@ void free_upstream_list (struct upstream *up)
         while (up) {
                 struct upstream *tmp = up;
                 up = up->next;
-                safefree (tmp->domain);
+                if(tmp->target.type == HST_STRING)
+                        safefree (tmp->target.address.string);
                 safefree (tmp->host);
                 safefree (tmp);
         }

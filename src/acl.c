@@ -29,16 +29,9 @@
 #include "network.h"
 #include "sock.h"
 #include "sblist.h"
+#include "hostspec.h"
 
 #include <limits.h>
-
-/* Define how long an IPv6 address is in bytes (128 bits, 16 bytes) */
-#define IPV6_LEN 16
-
-enum acl_type {
-        ACL_STRING,
-        ACL_NUMERIC
-};
 
 /*
  * Hold the information about a particular access control.  We store
@@ -47,66 +40,9 @@ enum acl_type {
  */
 struct acl_s {
         acl_access_t access;
-        enum acl_type type;
-        union {
-                char *string;
-                struct {
-                        unsigned char network[IPV6_LEN];
-                        unsigned char mask[IPV6_LEN];
-                } ip;
-        } address;
+	struct hostspec h;
 };
 
-/*
- * Fills in the netmask array given a numeric value.
- *
- * Returns:
- *   0 on success
- *  -1 on failure (invalid mask value)
- *
- */
-static int
-fill_netmask_array (char *bitmask_string, int v6,
-                    unsigned char array[], size_t len)
-{
-        unsigned int i;
-        unsigned long int mask;
-        char *endptr;
-
-        errno = 0;              /* to distinguish success/failure after call */
-        mask = strtoul (bitmask_string, &endptr, 10);
-
-        /* check for various conversion errors */
-        if ((errno == ERANGE && mask == ULONG_MAX)
-            || (errno != 0 && mask == 0) || (endptr == bitmask_string))
-                return -1;
-
-        if (v6 == 0) {
-                /* The mask comparison is done as an IPv6 address, so
-                 * convert to a longer mask in the case of IPv4
-                 * addresses. */
-                mask += 12 * 8;
-        }
-
-        /* check valid range for a bit mask */
-        if (mask > (8 * len))
-                return -1;
-
-        /* we have a valid range to fill in the array */
-        for (i = 0; i != len; ++i) {
-                if (mask >= 8) {
-                        array[i] = 0xff;
-                        mask -= 8;
-                } else if (mask > 0) {
-                        array[i] = (unsigned char) (0xff << (8 - mask));
-                        mask = 0;
-                } else {
-                        array[i] = 0;
-                }
-        }
-
-        return 0;
-}
 
 /**
  * If the access list has not been set up, create it.
@@ -138,7 +74,6 @@ int
 insert_acl (char *location, acl_access_t access_type, acl_list_t *access_list)
 {
         struct acl_s acl;
-        char *mask, ip_dst[IPV6_LEN];
 
         assert (location != NULL);
 
@@ -150,55 +85,11 @@ insert_acl (char *location, acl_access_t access_type, acl_list_t *access_list)
          */
         memset (&acl, 0, sizeof (struct acl_s));
         acl.access = access_type;
-
-        if ((mask = strrchr(location, '/')))
-                *(mask++) = 0;
-
-        /*
-         * Check for a valid IP address (the simplest case) first.
-         */
-        if (full_inet_pton (location, ip_dst) > 0) {
-                acl.type = ACL_NUMERIC;
-                memcpy (acl.address.ip.network, ip_dst, IPV6_LEN);
-                if(!mask) memset (acl.address.ip.mask, 0xff, IPV6_LEN);
-                else {
-                        char dst[sizeof(struct in6_addr)];
-                        int v6, i;
-                        /* Check if the IP address before the netmask is
-                         * an IPv6 address */
-                        if (inet_pton(AF_INET6, location, dst) > 0)
-                                v6 = 1;
-                        else
-                                v6 = 0;
-
-                        if (fill_netmask_array
-                            (mask, v6, &(acl.address.ip.mask[0]), IPV6_LEN)
-                            < 0)
-                                goto err;
-
-                        for (i = 0; i < IPV6_LEN; i++)
-                                acl.address.ip.network[i] = ip_dst[i] &
-                                        acl.address.ip.mask[i];
-                }
-        } else {
-                /* either bogus IP or hostname */
-                            /* bogus ipv6 ? */
-                if (mask || strchr (location, ':'))
-                        goto err;
-
-                /* In all likelihood a string */
-                acl.type = ACL_STRING;
-                acl.address.string = safestrdup (location);
-                if (!acl.address.string)
-                        goto err;
-        }
+	if(hostspec_parse(location, &acl.h) || acl.h.type == HST_NONE)
+		return -1;
 
         if(!sblist_add(*access_list, &acl)) return -1;
         return 0;
-err:;
-	/* restore mask for proper error message */
-	if(mask) *(--mask) = '/';
-	return -1;
 }
 
 /*
@@ -219,7 +110,7 @@ acl_string_processing (struct acl_s *acl, const char *ip_address,
         size_t test_length, match_length;
         char ipbuf[512];
 
-        assert (acl && acl->type == ACL_STRING);
+        assert (acl && acl->h.type == HST_STRING);
         assert (ip_address && strlen (ip_address) > 0);
 
         /*
@@ -227,11 +118,11 @@ acl_string_processing (struct acl_s *acl, const char *ip_address,
          * do a string based test only; otherwise, we can do a reverse
          * lookup test as well.
          */
-        if (acl->address.string[0] != '.') {
+        if (acl->h.address.string[0] != '.') {
                 memset (&hints, 0, sizeof (struct addrinfo));
                 hints.ai_family = AF_UNSPEC;
                 hints.ai_socktype = SOCK_STREAM;
-                if (getaddrinfo (acl->address.string, NULL, &hints, &res) != 0)
+                if (getaddrinfo (acl->h.address.string, NULL, &hints, &res) != 0)
                         goto STRING_TEST;
 
                 ressave = res;
@@ -265,7 +156,7 @@ STRING_TEST:
         }
 
         test_length = strlen (string_addr);
-        match_length = strlen (acl->address.string);
+        match_length = strlen (acl->h.address.string);
 
         /*
          * If the string length is shorter than AC string, return a -1 so
@@ -276,7 +167,7 @@ STRING_TEST:
 
         if (strcasecmp
             (string_addr + (test_length - match_length),
-             acl->address.string) == 0) {
+             acl->h.address.string) == 0) {
                 if (acl->access == ACL_DENY)
                         return 0;
                 else
@@ -300,11 +191,11 @@ static int check_numeric_acl (const struct acl_s *acl, uint8_t addr[IPV6_LEN])
         uint8_t x, y;
         int i;
 
-        assert (acl && acl->type == ACL_NUMERIC);
+        assert (acl && acl->h.type == ACL_NUMERIC);
 
         for (i = 0; i != IPV6_LEN; ++i) {
-                x = addr[i] & acl->address.ip.mask[i];
-                y = acl->address.ip.network[i];
+                x = addr[i] & acl->h.address.ip.mask[i];
+                y = acl->h.address.ip.network[i];
 
                 /* If x and y don't match, the IP addresses don't match */
                 if (x != y)
@@ -345,18 +236,21 @@ int check_acl (const char *ip, union sockaddr_union *addr, acl_list_t access_lis
 
         for (i = 0; i < sblist_getsize (access_list); ++i) {
                 acl = sblist_get (access_list, i);
-                switch (acl->type) {
-                case ACL_STRING:
+                switch (acl->h.type) {
+                case HST_STRING:
                         perm = acl_string_processing (acl, ip, addr, string_addr);
                         break;
 
-                case ACL_NUMERIC:
+                case HST_NUMERIC:
                         if (ip[0] == '\0')
                                 continue;
 
                         perm = is_numeric_addr
                                ? check_numeric_acl (acl, numeric_addr)
                                : -1;
+                        break;
+                case HST_NONE:
+                        perm = -1;
                         break;
                 }
 
@@ -394,8 +288,8 @@ void flush_access_list (acl_list_t access_list)
          */
         for (i = 0; i < sblist_getsize (access_list); ++i) {
                 acl = sblist_get (access_list, i);
-                if (acl->type == ACL_STRING) {
-                        safefree (acl->address.string);
+                if (acl->h.type == HST_STRING) {
+                        safefree (acl->h.address.string);
                 }
         }
 
