@@ -210,7 +210,14 @@ AH_TEMPLATE([HAVE_GPERF],
 	    [Whether you have gperf installed for faster config parsing.])
 
 if test "x$GPERF" != "x" -a "x$GPERF" != "xno" ; then
+  AS_ECHO_N(["checking whether gperf is recent enough... "])
+  if "$GPERF" < src/conf-tokens.gperf >/dev/null 2>&1 ; then
+    AS_ECHO("yes")
     AC_DEFINE(HAVE_GPERF)
+  else
+    AM_CONDITIONAL(HAVE_GPERF, false)
+    AS_ECHO("no")
+  fi
 fi
 
 AC_CONFIG_FILES([
