@@ -24,6 +24,7 @@ AM_CPPFLAGS = \
 	-DLOCALSTATEDIR=\"${localstatedir}\"
 
 tinyproxy_SOURCES = \
+	hostspec.c hostspec.h \
 	acl.c acl.h \
 	anonymous.c anonymous.h \
 	buffer.c buffer.h \

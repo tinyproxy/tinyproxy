@@ -26,6 +26,7 @@
 #define _TINYPROXY_UPSTREAM_H_
 
 #include "common.h"
+#include "hostspec.h"
 
 enum upstream_build_error {
 	UBE_SUCCESS = 0,
@@ -50,7 +51,6 @@ typedef enum proxy_type {
 
 struct upstream {
         struct upstream *next;
-        char *domain;           /* optional */
         char *host;
         union {
                 char *user;
@@ -58,14 +58,14 @@ struct upstream {
         } ua;
         char *pass;
         int port;
-        in_addr_t ip, mask;
+        struct hostspec target;
         proxy_type type;
 };
 
 #ifdef UPSTREAM_SUPPORT
 const char *proxy_type_name(proxy_type type);
 extern enum upstream_build_error upstream_add (
-                          const char *host, int port, const char *domain,
+                          const char *host, int port, char *domain,
                           const char *user, const char *pass,
                           proxy_type type, struct upstream **upstream_list);
 extern struct upstream *upstream_get (char *host, struct upstream *up);
