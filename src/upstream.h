@@ -58,7 +58,7 @@ struct upstream {
         } ua;
         char *pass;
         int port;
-	struct hostspec target;
+        struct hostspec target;
         proxy_type type;
 };
 
