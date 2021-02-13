@@ -40,7 +40,7 @@
  */
 struct acl_s {
         acl_access_t access;
-	struct hostspec h;
+        struct hostspec h;
 };
 
 
@@ -85,8 +85,8 @@ insert_acl (char *location, acl_access_t access_type, acl_list_t *access_list)
          */
         memset (&acl, 0, sizeof (struct acl_s));
         acl.access = access_type;
-	if(hostspec_parse(location, &acl.h) || acl.h.type == HST_NONE)
-		return -1;
+        if(hostspec_parse(location, &acl.h) || acl.h.type == HST_NONE)
+                return -1;
 
         if(!sblist_add(*access_list, &acl)) return -1;
         return 0;
@@ -249,6 +249,7 @@ int check_acl (const char *ip, union sockaddr_union *addr, acl_list_t access_lis
                                ? check_numeric_acl (acl, numeric_addr)
                                : -1;
                         break;
+
                 case HST_NONE:
                         perm = -1;
                         break;

@@ -13,45 +13,45 @@
  */
 static int
 fill_netmask_array (char *bitmask_string, int v6,
-                    unsigned char array[], size_t len)
+		    unsigned char array[], size_t len)
 {
-        unsigned int i;
-        unsigned long int mask;
-        char *endptr;
+	unsigned int i;
+	unsigned long int mask;
+	char *endptr;
 
-        errno = 0;              /* to distinguish success/failure after call */
-        mask = strtoul (bitmask_string, &endptr, 10);
+	errno = 0;              /* to distinguish success/failure after call */
+	mask = strtoul (bitmask_string, &endptr, 10);
 
-        /* check for various conversion errors */
-        if ((errno == ERANGE && mask == ULONG_MAX)
-            || (errno != 0 && mask == 0) || (endptr == bitmask_string))
-                return -1;
+	/* check for various conversion errors */
+	if ((errno == ERANGE && mask == ULONG_MAX)
+	    || (errno != 0 && mask == 0) || (endptr == bitmask_string))
+		return -1;
 
-        if (v6 == 0) {
-                /* The mask comparison is done as an IPv6 address, so
-                 * convert to a longer mask in the case of IPv4
-                 * addresses. */
-                mask += 12 * 8;
-        }
+	if (v6 == 0) {
+		/* The mask comparison is done as an IPv6 address, so
+		 * convert to a longer mask in the case of IPv4
+		 * addresses. */
+		mask += 12 * 8;
+	}
 
-        /* check valid range for a bit mask */
-        if (mask > (8 * len))
-                return -1;
+	/* check valid range for a bit mask */
+	if (mask > (8 * len))
+		return -1;
 
-        /* we have a valid range to fill in the array */
-        for (i = 0; i != len; ++i) {
-                if (mask >= 8) {
-                        array[i] = 0xff;
-                        mask -= 8;
-                } else if (mask > 0) {
-                        array[i] = (unsigned char) (0xff << (8 - mask));
-                        mask = 0;
-                } else {
-                        array[i] = 0;
-                }
-        }
+	/* we have a valid range to fill in the array */
+	for (i = 0; i != len; ++i) {
+		if (mask >= 8) {
+			array[i] = 0xff;
+			mask -= 8;
+		} else if (mask > 0) {
+			array[i] = (unsigned char) (0xff << (8 - mask));
+			mask = 0;
+		} else {
+			array[i] = 0;
+		}
+	}
 
-        return 0;
+	return 0;
 }
 
 
@@ -95,7 +95,7 @@ int hostspec_parse(char *location, struct hostspec *h) {
 			for (i = 0; i < IPV6_LEN; i++)
 				h->address.ip.network[i] = ip_dst[i] &
 				h->address.ip.mask[i];
-                }
+		}
 	} else {
 		/* either bogus IP or hostname */
 			/* bogus ipv6 ? */
@@ -141,7 +141,7 @@ static int numeric_match(const uint8_t addr[], const struct hostspec *h)
 		/* If x and y don't match, the IP addresses don't match */
 		if (x != y)
 			return 0;
-        }
+	}
 
 	return 1;
 }
