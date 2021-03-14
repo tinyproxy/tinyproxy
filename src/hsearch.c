@@ -156,6 +156,14 @@ htab_value* htab_find(struct htab *htab, const char* key)
 	return &e->item.data;
 }
 
+htab_value* htab_find2(struct htab *htab, const char* key, char **saved_key)
+{
+	struct elem *e = htab_find_elem(htab, key);
+	if(!e) return 0;
+	*saved_key = e->item.key;
+	return &e->item.data;
+}
+
 int htab_delete(struct htab *htab, const char* key)
 {
 	struct elem *e = htab_find_elem(htab, key);
