@@ -107,14 +107,14 @@ static int resize(struct htab *htab, size_t nel)
 	return 1;
 }
 
-static struct elem *lookup(struct htab *htab, const char *key, size_t hash)
+static struct elem *lookup(struct htab *htab, const char *key, size_t hash, size_t dead)
 {
 	size_t i, j;
 	struct elem *e;
 
 	for (i=hash,j=1; ; i+=j++) {
 		e = htab->elems + (i & htab->mask);
-		if (!e->item.key ||
+		if ((!e->item.key && (!e->hash || e->hash == dead)) ||
 		    (e->hash==hash && STRCMP(e->item.key, key)==0))
 			break;
 	}
@@ -138,36 +138,38 @@ void htab_destroy(struct htab *htab)
 	free(htab);
 }
 
-static htab_entry *htab_find_item(struct htab *htab, const char* key)
+static struct elem *htab_find_elem(struct htab *htab, const char* key)
 {
 	size_t hash = keyhash(key, htab->seed);
-	struct elem *e = lookup(htab, key, hash);
+	struct elem *e = lookup(htab, key, hash, 0);
 
 	if (e->item.key) {
-		return &e->item;
+		return e;
 	}
 	return 0;
 }
 
 htab_value* htab_find(struct htab *htab, const char* key)
 {
-	htab_entry *i = htab_find_item(htab, key);
-	if(i) return &i->data;
-	return 0;
+	struct elem *e = htab_find_elem(htab, key);
+	if(!e) return 0;
+	return &e->item.data;
 }
 
 int htab_delete(struct htab *htab, const char* key)
 {
-	htab_entry *i = htab_find_item(htab, key);
-	if(!i) return 0;
-	i->key = 0;
+	struct elem *e = htab_find_elem(htab, key);
+	if(!e) return 0;
+	e->item.key = 0;
+	e->hash = 0xdeadc0de;
+	--htab->used;
 	return 1;
 }
 
 int htab_insert(struct htab *htab, char* key, htab_value value)
 {
 	size_t hash = keyhash(key, htab->seed);
-	struct elem *e = lookup(htab, key, hash);
+	struct elem *e = lookup(htab, key, hash, 0xdeadc0de);
 	if(e->item.key) {
 		/* it's not allowed to overwrite existing data */
 		return 0;
