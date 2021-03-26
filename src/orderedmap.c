@@ -81,14 +81,19 @@ char* orderedmap_find(struct orderedmap *o, const char *key) {
 int orderedmap_remove(struct orderedmap *o, const char *key) {
 	size_t i;
 	char *lk;
-	htab_value *lv, *v = htab_find(o->map, key);
+	char *sk;
+	char **sv;
+	htab_value *lv, *v = htab_find2(o->map, key, &sk);
 	if(!v) return 0;
-	htab_delete(o->map, key);
+	sv = sblist_get(o->values, v->n);
+	free(*sv);
 	sblist_delete(o->values, v->n);
 	i = 0;
 	while((i = htab_next(o->map, i, &lk, &lv))) {
 		if(lv->n > v->n) lv->n--;
 	}
+	htab_delete(o->map, key);
+	free(sk);
 	return 1;
 }
 
