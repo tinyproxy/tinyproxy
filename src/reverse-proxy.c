@@ -34,6 +34,7 @@ void reversepath_add (const char *path, const char *url,
                       struct reversepath **reversepath_list)
 {
         struct reversepath *reverse;
+        size_t l;
 
         if (url == NULL) {
                 log_message (LOG_WARNING,
@@ -65,8 +66,17 @@ void reversepath_add (const char *path, const char *url,
 
         if (!path)
                 reverse->path = safestrdup ("/");
-        else
-                reverse->path = safestrdup (path);
+        else {
+                l = strlen (path);
+                if (l && path[l-1] == '/')
+                        reverse->path = safestrdup (path);
+                else {
+                        reverse->path = safemalloc (l + 2);
+                        memcpy (reverse->path, path, l);
+                        reverse->path[l] = '/';
+                        reverse->path[l+1] = 0;
+                }
+        }
 
         reverse->url = safestrdup (url);
 
