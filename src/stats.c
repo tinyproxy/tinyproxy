@@ -122,7 +122,7 @@ err_minus_one:
         add_error_variable (connptr, "deniedconns", denied);
         add_error_variable (connptr, "refusedconns", refused);
         add_standard_vars (connptr);
-        send_http_headers (connptr, 200, "Statistic requested");
+        send_http_headers (connptr, 200, "Statistic requested", "");
         send_html_file (statfile, connptr);
         fclose (statfile);
         pthread_mutex_unlock(&stats_file_lock);
