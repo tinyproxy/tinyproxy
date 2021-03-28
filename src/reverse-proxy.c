@@ -93,10 +93,16 @@ void reversepath_add (const char *path, const char *url,
  */
 struct reversepath *reversepath_get (char *url, struct reversepath *reverse)
 {
+        size_t l, lu, lp;
         while (reverse) {
-                if (strstr (url, reverse->path) == url)
+                lu = strlen (url);
+                lp = strlen (reverse->path);
+                if ((
+                     (l = lu) == lp-1 ||
+                     (l = lp) <= lu
+                    ) &&
+                    !memcmp(url,  reverse->path, l))
                         return reverse;
-
                 reverse = reverse->next;
         }
 
@@ -122,23 +128,30 @@ void free_reversepath_list (struct reversepath *reverse)
  * Rewrite the URL for reverse proxying.
  */
 char *reverse_rewrite_url (struct conn_s *connptr, orderedmap hashofheaders,
-                           char *url)
+                           char *url, int *status)
 {
         char *rewrite_url = NULL;
         char *cookie = NULL;
         char *cookieval;
         struct reversepath *reverse = NULL;
 
+        *status = 0;
+
         /* Reverse requests always start with a slash */
         if (*url == '/') {
                 /* First try locating the reverse mapping by request url */
                 reverse = reversepath_get (url, config->reversepath_list);
                 if (reverse) {
-                        rewrite_url = (char *)
-                            safemalloc (strlen (url) + strlen (reverse->url) +
-                                        1);
-                        strcpy (rewrite_url, reverse->url);
-                        strcat (rewrite_url, url + strlen (reverse->path));
+                        size_t lu = strlen (url);
+                        size_t lrp = strlen (reverse->path);
+                        if (lrp > lu) {
+                                rewrite_url = safestrdup (reverse->path);
+                                *status = 301;
+                        } else {
+                                rewrite_url = safemalloc (
+                                              strlen (reverse->url) + lu + 1);
+                                sprintf (rewrite_url, "%s%s", reverse->url, url + lrp);
+                        }
                 } else if (config->reversemagic
                            && (cookie = orderedmap_find (hashofheaders,
                                                     "cookie"))) {
