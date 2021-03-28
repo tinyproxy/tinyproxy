@@ -383,10 +383,17 @@ BAD_REQUEST_ERROR:
                  * we'll be closing anyway.
                  */
                 char *reverse_url;
+                int reverse_status;
 
-                reverse_url = reverse_rewrite_url (connptr, hashofheaders, url);
+                reverse_url = reverse_rewrite_url (connptr, hashofheaders, url, &reverse_status);
 
                 if (reverse_url != NULL) {
+                        if (reverse_status == 301) {
+                                char buf[PATH_MAX];
+                                snprintf (buf, sizeof buf, "Location: %s\r\n", reverse_url);
+                                send_http_headers (connptr, 301, "Moved Permanently", buf);
+                                goto fail;
+                        }
                         safefree (url);
                         url = reverse_url;
                 } else if (config->reverseonly) {
