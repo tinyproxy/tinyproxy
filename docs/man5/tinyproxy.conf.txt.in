@@ -293,6 +293,11 @@ If this boolean option is set to `Yes` or `On`, filtering is
 performed for URLs rather than for domains. The default is to
 filter based on domains.
 
+Note that filtering for URLs works only in plain HTTP scenarios.
+Since HTTPS has become ubiquitous during the last years, this
+will only work on a tiny fraction of websites, so it is
+recommended not to use this option.
+
 =item B<FilterExtended>
 
 If this boolean option is set to `Yes`, then extended POSIX
