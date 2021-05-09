@@ -61,7 +61,8 @@ void filter_init (void)
 
         fd = fopen (config->filter, "r");
         if (!fd) {
-                return;
+                perror ("filter file");
+                exit (EX_DATAERR);
         }
 
         cflags = REG_NEWLINE | REG_NOSUB;
