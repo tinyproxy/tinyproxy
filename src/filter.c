@@ -25,6 +25,7 @@
 #include "main.h"
 
 #include <regex.h>
+#include <fnmatch.h>
 #include "filter.h"
 #include "heap.h"
 #include "log.h"
@@ -37,15 +38,17 @@
 static int err;
 
 struct filter_list {
-        regex_t cpatb;
+        union {
+                regex_t cpatb;
+                char *pattern;
+        } u;
 };
 
 static sblist *fl = NULL;
 static int already_init = 0;
-static filter_policy_t default_policy = FILTER_DEFAULT_ALLOW;
 
 /*
- * Initializes a linked list of strings containing hosts/urls to be filtered
+ * Initializes a list of strings containing hosts/urls to be filtered
  */
 void filter_init (void)
 {
@@ -66,10 +69,8 @@ void filter_init (void)
         }
 
         cflags = REG_NEWLINE | REG_NOSUB;
-        if (config->filter_extended)
-                cflags |= REG_EXTENDED;
-        if (!config->filter_casesensitive)
-                cflags |= REG_ICASE;
+        cflags |= (REG_EXTENDED * !!(config->filter_opts & FILTER_OPT_TYPE_ERE));
+        cflags |= (REG_ICASE * !(config->filter_opts & FILTER_OPT_CASESENSITIVE));
 
         while (fgets (buf, FILTER_BUFFER_LEN, fd)) {
                 ++lineno;
@@ -107,13 +108,19 @@ void filter_init (void)
                 if (!fl) fl = sblist_new(sizeof(struct filter_list),
                                          4096/sizeof(struct filter_list));
 
-                err = regcomp (&fe.cpatb, s, cflags);
-                if (err != 0) {
-                        if (err == REG_ESPACE) goto oom;
-                        fprintf (stderr,
-                                 "Bad regex in %s: line %d - %s\n",
-                                 config->filter, lineno, s);
-                        exit (EX_DATAERR);
+                if (config->filter_opts & FILTER_OPT_TYPE_FNMATCH) {
+                        fe.u.pattern = safestrdup(s);
+                        if (!fe.u.pattern) goto oom;
+                } else {
+
+                        err = regcomp (&fe.u.cpatb, s, cflags);
+                        if (err != 0) {
+                                if (err == REG_ESPACE) goto oom;
+                                fprintf (stderr,
+                                         "Bad regex in %s: line %d - %s\n",
+                                         config->filter, lineno, s);
+                                exit (EX_DATAERR);
+                        }
                 }
                 if (!sblist_add(fl, &fe)) {
                 oom:;
@@ -142,7 +149,10 @@ void filter_destroy (void)
                 if (fl) {
                         for (i = 0; i < sblist_getsize(fl); ++i) {
                                 p = sblist_get(fl, i);
-                                regfree (&p->cpatb);
+                                if (config->filter_opts & FILTER_OPT_TYPE_FNMATCH)
+                                        safefree(p->u.pattern);
+                                else
+                                        regfree (&p->u.cpatb);
                         }
                         sblist_free(fl);
                 }
@@ -175,11 +185,14 @@ int filter_run (const char *str)
 
         for (i = 0; i < sblist_getsize(fl); ++i) {
                 p = sblist_get(fl, i);
-                result =
-                    regexec (&p->cpatb, str, (size_t) 0, (regmatch_t *) 0, 0);
+                if (config->filter_opts & FILTER_OPT_TYPE_FNMATCH)
+                        result = fnmatch (p->u.pattern, str, 0);
+                else
+                        result =
+                            regexec (&p->u.cpatb, str, (size_t) 0, (regmatch_t *) 0, 0);
 
                 if (result == 0) {
-                        if (default_policy == FILTER_DEFAULT_ALLOW)
+                        if (!(config->filter_opts & FILTER_OPT_DEFAULT_DENY))
                                 return 1;
                         else
                                 return 0;
@@ -187,16 +200,8 @@ int filter_run (const char *str)
         }
 
 COMMON_EXIT:
-        if (default_policy == FILTER_DEFAULT_ALLOW)
+        if (!(config->filter_opts & FILTER_OPT_DEFAULT_DENY))
                 return 0;
         else
                 return 1;
-}
-
-/*
- * Set the default filtering policy
- */
-void filter_set_default_policy (filter_policy_t policy)
-{
-        default_policy = policy;
 }

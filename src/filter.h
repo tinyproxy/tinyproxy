@@ -21,16 +21,22 @@
 #ifndef _TINYPROXY_FILTER_H_
 #define _TINYPROXY_FILTER_H_
 
-typedef enum {
-        FILTER_DEFAULT_ALLOW,
-        FILTER_DEFAULT_DENY
-} filter_policy_t;
+enum filter_options {
+        FILTER_OPT_CASESENSITIVE	= 1 << 0,
+        FILTER_OPT_URL			= 1 << 1,
+        FILTER_OPT_DEFAULT_DENY		= 1 << 2,
+
+        FILTER_OPT_TYPE_BRE		= 1 << 8,
+        FILTER_OPT_TYPE_ERE		= 1 << 9,
+        FILTER_OPT_TYPE_FNMATCH		= 1 << 10,
+};
+
+#define FILTER_TYPE_MASK \
+    (FILTER_OPT_TYPE_BRE | FILTER_OPT_TYPE_ERE | FILTER_OPT_TYPE_FNMATCH)
 
 extern void filter_init (void);
 extern void filter_destroy (void);
 extern void filter_reload (void);
 extern int filter_run (const char *str);
-
-extern void filter_set_default_policy (filter_policy_t policy);
 
 #endif

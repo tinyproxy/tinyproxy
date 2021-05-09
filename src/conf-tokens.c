@@ -34,6 +34,7 @@ config_directive_find (register const char *str, register size_t len)
       {"defaulterrorfile", CD_defaulterrorfile},
       {"startservers", CD_startservers},
       {"filtercasesensitive", CD_filtercasesensitive},
+      {"filtertype", CD_filtertype},
       {"filterurls", CD_filterurls},
       {"filter", CD_filter},
       {"reversemagic", CD_reversemagic},

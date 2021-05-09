@@ -267,7 +267,7 @@ domains. This option specifies the location of the file
 containing the filter rules, one rule per line.
 
 Rules are specified as POSIX basic regular expressions (BRE), unless
-FilterExtended is activated.
+another FilterType is specified.
 Comment lines start with a `#` character.
 
 Example filter file contents:
@@ -287,6 +287,20 @@ Example filter file contents:
  # filter any domain that starts with adserver
  ^adserver
 
+=item B<FilterType>
+
+This option can be set to one of `bre`, `ere`, or `fnmatch`.
+If `bre` is set, the rules specified in the filter file are matched
+using POSIX basic regular expressions, when set to `ere`, using
+POSIX extended regular expressions, and when set to `fnmatch` using
+the `fnmatch` function as specified in the manpage `man 3p fnmatch`.
+`fnmatch` matching is identical to what's used in the shell to match
+filenames, so for example `*.google.com` matches everything that
+ends with `.google.com`.
+If you don't know what regular expressions are or you're using filter
+lists from 3rd party sources, `fnmatch` is probably what you want.
+It's also the fastest matching method of the three.
+
 =item B<FilterURLs>
 
 If this boolean option is set to `Yes` or `On`, filtering is
@@ -300,6 +314,7 @@ recommended not to use this option.
 
 =item B<FilterExtended>
 
+Deprecated. Use `FilterType ere` instead.
 If this boolean option is set to `Yes`, then extended POSIX
 regular expressions are used for matching the filter rules.
 The default is to use basic POSIX regular expressions.
@@ -308,7 +323,11 @@ The default is to use basic POSIX regular expressions.
 
 If this boolean option is set to `Yes`, then the filter rules
 are matched in a case sensitive manner. The default is to
-match case-insensitively.
+match case-insensitively, unfortunately.
+If you set this to `Yes`, then your matching will be almost
+twice as fast.
+This setting affects only `bre` and `ere` FilterTypes, fnmatch
+is always case sensitive.
 
 =item B<FilterDefaultDeny>
 

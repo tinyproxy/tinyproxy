@@ -51,6 +51,7 @@ filterurls, CD_filterurls
 filterextended, CD_filterextended
 filterdefaultdeny, CD_filterdefaultdeny
 filtercasesensitive, CD_filtercasesensitive
+filtertype, CD_filtertype
 reversebaseurl, CD_reversebaseurl
 reverseonly, CD_reverseonly
 reversemagic, CD_reversemagic

@@ -240,10 +240,9 @@ ViaProxyName "tinyproxy"
 #FilterURLs On
 
 #
-# FilterExtended: Use POSIX Extended regular expressions rather than
-# basic.
+# FilterType: Use bre (default), ere, or fnmatch for filtering.
 #
-#FilterExtended On
+#FilterType fnmatch
 
 #
 # FilterCaseSensitive: Use case sensitive regular expressions.

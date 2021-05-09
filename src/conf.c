@@ -135,6 +135,7 @@ static HANDLE_FUNC (handle_filtercasesensitive);
 static HANDLE_FUNC (handle_filterdefaultdeny);
 static HANDLE_FUNC (handle_filterextended);
 static HANDLE_FUNC (handle_filterurls);
+static HANDLE_FUNC (handle_filtertype);
 #endif
 static HANDLE_FUNC (handle_group);
 static HANDLE_FUNC (handle_listen);
@@ -234,6 +235,7 @@ struct {
         STDCONF (filterextended, BOOL, handle_filterextended),
         STDCONF (filterdefaultdeny, BOOL, handle_filterdefaultdeny),
         STDCONF (filtercasesensitive, BOOL, handle_filtercasesensitive),
+        STDCONF (filtertype, "(bre|ere|fnmatch)", handle_filtertype),
 #endif
 #ifdef REVERSE_SUPPORT
         /* Reverse proxy arguments */
@@ -952,6 +954,11 @@ static HANDLE_FUNC (handle_basicauth)
 }
 
 #ifdef FILTER_ENABLE
+
+static void warn_deprecated(const char *arg, unsigned long lineno) {
+        CP_WARN ("deprecated option %s", arg);
+}
+
 static HANDLE_FUNC (handle_filter)
 {
         return set_string_arg (&conf->filter, line, &match[2]);
@@ -959,26 +966,53 @@ static HANDLE_FUNC (handle_filter)
 
 static HANDLE_FUNC (handle_filterurls)
 {
-        return set_bool_arg (&conf->filter_url, line, &match[2]);
+        conf->filter_opts |=
+             get_bool_arg (line, &match[2]) * FILTER_OPT_URL;
+        return 0;
 }
 
 static HANDLE_FUNC (handle_filterextended)
 {
-        return set_bool_arg (&conf->filter_extended, line, &match[2]);
+        warn_deprecated("FilterExtended, use FilterType", lineno);
+        conf->filter_opts |=
+             get_bool_arg (line, &match[2]) * FILTER_OPT_TYPE_ERE;
+        return 0;
 }
 
 static HANDLE_FUNC (handle_filterdefaultdeny)
 {
         assert (match[2].rm_so != -1);
-
-        if (get_bool_arg (line, &match[2]))
-                filter_set_default_policy (FILTER_DEFAULT_DENY);
+        conf->filter_opts |=
+            get_bool_arg (line, &match[2]) * FILTER_OPT_DEFAULT_DENY;
         return 0;
 }
 
 static HANDLE_FUNC (handle_filtercasesensitive)
 {
-        return set_bool_arg (&conf->filter_casesensitive, line, &match[2]);
+        conf->filter_opts |=
+            get_bool_arg (line, &match[2]) * FILTER_OPT_CASESENSITIVE;
+        return 0;
+}
+
+static HANDLE_FUNC (handle_filtertype)
+{
+        static const struct { unsigned short flag; char type[8]; }
+        ftmap[] = {
+             {FILTER_OPT_TYPE_ERE,	"ere"},
+             {FILTER_OPT_TYPE_BRE,	"bre"},
+             {FILTER_OPT_TYPE_FNMATCH,	"fnmatch"},
+        };
+        char *type;
+        unsigned i;
+        type = get_string_arg(line, &match[2]);
+        if (!type) return -1;
+
+        for(i=0;i<sizeof(ftmap)/sizeof(ftmap[0]);++i)
+                if(!strcmp(ftmap[i].type, type))
+                        conf->filter_opts |= ftmap[i].flag;
+
+        safefree (type);
+        return 0;
 }
 #endif
 
