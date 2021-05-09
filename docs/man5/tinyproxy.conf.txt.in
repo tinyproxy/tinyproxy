@@ -316,6 +316,8 @@ The default filtering policy is to allow everything that is
 not matched by a filtering rule. Setting `FilterDefaultDeny`
 to `Yes` changes the policy do deny everything but the domains
 or URLs matched by the filtering rules.
+In other words, if set to `No` the Filter list acts as a
+blacklist, if set to `Yes` as a whitelist.
 
 =item B<Anonymous>
 
