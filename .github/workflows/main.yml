@@ -15,6 +15,15 @@ jobs:
     - run: ./configure
     - run: make
     - run: make test
+  test-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: brew install automake
+    - run: ./autogen.sh
+    - run: ./configure
+    - run: make
+    - run: make test
   valgrind-test:
     runs-on: ubuntu-latest
     steps:
