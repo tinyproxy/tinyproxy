@@ -15,12 +15,12 @@ jobs:
     - run: ./configure
     - run: make
     - run: make test
-  valgrind:
-    runs-on: ubnutu-latest
+  valgrind-test:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: install valgrind
-      run: apt-get install --assume-yes valgrind
+      run: sudo apt-get install --assume-yes valgrind
     - run: ./autogen.sh
     - run: ./configure --enable-debug --enable-transparent --enable-reverse
     - run: make
