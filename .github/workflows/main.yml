@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: ./autogen.sh
+    - run: ./configure
+    - run: make
+    - run: make test
+  valgrind:
+    runs-on: ubnutu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: install valgrind
+      run: apt-get install --assume-yes valgrind
+    - run: ./autogen.sh
+    - run: ./configure --enable-debug --enable-transparent --enable-reverse
+    - run: make
+    - run: make test
+    - run: make valgrind-test
