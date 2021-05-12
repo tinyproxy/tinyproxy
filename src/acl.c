@@ -31,8 +31,6 @@
 #include "sblist.h"
 #include "hostspec.h"
 
-#include <limits.h>
-
 /*
  * Hold the information about a particular access control.  We store
  * whether it's an ALLOW or DENY entry, and also whether it's a string
