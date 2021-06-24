@@ -40,6 +40,12 @@
 #include "basicauth.h"
 #include "conf-tokens.h"
 
+#ifdef LINE_MAX
+#define TP_LINE_MAX LINE_MAX
+#else
+#define TP_LINE_MAX 1024
+#endif
+
 /*
  * The configuration directives are defined in the structure below.  Each
  * directive requires a regular expression to match against, and a
@@ -409,7 +415,7 @@ static int check_match (struct config_s *conf, const char *line,
  */
 static int config_parse (struct config_s *conf, FILE * f)
 {
-        char buffer[LINE_MAX], *p, *q, c;
+        char buffer[TP_LINE_MAX], *p, *q, c;
         const struct config_directive_entry *e;
         unsigned long lineno = 1;
 
