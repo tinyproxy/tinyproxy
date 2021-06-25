@@ -1244,7 +1244,6 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 	unsigned short port;
 	size_t ulen, passlen;
 
-	struct hostent *host;
 	struct upstream *cur_upstream = connptr->upstream_proxy;
 
 	ulen = cur_upstream->ua.user ? strlen(cur_upstream->ua.user) : 0;
@@ -1261,10 +1260,11 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 		buff[1] = 1; /* connect command */
 		port = htons(request->port);
 		memcpy(&buff[2], &port, 2); /* dest port */
-		host = gethostbyname(request->host);
-		memcpy(&buff[4], host->h_addr_list[0], 4); /* dest ip */
-		buff[8] = 0; /* user */
-		if (9 != safe_write(connptr->server_fd, buff, 9))
+		memcpy(&buff[4], "\0\0\0\1" /* socks4a fake ip */
+				 "\0" /* user */, 5);
+		len = strlen(request->host);
+		memcpy(&buff[9], request->host, len+1);
+		if (9+len+1 != safe_write(connptr->server_fd, buff, 9+len+1))
 			return -1;
 		if (8 != safe_read(connptr->server_fd, buff, 8))
 			return -1;
