@@ -471,22 +471,16 @@ BAD_REQUEST_ERROR:
          * Filter restricted domains/urls
          */
         if (config->filter) {
-                if (config->filter_url)
-                        ret = filter_run (url);
-                else
-                        ret = filter_run (request->host);
+                int fu = config->filter_opts & FILTER_OPT_URL;
+                ret = filter_run (fu ? url : request->host);
 
                 if (ret) {
                         update_stats (STAT_DENIED);
 
-                        if (config->filter_url)
-                                log_message (LOG_NOTICE,
-                                             "Proxying refused on filtered url \"%s\"",
-                                             url);
-                        else
-                                log_message (LOG_NOTICE,
-                                             "Proxying refused on filtered domain \"%s\"",
-                                             request->host);
+                        log_message (LOG_NOTICE,
+                                     "Proxying refused on filtered %s \"%s\"",
+                                     fu ? "url" : "domain",
+                                     fu ? url : request->host);
 
                         indicate_http_error (connptr, 403, "Filtered",
                                              "detail",
