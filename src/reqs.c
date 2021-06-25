@@ -1263,6 +1263,8 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 		memcpy(&buff[4], "\0\0\0\1" /* socks4a fake ip */
 				 "\0" /* user */, 5);
 		len = strlen(request->host);
+		if(len>255)
+			return -1;
 		memcpy(&buff[9], request->host, len+1);
 		if (9+len+1 != safe_write(connptr->server_fd, buff, 9+len+1))
 			return -1;
