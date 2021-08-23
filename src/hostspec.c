@@ -3,6 +3,15 @@
 #include "heap.h"
 #include "network.h"
 
+static int dotted_mask(char *bitmask_string, unsigned char array[])
+{
+	unsigned char v4bits[4];
+	if (1 != inet_pton (AF_INET, bitmask_string, v4bits)) return -1;
+	memset (array, 0xff, IPV6_LEN-4);
+	memcpy (array + IPV6_LEN-4, v4bits, 4);
+	return 0;
+}
+
 /*
  * Fills in the netmask array given a numeric value.
  *
@@ -13,13 +22,17 @@
  */
 static int
 fill_netmask_array (char *bitmask_string, int v6,
-		    unsigned char array[], size_t len)
+		    unsigned char array[])
 {
 	unsigned int i;
 	unsigned long int mask;
 	char *endptr;
 
 	errno = 0;              /* to distinguish success/failure after call */
+	if (strchr (bitmask_string, '.')) {
+		if (v6) return -1; /* ipv6 doesn't supported dotted netmasks */
+		return dotted_mask(bitmask_string, array);
+	}
 	mask = strtoul (bitmask_string, &endptr, 10);
 
 	/* check for various conversion errors */
@@ -35,11 +48,11 @@ fill_netmask_array (char *bitmask_string, int v6,
 	}
 
 	/* check valid range for a bit mask */
-	if (mask > (8 * len))
+	if (mask > (8 * IPV6_LEN))
 		return -1;
 
 	/* we have a valid range to fill in the array */
-	for (i = 0; i != len; ++i) {
+	for (i = 0; i != IPV6_LEN; ++i) {
 		if (mask >= 8) {
 			array[i] = 0xff;
 			mask -= 8;
@@ -88,7 +101,7 @@ int hostspec_parse(char *location, struct hostspec *h) {
 				v6 = 0;
 
 			if (fill_netmask_array
-			    (mask, v6, &(h->address.ip.mask[0]), IPV6_LEN)
+			    (mask, v6, &(h->address.ip.mask[0]))
 			     < 0)
 				goto err;
 
