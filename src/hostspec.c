@@ -15,15 +15,6 @@ static int dotted_mask(char *bitmask_string, unsigned char array[])
 	return 0;
 }
 
-static int dotted_mask(char *bitmask_string, unsigned char array[])
-{
-	unsigned char v4bits[4];
-	if (1 != inet_pton (AF_INET, bitmask_string, v4bits)) return -1;
-	memset (array, 0xff, IPV6_LEN-4);
-	memcpy (array + IPV6_LEN-4, v4bits, 4);
-	return 0;
-}
-
 /*
  * Fills in the netmask array given a numeric value.
  *
