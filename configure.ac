@@ -101,6 +101,16 @@ if test x"$transparent_enabled" = x"yes"; then
    AC_DEFINE(TRANSPARENT_PROXY)
 fi
 
+dnl Include support for reverse dns to match IP network/mask ?
+AH_TEMPLATE([RDNS_ENABLE],
+	    [Include support for reverse dns to match IP network/mask.])
+TP_ARG_ENABLE(rdns,
+	      [Enable support for reverse dns to match IP network/mask (default is YES)],
+	      yes)
+if test x"$rdns__enabled" = x"yes"; then
+   AC_DEFINE(RDNS_ENABLE)
+fi
+
 dnl Let user decide whether he wants support for manpages
 dnl Which require either pod2man or a tarball release
 AH_TEMPLATE([MANPAGE_SUPPORT],

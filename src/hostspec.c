@@ -2,6 +2,18 @@
 #include "hostspec.h"
 #include "heap.h"
 #include "network.h"
+#ifdef RDNS_ENABLE
+#include "log.h"
+#endif
+
+static int dotted_mask(char *bitmask_string, unsigned char array[])
+{
+	unsigned char v4bits[4];
+	if (1 != inet_pton (AF_INET, bitmask_string, v4bits)) return -1;
+	memset (array, 0xff, IPV6_LEN-4);
+	memcpy (array + IPV6_LEN-4, v4bits, 4);
+	return 0;
+}
 
 /*
  * Fills in the netmask array given a numeric value.
@@ -13,13 +25,17 @@
  */
 static int
 fill_netmask_array (char *bitmask_string, int v6,
-		    unsigned char array[], size_t len)
+		    unsigned char array[])
 {
 	unsigned int i;
 	unsigned long int mask;
 	char *endptr;
 
 	errno = 0;              /* to distinguish success/failure after call */
+	if (strchr (bitmask_string, '.')) {
+		if (v6) return -1; /* ipv6 doesn't supported dotted netmasks */
+		return dotted_mask(bitmask_string, array);
+	}
 	mask = strtoul (bitmask_string, &endptr, 10);
 
 	/* check for various conversion errors */
@@ -35,11 +51,11 @@ fill_netmask_array (char *bitmask_string, int v6,
 	}
 
 	/* check valid range for a bit mask */
-	if (mask > (8 * len))
+	if (mask > (8 * IPV6_LEN))
 		return -1;
 
 	/* we have a valid range to fill in the array */
-	for (i = 0; i != len; ++i) {
+	for (i = 0; i != IPV6_LEN; ++i) {
 		if (mask >= 8) {
 			array[i] = 0xff;
 			mask -= 8;
@@ -88,7 +104,7 @@ int hostspec_parse(char *location, struct hostspec *h) {
 				v6 = 0;
 
 			if (fill_netmask_array
-			    (mask, v6, &(h->address.ip.mask[0]), IPV6_LEN)
+			    (mask, v6, &(h->address.ip.mask[0]))
 			     < 0)
 				goto err;
 
@@ -146,6 +162,42 @@ static int numeric_match(const uint8_t addr[], const struct hostspec *h)
 	return 1;
 }
 
+#ifdef RDNS_ENABLE
+static int reverse_dns_numeric_match(const char *ip, const struct hostspec *h)
+{
+	int ret;
+	struct addrinfo *res, *ressave;
+	uint8_t numeric_addr[IPV6_LEN];
+	char ipbuf[512];
+
+	errno = 0;
+
+        ret =getaddrinfo (ip, NULL, NULL, &res);
+
+	ressave = res; 
+
+        if (ret != 0) {
+		if (ret == EAI_SYSTEM)
+			log_message (LOG_ERR, "Could not retrieve address info for %s : %s",ip,strerror(errno));
+		else
+			log_message (LOG_ERR, "Could not retrieve address info for %s : %s",ip,gai_strerror(errno));
+	} else {
+		do {
+			/* return if IP matches */
+			get_ip_string (res->ai_addr, ipbuf, sizeof (ipbuf));
+			full_inet_pton (ipbuf, &numeric_addr);
+			if (numeric_match (numeric_addr, h)) {
+				break;
+			}
+		} while ((res = res->ai_next) != NULL);
+	}
+
+	freeaddrinfo (ressave);
+
+	return numeric_match (numeric_addr, h);
+}
+#endif
+
 /* check whether ip matches hostspec.
    return 1 on match, 0 on non-match */
 int hostspec_match(const char *ip, const struct hostspec *h) {
@@ -158,6 +210,9 @@ int hostspec_match(const char *ip, const struct hostspec *h) {
 		if(is_numeric_addr) return 0;
 		return string_match (ip, h->address.string);
 	case HST_NUMERIC:
+#ifdef RDNS_ENABLE
+		if(!is_numeric_addr) return reverse_dns_numeric_match(ip, h);
+#endif
 		return numeric_match (numeric_addr, h);
 	case HST_NONE:
 		return 0;
