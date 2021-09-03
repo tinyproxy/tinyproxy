@@ -103,7 +103,7 @@ fi
 
 dnl Include support for reverse dns to match IP network/mask ?
 AH_TEMPLATE([RDNS_ENABLE],
-	    [Include support for reverse dns to match IP network/mask.])
+	    [Include support for reverse dns to match IP network/mask. This is best used with nscd enabled to minimise DNS resolution delays])
 TP_ARG_ENABLE(rdns,
 	      [Enable support for reverse dns to match IP network/mask (default is NO)],
 	      no)
