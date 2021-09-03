@@ -2,7 +2,7 @@
 #include "hostspec.h"
 #include "heap.h"
 #include "network.h"
-#ifdef RDNS_ENABLE
+#ifdef FDNS_ENABLE
 #include "log.h"
 #endif
 
@@ -162,8 +162,8 @@ static int numeric_match(const uint8_t addr[], const struct hostspec *h)
 	return 1;
 }
 
-#ifdef RDNS_ENABLE
-static int reverse_dns_numeric_match(const char *ip, const struct hostspec *h)
+#ifdef FDNS_ENABLE
+static int dns_numeric_match(const char *ip, const struct hostspec *h)
 {
 	int ret;
 	struct addrinfo *res, *ressave;
@@ -210,8 +210,8 @@ int hostspec_match(const char *ip, const struct hostspec *h) {
 		if(is_numeric_addr) return 0;
 		return string_match (ip, h->address.string);
 	case HST_NUMERIC:
-#ifdef RDNS_ENABLE
-		if(!is_numeric_addr) return reverse_dns_numeric_match(ip, h);
+#ifdef FDNS_ENABLE
+		if(!is_numeric_addr) return dns_numeric_match(ip, h);
 #endif
 		return numeric_match (numeric_addr, h);
 	case HST_NONE:

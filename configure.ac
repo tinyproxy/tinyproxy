@@ -102,13 +102,13 @@ if test x"$transparent_enabled" = x"yes"; then
 fi
 
 dnl Include support for reverse dns to match IP network/mask ?
-AH_TEMPLATE([RDNS_ENABLE],
-	    [Include support for reverse dns to match IP network/mask. This is best used with nscd enabled to minimise DNS resolution delays])
+AH_TEMPLATE([FDNS_ENABLE],
+	    [Include support for forward dns to match IP network/mask. This is best used with nscd enabled to minimise DNS resolution delays])
 TP_ARG_ENABLE(rdns,
-	      [Enable support for reverse dns to match IP network/mask (default is NO)],
+	      [Enable support for forward dns to match IP network/mask (default is NO)],
 	      no)
-if test x"$rdns__enabled" = x"yes"; then
-   AC_DEFINE(RDNS_ENABLE)
+if test x"$fdns__enabled" = x"yes"; then
+   AC_DEFINE(FDNS_ENABLE)
 fi
 
 dnl Let user decide whether he wants support for manpages
