@@ -176,7 +176,7 @@ static int reverse_dns_numeric_match(const char *ip, const struct hostspec *h)
 
 	ressave = res; 
 
-        if (ret != 0) {
+	if (ret != 0) {
 		if (ret == EAI_SYSTEM)
 			log_message (LOG_ERR, "Could not retrieve address info for %s : %s",ip,strerror(errno));
 		else

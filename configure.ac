@@ -105,8 +105,8 @@ dnl Include support for reverse dns to match IP network/mask ?
 AH_TEMPLATE([RDNS_ENABLE],
 	    [Include support for reverse dns to match IP network/mask.])
 TP_ARG_ENABLE(rdns,
-	      [Enable support for reverse dns to match IP network/mask (default is YES)],
-	      yes)
+	      [Enable support for reverse dns to match IP network/mask (default is NO)],
+	      no)
 if test x"$rdns__enabled" = x"yes"; then
    AC_DEFINE(RDNS_ENABLE)
 fi
