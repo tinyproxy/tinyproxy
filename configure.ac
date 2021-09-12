@@ -104,7 +104,7 @@ fi
 dnl Include support for reverse dns to match IP network/mask ?
 AH_TEMPLATE([FDNS_ENABLE],
 	    [Include support for forward dns to match IP network/mask. This is best used with nscd enabled to minimise DNS resolution delays])
-TP_ARG_ENABLE(rdns,
+TP_ARG_ENABLE(fdns,
 	      [Enable support for forward dns to match IP network/mask (default is NO)],
 	      no)
 if test x"$fdns__enabled" = x"yes"; then
