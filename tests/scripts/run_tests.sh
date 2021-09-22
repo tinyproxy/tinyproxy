@@ -18,7 +18,7 @@
 # this program; if not, see <http://www.gnu.org/licenses/>.
 
 
-SCRIPTS_DIR=$(pwd)/$(dirname $0)
+SCRIPTS_DIR=$(cd $(dirname $0) && pwd)
 BASEDIR=$SCRIPTS_DIR/../..
 TESTS_DIR=$SCRIPTS_DIR/..
 TESTENV_DIR=$TESTS_DIR/env
