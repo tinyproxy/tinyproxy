@@ -89,4 +89,4 @@ and create a [pull request](https://github.com/tinyproxy/tinyproxy/pulls).
 
 You can meet developers and users to discuss development,
 patches and deployment issues in the `#tinyproxy` IRC channel on
-Freenode (`irc.freenode.net`).
+libera (`irc.libera.chat`).
