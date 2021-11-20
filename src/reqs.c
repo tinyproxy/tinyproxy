@@ -1424,7 +1424,7 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
                 log_message (LOG_WARNING,
                              "No upstream proxy defined for %s.",
                              request->host);
-                indicate_http_error (connptr, 404,
+                indicate_http_error (connptr, 502,
                                      "Unable to connect to upstream proxy.");
                 return -1;
         }
@@ -1436,7 +1436,7 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
         if (connptr->server_fd < 0) {
                 log_message (LOG_WARNING,
                              "Could not connect to upstream proxy.");
-                indicate_http_error (connptr, 404,
+                indicate_http_error (connptr, 502,
                                      "Unable to connect to upstream proxy",
                                      "detail",
                                      "A network error occurred while trying to "
