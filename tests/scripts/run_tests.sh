@@ -83,6 +83,7 @@ DefaultErrorFile "$TINYPROXY_DATA_DIR/debug.html"
 ErrorFile 400 "$TINYPROXY_DATA_DIR/debug.html"
 ErrorFile 403 "$TINYPROXY_DATA_DIR/debug.html"
 ErrorFile 501 "$TINYPROXY_DATA_DIR/debug.html"
+ErrorFile 502 "$TINYPROXY_DATA_DIR/debug.html"
 StatFile "$TINYPROXY_DATA_DIR/stats.html"
 Logfile "$TINYPROXY_LOG_FILE"
 PidFile "$TINYPROXY_PID_FILE"
@@ -99,6 +100,7 @@ XTinyproxy Yes
 AddHeader "X-My-Header1" "Powered by Tinyproxy"
 AddHeader "X-My-Header2" "Powered by Tinyproxy"
 AddHeader "X-My-Header3" "Powered by Tinyproxy"
+Upstream http 255.255.255.255:65535 ".invalid"
 EOF
 
 cat << 'EOF' > $TINYPROXY_FILTER_FILE
@@ -243,6 +245,10 @@ test "x$?" = "x0" || FAILED=$((FAILED + 1))
 
 echo -n "requesting connect method to denied port..."
 run_failure_webclient_request 403 --method=CONNECT "$TINYPROXY_IP:$TINYPROXY_PORT" "localhost:12345"
+test "x$?" = "x0" || FAILED=$((FAILED + 1))
+
+echo -n "testing unavailable backend..."
+run_failure_webclient_request 502 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://bogus.invalid"
 test "x$?" = "x0" || FAILED=$((FAILED + 1))
 }
 
