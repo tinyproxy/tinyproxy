@@ -56,8 +56,8 @@ Timeout 600
 #   /usr/share/tinyproxy
 #   /etc/tinyproxy
 #
-#ErrorFile 404 "@pkgdatadir@/404.html"
 #ErrorFile 400 "@pkgdatadir@/400.html"
+#ErrorFile 502 "@pkgdatadir@/502.html"
 #ErrorFile 503 "@pkgdatadir@/503.html"
 #ErrorFile 403 "@pkgdatadir@/403.html"
 #ErrorFile 408 "@pkgdatadir@/408.html"
