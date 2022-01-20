@@ -56,6 +56,8 @@ extern int listen_sock (const char *addr, uint16_t port, sblist* listen_fds);
 extern int socket_nonblocking (int sock);
 extern int socket_blocking (int sock);
 
+extern void set_socket_timeout(int fd);
+
 extern int getsock_ip (int fd, char *ipaddr);
 extern void getpeer_information (union sockaddr_union *addr, char *ipaddr, size_t ipaddr_len);
 

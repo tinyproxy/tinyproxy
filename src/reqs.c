@@ -1517,6 +1517,9 @@ static void handle_connection_failure(struct conn_s *connptr, int got_headers)
  * when we start the relay portion. This makes most of the original
  * tinyproxy code, which was confusing, redundant. Hail progress.
  * 	- rjkaes
+
+ * this function is called directly from child_thread() with the newly
+ * received fd from accept(). 
  */
 void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
 {
@@ -1528,7 +1531,6 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
         int got_headers = 0, fd = connptr->client_fd;
         size_t i;
         struct request_s *request = NULL;
-        struct timeval tv;
         orderedmap hashofheaders = NULL;
 
         char sock_ipaddr[IP_LENGTH];
@@ -1550,12 +1552,7 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
                 return;
         }
 
-        tv.tv_usec = 0;
-        tv.tv_sec = config->idletimeout;
-        setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (void*) &tv, sizeof(tv));
-        tv.tv_usec = 0;
-        tv.tv_sec = config->idletimeout;
-        setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (void*) &tv, sizeof(tv));
+        set_socket_timeout(fd);
 
         if (connection_loops (addr))  {
                 log_message (LOG_CONN,

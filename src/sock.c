@@ -108,6 +108,16 @@ bind_socket_list (int sockfd, sblist *addresses, int family)
         return -1;
 }
 
+void set_socket_timeout(int fd) {
+        struct timeval tv;
+        tv.tv_usec = 0;
+        tv.tv_sec = config->idletimeout;
+        setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (void*) &tv, sizeof(tv));
+        tv.tv_usec = 0;
+        tv.tv_sec = config->idletimeout;
+        setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (void*) &tv, sizeof(tv));
+}
+
 /*
  * Open a connection to a remote host.  It's been re-written to use
  * the getaddrinfo() library function, which allows for a protocol
@@ -162,6 +172,8 @@ int opensock (const char *host, int port, const char *bind_to)
                                 continue;       /* can't bind, so try again */
                         }
                 }
+
+                set_socket_timeout(sockfd);
 
                 if (connect (sockfd, res->ai_addr, res->ai_addrlen) == 0) {
                         union sockaddr_union *p = (void*) res->ai_addr, u;
