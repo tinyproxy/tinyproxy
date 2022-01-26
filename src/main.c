@@ -254,7 +254,7 @@ change_user (const char *program)
  */
 int reload_config (int reload_logging)
 {
-        int ret;
+        int ret, ret2;
         struct config_s *c_next = get_next_config();
 
         log_message (LOG_NOTICE, "Reloading config file");
@@ -263,18 +263,19 @@ int reload_config (int reload_logging)
 
         ret = reload_config_file (config_file, c_next);
 
-        if (ret != 0) {
-                goto done;
+        if (ret == 0) {
+                if(config) free_config (config);
+                config = c_next;
         }
 
-        if(config) free_config (config);
-        config = c_next;
+        if (reload_logging) ret2 = setup_logging ();
 
-        if (reload_logging) ret = setup_logging ();
-        log_message (LOG_NOTICE, "Reloading config file finished");
+        if (ret != 0)
+                log_message (LOG_WARNING, "Reloading config file failed!");
+        else
+                log_message (LOG_NOTICE, "Reloading config file finished");
 
-done:
-        return ret;
+        return ret ? ret : ret2;
 }
 
 static void setup_sig(int sig, signal_func *sigh,
