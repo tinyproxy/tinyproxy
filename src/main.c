@@ -268,7 +268,7 @@ int reload_config (int reload_logging)
                 config = c_next;
         }
 
-        if (reload_logging) ret2 = setup_logging ();
+        ret2 = reload_logging ? setup_logging () : 0;
 
         if (ret != 0)
                 log_message (LOG_WARNING, "Reloading config file failed!");
