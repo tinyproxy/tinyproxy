@@ -47,6 +47,16 @@ static const char * get_gai_error (int n)
                 return gai_strerror (n);
 }
 
+static const char * family_string (int af)
+{
+        switch(af) {
+        case AF_UNSPEC: return "AF_UNSPEC";
+        case AF_INET:   return "AF_INET";
+        case AF_INET6:  return "AF_INET6";
+        }
+        return "unknown";
+}
+
 /*
  * Bind the given socket to the supplied address.  The socket is
  * returned if the bind succeeded.  Otherwise, -1 is returned
@@ -69,7 +79,7 @@ bind_socket (int sockfd, const char *addr, int family)
         n = getaddrinfo (addr, NULL, &hints, &res);
         if (n != 0) {
                 log_message (LOG_INFO,
-                        "bind_socket: getaddrinfo failed for %s: %s", addr, get_gai_error (n));
+                        "bind_socket: getaddrinfo failed for %s: %s (af: %s)", addr, get_gai_error (n), family_string(family));
                 return -1;
         }
 
