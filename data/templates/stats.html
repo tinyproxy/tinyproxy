@@ -2,7 +2,7 @@
 
 <html lang="en">
   <head>
-    <title>{package} v{version} run-time statistics</title>
+    <title>Stats [{package} v{version}]</title>
     <meta charset="UTF-8" />
     <style type="text/css">
       body {
@@ -47,8 +47,8 @@
       .even {
         background: #555151;
       }
-      .left {
-        text-align: left;
+      .center {
+        text-align: center;
       }
       .right {
         text-align: right;
@@ -62,31 +62,31 @@
       <div id="inner">
         <table>
           <tr>
-            <th colspan="2">{package} v{version} run-time statistics</th>
+            <th colspan="2">{package} v{version} statistics</th>
           </tr>
           <tr class="odd">
             <td class="right">Open connections</td>
-            <td class="left">{opens}</td>
+            <td class="center">{opens}</td>
           </tr>
 
           <tr class="even">
             <td class="right">Bad connections</td>
-            <td class="left">{badconns}</td>
+            <td class="center">{badconns}</td>
           </tr>
 
           <tr class="odd">
             <td class="right">Denied connections</td>
-            <td class="left">{deniedconns}</td>
+            <td class="center">{deniedconns}</td>
           </tr>
 
           <tr class="even">
             <td class="right">Refused (high load)</td>
-            <td class="left">{refusedconns}</td>
+            <td class="center">{refusedconns}</td>
           </tr>
 
           <tr class="odd">
             <td class="right">Total requests</td>
-            <td class="left">{reqs}</td>
+            <td class="center">{reqs}</td>
           </tr>
         </table>
       </div>
