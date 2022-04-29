@@ -707,6 +707,8 @@ static HANDLE_FUNC (handle_xtinyproxy)
 #ifdef XTINYPROXY_ENABLE
         return set_bool_arg (&conf->add_xtinyproxy, line, &match[2]);
 #else
+        if(!get_bool_arg(line, &match[2]))
+                return 0;
         fprintf (stderr,
                  "XTinyproxy NOT Enabled! Recompile with --enable-xtinyproxy\n");
         return 1;
