@@ -1622,11 +1622,7 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
 
         if (read_request_line (connptr) < 0) {
                 update_stats (STAT_BADCONN);
-                indicate_http_error (connptr, 408, "Timeout",
-                                     "detail",
-                                     "Server timeout waiting for the HTTP request "
-                                     "from the client.", NULL);
-                HC_FAIL();
+                goto done;
         }
 
         /*
