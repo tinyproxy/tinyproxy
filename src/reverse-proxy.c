@@ -127,7 +127,7 @@ void free_reversepath_list (struct reversepath *reverse)
 /*
  * Rewrite the URL for reverse proxying.
  */
-char *reverse_rewrite_url (struct conn_s *connptr, orderedmap hashofheaders,
+char *reverse_rewrite_url (struct conn_s *connptr, pseudomap *hashofheaders,
                            char *url, int *status)
 {
         char *rewrite_url = NULL;
@@ -153,7 +153,7 @@ char *reverse_rewrite_url (struct conn_s *connptr, orderedmap hashofheaders,
                                 sprintf (rewrite_url, "%s%s", reverse->url, url + lrp);
                         }
                 } else if (config->reversemagic
-                           && (cookie = orderedmap_find (hashofheaders,
+                           && (cookie = pseudomap_find (hashofheaders,
                                                     "cookie"))) {
 
                         /* No match - try the magical tracking cookie next */
