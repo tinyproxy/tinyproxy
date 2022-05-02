@@ -53,7 +53,7 @@ static int build_url (char **url, const char *host, int port, const char *path)
 }
 
 int
-do_transparent_proxy (struct conn_s *connptr, orderedmap hashofheaders,
+do_transparent_proxy (struct conn_s *connptr, pseudomap *hashofheaders,
                       struct request_s *request, struct config_s *conf,
                       char **url)
 {
@@ -62,7 +62,7 @@ do_transparent_proxy (struct conn_s *connptr, orderedmap hashofheaders,
         size_t ulen = strlen (*url);
         size_t i;
 
-        data = orderedmap_find (hashofheaders, "host");
+        data = pseudomap_find (hashofheaders, "host");
         if (!data) {
                 union sockaddr_union dest_addr;
                 const void *dest_inaddr;
