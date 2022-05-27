@@ -194,20 +194,21 @@ fi #manpage_support_enabled
 AM_CONDITIONAL(HAVE_POD2MAN, test "x$POD2MAN" != "x" -a "x$POD2MAN" != "xno")
 
 AC_PATH_PROG(GPERF, gperf, no)
-AM_CONDITIONAL(HAVE_GPERF, test "x$GPERF" != "x" -a "x$GPERF" != "xno")
 AH_TEMPLATE([HAVE_GPERF],
 	    [Whether you have gperf installed for faster config parsing.])
 
+tmp_gperf=false
 if test "x$GPERF" != "x" -a "x$GPERF" != "xno" ; then
   AS_ECHO_N(["checking whether gperf is recent enough... "])
   if "$GPERF" < src/conf-tokens.gperf >/dev/null 2>&1 ; then
     AS_ECHO("yes")
     AC_DEFINE(HAVE_GPERF)
+    tmp_gperf=true
   else
-    AM_CONDITIONAL(HAVE_GPERF, false)
     AS_ECHO("no")
   fi
 fi
+AM_CONDITIONAL(HAVE_GPERF, $tmp_gperf)
 
 AC_CONFIG_FILES([
 Makefile
@@ -243,4 +244,8 @@ if test "x$POD2MAN" = "xno" ; then
   if test -e docs/man8/tinyproxy.8 ; then
       touch docs/man8/tinyproxy.8
   fi
+fi
+
+if test "x$HAVE_GPERF" = "xno" && test -e src/conf-tokens-gperf.inc ; then
+  touch src/conf-tokens-gperf.inc
 fi
