@@ -1,0 +1,61 @@
+name: Generate Source Tarball
+
+# Trigger whenever a release is created
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: archive
+      id: archive
+      run: |
+        sudo apt install -y gperf
+        rm -rf .git
+        autoreconf -i
+        VERSION=$(cat VERSION)
+        PKGNAME="tinyproxy-$VERSION"
+        ./configure
+        make dist
+        echo "::set-output name=tarball_xz::${PKGNAME}.tar.xz"
+        echo "::set-output name=tarball_gz::${PKGNAME}.tar.gz"
+        echo "::set-output name=tarball_bz2::${PKGNAME}.tar.bz2"
+
+    - name: upload tarball_xz
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./${{ steps.archive.outputs.tarball_xz }}
+        asset_name: ${{ steps.archive.outputs.tarball_xz }}
+        asset_content_type: application/x-xz
+
+    - name: upload tarball_gz
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./${{ steps.archive.outputs.tarball_gz }}
+        asset_name: ${{ steps.archive.outputs.tarball_gz }}
+        asset_content_type: application/x-gzip
+
+    - name: upload tarball_bz2
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./${{ steps.archive.outputs.tarball_bz2 }}
+        asset_name: ${{ steps.archive.outputs.tarball_bz2 }}
+        asset_content_type: application/x-bzip2
