@@ -30,6 +30,7 @@
 #include "network.h"
 #include "utils.h"
 #include "conf.h"
+#include "log.h"
 
 #include <regex.h>
 
@@ -188,8 +189,12 @@ int send_http_error_message (struct conn_s *connptr)
                            connptr->error_string, add);
 
         error_file = get_html_file (connptr->error_number);
-        if (!(infile = fopen (error_file, "r"))) {
-                char *detail = lookup_variable (connptr->error_variables, "detail");
+        if (!error_file || !(infile = fopen (error_file, "r"))) {
+                char *detail;
+                if (error_file) log_message (LOG_ERR,
+                                "Error opening error file '%s' (%s)",
+                                error_file, strerror (errno));
+                detail = lookup_variable (connptr->error_variables, "detail");
                 return (write_message (connptr->client_fd, fallback_error,
                                        connptr->error_number,
                                        connptr->error_string,
