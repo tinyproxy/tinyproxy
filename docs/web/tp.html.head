@@ -41,24 +41,26 @@
 
 <p>Tinyproxy requires only a <strong>minimal POSIX environment</strong> to build and operate. It can use additional libraries to add functionality though.</p>
 
-<p>Tinyproxy allows forwarding of <strong>HTTPS connections</strong> without modifying traffic in any way through the <code>CONNECT</code> method (see the <code>ConnectPort</code> directive).</p>
+<p>Tinyproxy allows forwarding of <strong>HTTPS connections</strong> without modifying traffic in any way through the <code>CONNECT</code> method (see the <code>ConnectPort</code> directive, which you should disable, unless you want to restrict the users).</p>
 
 <p>Tinyproxy supports being configured as a <strong>transparent proxy</strong>, so that a proxy can be used without requiring any client-side configuration. You can also use it as a <strong>reverse proxy</strong> front-end to your websites.</p>
 
-<p>Using the <code>AddHeader</code> directive, you can <strong>add/insert HTTP headers</strong> to outgoing traffic.</p>
+<p>Using the <code>AddHeader</code> directive, you can <strong>add/insert HTTP headers</strong> to outgoing traffic (HTTP only).</p>
 
 <p>If you're looking to build a custom web proxy, Tinyproxy is <strong>easy to modify</strong> to your custom needs. The source is straightforward, adhering to the KISS principle. As such, it can be used as a foundation for anything you may need a web proxy to do.</p>
 
-<p>Tinyproxy has <strong>privacy features</strong> which can let you configure which HTTP headers should be allowed through, and which should be blocked. This allows you to restrict both what data comes to your web browser from the HTTP server (e.g., cookies), and to restrict what data is allowed through from your web browser to the HTTP server (e.g., version information).</p>
+<p>Tinyproxy has <strong>privacy features</strong> which can let you configure which HTTP headers should be allowed through, and which should be blocked. This allows you to restrict both what data comes to your web browser from the HTTP server (e.g., cookies), and to restrict what data is allowed through from your web browser to the HTTP server (e.g., version information). Note that these features do not affect HTTPS connections.</p>
 
 <p>Using the <strong>remote monitoring</strong> facility, you can access proxy statistics from afar, letting you know exactly how busy the proxy is.</p>
 
 <p>You can configure Tinyproxy to <strong>control access</strong> by only allowing requests from a certain subnet, or from a certain interface, thus ensuring that random, unauthorized people will not be using your proxy.</p>
 
-<p>With a bit of configuration (specifically, making Tinyproxy created files owned by a non-root user and running it on a port greater than 1024), Tinyproxy can be made to run without any special privileges, thus minimizing the chance of system compromise. Furthermore, it was designed with an eye towards preventing buffer overflows. The simplicity of the code ensures it remains easy to spot such bugs.</p>
+<p>With a bit of configuration (specifically, making Tinyproxy created files owned by a non-root user and running it on a port greater than 1024), Tinyproxy can be made to run without any special privileges, thus minimizing the chance of system compromise. In fact, it is <b>recommended</b> to run it as a regular/restricted user. Furthermore, it was designed with an eye towards preventing buffer overflows. The simplicity of the code ensures it remains easy to spot such bugs.</p>
 
 <h2>
 <a id="downloads" class="anchor" href="#downloads" aria-hidden="true"><span class="octicon octicon-link"></span></a>Downloads</h2>
+
+<p>Note that many distributions ship horribly outdated versions of tinyproxy, therefore it is recommended to compile it from source.</p>
 
 <ul>
 <li>On Red Hat Enterprise Linux, or its derivatives such as CentOS, install Tinyproxy from the EPEL repository by running yum install tinyproxy.</li>
@@ -70,13 +72,27 @@
 <li>Mac OS X users can check MacPorts to see if the Tinyproxy port there is recent enough.</li>
 </ul>
 
-<p>If you feel that the Tinyproxy binary package in your operating system is not recent, please contact the package maintainer for that particular operating system. If this fails, you can always compile the latest stable version from source code.</p>
+<p>If you feel that the Tinyproxy binary package in your operating system is not recent (likely), please contact the package maintainer for that particular operating system. If this fails, you can always compile the latest stable, or even better, the latest git master version, from source code.</p>
 
 <p>We distribute Tinyproxy in source code form, and it has to be compiled in order to be used on your system. Please see the INSTALL file in the source code tree for build instructions. The current stable version of Tinyproxy is available on the <a href="https://github.com/tinyproxy/tinyproxy/releases">releases page</a>. The Tinyproxy NEWS file contains the release notes. You can verify the tarball using its PGP signature. You can also browse the older releases of Tinyproxy.</p>
 
 <p>We use Git as the version control system for the Tinyproxy source code repository. To get a copy of the Tinyproxy repository, use the command:</p>
 
 <p>git clone <a href="https://github.com/tinyproxy/tinyproxy.git">https://github.com/tinyproxy/tinyproxy.git</a></p>
+
+<h2>
+<a id="quickstart" class="anchor" href="#quickstart" aria-hidden="true"><span class="octicon octicon-link"></span></a>Quickstart</h2>
+
+<p>The quickest way to get started is using a minimal config file like the below:</p>
+
+<pre><code>
+Port 8888
+Listen 127.0.0.1
+Timeout 600
+Allow 127.0.0.1
+</code></pre>
+
+<p>And then simply run <code>tinyproxy -d -c tinyproxy.conf</code> as your current user. This starts tinyproxy in foreground mode with <code>tinyproxy.conf</code> as its config, while logging to stdout. Now, all programs supporting a HTTP proxy can use 127.0.0.1:8888 as a proxy. You can try it out using <code>http_proxy=127.0.0.1:8888 curl example.com</code>.</p>
 
 <h2>
 <a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h2>
