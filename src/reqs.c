@@ -301,21 +301,16 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
 }
 
 /*
- * These two defines are for the SSL tunnelling.
+ * Send the appropriate response to the client to establish a
+ * connection via CONNECT method.
  */
-#define SSL_CONNECTION_RESPONSE "HTTP/1.0 200 Connection established"
-#define PROXY_AGENT "Proxy-agent: " PACKAGE "/" VERSION
-
-/*
- * Send the appropriate response to the client to establish a SSL
- * connection.
- */
-static int send_ssl_response (struct conn_s *connptr)
+static int send_connect_method_response (struct conn_s *connptr)
 {
         return write_message (connptr->client_fd,
-                              "%s\r\n"
-                              "%s\r\n"
-                              "\r\n", SSL_CONNECTION_RESPONSE, PROXY_AGENT);
+                              "HTTP/1.%u 200 Connection established\r\n"
+                              "Proxy-agent: " PACKAGE "/" VERSION "\r\n"
+                              "\r\n", connptr->protocol.major != 1 ? 0 :
+                                      connptr->protocol.minor);
 }
 
 /*
@@ -1762,10 +1757,10 @@ e401:
                         HC_FAIL();
                 }
         } else {
-                if (send_ssl_response (connptr) < 0) {
+                if (send_connect_method_response (connptr) < 0) {
                         log_message (LOG_ERR,
-                                     "handle_connection: Could not send SSL greeting "
-                                     "to client.");
+                                     "handle_connection: Could not send CONNECT"
+                                     " method greeting to client.");
                         update_stats (STAT_BADCONN);
                         HC_FAIL();
                 }
