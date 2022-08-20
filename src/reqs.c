@@ -322,8 +322,10 @@ static struct request_s *process_request (struct conn_s *connptr,
 {
         char *url;
         struct request_s *request;
-        int ret;
+        int ret, skip_trans;
         size_t request_len;
+
+        skip_trans = 0;
 
         /* NULL out all the fields so frees don't cause segfaults. */
         request =
@@ -397,6 +399,7 @@ BAD_REQUEST_ERROR:
                         }
                         safefree (url);
                         url = reverse_url;
+                        skip_trans = 1;
                 } else if (config->reverseonly) {
                         log_message (LOG_ERR,
                                      "Bad request, no mapping for '%s' found",
@@ -446,11 +449,13 @@ BAD_REQUEST_ERROR:
                 connptr->connect_method = TRUE;
         } else {
 #ifdef TRANSPARENT_PROXY
-                if (!do_transparent_proxy
-                    (connptr, hashofheaders, request, config, &url)) {
-                        goto fail;
-                }
-#else
+                if (!skip_trans) {
+                        if (!do_transparent_proxy
+                            (connptr, hashofheaders, request, config, &url))
+                                goto fail;
+                } else
+#endif
+                {
                 indicate_http_error (connptr, 501, "Not Implemented",
                                      "detail",
                                      "Unknown method or unsupported protocol.",
@@ -458,7 +463,7 @@ BAD_REQUEST_ERROR:
                 log_message (LOG_INFO, "Unknown method (%s) or protocol (%s)",
                              request->method, url);
                 goto fail;
-#endif
+                }
         }
 
 #ifdef FILTER_ENABLE
