@@ -343,8 +343,12 @@ static struct request_s *process_request (struct conn_s *connptr,
                 goto fail;
         }
 
+        /* zero-terminate the strings so they don't contain junk in error page */
+        request->method[0] = url[0] = request->protocol[0] = 0;
+
         ret = sscanf (connptr->request_line, "%[^ ] %[^ ] %[^ ]",
                       request->method, url, request->protocol);
+
         if (ret == 2 && !strcasecmp (request->method, "GET")) {
                 request->protocol[0] = 0;
 
