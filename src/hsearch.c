@@ -82,7 +82,13 @@ static int resize(struct htab *htab, size_t nel)
 	size_t i, j;
 	struct elem *e, *newe;
 	struct elem *oldtab = htab->elems;
-	struct elem *oldend = htab->elems + htab->mask + 1;
+	size_t offset = 1;
+	if (htab->elems)
+		offset += htab->elems;
+	if (htab->mask)
+		offset += htab->mask;
+	
+	struct elem *oldend = offset;
 
 	if (nel > MAXSIZE)
 		nel = MAXSIZE;
