@@ -427,7 +427,7 @@ static int config_parse (struct config_s *conf, FILE * f)
                 while(isspace(*p))p++;
                 if(!*p) continue;
                 q = p;
-                while(!isspace(*q))q++;
+                while(*q && !isspace(*q))q++;
                 c = *q;
                 *q = 0;
                 e = config_directive_find(p, strlen(p));
