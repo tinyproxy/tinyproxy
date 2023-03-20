@@ -3,7 +3,7 @@
 ##
 ## This example tinyproxy.conf file contains example settings
 ## with explanations in comments. For decriptions of all
-## parameters, see the tinproxy.conf(5) manual page.
+## parameters, see the tinyproxy.conf(5) manual page.
 ##
 
 #
