@@ -66,10 +66,10 @@
 #define PASSWORD "([^@]*)"
 #define IP "((([0-9]{1,3})\\.){3}[0-9]{1,3})"
 #define IPMASK "(" IP "(/" DIGIT "+)?)"
-#define IPV6_SCOPE "((%[^ \t\\/]{1,16})?)"
+#define IPV6SCOPE "((%[^ \t\\/]{1,16})?)"
 #define IPV6 "(" \
-        "([0-9a-f:]{2,39})" IPV6_SCOPE "|" \
-        "([0-9a-f:]{0,29}:" IP ")" IPV6_SCOPE \
+        "([0-9a-f:]{2,39})" IPV6SCOPE "|" \
+        "([0-9a-f:]{0,29}:" IP ")" IPV6SCOPE \
         ")"
 
 #define IPV6MASK "(" IPV6 "(/" DIGIT "+)?)"
