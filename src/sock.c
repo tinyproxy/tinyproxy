@@ -35,6 +35,10 @@
 #include "conf.h"
 #include "loop.h"
 #include "sblist.h"
+#ifdef SO_BINDTODEVICE
+#include <net/if.h>
+#endif
+
 
 /*
  * Return a human readable error for getaddrinfo() and getnameinfo().
@@ -310,6 +314,88 @@ static int listen_on_one_socket(struct addrinfo *ad)
         return listenfd;
 }
 
+#ifdef SO_BINDTODEVICE
+static int listen_on_interface(const char *interface, uint16_t port)
+{
+        int listenfd;
+        int ret;
+        int ipv6=1;
+        const int on = 1;
+        const int off = 0;
+        struct sockaddr_storage addr;
+        struct ifreq ifr;
+
+        listenfd = socket(PF_INET6, SOCK_STREAM, 0);
+        if (listenfd == -1) {
+                listenfd = socket(PF_INET, SOCK_STREAM, 0);
+                if (listenfd == -1) {
+                        log_message(LOG_ERR, "socket() failed: %s", strerror(errno));
+                        return -1;
+                }
+                ipv6=0;
+        }
+
+        ret = setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+        if (ret != 0) {
+                log_message(LOG_ERR,
+                            "setsockopt failed to set SO_REUSEADDR: %s",
+                            strerror(errno));
+                close(listenfd);
+                return -1;
+        }
+
+        strncpy(ifr.ifr_name, interface, sizeof(ifr.ifr_name));
+        if (setsockopt(listenfd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0) {
+               log_message(LOG_ERR, "setsockopt(SO_BINDTODEVICE,%s) failed: %s", interface, strerror (errno));
+               close(listenfd);
+               return -1;
+        }
+
+        if (ipv6) {
+                struct sockaddr_in6 *addr6;
+                ret = setsockopt(listenfd, IPPROTO_IPV6, IPV6_V6ONLY, &off,
+                                 sizeof(off));
+                if (ret != 0) {
+                        log_message(LOG_ERR,
+                                    "setsockopt failed to clear IPV6_V6ONLY: %s",
+                                    strerror(errno));
+                        close(listenfd);
+                        return -1;
+                }
+                addr6 = (struct sockaddr_in6*)&addr;
+                memset(addr6, 0, sizeof(*addr6));
+                addr6->sin6_family = AF_INET6;
+                addr6->sin6_port = htons(port);
+                addr6->sin6_addr = in6addr_any;
+        } else {
+                struct sockaddr_in *addr4;
+                addr4 = (struct sockaddr_in*)&addr;
+                memset(addr4, 0, sizeof(*addr4));
+                addr4->sin_family = AF_INET;
+                addr4->sin_port = htons(port);
+                addr4->sin_addr.s_addr = htonl(INADDR_ANY);
+        }
+
+        ret = bind(listenfd, (struct sockaddr*)&addr, sizeof(addr));
+        if (ret != 0) {
+               log_message(LOG_ERR, "bind failed: %s", strerror (errno));
+               close(listenfd);
+               return -1;
+        }
+
+        ret = listen(listenfd, MAXLISTEN);
+        if (ret != 0) {
+                log_message(LOG_ERR, "listen failed: %s", strerror(errno));
+                close(listenfd);
+                return -1;
+        }
+
+        log_message(LOG_INFO, "listening on fd [%d]", listenfd);
+
+        return listenfd;
+}
+#endif
+
 /*
  * Start listening on a socket. Create a socket with the selected port.
  * If the provided address is NULL, we may listen on multiple sockets,
@@ -332,6 +418,17 @@ int listen_sock (const char *addr, uint16_t port, sblist* listen_fds)
 
         log_message(LOG_INFO, "listen_sock called with addr = '%s'",
                     addr == NULL ? "(NULL)" : addr);
+
+#ifdef SO_BINDTODEVICE
+        if (addr && if_nametoindex(addr)) {
+                int listenfd;
+                listenfd = listen_on_interface(addr, port);
+                if (listenfd >= 0) {
+                        sblist_add (listen_fds, &listenfd);
+                        return 0;
+                }
+        }
+#endif
 
         memset (&hints, 0, sizeof (struct addrinfo));
         hints.ai_family = AF_UNSPEC;
