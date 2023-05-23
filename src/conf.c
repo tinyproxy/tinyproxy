@@ -199,8 +199,8 @@ struct {
         STDCONF (defaulterrorfile, STR, handle_defaulterrorfile),
         STDCONF (statfile, STR, handle_statfile),
         STDCONF (stathost, STR, handle_stathost),
-        /* boolean arguments */
         STDCONF (xtinyproxy,  BOOL, handle_xtinyproxy),
+        /* boolean arguments */
         STDCONF (syslog, BOOL, handle_syslog),
         STDCONF (bindsame, BOOL, handle_bindsame),
         STDCONF (disableviaheader, BOOL, handle_disableviaheader),
