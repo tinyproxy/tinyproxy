@@ -22,8 +22,8 @@ configuration file.
 The Tinyproxy configuration file contains key-value pairs, one per
 line. Lines starting with `#` and empty lines are comments and are
 ignored. Keywords are case-insensitive, whereas values are
-case-sensitive. Values may be enclosed in double-quotes (") if they
-contain spaces.
+case-sensitive. Some string values must be enclosed in double
+quotes (") as noted below.
 
 The possible keywords and their descriptions are as follows:
 
@@ -76,29 +76,29 @@ allowed to have before it is closed by Tinyproxy.
 
 This parameter controls which HTML file Tinyproxy returns when a
 given HTTP error occurs. It takes two arguments, the error number
-and the location of the HTML error file.
+and the location of the HTML error file. Enclose the file location
+in double quotes.
 
 =item B<DefaultErrorFile>
 
-This parameter controls the HTML template file returned when an
-error occurs for which no specific error file has been set.
+The HTML template file returned when an error occurs for which no
+specific error file has been set. Enclose in double quotes.
 
 =item B<StatHost>
 
-This configures the host name or IP address that is treated
-as the `stat host`: Whenever a request for this host is received,
-Tinyproxy will return an internal statistics page instead of
-forwarding the request to that host. The template for this
-page can be configured with the `StatFile` configuration option.
-The default value of `StatHost` is `@TINYPROXY_STATHOST@`.
+The host name or IP address that is treated as the `stat host`.
+Enclose in double quotes. Whenever Tinyproxy receives a request for
+the `stat host` it returns an internal statistics page instead of
+forwarding the request to that host. The template for this page can be
+configured with the `StatFile` configuration option. The default value
+of `StatHost` is `@TINYPROXY_STATHOST@`.
 
 =item B<StatFile>
 
-This configures the HTML file that Tinyproxy sends when
-a request for the stathost is received. If this parameter is
-not set, Tinyproxy returns a hard-coded basic statistics page.
-See the STATHOST section in the L<tinyproxy(8)> manual page
-for details.
+The HTML file that Tinyproxy sends in response to a request for the
+`stat host`. Enclose in double quotes. If this parameter is not set,
+Tinyproxy returns a hard-coded basic statistics page. See the STATHOST
+section in the L<tinyproxy(8)> manual page for details.
 
 Note that the StatFile and the error files configured with ErrorFile
 and DefaultErrorFile are template files that can contain a few
@@ -109,9 +109,9 @@ manual page contains a description of all template variables.
 
 =item B<LogFile>
 
-This controls the location of the file to which Tinyproxy
-writes its debug output. Alternatively, Tinyproxy can log
-to syslog -- see the Syslog option.
+The location of the file to which Tinyproxy writes its debug output.
+Enclose in double quotes. Alternatively, Tinyproxy can log to syslog
+-- see the Syslog option.
 
 =item B<Syslog>
 
@@ -144,8 +144,8 @@ and below would be suppressed. Allowed values are:
 
 =item B<PidFile>
 
-This option controls the location of the file where the main
-Tinyproxy process stores its process ID for signaling purposes.
+The location of the file where the main Tinyproxy process stores its
+process ID for signaling purposes. Enclose in double quotes.
 
 =item B<XTinyproxy>
 
@@ -250,7 +250,8 @@ RFC 2616 requires proxies to add a `Via` header to the HTTP
 requests, but using the real host name can be a security
 concern. If the `ViaProxyname` option is present, then its
 string value will be used as the host name in the Via header.
-Otherwise, the server's host name will be used.
+Otherwise, the server's host name will be used. Enclose in double
+quotes.
 
 =item B<DisableViaHeader>
 
@@ -344,7 +345,7 @@ If an `Anonymous` keyword is present, then anonymous proxying
 is enabled.  The headers listed with `Anonymous` are allowed
 through, while all others are denied. If no Anonymous keyword
 is present, then all headers are allowed through.  You must
-include quotes around the headers.
+include double quotes around the headers.
 
 Most sites require cookies to be enabled for them to work correctly, so
 you will need to allow cookies through if you access those sites.
