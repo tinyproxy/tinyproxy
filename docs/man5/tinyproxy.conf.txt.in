@@ -179,6 +179,10 @@ connection is done directly.
 
 =back
 
+It's recommended to use raw IP addresses to specify the upstream host, so
+no costly DNS lookup has to be done everytime it is used.
+IPv6 addresses need to be enclosed in square brackets.
+
 The site can be specified in various forms as a hostname, domain
 name or as an IP range:
 
