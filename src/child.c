@@ -81,7 +81,7 @@ void child_main_loop (void)
         int connfd;
         union sockaddr_union cliaddr_storage;
         struct sockaddr *cliaddr = (void*) &cliaddr_storage;
-        socklen_t clilen = sizeof(cliaddr_storage);
+        socklen_t clilen;
         int nfds = sblist_getsize(listen_fds);
         pollfd_struct *fds = safecalloc(nfds, sizeof *fds);
         ssize_t i;
@@ -167,6 +167,7 @@ void child_main_loop (void)
                  * Continue handling this connection.
                  */
 
+                clilen = sizeof(cliaddr_storage);
                 connfd = accept (listenfd, cliaddr, &clilen);
 
 
