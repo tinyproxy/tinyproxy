@@ -1009,7 +1009,7 @@ static HANDLE_FUNC (handle_filtertype)
         if (!type) return -1;
 
         for(i=0;i<sizeof(ftmap)/sizeof(ftmap[0]);++i)
-                if(!strcmp(ftmap[i].type, type))
+                if(!strcasecmp(ftmap[i].type, type))
                         conf->filter_opts |= ftmap[i].flag;
 
         safefree (type);
