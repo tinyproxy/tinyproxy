@@ -27,8 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: install valgrind
-      run: sudo apt-get install --assume-yes valgrind
+    - run: sudo apt update
+    - run: sudo apt install --assume-yes valgrind
     - run: ./autogen.sh
     - run: ./configure --enable-debug --enable-transparent --enable-reverse
     - run: make
