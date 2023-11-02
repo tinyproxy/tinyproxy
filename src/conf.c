@@ -225,7 +225,7 @@ struct {
                  handle_deny),
         STDCONF (bind, "(" IP "|" IPV6 ")", handle_bind),
         /* other */
-        STDCONF (basicauth, ALNUM WS ALNUM, handle_basicauth),
+        STDCONF (basicauth, USERNAME WS PASSWORD, handle_basicauth),
         STDCONF (errorfile, INT WS STR, handle_errorfile),
         STDCONF (addheader,  STR WS STR, handle_addheader),
 
