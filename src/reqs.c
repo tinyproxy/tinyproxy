@@ -1688,6 +1688,10 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
                 if(failure) {
 e401:
                         update_stats (STAT_DENIED);
+                        log_message (LOG_INFO,
+                                     "Failed auth attempt (file descriptor: %d), ip %s",
+                                     connptr->client_fd,
+                                     connptr->client_ip_addr);
                         indicate_http_error (connptr, 401, "Unauthorized",
                                              "detail",
                                              "The administrator of this proxy has not configured "
