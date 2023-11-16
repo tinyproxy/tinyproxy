@@ -90,7 +90,7 @@
  * connections. The request line is allocated from the heap, but it must
  * be freed in another function.
  */
-static int read_request_line (struct conn_s *connptr)
+static int read_request_line (struct conn_s *connptr, char** lines, size_t* lines_len)
 {
         ssize_t len;
 
@@ -102,6 +102,12 @@ retry:
                              "closed socket before read.", connptr->client_fd);
 
                 return -1;
+        }
+
+        *lines = saferealloc(*lines, *lines_len + len + 1);
+        if(*lines) {
+                strcpy(*lines + *lines_len, connptr->request_line);
+                *lines_len += len;
         }
 
         /*
@@ -450,7 +456,7 @@ BAD_REQUEST_ERROR:
                         goto fail;
                 }
 
-                connptr->connect_method = TRUE;
+                connptr->connect_method = CM_TRUE;
         } else {
 #ifdef TRANSPARENT_PROXY
                 if (!skip_trans) {
@@ -676,7 +682,7 @@ add_header_to_connection (orderedmap hashofheaders, char *header, size_t len)
 /*
  * Read all the headers from the stream
  */
-static int get_all_headers (int fd, orderedmap hashofheaders)
+static int get_all_headers (int fd, orderedmap hashofheaders, char** lines, size_t* lines_len)
 {
         char *line = NULL;
         char *header = NULL;
@@ -694,6 +700,14 @@ static int get_all_headers (int fd, orderedmap hashofheaders)
                         safefree (header);
                         safefree (line);
                         return -1;
+                }
+
+                if(lines) {
+                        *lines = saferealloc(*lines, *lines_len + linelen + 1);
+                        if(*lines) {
+                                strcpy(*lines + *lines_len, line);
+                                *lines_len += linelen;
+                        }
                 }
 
                 /*
@@ -1066,7 +1080,7 @@ retry:
         /*
          * Get all the headers from the remote server in a big hash
          */
-        if (get_all_headers (connptr->server_fd, hashofheaders) < 0) {
+        if (get_all_headers (connptr->server_fd, hashofheaders, NULL, NULL) < 0) {
                 log_message (LOG_WARNING,
                              "Could not retrieve all the headers from the remote server.");
                 orderedmap_destroy (hashofheaders);
@@ -1581,6 +1595,8 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
 
         char sock_ipaddr[IP_LENGTH];
         char peer_ipaddr[IP_LENGTH];
+        char *lines = NULL;
+        size_t lines_len = 0;
 
         getpeer_information (addr, peer_ipaddr, sizeof(peer_ipaddr));
 
@@ -1624,7 +1640,7 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
                 HC_FAIL();
         }
 
-        if (read_request_line (connptr) < 0) {
+        if (read_request_line (connptr, &lines, &lines_len) < 0) {
                 update_stats (STAT_BADCONN);
                 goto done;
         }
@@ -1646,7 +1662,7 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
         /*
          * Get all the headers from the client in a big hash.
          */
-        if (get_all_headers (connptr->client_fd, hashofheaders) < 0) {
+        if (get_all_headers (connptr->client_fd, hashofheaders, &lines, &lines_len) < 0) {
                 log_message (LOG_WARNING,
                              "Could not retrieve all the headers from the client");
                 indicate_http_error (connptr, 400, "Bad Request",
@@ -1743,6 +1759,11 @@ e401:
                              "file descriptor %d.", request->host,
                              connptr->server_fd);
 
+                if(orderedmap_find (hashofheaders, "upgrade")) {
+                        connptr->connect_method = CM_UPGRADE;
+                        safe_write (connptr->server_fd, lines, lines_len);
+                }
+
                 if (!connptr->connect_method)
                         establish_http_connection (connptr, request);
         }
@@ -1769,6 +1790,8 @@ e401:
 
                         HC_FAIL();
                 }
+        } else if (connptr->connect_method == CM_UPGRADE) {
+                /* NOP */ ;
         } else {
                 if (send_connect_method_response (connptr) < 0) {
                         log_message (LOG_ERR,
@@ -1787,6 +1810,7 @@ e401:
                      connptr->client_fd, connptr->server_fd);
 
 done:
+        safefree(lines);
         free_request_struct (request);
         orderedmap_destroy (hashofheaders);
         conn_destroy_contents (connptr);
