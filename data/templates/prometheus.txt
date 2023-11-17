@@ -1,0 +1,15 @@
+# HELP opens Number of open connections.
+# TYPE opens Gauge
+opens {opens}
+# HELP reqs Number of requests.
+# TYPE reqs Counter
+reqs {reqs}
+# HELP badconns Number of bad connections.
+# TYPE badconns Counter
+badconns {badconns}
+# HELP deniedconns Number of denied connections.
+# TYPE deniedconns Counter
+deniedconns {deniedconns}
+# HELP refusedconns Number of refused connections due to high load.
+# TYPE refusedconns Counter
+refusedconns {refusedconns}
