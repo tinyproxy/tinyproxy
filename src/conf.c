@@ -63,7 +63,7 @@
 #define INT "(()" DIGIT "+)"
 #define ALNUM "([-a-z0-9._]+)"
 #define USERNAME "([^:]*)"
-#define PASSWORD "([^@]*)"
+#define PASSWORD "(.*)"
 #define IP "((([0-9]{1,3})\\.){3}[0-9]{1,3})"
 #define IPMASK "(" IP "(/" DIGIT "+)?)"
 #define IPV6SCOPE "((%[^ \t\\/]{1,16})?)"
