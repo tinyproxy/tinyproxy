@@ -146,7 +146,14 @@ int opensock (const char *host, int port, const char *bind_to)
                     "opensock: opening connection to %s:%d", host, port);
 
         memset (&hints, 0, sizeof (struct addrinfo));
-        hints.ai_family = AF_UNSPEC;
+        log_message(LOG_INFO, "opensock: ipversion: %d", config->ipversion);
+        if (config->ipversion == IPv4_Only) {
+                hints.ai_family = AF_INET;
+        } else if (config->ipversion == IPv6_Only) {
+                hints.ai_family = AF_INET6;
+        } else {
+                hints.ai_family = AF_UNSPEC;
+        }
         hints.ai_socktype = SOCK_STREAM;
 
         snprintf (portstr, sizeof (portstr), "%d", port);

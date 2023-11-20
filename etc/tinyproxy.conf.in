@@ -321,5 +321,11 @@ ViaProxyName "tinyproxy"
 #
 #ReverseBaseURL "http://localhost:8888/"
 
-
+#
+# IP version supported by Tinyproxy
+# ipv4 : ignore IPv6 addresses in DNS response
+# ipv6 : ignore IPv4 addresses in DNS response
+# any  : accept both IPv4 and IPv6 addresses in DNS response
+#
+IPversion any
 

@@ -34,6 +34,12 @@ typedef struct {
         char *value;
 } http_header_t;
 
+enum ip_version_e {
+        IPv4_Only = 0,
+        IPv6_Only,
+        IP_Any
+};
+
 /*
  * Hold all the configuration time information.
  */
@@ -68,6 +74,7 @@ struct config_s {
         unsigned int idletimeout;
         sblist *bind_addrs;
         unsigned int bindsame;
+        enum ip_version_e ipversion;
 
         /*
          * The configured name to use in the HTTP "Via" header field.
