@@ -12,6 +12,7 @@ edit = sed \
 	-e 's|@datarootdir[@]|$(datarootdir)|g' \
 	-e 's|@pkgsysconfdir[@]|$(pkgsysconfdir)|g' \
 	-e 's|@localstatedir[@]|$(localstatedir)|g' \
+	-e 's|@runstatedir[@]|$(runstatedir)|g' \
 	-e 's|@pkgdatadir[@]|$(pkgdatadir)|g' \
 	-e 's|@prefix[@]|$(prefix)|g' \
 	-e 's|@TINYPROXY_STATHOST[@]|$(TINYPROXY_STATHOST)|g'
