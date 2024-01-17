@@ -39,6 +39,9 @@ pub fn build(b: *std.Build) !void {
     const optimize = b.standardOptimizeOption(.{});
     const target = b.standardTargetOptions(.{});
 
+    const gperf = b.option(bool, "gperf", "Whether you have gperf installed for faster config parsing") orelse false;
+    const xtinyproxy_enable = b.option(bool, "xtinyproxy_header", "Include peer's IP address in a XTinyproxy header") orelse false;
+
     const allocator = b.allocator;
 
     const version: []u8 = try getVersionFromGit(allocator);
@@ -47,39 +50,68 @@ pub fn build(b: *std.Build) !void {
     const package_tarname = package;
     var package_string_buf: [128:0]u8 = undefined;
     var package_string = try std.fmt.bufPrint(&package_string_buf, "{s} {s}", .{ package_name, version });
-    // const package_string: []u8 = try allocator.alloc(u8, package_name.len + 1 + version.len); // package_name ++ version;
-    // package_string[0..package_name.len].* = package_name.*;
-    // package_string[package_name.len] = ' ';
-    // package_string[package_name.len + 1 .. package_string.len].* = version.*;
 
     const config_h = b.addConfigHeader(.{
         .style = .blank,
     }, .{
+        // /* Version number of package */
         .VERSION = version,
+        // /* Tinyproxy version number */
         .TINYPROXY_VERSION = version,
-        .XTINYPROXY_ENABLE = 1,
-        .FILTER_ENABLE = 1,
-        .UPSTREAM_SUPPORT = 1,
-        .REVERSE_SUPPORT = 1,
-        .TRANSPARENT_PROXY = 1,
+        // /* Name of package */
         .PACKAGE = package,
+        // /* Define to the address where bug reports for this package should be sent. */
         .PACKAGE_BUGREPORT = "https://tinyproxy.github.io/",
-
+        // /* Define to the full name of this package. */
         .PACKAGE_NAME = package_name,
+        // /* Define to the full name and version of this package. */
         .PACKAGE_STRING = package_string,
-
+        // /* Define to the one symbol short name of this package. */
         .PACKAGE_TARNAME = package_tarname,
-
+        // /* Define to the home page for this package. */
         .PACKAGE_URL = "",
-
+        // /* Define to the version of this package. */
         .PACKAGE_VERSION = version,
+        // /* This controls remote proxy stats display. */
+        .TINYPROXY_STATHOST = "tinyproxy.stats",
+
+        // /* Include support for connecting to an upstream proxy. */
+        .UPSTREAM_SUPPORT = 1,
+        // /* Include support for reverse proxy. */
+        .REVERSE_SUPPORT = 1,
+        // /* Include support for using tinyproxy as a transparent proxy. */
+        .TRANSPARENT_PROXY = 1,
+        // /* Defined if you would like filtering code included. */
+        .FILTER_ENABLE = 1,
 
         // /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. This
         //    macro is obsolete. */
         .TIME_WITH_SYS_TIME = 1,
-
-        // /* This controls remote proxy stats display. */
-        .TINYPROXY_STATHOST = "tinyproxy.stats",
+        // /*
+        //  * On systems which don't support ftruncate() the best we can
+        //  * do is to close the file and reopen it in create mode, which
+        //  * unfortunately leads to a race condition, however "systems
+        //  * which don't support ftruncate()" is pretty much SCO only,
+        //  * and if you're using that you deserve what you get.
+        //  * ("Little sympathy has been extended")
+        //  */
+        .HAVE_FTRUNCATE = 1,
+        // /* Define to 1 if you have the <poll.h> header file. */
+        .HAVE_POLL_H = 1,
+        // /* Define to 1 if you have the `setgroups' function. */
+        .HAVE_SETGROUPS = 1,
+        // /* Define to 1 if you have the <values.h> header file. */
+        .HAVE_VALUES_H = 1,
+        // /* Define to 1 if you have the <sys/ioctl.h> header file. */
+        .HAVE_SYS_IOCTL_H = 1,
+        // /* Define to 1 if you have the <alloca.h> header file. */
+        .HAVE_ALLOCA_H = 1,
+        // /* Define to 1 if you have the <memory.h> header file. */
+        .HAVE_MEMORY_H = 1,
+        // /* Define to 1 if you have the <malloc.h> header file. */
+        .HAVE_MALLOC_H = 1,
+        // /* Define to 1 if you have the <sysexits.h> header file. */
+        .HAVE_SYSEXITS_H = 1,
     });
 
     const exe = b.addExecutable(.{
@@ -92,42 +124,15 @@ pub fn build(b: *std.Build) !void {
 
     exe.defineCMacro("HAVE_CONFIG_H", null);
     exe.defineCMacro("SYSCONFDIR", "\"/etc\"");
-    // exe.defineCMacro("LOCALSTATEDIR", "")
 
-    if (target.isWindows()) {
-        exe.defineCMacro("_CRT_SECURE_NO_DEPRECATE", "1");
-        exe.defineCMacro("HAVE_LIBCRYPT32", null);
-        exe.defineCMacro("HAVE_WINSOCK2_H", null);
-        exe.defineCMacro("HAVE_IOCTLSOCKET", null);
-        exe.defineCMacro("HAVE_SELECT", null);
-        exe.defineCMacro("LIBSSH2_DH_GEX_NEW", "1");
-
-        if (target.getAbi().isGnu()) {
-            exe.defineCMacro("HAVE_UNISTD_H", null);
-            exe.defineCMacro("HAVE_INTTYPES_H", null);
-            exe.defineCMacro("HAVE_SYS_TIME_H", null);
-            exe.defineCMacro("HAVE_GETTIMEOFDAY", null);
-        }
-    } else {
-        exe.defineCMacro("HAVE_UNISTD_H", null);
-        exe.defineCMacro("HAVE_INTTYPES_H", null);
-        exe.defineCMacro("HAVE_STDLIB_H", null);
-        exe.defineCMacro("HAVE_SYS_SELECT_H", null);
-        exe.defineCMacro("HAVE_SYS_UIO_H", null);
-        exe.defineCMacro("HAVE_SYS_SOCKET_H", null);
-        exe.defineCMacro("HAVE_SYS_IOCTL_H", null);
-        exe.defineCMacro("HAVE_SYS_TIME_H", null);
-        exe.defineCMacro("HAVE_SYS_UN_H", null);
-        exe.defineCMacro("HAVE_LONGLONG", null);
-        exe.defineCMacro("HAVE_GETTIMEOFDAY", null);
-        exe.defineCMacro("HAVE_INET_ADDR", null);
-        exe.defineCMacro("HAVE_POLL", null);
-        exe.defineCMacro("HAVE_SELECT", null);
-        exe.defineCMacro("HAVE_SOCKET", null);
-        exe.defineCMacro("HAVE_STRTOLL", null);
-        exe.defineCMacro("HAVE_SNPRINTF", null);
-        exe.defineCMacro("HAVE_O_NONBLOCK", null);
-        exe.defineCMacro("HAVE_SYSEXITS_H", null);
+    // /* Whether you have gperf installed for faster config parsing. */
+    if (gperf) {
+        exe.defineCMacro("HAVE_GPERF", null);
+    }
+    // /* Define if you want to have the peer's IP address included in a XTinyproxy
+    //    header sent to the server. */
+    if (xtinyproxy_enable) {
+        exe.defineCMacro("XTINYPROXY_ENABLE", null);
     }
 
     exe.addCSourceFiles(srcs, &.{});
