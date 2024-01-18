@@ -39,10 +39,16 @@ pub fn build(b: *std.Build) !void {
     const optimize = b.standardOptimizeOption(.{});
     const target = b.standardTargetOptions(.{});
 
+    const allocator = b.allocator;
+
     const gperf = b.option(bool, "gperf", "Whether you have gperf installed for faster config parsing") orelse false;
     const xtinyproxy_enable = b.option(bool, "xtinyproxy_header", "Include peer's IP address in a XTinyproxy header") orelse false;
+    const debug_enable = b.option(bool, "debug_enable", "Compile in DEBUG program mode") orelse false;
+    const sysconfigdir = b.option([]const u8, "sysconfigdir", "System configuration path (/etc)") orelse "/etc";
 
-    const allocator = b.allocator;
+    var sysconfigdir_macro: []u8 = try allocator.alloc(u8, sysconfigdir.len + 10);
+    defer allocator.free(sysconfigdir_macro);
+    sysconfigdir_macro = try std.fmt.bufPrintZ(sysconfigdir_macro, "\"{s}\"", .{sysconfigdir});
 
     const version: []u8 = try getVersionFromGit(allocator);
     const package = "tinyproxy";
@@ -123,7 +129,8 @@ pub fn build(b: *std.Build) !void {
     exe.addIncludePath(.{ .path = "src/" });
 
     exe.defineCMacro("HAVE_CONFIG_H", null);
-    exe.defineCMacro("SYSCONFDIR", "\"/etc\"");
+
+    exe.defineCMacro("SYSCONFDIR", sysconfigdir_macro);
 
     // /* Whether you have gperf installed for faster config parsing. */
     if (gperf) {
@@ -133,6 +140,9 @@ pub fn build(b: *std.Build) !void {
     //    header sent to the server. */
     if (xtinyproxy_enable) {
         exe.defineCMacro("XTINYPROXY_ENABLE", null);
+    }
+    if (!debug_enable) {
+        exe.defineCMacro("NDEBUG", null);
     }
 
     exe.addCSourceFiles(srcs, &.{});
