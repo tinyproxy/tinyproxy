@@ -257,7 +257,7 @@ int reload_config (int reload_logging)
         int ret, ret2;
         struct config_s *c_next = get_next_config();
 
-        log_message (LOG_NOTICE, "Reloading config file");
+        log_message (LOG_NOTICE, "Reloading config file (%s)", config_file);
 
         if (reload_logging) shutdown_logging ();
 
