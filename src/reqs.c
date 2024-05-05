@@ -779,7 +779,7 @@ static int remove_connection_headers (orderedmap hashofheaders)
         char *data;
         char *ptr;
         ssize_t len;
-        int i;
+        int i,j,df;
 
         for (i = 0; i != (sizeof (headers) / sizeof (char *)); ++i) {
                 /* Look for the connection header.  If it's not found, return. */
@@ -804,7 +804,12 @@ static int remove_connection_headers (orderedmap hashofheaders)
                  */
                 ptr = data;
                 while (ptr < data + len) {
-                        orderedmap_remove (hashofheaders, ptr);
+                        df = 0;
+                        /* check that ptr isn't one of headers to prevent
+                           double-free (CVE-2023-49606) */
+                        for (j = 0; j != (sizeof (headers) / sizeof (char *)); ++j)
+                                if(!strcasecmp(ptr, headers[j])) df = 1;
+                        if (!df) orderedmap_remove (hashofheaders, ptr);
 
                         /* Advance ptr to the next token */
                         ptr += strlen (ptr) + 1;
