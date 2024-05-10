@@ -43,6 +43,7 @@ CD_reversemagic,
 CD_reversepath,
 CD_upstream,
 CD_loglevel,
+CD_ipversion
 };
 
 struct config_directive_entry { const char* name; enum config_directive value; };

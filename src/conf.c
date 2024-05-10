@@ -162,6 +162,8 @@ static HANDLE_FUNC (handle_viaproxyname);
 static HANDLE_FUNC (handle_disableviaheader);
 static HANDLE_FUNC (handle_xtinyproxy);
 
+static HANDLE_FUNC (handle_ipversion);
+
 #ifdef UPSTREAM_SUPPORT
 static HANDLE_FUNC (handle_upstream);
 #endif
@@ -255,7 +257,8 @@ struct {
 #endif
         /* loglevel */
         STDCONF (loglevel, "(critical|error|warning|notice|connect|info)",
-                 handle_loglevel)
+                 handle_loglevel),
+        STDCONF (ipversion, "(ipv4|ipv6|any)", handle_ipversion)
 };
 
 const unsigned int ndirectives = sizeof (directives) / sizeof (directives[0]);
@@ -930,6 +933,34 @@ static HANDLE_FUNC (handle_loglevel)
         }
 
         safefree (arg);
+        return -1;
+}
+
+struct ip_version_s {
+        const char *string;
+        enum ip_version_e ipversion;
+};
+static struct ip_version_s ip_version[] = {
+        {"ipv4", IPv4_Only},
+        {"ipv6", IPv6_Only},
+        {"any", IP_Any}
+};
+static HANDLE_FUNC (handle_ipversion)
+{
+        static const unsigned int nips =
+            sizeof (ip_version) / sizeof (ip_version[0]);
+        unsigned int i;
+        char *arg = get_string_arg (line, &match[2]);
+        for (i = 0; i != nips; ++i) {
+                if (!strcasecmp (arg, ip_version[i].string)) {
+                        conf->ipversion = ip_version[i].ipversion;
+                        safefree (arg);
+                        return 0;
+                }
+        }
+
+        safefree (arg);
+
         return -1;
 }
 
