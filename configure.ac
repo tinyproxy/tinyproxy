@@ -156,12 +156,12 @@ if test -n "${MAINTAINER_MODE_FALSE}"; then
 fi
 
 all_desired_work=false
-AS_COMPILER_FLAG([$DESIRED_FLAGS], [all_desired_work=true])
+AS_COMPILER_FLAG([-Werror $DESIRED_FLAGS], [all_desired_work=true])
 if $all_desired_work ; then
     CFLAGS="$CFLAGS $DESIRED_FLAGS"
 else
 for flag in $DESIRED_FLAGS; do
-  AS_COMPILER_FLAG([$flag], [CFLAGS="$CFLAGS $flag"])
+  AS_COMPILER_FLAG([-Werror $flag], [CFLAGS="$CFLAGS $flag"])
 done
 fi
 
