@@ -124,7 +124,7 @@ LogLevel Info
 # can be used for signalling purposes.
 # If not specified, no pidfile will be written.
 #
-#PidFile "@localstatedir@/run/tinyproxy/tinyproxy.pid"
+#PidFile "@runstatedir@/tinyproxy/tinyproxy.pid"
 
 #
 # XTinyproxy: Tell Tinyproxy to include the X-Tinyproxy header, which
@@ -320,6 +320,3 @@ ViaProxyName "tinyproxy"
 # If not set then no rewriting occurs.
 #
 #ReverseBaseURL "http://localhost:8888/"
-
-
-
