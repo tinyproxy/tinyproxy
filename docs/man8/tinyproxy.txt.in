@@ -156,7 +156,11 @@ configuration variable `StatFile`.
 
 =head1 FILES
 
-`/etc/tinyproxy/tinyproxy.conf`, `/var/run/tinyproxy/tinyproxy.pid`, `/var/log/tinyproxy/tinyproxy.log`
+F<@sysconfdir@/tinyproxy/tinyproxy.conf>
+
+F<@runstatedir@/tinyproxy/tinyproxy.pid>
+
+F<@localstatedir@/log/tinyproxy/tinyproxy.log>
 
 =head1 BUGS
 

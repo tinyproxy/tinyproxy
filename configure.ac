@@ -173,6 +173,9 @@ fi
 dnl
 dnl Substitute the variables into the various Makefiles
 dnl
+# runstatedir isn't available for Autoconf < 2.70
+AS_IF([test -z "${runstatedir}"], [runstatedir='${localstatedir}/run'])
+AC_SUBST([runstatedir])
 AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(CPPFLAGS)
@@ -220,7 +223,6 @@ docs/Makefile
 docs/man5/Makefile
 docs/man5/tinyproxy.conf.txt
 docs/man8/Makefile
-docs/man8/tinyproxy.txt
 m4macros/Makefile
 tests/Makefile
 tests/scripts/Makefile
