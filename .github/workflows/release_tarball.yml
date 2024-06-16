@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
 
@@ -26,36 +26,15 @@ jobs:
         PKGNAME="tinyproxy-$VERSION"
         ./configure
         make dist
-        echo "::set-output name=tarball_xz::${PKGNAME}.tar.xz"
-        echo "::set-output name=tarball_gz::${PKGNAME}.tar.gz"
-        echo "::set-output name=tarball_bz2::${PKGNAME}.tar.bz2"
+        echo "tarball_xz=${PKGNAME}.tar.xz" >> "$GITHUB_OUTPUT"
+        echo "tarball_gz=${PKGNAME}.tar.gz" >> "$GITHUB_OUTPUT"
+        echo "tarball_bz2=${PKGNAME}.tar.bz2" >> "$GITHUB_OUTPUT"
 
-    - name: upload tarball_xz
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: upload tarballs
+      uses: softprops/action-gh-release@v2
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./${{ steps.archive.outputs.tarball_xz }}
-        asset_name: ${{ steps.archive.outputs.tarball_xz }}
-        asset_content_type: application/x-xz
+        files: |
+          ${{ steps.archive.outputs.tarball_xz }}
+          ${{ steps.archive.outputs.tarball_gz }}
+          ${{ steps.archive.outputs.tarball_bz2 }}
 
-    - name: upload tarball_gz
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./${{ steps.archive.outputs.tarball_gz }}
-        asset_name: ${{ steps.archive.outputs.tarball_gz }}
-        asset_content_type: application/x-gzip
-
-    - name: upload tarball_bz2
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./${{ steps.archive.outputs.tarball_bz2 }}
-        asset_name: ${{ steps.archive.outputs.tarball_bz2 }}
-        asset_content_type: application/x-bzip2
