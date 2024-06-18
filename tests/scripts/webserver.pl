@@ -31,9 +31,8 @@ use Getopt::Long;
 use Pod::Usage;
 use Fcntl ':flock'; # import LOCK_* constants
 
-my $VERSION = "0.1";
 my $NAME = "Tinyproxy-Test-Web-Server";
-my $server_header = "Server: $NAME/$VERSION";
+my $server_header = "Server: $NAME";
 
 my $EOL = "\015\012";
 

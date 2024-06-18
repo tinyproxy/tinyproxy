@@ -26,9 +26,8 @@ use Pod::Usage;
 
 my $EOL = "\015\012";
 
-my $VERSION = "0.1";
 my $NAME = "Tinyproxy-Web-Client";
-my $user_agent = "$NAME/$VERSION";
+my $user_agent = "$NAME";
 my $user_agent_header = "User-Agent: $user_agent$EOL";
 my $http_version = "1.0";
 my $method = "GET";
