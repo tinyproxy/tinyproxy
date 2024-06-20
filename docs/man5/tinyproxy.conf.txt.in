@@ -204,6 +204,7 @@ Note that the upstream directive can also be used to null-route
 a specific target domain/host, e.g.:
 `upstream http 0.0.0.0:0 ".adserver.com"`
 
+With FDNS enabled the site's IP address will also be matched against the <IP/bits> or <IP/mask> values in addition to the name or domain match
 =item B<MaxClients>
 
 Tinyproxy creates one thread for each connected client.
