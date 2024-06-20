@@ -308,7 +308,7 @@ static int send_connect_method_response (struct conn_s *connptr)
 {
         return write_message (connptr->client_fd,
                               "HTTP/1.%u 200 Connection established\r\n"
-                              "Proxy-agent: " PACKAGE "/" VERSION "\r\n"
+                              "Proxy-agent: " PACKAGE "\r\n"
                               "\r\n", connptr->protocol.major != 1 ? 0 :
                                       connptr->protocol.minor);
 }
@@ -881,15 +881,14 @@ write_via_header (int fd, orderedmap hashofheaders,
         data = orderedmap_find (hashofheaders, "via");
         if (data) {
                 ret = write_message (fd,
-                                     "Via: %s, %hu.%hu %s (%s/%s)\r\n",
-                                     data, major, minor, hostname, PACKAGE,
-                                     VERSION);
+                                     "Via: %s, %hu.%hu %s (%s)\r\n",
+                                     data, major, minor, hostname, PACKAGE);
 
                 orderedmap_remove (hashofheaders, "via");
         } else {
                 ret = write_message (fd,
-                                     "Via: %hu.%hu %s (%s/%s)\r\n",
-                                     major, minor, hostname, PACKAGE, VERSION);
+                                     "Via: %hu.%hu %s (%s)\r\n",
+                                     major, minor, hostname, PACKAGE);
         }
 
 done:
