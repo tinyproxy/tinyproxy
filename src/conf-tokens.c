@@ -57,6 +57,7 @@ config_directive_find (register const char *str, register size_t len)
       {"connectport", CD_connectport},
       {"logfile", CD_logfile},
       {"basicauth", CD_basicauth},
+      {"basicauthrealm", CD_basicauthrealm},
       {"addheader", CD_addheader},
       {"maxrequestsperchild", CD_maxrequestsperchild}
     };

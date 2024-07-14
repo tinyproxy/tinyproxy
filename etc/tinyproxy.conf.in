@@ -205,6 +205,13 @@ Allow ::1
 # users.
 #BasicAuth user password
 
+# BasicAuthRealm : In case BasicAuth is configured, the "realm" information.
+# "Proxy Authentication Required" status http 407 "error-response" can be
+# customized.
+#
+# - defaults in code to "Tinyproxy" (PACKAGE_NAME), if not configured.
+#BasicAuthRealm "Tinyproxy"
+
 #
 # AddHeader: Adds the specified headers to outgoing HTTP requests that
 # Tinyproxy makes. Note that this option will not work for HTTPS

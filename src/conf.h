@@ -39,6 +39,7 @@ typedef struct {
  */
 struct config_s {
         sblist *basicauth_list;
+        char *basicauth_realm;
         char *logf_name;
         unsigned int syslog;    /* boolean */
         unsigned int port;

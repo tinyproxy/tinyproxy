@@ -44,6 +44,7 @@ allow, CD_allow
 deny, CD_deny
 bind, CD_bind
 basicauth, CD_basicauth
+basicauthrealm, CD_basicauthrealm
 errorfile, CD_errorfile
 addheader, CD_addheader
 filter, CD_filter
