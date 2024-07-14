@@ -122,6 +122,7 @@ static HANDLE_FUNC (handle_disabled_feature)
 
 static HANDLE_FUNC (handle_allow);
 static HANDLE_FUNC (handle_basicauth);
+static HANDLE_FUNC (handle_basicauthrealm);
 static HANDLE_FUNC (handle_anonymous);
 static HANDLE_FUNC (handle_bind);
 static HANDLE_FUNC (handle_bindsame);
@@ -193,6 +194,7 @@ struct {
         regex_t *cre;
 } directives[] = {
         /* string arguments */
+        STDCONF (basicauthrealm, STR, handle_basicauthrealm),
         STDCONF (logfile, STR, handle_logfile),
         STDCONF (pidfile, STR, handle_pidfile),
         STDCONF (anonymous, STR, handle_anonymous),
@@ -294,6 +296,7 @@ void free_config (struct config_s *conf)
         char *k;
         htab_value *v;
         size_t it;
+        safefree (conf->basicauth_realm);
         safefree (conf->logf_name);
         safefree (conf->stathost);
         safefree (conf->user);
@@ -481,6 +484,7 @@ static void initialize_config_defaults (struct config_s *conf)
          * (FIXME: Should have a better API for all this)
          */
         conf->errorpages = NULL;
+        conf->basicauth_realm = safestrdup (PACKAGE_NAME);
         conf->stathost = safestrdup (TINYPROXY_STATHOST);
         conf->idletimeout = MAX_IDLE_TIME;
         conf->logf_name = NULL;
@@ -633,6 +637,11 @@ set_int_arg (unsigned int *var, const char *line, regmatch_t * match)
  * values to return.
  *
  ***********************************************************************/
+
+static HANDLE_FUNC (handle_basicauthrealm)
+{
+        return set_string_arg (&conf->basicauth_realm, line, &match[2]);
+}
 
 static HANDLE_FUNC (handle_logfile)
 {

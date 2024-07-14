@@ -239,6 +239,14 @@ access is only granted for authenticated users.
 
     BasicAuth user password
 
+=item B<BasicAuthRealm>
+
+In case "BasicAuth" is configured, the "realm" information.
+"Proxy Authentication Required" status http 407 "error-response" can be
+customized.
+
+- defaults in code to "Tinyproxy" (PACKAGE_NAME), if not configured.
+
 =item B<AddHeader>
 
 Configure one or more HTTP request headers to be added to outgoing
@@ -420,7 +428,7 @@ This manpage was written by the Tinyproxy project team.
 
 =head1 COPYRIGHT
 
-Copyright (c) 1998-2020 the Tinyproxy authors.
+Copyright (c) 1998-2024 the Tinyproxy authors.
 
 This program is distributed under the terms of the GNU General Public
 License version 2 or above. See the COPYING file for additional
