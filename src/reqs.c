@@ -1559,6 +1559,19 @@ static void handle_connection_failure(struct conn_s *connptr, int got_headers)
         }
 }
 
+static void auth_error(struct conn_s *connptr, int code) {
+        const char *tit = code == 401 ? "Unauthorized" : "Proxy Authentication Required";
+        const char *msg = code == 401 ?
+        "The administrator of this proxy has not configured it to service requests from you." :
+        "This proxy requires authentication.";
+
+        update_stats (STAT_DENIED);
+        log_message (LOG_INFO,
+                     "Failed auth attempt (file descriptor: %d), ip %s",
+                     connptr->client_fd,
+                     connptr->client_ip_addr);
+        indicate_http_error (connptr, code, tit, "detail", msg, NULL);
+}
 
 /*
  * This is the main drive for each connection. As you can tell, for the
@@ -1677,12 +1690,7 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
                 }
 
                 if (!authstring) {
-                        if (stathost_connect) goto e401;
-                        update_stats (STAT_DENIED);
-                        indicate_http_error (connptr, 407, "Proxy Authentication Required",
-                                             "detail",
-                                             "This proxy requires authentication.",
-                                             NULL);
+                        auth_error(connptr, stathost_connect ? 401 : 407);
                         HC_FAIL();
                 }
                 if ( /* currently only "basic" auth supported */
@@ -1691,17 +1699,7 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
                         basicauth_check (config->basicauth_list, authstring + 6) == 1)
                                 failure = 0;
                 if(failure) {
-e401:
-                        update_stats (STAT_DENIED);
-                        log_message (LOG_INFO,
-                                     "Failed auth attempt (file descriptor: %d), ip %s",
-                                     connptr->client_fd,
-                                     connptr->client_ip_addr);
-                        indicate_http_error (connptr, 401, "Unauthorized",
-                                             "detail",
-                                             "The administrator of this proxy has not configured "
-                                             "it to service requests from you.",
-                                             NULL);
+                        auth_error(connptr, stathost_connect ? 401 : 407);
                         HC_FAIL();
                 }
                 orderedmap_remove (hashofheaders, "proxy-authorization");
