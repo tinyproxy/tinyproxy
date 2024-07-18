@@ -101,6 +101,16 @@ if test x"$transparent_enabled" = x"yes"; then
    AC_DEFINE(TRANSPARENT_PROXY)
 fi
 
+dnl Include support for reverse dns to match IP network/mask ?
+AH_TEMPLATE([FDNS_ENABLE],
+	    [Include support for forward dns to match IP network/mask. This is best used with nscd enabled to minimise DNS resolution delays])
+TP_ARG_ENABLE(fdns,
+	      [Enable support for forward dns to match IP network/mask (default is NO)],
+	      no)
+if test x"$fdns__enabled" = x"yes"; then
+   AC_DEFINE(FDNS_ENABLE)
+fi
+
 dnl Let user decide whether he wants support for manpages
 dnl Which require either pod2man or a tarball release
 AH_TEMPLATE([MANPAGE_SUPPORT],

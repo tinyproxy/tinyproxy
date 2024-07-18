@@ -2,6 +2,9 @@
 #include "hostspec.h"
 #include "heap.h"
 #include "network.h"
+#ifdef FDNS_ENABLE
+#include "log.h"
+#endif
 
 static int dotted_mask(char *bitmask_string, unsigned char array[])
 {
@@ -159,6 +162,42 @@ static int numeric_match(const uint8_t addr[], const struct hostspec *h)
 	return 1;
 }
 
+#ifdef FDNS_ENABLE
+static int dns_numeric_match(const char *ip, const struct hostspec *h)
+{
+	int ret;
+	struct addrinfo *res, *ressave;
+	uint8_t numeric_addr[IPV6_LEN];
+	char ipbuf[512];
+
+	errno = 0;
+
+        ret =getaddrinfo (ip, NULL, NULL, &res);
+
+	ressave = res; 
+
+	if (ret != 0) {
+		if (ret == EAI_SYSTEM)
+			log_message (LOG_ERR, "Could not retrieve address info for %s : %s",ip,strerror(errno));
+		else
+			log_message (LOG_ERR, "Could not retrieve address info for %s : %s",ip,gai_strerror(errno));
+	} else {
+		do {
+			/* return if IP matches */
+			get_ip_string (res->ai_addr, ipbuf, sizeof (ipbuf));
+			full_inet_pton (ipbuf, &numeric_addr);
+			if (numeric_match (numeric_addr, h)) {
+				break;
+			}
+		} while ((res = res->ai_next) != NULL);
+	}
+
+	freeaddrinfo (ressave);
+
+	return numeric_match (numeric_addr, h);
+}
+#endif
+
 /* check whether ip matches hostspec.
    return 1 on match, 0 on non-match */
 int hostspec_match(const char *ip, const struct hostspec *h) {
@@ -171,6 +210,9 @@ int hostspec_match(const char *ip, const struct hostspec *h) {
 		if(is_numeric_addr) return 0;
 		return string_match (ip, h->address.string);
 	case HST_NUMERIC:
+#ifdef FDNS_ENABLE
+		if(!is_numeric_addr) return dns_numeric_match(ip, h);
+#endif
 		return numeric_match (numeric_addr, h);
 	case HST_NONE:
 		return 0;
