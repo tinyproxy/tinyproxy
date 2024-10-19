@@ -1286,6 +1286,7 @@ static void relay_connection (struct conn_s *connptr)
         return;
 }
 
+#ifdef UPSTREAM_SUPPORT
 static int
 connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 {
@@ -1402,7 +1403,7 @@ connect_to_upstream_proxy(struct conn_s *connptr, struct request_s *request)
 
 	return establish_http_connection(connptr, request);
 }
-
+#endif
 
 /*
  * Establish a connection to the upstream proxy server.
