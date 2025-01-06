@@ -173,6 +173,10 @@ turns on the upstream proxy for the sites matching `site_spec`.
 
 `type` can be one of `http`, `socks4`, `socks5`, `none`.
 
+a `site_spec` is either a full domain name, a domain name starting with a
+`.`, in which case it is treated as a suffix, or an ip/mask tuple.
+the `site_spec` needs to be double-quoted.
+
 =item * I<upstream none "site_spec">
 turns off upstream support for sites matching `site_spec`, that means the
 connection is done directly.
