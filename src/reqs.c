@@ -1464,8 +1464,15 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
                         return -1;
                 }
 
-                snprintf (combined_string, len, "%s:%d", request->host,
-                          request->port);
+                /*
+                 * if(HTTPS on port 443) don't include the port number
+                 */
+                if (request->port == HTTP_PORT_SSL) {
+                        snprintf (combined_string, len, "%s", request->host);
+                } else {
+                        snprintf (combined_string, len, "%s:%d", request->host,
+                                request->port);
+                }
         } else {
                 len = strlen (request->host) + strlen (request->path) + 14;
                 combined_string = (char *) safemalloc (len);
@@ -1473,8 +1480,16 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
                         return -1;
                 }
 
-                snprintf (combined_string, len, "http://%s:%d%s", request->host,
-                          request->port, request->path);
+                /*
+                 * if(HTTP on port 80) don't include the port number
+                 */
+                if (request->port == HTTP_PORT) {
+                        snprintf (combined_string, len, "http://%s%s", request->host,
+                                request->path);
+                } else {
+                        snprintf (combined_string, len, "http://%s:%d%s", request->host,
+                                request->port, request->path);
+                }
         }
 
         if (request->path)
