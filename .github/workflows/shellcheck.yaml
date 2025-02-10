@@ -1,0 +1,33 @@
+name: shellcheck
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    paths-ignore:
+    branches:
+      - master
+
+# cancel the in-progress workflow when PR is refreshed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: install shellcheck
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y shellcheck
+    - name: Run autogen
+      run: ./autogen.sh
+    - name: Run ShellCheck
+      run: make shellcheck
+
