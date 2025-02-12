@@ -27,6 +27,10 @@ EXTRA_DIST = \
 test: all
 	./tests/scripts/run_tests.sh
 
+.PHONY: shellcheck
+shellcheck:
+	@shellcheck `find . -name '*.sh'`
+
 test-wait:
 	TINYPROXY_TESTS_WAIT=yes $(MAKE) test
 
