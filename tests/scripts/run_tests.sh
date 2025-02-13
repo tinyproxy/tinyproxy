@@ -18,7 +18,7 @@
 # this program; if not, see <http://www.gnu.org/licenses/>.
 
 
-SCRIPTS_DIR=$(cd $(dirname $0) && pwd)
+SCRIPTS_DIR=$(cd "$(dirname "$0")" && pwd)
 BASEDIR=$SCRIPTS_DIR/../..
 TESTS_DIR=$SCRIPTS_DIR/..
 TESTENV_DIR=$TESTS_DIR/env
@@ -51,27 +51,27 @@ WEBCLIENT_LOG=$LOG_DIR/webclient.log
 WEBCLIENT_BIN=$SCRIPTS_DIR/webclient.pl
 
 provision_initial() {
-	if test -e $TESTENV_DIR ; then
+	if test -e "$TESTENV_DIR" ; then
 		TESTENV_DIR_OLD=$TESTENV_DIR.old
-		if test -e $TESTENV_DIR_OLD ; then
-			rm -rf $TESTENV_DIR_OLD
+		if test -e "$TESTENV_DIR_OLD" ; then
+			rm -rf "$TESTENV_DIR_OLD"
 		fi
-		mv $TESTENV_DIR $TESTENV_DIR.old
+		mv "$TESTENV_DIR" "$TESTENV_DIR".old
 	fi
 
-	mkdir -p $LOG_DIR
+	mkdir -p "$LOG_DIR"
 }
 
 provision_tinyproxy() {
-	mkdir -p $TINYPROXY_DATA_DIR
-	cp $BASEDIR/data/templates/default.html $TINYPROXY_DATA_DIR
-	cp $BASEDIR/data/templates/debug.html $TINYPROXY_DATA_DIR
-	cp $BASEDIR/data/templates/stats.html $TINYPROXY_DATA_DIR
-	mkdir -p $TINYPROXY_PID_DIR
-	mkdir -p $TINYPROXY_LOG_DIR
-	mkdir -p $TINYPROXY_CONF_DIR
+	mkdir -p "$TINYPROXY_DATA_DIR"
+	cp "$BASEDIR"/data/templates/default.html "$TINYPROXY_DATA_DIR"
+	cp "$BASEDIR"/data/templates/debug.html "$TINYPROXY_DATA_DIR"
+	cp "$BASEDIR"/data/templates/stats.html "$TINYPROXY_DATA_DIR"
+	mkdir -p "$TINYPROXY_PID_DIR"
+	mkdir -p "$TINYPROXY_LOG_DIR"
+	mkdir -p "$TINYPROXY_CONF_DIR"
 
-	cat >>$TINYPROXY_CONF_FILE<<EOF
+	cat >>"$TINYPROXY_CONF_FILE"<<EOF
 User $TINYPROXY_USER
 #Group $TINYPROXY_GROUP
 Port $TINYPROXY_PORT
@@ -103,85 +103,87 @@ AddHeader "X-My-Header3" "Powered by Tinyproxy"
 Upstream http 255.255.255.255:65535 ".invalid"
 EOF
 
-cat << 'EOF' > $TINYPROXY_FILTER_FILE
+cat << 'EOF' > "$TINYPROXY_FILTER_FILE"
 .*\.google-analytics\.com$
 EOF
 }
 
 start_tinyproxy() {
-	echo -n "starting tinyproxy..."
-	$VALGRIND $TINYPROXY_BIN -c $TINYPROXY_CONF_FILE 2> $TINYPROXY_STDERR_LOG
+	printf "starting tinyproxy..."
+	$VALGRIND "$TINYPROXY_BIN" -c "$TINYPROXY_CONF_FILE" 2> "$TINYPROXY_STDERR_LOG"
 	echo " done (listening on $TINYPROXY_IP:$TINYPROXY_PORT)"
 }
 
 reload_config() {
-	echo -n "signaling tinyproxy to reload config..."
-	pid=$(cat $TINYPROXY_PID_FILE)
+	printf "signaling tinyproxy to reload config..."
+	pid=$(cat "$TINYPROXY_PID_FILE")
 	#1: SIGHUP
-	kill -1 $pid && echo "ok" || echo "fail"
+	kill -1 "$pid" && echo "ok" || echo "fail"
 }
 
 stop_tinyproxy() {
-	echo -n "killing tinyproxy..."
-	pid=$(cat $TINYPROXY_PID_FILE)
-	kill $pid
-	if test "x$?" = "x0" ; then
+	printf "killing tinyproxy..."
+	pid=$(cat "$TINYPROXY_PID_FILE")
+	kill "$pid"
+	if test "$?" = "0" ; then
 		echo " ok"
 	else
 		echo " error killing pid $pid"
-		ps aux | grep tinyproxy
+		pgrep tinyproxy
 		echo "### printing logfile"
-		cat $TINYPROXY_LOG_FILE
+		cat "$TINYPROXY_LOG_FILE"
 		echo "### printing stderr logfile"
-		cat $TINYPROXY_STDERR_LOG
+		cat "$TINYPROXY_STDERR_LOG"
 	fi
 }
 
 provision_webserver() {
-	mkdir -p $WEBSERVER_PID_DIR
-	mkdir -p $WEBSERVER_LOG_DIR
+	mkdir -p "$WEBSERVER_PID_DIR"
+	mkdir -p "$WEBSERVER_LOG_DIR"
 }
 
 start_webserver() {
-	echo -n "starting web server..."
-	$WEBSERVER_BIN --port $WEBSERVER_PORT --log-dir $WEBSERVER_LOG_DIR --pid-file $WEBSERVER_PID_FILE
-	echo " done (listening on $WEBSERVER_IP:$WEBSERVER_PORT)"
+	printf "starting web server..."
+	"$WEBSERVER_BIN" --port "$WEBSERVER_PORT" --log-dir "$WEBSERVER_LOG_DIR" --pid-file "$WEBSERVER_PID_FILE"
+	echo " done. listening on $WEBSERVER_IP:$WEBSERVER_PORT"
+	"$WEBSERVER_BIN" --port "$WEBSERVER_PORT" --log-dir "$WEBSERVER_LOG_DIR" --pid-file "$WEBSERVER_PID_FILE"
+	echo " done. listening on $WEBSERVER_IP:$WEBSERVER_PORT"
 }
 
 stop_webserver() {
-	echo -n "killing webserver..."
-	kill $(cat $WEBSERVER_PID_FILE)
-	if test "x$?" = "x0" ; then
+	printf  "killing webserver..."
+	kill "$(cat "$WEBSERVER_PID_FILE")"
+	if test "$?" = "0" ; then
 		echo " ok"
 	else
 		echo " error"
-	fi
+    fi
 }
 
 wait_for_some_seconds() {
-	SECONDS=$1
-	if test "x$SECONDS" = "x" ; then
-		SECONDS=1
+	seconds=$1
+	if test "$seconds" = "" ; then
+		seconds=1
 	fi
 
-	echo -n "waiting for $SECONDS seconds."
+	printf 'waiting for %s seconds.' "$seconds"
 
-	for COUNT in $(seq 1 $SECONDS) ; do
+	for COUNT in $(seq 1 "$seconds") ; do
 		sleep 1
-		echo -n "."
+		printf ' %s ' "$COUNT"
 	done
-	echo " done"
+	echo ' done'
 }
 
 run_basic_webclient_request() {
-	$WEBCLIENT_BIN $1 $2 > $WEBCLIENT_LOG 2>&1
+	"$WEBCLIENT_BIN" "$1" "$2" > "$WEBCLIENT_LOG" 2>&1
 	WEBCLIENT_EXIT_CODE=$?
-	if test "x$WEBCLIENT_EXIT_CODE" = "x0" ; then
+	if test "$WEBCLIENT_EXIT_CODE" = "0" ; then
 		echo " ok"
 	else
-		echo "ERROR ($WEBCLIENT_EXIT_CODE)"
+		echo "ERROR: $WEBCLIENT_EXIT_CODE"
 		echo "webclient output:"
-		cat $WEBCLIENT_LOG
+		cat "$WEBCLIENT_LOG"
 		echo "######################################"
 	fi
 
@@ -192,15 +194,15 @@ run_failure_webclient_request() {
 	ec=$1
 	expected_error=$(($1 - 399))
 	shift
-	$WEBCLIENT_BIN "$1" "$2" "$3" "$4" > $WEBCLIENT_LOG 2>&1
+	"$WEBCLIENT_BIN" "$1" "$2" "$3" "$4" > "$WEBCLIENT_LOG" 2>&1
 	WEBCLIENT_EXIT_CODE=$?
-	if test "x$WEBCLIENT_EXIT_CODE" = "x$expected_error" ; then
+	if test "$WEBCLIENT_EXIT_CODE" = "$expected_error" ; then
 		echo " ok, got expected error code $ec"
 		return 0
 	else
-		echo "ERROR ($WEBCLIENT_EXIT_CODE)"
+		echo "ERROR: $WEBCLIENT_EXIT_CODE"
 		echo "webclient output:"
-		cat $WEBCLIENT_LOG
+		cat "$WEBCLIENT_LOG"
 		echo "######################################"
 	fi
 
@@ -221,35 +223,35 @@ wait_for_some_seconds 1
 FAILED=0
 
 basic_test() {
-echo -n "checking direct connection to web server..."
+printf "checking direct connection to web server..."
 run_basic_webclient_request "$WEBSERVER_IP:$WEBSERVER_PORT" /
-test "x$?" = "x0" || FAILED=$((FAILED + 1))
+test "$?" = "0" || FAILED=$((FAILED + 1))
 
-echo -n "testing connection through tinyproxy..."
+printf "testing connection through tinyproxy..."
 run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
-test "x$?" = "x0" || FAILED=$((FAILED + 1))
+test "$?" = "0" || FAILED=$((FAILED + 1))
 
-echo -n "requesting statspage via stathost url..."
+printf "requesting statspage via stathost url..."
 run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$TINYPROXY_STATHOST_IP"
-test "x$?" = "x0" || FAILED=$((FAILED + 1))
+test "$?" = "0" || FAILED=$((FAILED + 1))
 }
 
 ext_test() {
-echo -n "checking bogus request..."
+printf "checking bogus request..."
 run_failure_webclient_request 400 --method="BIG FART" "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT"
-test "x$?" = "x0" || FAILED=$((FAILED + 1))
+test "$?" = "0" || FAILED=$((FAILED + 1))
 
-echo -n "testing connection to filtered domain..."
+printf "testing connection to filtered domain..."
 run_failure_webclient_request 403 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://badgoy.google-analytics.com/"
-test "x$?" = "x0" || FAILED=$((FAILED + 1))
+test "$?" = "0" || FAILED=$((FAILED + 1))
 
-echo -n "requesting connect method to denied port..."
+printf "requesting connect method to denied port..."
 run_failure_webclient_request 403 --method=CONNECT "$TINYPROXY_IP:$TINYPROXY_PORT" "localhost:12345"
-test "x$?" = "x0" || FAILED=$((FAILED + 1))
+test "$?" = "0" || FAILED=$((FAILED + 1))
 
-echo -n "testing unavailable backend..."
+printf "testing unavailable backend..."
 run_failure_webclient_request 502 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://bogus.invalid"
-test "x$?" = "x0" || FAILED=$((FAILED + 1))
+test "$?" = "0" || FAILED=$((FAILED + 1))
 }
 
 basic_test
@@ -259,10 +261,11 @@ ext_test
 
 echo "$FAILED errors"
 
-if test "x$TINYPROXY_TESTS_WAIT" = "xyes"; then
+if test "$TINYPROXY_TESTS_WAIT" = "yes"; then
 	echo "You can continue using the webserver and tinyproxy."
-	echo -n "hit <enter> to stop the servers and exit: "
-	read READ
+	 rintf "hit <enter> to stop the servers and exit: "
+	read -r READ
+    echo "$READ" > /dev/null
 fi
 
 stop_tinyproxy
