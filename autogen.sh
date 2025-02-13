@@ -1,24 +1,31 @@
 #!/bin/sh
 
-srcdir=`dirname $0`
+srcdir=$(dirname "$0")
 test -z "$srcdir" && srcdir=.
-ORIGDIR=`pwd`
+ORIGDIR=$(pwd)
 
 set -x
 
-cd $srcdir
+cd "$srcdir" || {
+    echo "error changing to dir '$srcdir'"
+    exit
+}
 
 aclocal -I m4macros \
   && autoheader \
   && automake --gnu --add-missing \
   && autoconf
 
-cd $ORIGDIR
+cd "$ORIGDIR" || {
+    echo "error changing to idir '$ORIGDIR'"
+    exit
+
+}
 
 set -
 
-echo $srcdir/configure "$@"
-$srcdir/configure "$@"
+echo "$srcdir"/configure "$@"
+"$srcdir"/configure "$@"
 RC=$?
 if test $RC -ne 0; then
   echo
