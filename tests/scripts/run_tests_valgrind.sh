@@ -18,11 +18,10 @@
 # this program; if not, see <http://www.gnu.org/licenses/>.
 
 
-SCRIPTS_DIR=$(dirname $0)
-BASEDIR=$SCRIPTS_DIR/../..
+SCRIPTS_DIR=$(dirname "$0")
 TESTS_DIR=$SCRIPTS_DIR/..
 TESTENV_DIR=$TESTS_DIR/env
 LOG_DIR=$TESTENV_DIR/var/log
 
-VALGRIND="valgrind --track-origins=yes --show-leak-kinds=all --tool=memcheck --leak-check=full --log-file=$LOG_DIR/valgrind.log" $SCRIPTS_DIR/run_tests.sh
+VALGRIND="valgrind --track-origins=yes --show-leak-kinds=all --tool=memcheck --leak-check=full --log-file=$LOG_DIR/valgrind.log" "$SCRIPTS_DIR"/run_tests.sh
 
