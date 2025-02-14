@@ -146,8 +146,6 @@ start_webserver() {
 	printf "starting web server..."
 	"$WEBSERVER_BIN" --port "$WEBSERVER_PORT" --log-dir "$WEBSERVER_LOG_DIR" --pid-file "$WEBSERVER_PID_FILE"
 	echo " done. listening on $WEBSERVER_IP:$WEBSERVER_PORT"
-	"$WEBSERVER_BIN" --port "$WEBSERVER_PORT" --log-dir "$WEBSERVER_LOG_DIR" --pid-file "$WEBSERVER_PID_FILE"
-	echo " done. listening on $WEBSERVER_IP:$WEBSERVER_PORT"
 }
 
 stop_webserver() {
