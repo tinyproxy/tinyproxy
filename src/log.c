@@ -165,12 +165,8 @@ void log_message (int level, const char *fmt, ...)
 
         if (config->syslog) {
                 pthread_mutex_lock(&log_mutex);
-#ifdef HAVE_VSYSLOG_H
-                vsyslog (level, fmt, args);
-#else
                 vsnprintf (str, STRING_LENGTH, fmt, args);
                 syslog (level, "%s", str);
-#endif
                 pthread_mutex_unlock(&log_mutex);
         } else {
                 char *p;
