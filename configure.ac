@@ -146,7 +146,7 @@ AC_CHECK_HEADERS([sys/ioctl.h alloca.h memory.h malloc.h sysexits.h \
 dnl Checks for libary functions
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 
-AC_CHECK_FUNCS([strlcpy strlcat setgroups])
+AC_CHECK_FUNCS([strlcpy setgroups])
 
 dnl Enable extra warnings
 DESIRED_FLAGS="-fdiagnostics-show-option -Wall -Wextra -Wno-unused-parameter -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wfloat-equal -Wundef -Wformat=2 -Wlogical-op -Wmissing-include-dirs -Wformat-nonliteral -Wold-style-definition -Wpointer-arith -Waggregate-return -Winit-self -Wpacked --std=c89 -ansi -Wno-overlength-strings -Wno-long-long -Wno-overlength-strings -Wdeclaration-after-statement -Wredundant-decls -Wmissing-noreturn -Wshadow -Wendif-labels -Wcast-qual -Wcast-align -Wwrite-strings -Wp,-D_FORTIFY_SOURCE=2 -fno-common"

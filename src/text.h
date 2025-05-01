@@ -21,10 +21,6 @@
 #ifndef TINYPROXY_TEXT_H
 #define TINYPROXY_TEXT_H
 
-#ifndef HAVE_STRLCAT
-extern size_t strlcat (char *dst, const char *src, size_t size);
-#endif /* HAVE_STRLCAT */
-
 #ifndef HAVE_STRLCPY
 extern size_t strlcpy (char *dst, const char *src, size_t size);
 #endif /* HAVE_STRLCPY */

@@ -47,30 +47,6 @@ size_t strlcpy (char *dst, const char *src, size_t size)
 }
 #endif
 
-#ifndef HAVE_STRLCAT
-/*
- * Function API taken from OpenBSD. Like strncat(), but does not 0 fill the
- * buffer, and always NULL terminates the buffer. size is the length of the
- * buffer, which should be one more than the maximum resulting string
- * length.
- */
-size_t strlcat (char *dst, const char *src, size_t size)
-{
-        size_t len1 = strlen (dst);
-        size_t len2 = strlen (src);
-        size_t ret = len1 + len2;
-
-        if (len1 + len2 >= size)
-                len2 = size - len1 - 1;
-        if (len2 > 0) {
-                memcpy (dst + len1, src, len2);
-                dst[len1 + len2] = '\0';
-        }
-
-        return ret;
-}
-#endif
-
 /*
  * Removes any new-line or carriage-return characters from the end of the
  * string. This function is named after the same function in Perl.
