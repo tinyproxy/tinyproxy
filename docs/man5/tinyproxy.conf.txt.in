@@ -231,6 +231,7 @@ of a client host, like `127.0.0.1`, an IP address range, like
 end of the client host name, i.e, this can be a full host name
 like `host.example.com` or a domain name like `.example.com` or
 even a top level domain name like `.com`.
+IPv6 addresses must not be enclosed in square brackets.
 Note that by adding a rule using a host or domain name, a costly name
 lookup has to be done for every new connection, which could slow down
 the service considerably.
