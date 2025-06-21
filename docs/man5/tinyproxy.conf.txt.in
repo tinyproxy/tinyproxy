@@ -226,7 +226,7 @@ list for Tinyproxy. The order in the config file is important.
 If there are no `Allow` or `Deny` lines, then all clients are
 allowed. Otherwise, the default action is to deny access.
 The argument to `Allow` or `Deny` can be a single IP address
-of a client host, like `127.0.0.1`, an IP address range, like
+of a client host, like `127.0.0.1` or `::1`, an IP address range, like
 `192.168.0.1/24` or a string that will be matched against the
 end of the client host name, i.e, this can be a full host name
 like `host.example.com` or a domain name like `.example.com` or
