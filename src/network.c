@@ -156,8 +156,7 @@ ssize_t readline (int fd, char **whole_buffer)
         struct read_lines_s *first_line, *line_ptr;
 
         first_line =
-            (struct read_lines_s *) safecalloc (sizeof (struct read_lines_s),
-                                                1);
+            (struct read_lines_s *) safecalloc (1, sizeof (struct read_lines_s));
         if (!first_line)
                 return -ENOMEM;
 
@@ -206,7 +205,7 @@ ssize_t readline (int fd, char **whole_buffer)
 
                 line_ptr->next =
                     (struct read_lines_s *)
-                    safecalloc (sizeof (struct read_lines_s), 1);
+                    safecalloc (1, sizeof (struct read_lines_s));
                 if (!line_ptr->next) {
                         ret = -ENOMEM;
                         goto CLEANUP;
