@@ -93,6 +93,7 @@
 static int read_request_line (struct conn_s *connptr)
 {
         ssize_t len;
+        unsigned int proxy_line = TRUE;
 
 retry:
         len = readline (connptr->client_fd, &connptr->request_line);
@@ -113,6 +114,65 @@ retry:
                  * length then it was a blank line. Free the buffer and
                  * try again (since we're looking for a request line.)
                  */
+                safefree (connptr->request_line);
+                goto retry;
+        }
+
+        if (proxy_line && config->client_uses_proxyproto) {
+                /*
+                 * Parse the PROXY protocol line which looks like that:
+                 * PROXY <proto> <src_addr> <dst_addr> <src_port> <dst_port>\r\n
+                 * <proto> can be "TCP4" for IPv4/TCP or "TCP6" for IPv6/TCP
+                 * <src_addr> and <dst_addr> are IPv4 or IPv6 addresses
+                 * <src_port> and <dst_port> are TCP port numbers
+                 */
+
+                char *p = connptr->request_line;
+                char *parts[6];
+                int p_idx = 0;
+
+                proxy_line = FALSE;
+
+                if (strncmp (connptr->request_line, "PROXY ", 6)) {
+                        log_message (LOG_WARNING, "Bad PROXY line: %s",
+                                     connptr->request_line);
+
+                        safefree (connptr->request_line);
+                        return -1;
+                }
+
+                /* Split the line in fields separated by a space character */
+                while (p_idx < 6 && *p) {
+                        parts[p_idx++] = p;
+
+                        while (*p != ' ' && *p)
+                                ++p;
+
+                        if (*p) {
+                                *p = 0;
+                                ++p;
+                        }
+                }
+
+                if (!(p_idx == 6 && (!strcmp (parts[1], "TCP6")
+                    || !strcmp (parts[1], "TCP4")))) {
+                        /* Rebuild the PROXY line for logging */
+                        while (p_idx > 1) {
+                                parts[--p_idx][-1] = ' ';
+                        }
+                        log_message (LOG_WARNING, "Bad PROXY line: %s",
+                                     connptr->request_line);
+
+                        safefree (connptr->request_line);
+                        return -1;
+                }
+
+                /* Use the source address given by the proxy */
+                if (connptr->client_ip_addr)
+                        safefree (connptr->client_ip_addr);
+
+                connptr->client_ip_addr = safestrdup (parts[2]);
+
                 safefree (connptr->request_line);
                 goto retry;
         }
