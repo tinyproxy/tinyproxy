@@ -331,7 +331,8 @@ ViaProxyName "tinyproxy"
 #
 # The tinyproxy's client is a proxy that uses the PROXY protocol, which
 # inserts a line before the HTTP request line to indicates the IP
-# address of the real client.
+# address of the real client. Only version 1 (human-readable header
+# format) is supported.
 #
 # For instance, when using stunnel in front of tinyproxy and the
 # BasicAuth option is used, if the PROXY protocol is used, tinyproxy
