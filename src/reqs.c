@@ -86,6 +86,97 @@
   ((len) > 0 && (header[0] == ' ' || header[0] == '\t'))
 
 /*
+ * Read and parse the PROXY protocol v1 line, and update the client address.
+ */
+static int read_proxy_line (struct conn_s *connptr, union sockaddr_union* addr)
+{
+        int result = -1;
+        char *line = NULL;
+        ssize_t len;
+        char *src_addr, *end;
+        int is_ipv6;
+        int ret;
+
+        len = readline (connptr->client_fd, &line);
+        if (len <= 0) {
+                log_message (LOG_ERR,
+                             "read_proxy_line: Client (file descriptor: %d) "
+                             "closed socket before read.", connptr->client_fd);
+
+                goto cleanup;
+        }
+
+        /*
+         * Strip the new line and carriage return from the string.
+         */
+        if (chomp (line, len) == len) {
+                /*
+                 * If the number of characters removed is the same as the
+                 * length then it was a blank line.
+                 */
+                log_message (LOG_ERR, "Empty PROXY line found");
+
+                goto cleanup;
+        }
+
+        /*
+         * The PROXY line looks like that:
+         *   PROXY <proto> <src_addr> <dst_addr> <src_port> <dst_port>\r\n
+         * <proto> can be "TCP4" for IPv4/TCP or "TCP6" for IPv6/TCP
+         * <src_addr> and <dst_addr> are IPv4 or IPv6 addresses
+         * <src_port> and <dst_port> are TCP port numbers*
+         */
+
+        /* Expect "PROXY TCP4 " or "PROXY TCP6 " */
+        if (!(!strncmp (line, "PROXY TCP", 9)
+            && (line[9] == '4' || line[9] == '6')
+            && line[10] == ' ')) {
+                log_message (LOG_ERR, "Bad PROXY line: %s", line);
+
+                goto cleanup;
+        }
+
+        is_ipv6 = line[9] == '6' ? TRUE : FALSE;
+
+        /* Only extract the source address string */
+        src_addr = line + 11;
+        end = strchr (src_addr, ' ');
+        *end = '\0';
+
+        /* Update "addr" with the given address */
+        if (is_ipv6) {
+                if (addr->v4.sin_family != AF_INET6) {
+                        addr->v4.sin_family = AF_INET6;
+                        /* Set unused IPv6 fields to 0 */
+                        addr->v6.sin6_flowinfo = 0;
+                        addr->v6.sin6_scope_id = 0;
+                }
+                ret = inet_pton (AF_INET6, src_addr, &addr->v6.sin6_addr);
+        } else {
+                if (addr->v4.sin_family != AF_INET) {
+                        addr->v4.sin_family = AF_INET;
+                }
+                ret = inet_pton (AF_INET, src_addr, &addr->v4.sin_addr);
+        }
+
+        if (ret != 1) {
+                log_message (LOG_ERR,
+                             "Cannot convert address from PROXY line: %s",
+                             src_addr);
+
+                goto cleanup;
+        }
+
+        result = 0;
+
+cleanup:
+
+        safefree (line);
+
+        return result;
+}
+
+/*
  * Read in the first line from the client (the request line for HTTP
  * connections. The request line is allocated from the heap, but it must
  * be freed in another function.
@@ -93,7 +184,6 @@
 static int read_request_line (struct conn_s *connptr)
 {
         ssize_t len;
-        unsigned int proxy_line = TRUE;
 
 retry:
         len = readline (connptr->client_fd, &connptr->request_line);
@@ -114,65 +204,6 @@ retry:
                  * length then it was a blank line. Free the buffer and
                  * try again (since we're looking for a request line.)
                  */
-                safefree (connptr->request_line);
-                goto retry;
-        }
-
-        if (proxy_line && config->client_uses_proxyproto) {
-                /*
-                 * Parse the PROXY protocol line which looks like that:
-                 * PROXY <proto> <src_addr> <dst_addr> <src_port> <dst_port>\r\n
-                 * <proto> can be "TCP4" for IPv4/TCP or "TCP6" for IPv6/TCP
-                 * <src_addr> and <dst_addr> are IPv4 or IPv6 addresses
-                 * <src_port> and <dst_port> are TCP port numbers
-                 */
-
-                char *p = connptr->request_line;
-                char *parts[6];
-                int p_idx = 0;
-
-                proxy_line = FALSE;
-
-                if (strncmp (connptr->request_line, "PROXY ", 6)) {
-                        log_message (LOG_WARNING, "Bad PROXY line: %s",
-                                     connptr->request_line);
-
-                        safefree (connptr->request_line);
-                        return -1;
-                }
-
-                /* Split the line in fields separated by a space character */
-                while (p_idx < 6 && *p) {
-                        parts[p_idx++] = p;
-
-                        while (*p != ' ' && *p)
-                                ++p;
-
-                        if (*p) {
-                                *p = 0;
-                                ++p;
-                        }
-                }
-
-                if (!(p_idx == 6 && (!strcmp (parts[1], "TCP6")
-                    || !strcmp (parts[1], "TCP4")))) {
-                        /* Rebuild the PROXY line for logging */
-                        while (p_idx > 1) {
-                                parts[--p_idx][-1] = ' ';
-                        }
-                        log_message (LOG_WARNING, "Bad PROXY line: %s",
-                                     connptr->request_line);
-
-                        safefree (connptr->request_line);
-                        return -1;
-                }
-
-                /* Use the source address given by the proxy */
-                if (connptr->client_ip_addr)
-                        safefree (connptr->client_ip_addr);
-
-                connptr->client_ip_addr = safestrdup (parts[2]);
-
                 safefree (connptr->request_line);
                 goto retry;
         }
@@ -1654,6 +1685,11 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
 
         char sock_ipaddr[IP_LENGTH];
         char peer_ipaddr[IP_LENGTH];
+
+        if (config->client_uses_proxyproto && read_proxy_line (connptr, addr)) {
+                close (fd);
+                return;
+        }
 
         getpeer_information (addr, peer_ipaddr, sizeof(peer_ipaddr));
 
