@@ -94,27 +94,13 @@ static int read_proxy_line (struct conn_s *connptr, union sockaddr_union* addr)
         char *line = NULL;
         ssize_t len;
         char *src_addr, *end;
-        int is_ipv6;
-        int ret;
+        sa_family_t af;
 
         len = readline (connptr->client_fd, &line);
         if (len <= 0) {
                 log_message (LOG_ERR,
                              "read_proxy_line: Client (file descriptor: %d) "
                              "closed socket before read.", connptr->client_fd);
-
-                goto cleanup;
-        }
-
-        /*
-         * Strip the new line and carriage return from the string.
-         */
-        if (chomp (line, len) == len) {
-                /*
-                 * If the number of characters removed is the same as the
-                 * length then it was a blank line.
-                 */
-                log_message (LOG_ERR, "Empty PROXY line found");
 
                 goto cleanup;
         }
@@ -131,35 +117,26 @@ static int read_proxy_line (struct conn_s *connptr, union sockaddr_union* addr)
         if (!(!strncmp (line, "PROXY TCP", 9)
             && (line[9] == '4' || line[9] == '6')
             && line[10] == ' ')) {
+bad_syntax:
                 log_message (LOG_ERR, "Bad PROXY line: %s", line);
 
                 goto cleanup;
         }
 
-        is_ipv6 = line[9] == '6' ? TRUE : FALSE;
+        af = line[9] == '6' ? AF_INET6 : AF_INET;
 
         /* Only extract the source address string */
         src_addr = line + 11;
         end = strchr (src_addr, ' ');
+        if (end == NULL)
+                goto bad_syntax;
+
         *end = '\0';
 
         /* Update "addr" with the given address */
-        if (is_ipv6) {
-                if (addr->v4.sin_family != AF_INET6) {
-                        addr->v4.sin_family = AF_INET6;
-                        /* Set unused IPv6 fields to 0 */
-                        addr->v6.sin6_flowinfo = 0;
-                        addr->v6.sin6_scope_id = 0;
-                }
-                ret = inet_pton (AF_INET6, src_addr, &addr->v6.sin6_addr);
-        } else {
-                if (addr->v4.sin_family != AF_INET) {
-                        addr->v4.sin_family = AF_INET;
-                }
-                ret = inet_pton (AF_INET, src_addr, &addr->v4.sin_addr);
-        }
-
-        if (ret != 1) {
+        memset (addr, 0, sizeof(*addr));
+        addr->v4.sin_family = af;
+        if (inet_pton (af, src_addr, SOCKADDR_UNION_ADDRESS(addr)) != 1) {
                 log_message (LOG_ERR,
                              "Cannot convert address from PROXY line: %s",
                              src_addr);
