@@ -242,7 +242,7 @@ static int strip_return_port (char *host)
 {
         char *ptr1;
         char *ptr2;
-        int port;
+        unsigned port;
 
         ptr1 = strrchr (host, ':');
         if (ptr1 == NULL)
@@ -254,8 +254,11 @@ static int strip_return_port (char *host)
                 return 0;
 
         *ptr1++ = '\0';
-        if (sscanf (ptr1, "%d", &port) != 1)    /* one conversion required */
-                return 0;
+
+        port = atoi(ptr1);
+        /* check that port string is in the valid range 1-0xffff) */
+        if(strlen(ptr1) > 5 || (port & 0xffff0000)) return 0;
+
         return port;
 }
 
