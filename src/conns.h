@@ -37,6 +37,9 @@ struct conn_s {
         /* The request line (first line) from the client */
         char *request_line;
 
+        /* The HTTP method from the request line */
+        char *http_method;
+
         /* Booleans */
         unsigned int connect_method;
         unsigned int show_stats;

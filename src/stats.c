@@ -106,10 +106,15 @@ err_minus_one:
                    stats->num_badcons, stats->num_denied,
                    stats->num_refused, PACKAGE);
 
-                if (send_http_message (connptr, 200, "OK",
-                                       message_buffer) < 0) {
-                        safefree (message_buffer);
-                        goto err_minus_one;
+                /* For HEAD requests, send headers only without body */
+                if (connptr->http_method && strcasecmp (connptr->http_method, "HEAD") == 0) {
+                        send_http_headers (connptr, 200, "OK", "");
+                } else {
+                        if (send_http_message (connptr, 200, "OK",
+                                               message_buffer) < 0) {
+                                safefree (message_buffer);
+                                goto err_minus_one;
+                        }
                 }
 
                 safefree (message_buffer);
@@ -123,7 +128,11 @@ err_minus_one:
         add_error_variable (connptr, "refusedconns", refused);
         add_standard_vars (connptr);
         send_http_headers (connptr, 200, "Statistic requested", "");
-        send_html_file (statfile, connptr);
+        
+        /* For HEAD requests, skip sending the response body */
+        if (connptr->http_method && strcasecmp (connptr->http_method, "HEAD") != 0) {
+                send_html_file (statfile, connptr);
+        }
         fclose (statfile);
         pthread_mutex_unlock(&stats_file_lock);
 

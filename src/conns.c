@@ -34,6 +34,7 @@ void conn_struct_init(struct conn_s *connptr) {
         connptr->error_number = -1;
         connptr->client_fd = -1;
         connptr->server_fd = -1;
+        connptr->http_method = NULL;
         /* There is _no_ content length initially */
         connptr->content_length.server = connptr->content_length.client = -1;
 }
@@ -99,6 +100,8 @@ void conn_destroy_contents (struct conn_s *connptr)
 
         if (connptr->request_line)
                 safefree (connptr->request_line);
+        if (connptr->http_method)
+                safefree (connptr->http_method);
 
         if (connptr->error_variables) {
                 char *k;
