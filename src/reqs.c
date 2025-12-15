@@ -352,8 +352,8 @@ static struct request_s *process_request (struct conn_s *connptr,
         ret = sscanf (connptr->request_line, "%[^ ] %[^ ] %[^ ]",
                       request->method, url, request->protocol);
 
-        /* Store the HTTP method in the connection for later use */
-        connptr->http_method = safestrdup (request->method);
+        /* Set flag if this is a HEAD request for stats optimization */
+        connptr->is_head_method = (strcasecmp (request->method, "HEAD") == 0);
 
         if (ret == 2 && !strcasecmp (request->method, "GET")) {
                 request->protocol[0] = 0;

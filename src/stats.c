@@ -107,7 +107,7 @@ err_minus_one:
                    stats->num_refused, PACKAGE);
 
                 /* For HEAD requests, send headers only without body */
-                if (connptr->http_method && strcasecmp (connptr->http_method, "HEAD") == 0) {
+                if (connptr->is_head_method) {
                         send_http_headers (connptr, 200, "OK", "");
                 } else {
                         if (send_http_message (connptr, 200, "OK",
@@ -130,7 +130,7 @@ err_minus_one:
         send_http_headers (connptr, 200, "Statistic requested", "");
         
         /* For HEAD requests, skip sending the response body */
-        if (connptr->http_method && strcasecmp (connptr->http_method, "HEAD") != 0) {
+        if (!connptr->is_head_method) {
                 send_html_file (statfile, connptr);
         }
         fclose (statfile);
