@@ -223,6 +223,7 @@ docs/Makefile
 docs/man5/Makefile
 docs/man5/tinyproxy.conf.txt
 docs/man8/Makefile
+docs/man8/tinyproxy.txt
 m4macros/Makefile
 tests/Makefile
 tests/scripts/Makefile
