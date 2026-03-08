@@ -15,6 +15,7 @@ jobs:
     - run: ./configure
     - run: make
     - run: make test
+    - run: cd docs/web ; make
   test-macos:
     runs-on: macos-latest
     steps:
