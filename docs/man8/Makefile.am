@@ -29,8 +29,12 @@ else
 	@echo "*** pod2man is required to regenerate $(@) ***"; exit 1;
 endif
 
+CLEANFILES = \
+	tinyproxy.txt
+
 MAINTAINERCLEANFILES = \
 	$(MAN8_FILES:.txt=.8)
 
 EXTRA_DIST = \
-	$(MAN8_FILES:.txt=.8)
+	$(MAN8_FILES:.txt=.8) \
+	tinyproxy.txt.in
