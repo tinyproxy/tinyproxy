@@ -34,6 +34,7 @@ void conn_struct_init(struct conn_s *connptr) {
         connptr->error_number = -1;
         connptr->client_fd = -1;
         connptr->server_fd = -1;
+        connptr->is_head_method = 0;
         /* There is _no_ content length initially */
         connptr->content_length.server = connptr->content_length.client = -1;
 }
