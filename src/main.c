@@ -44,6 +44,7 @@
 #include "sock.h"
 #include "stats.h"
 #include "utils.h"
+#include "cap.h"
 
 /*
  * Global Structures
@@ -52,6 +53,12 @@ struct config_s *config;
 static struct config_s configs[2];
 static const char* config_file;
 unsigned int received_sighup = FALSE;   /* boolean */
+
+#ifdef WITH_CASPER
+cap_rights_t rights;
+cap_channel_t *cap_net = NULL, *cap_log = NULL, *cap_in = NULL;
+cap_net_limit_t *limit = NULL;
+#endif /* ifdef WITH_CASPER */
 
 static struct config_s*
 get_next_config(void)
@@ -113,7 +120,6 @@ display_usage (void)
                 "  -h        Display this usage information.\n"
                 "  -v        Display version information.\n");
 
-        /* Display the modes compiled into tinyproxy */
         printf ("\nFeatures compiled in:\n");
 
 #ifdef XTINYPROXY_ENABLE
@@ -145,6 +151,11 @@ display_usage (void)
         printf ("    Upstream proxy support\n");
         features++;
 #endif /* UPSTREAM_SUPPORT */
+
+#ifdef WITH_CASPER
+        printf ("    Capsicum support\n");
+        features++;
+#endif /* WITH_CASPER */
 
         if (0 == features)
                 printf ("    None\n");
@@ -331,6 +342,10 @@ main (int argc, char **argv)
                         exit (EX_USAGE);
                 }
         }
+
+        #ifdef WITH_CASPER
+        cap_begin();
+        #endif /* ifdef WITH_CASPER */
 
         if (reload_config(0)) {
                 exit (EX_SOFTWARE);
