@@ -86,6 +86,74 @@
   ((len) > 0 && (header[0] == ' ' || header[0] == '\t'))
 
 /*
+ * Read and parse the PROXY protocol v1 line, and update the client address.
+ */
+static int read_proxy_line (struct conn_s *connptr, union sockaddr_union* addr)
+{
+        int result = -1;
+        char *line = NULL;
+        ssize_t len;
+        char *src_addr, *end;
+        sa_family_t af;
+
+        len = readline (connptr->client_fd, &line);
+        if (len <= 0) {
+                log_message (LOG_ERR,
+                             "read_proxy_line: Client (file descriptor: %d) "
+                             "closed socket before read.", connptr->client_fd);
+
+                goto cleanup;
+        }
+
+        /*
+         * The PROXY line looks like that:
+         *   PROXY <proto> <src_addr> <dst_addr> <src_port> <dst_port>\r\n
+         * <proto> can be "TCP4" for IPv4/TCP or "TCP6" for IPv6/TCP
+         * <src_addr> and <dst_addr> are IPv4 or IPv6 addresses
+         * <src_port> and <dst_port> are TCP port numbers*
+         */
+
+        /* Expect "PROXY TCP4 " or "PROXY TCP6 " */
+        if (!(!strncmp (line, "PROXY TCP", 9)
+            && (line[9] == '4' || line[9] == '6')
+            && line[10] == ' ')) {
+bad_syntax:
+                log_message (LOG_ERR, "Bad PROXY line: %s", line);
+
+                goto cleanup;
+        }
+
+        af = line[9] == '6' ? AF_INET6 : AF_INET;
+
+        /* Only extract the source address string */
+        src_addr = line + 11;
+        end = strchr (src_addr, ' ');
+        if (end == NULL)
+                goto bad_syntax;
+
+        *end = '\0';
+
+        /* Update "addr" with the given address */
+        memset (addr, 0, sizeof(*addr));
+        addr->v4.sin_family = af;
+        if (inet_pton (af, src_addr, SOCKADDR_UNION_ADDRESS(addr)) != 1) {
+                log_message (LOG_ERR,
+                             "Cannot convert address from PROXY line: %s",
+                             src_addr);
+
+                goto cleanup;
+        }
+
+        result = 0;
+
+cleanup:
+
+        safefree (line);
+
+        return result;
+}
+
+/*
  * Read in the first line from the client (the request line for HTTP
  * connections. The request line is allocated from the heap, but it must
  * be freed in another function.
@@ -1598,6 +1666,11 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
 
         char sock_ipaddr[IP_LENGTH];
         char peer_ipaddr[IP_LENGTH];
+
+        if (config->client_uses_proxyproto && read_proxy_line (connptr, addr)) {
+                close (fd);
+                return;
+        }
 
         getpeer_information (addr, peer_ipaddr, sizeof(peer_ipaddr));
 
