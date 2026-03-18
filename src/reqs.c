@@ -1261,7 +1261,7 @@ static void relay_connection (struct conn_s *connptr)
         }
 
         while (buffer_size (connptr->sbuffer) > 0) {
-                if (write_buffer (connptr->client_fd, connptr->sbuffer) < 0)
+                if (write_buffer (connptr->client_fd, connptr->sbuffer) <= 0)
                         break;
         }
         shutdown (connptr->client_fd, SHUT_WR);
@@ -1278,7 +1278,7 @@ static void relay_connection (struct conn_s *connptr)
         }
 
         while (buffer_size (connptr->cbuffer) > 0) {
-                if (write_buffer (connptr->server_fd, connptr->cbuffer) < 0)
+                if (write_buffer (connptr->server_fd, connptr->cbuffer) <= 0)
                         break;
         }
 
