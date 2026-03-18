@@ -212,33 +212,6 @@ int opensock (const char *host, int port, const char *bind_to)
         return sockfd;
 }
 
-/*
- * Set the socket to non blocking -rjkaes
- */
-int socket_nonblocking (int sock)
-{
-        int flags;
-
-        assert (sock >= 0);
-
-        flags = fcntl (sock, F_GETFL, 0);
-        return fcntl (sock, F_SETFL, flags | O_NONBLOCK);
-}
-
-/*
- * Set the socket to blocking -rjkaes
- */
-int socket_blocking (int sock)
-{
-        int flags;
-
-        assert (sock >= 0);
-
-        flags = fcntl (sock, F_GETFL, 0);
-        return fcntl (sock, F_SETFL, flags & ~O_NONBLOCK);
-}
-
-
 /**
  * Try to listen on one socket based on the addrinfo
  * as returned from getaddrinfo.

@@ -524,11 +524,10 @@ fail:
  * server headers can be processed.
  *	- rjkaes
  */
-static int pull_client_data (struct conn_s *connptr, long int length, int iehack)
+static int pull_client_data (struct conn_s *connptr, long int length)
 {
         char *buffer;
         ssize_t len;
-        int ret;
 
         buffer =
             (char *) safemalloc (min (MAXBUFFSIZE, (unsigned long int) length));
@@ -548,43 +547,6 @@ static int pull_client_data (struct conn_s *connptr, long int length, int iehack
 
                 length -= len;
         } while (length > 0);
-
-        if (iehack) {
-                /*
-                 * BUG FIX: Internet Explorer will leave two bytes (carriage
-                 * return and line feed) at the end of a POST message.  These
-                 * need to be eaten for tinyproxy to work correctly.
-                 */
-                ret = socket_nonblocking (connptr->client_fd);
-                if (ret != 0) {
-                        log_message(LOG_ERR, "Failed to set the client socket "
-                                    "to non-blocking: %s", strerror(errno));
-                        goto ERROR_EXIT;
-                }
-        
-                len = recv (connptr->client_fd, buffer, 2, MSG_PEEK);
-        
-                ret = socket_blocking (connptr->client_fd);
-                if (ret != 0) {
-                        log_message(LOG_ERR, "Failed to set the client socket "
-                                    "to blocking: %s", strerror(errno));
-                        goto ERROR_EXIT;
-                }
-        
-                if (len < 0 && errno != EAGAIN)
-                        goto ERROR_EXIT;
-        
-                if ((len == 2) && CHECK_CRLF (buffer, len)) {
-                        ssize_t bytes_read;
-        
-                        bytes_read = read (connptr->client_fd, buffer, 2);
-                        if (bytes_read == -1) {
-                                log_message
-                                        (LOG_WARNING,
-                                         "Could not read two bytes from POST message");
-                        }
-                }
-        }
 
         safefree (buffer);
         return 0;
@@ -615,7 +577,7 @@ static int pull_client_data_chunked (struct conn_s *connptr) {
                 chunklen = strtol (buffer, (char**)0, 16);
                 if (chunklen < 0) goto ERROR_EXIT;
 
-                if (pull_client_data (connptr, chunklen+2, 0) < 0)
+                if (pull_client_data (connptr, chunklen+2) < 0)
                         goto ERROR_EXIT;
 
                 if(!chunklen) break;
@@ -1008,7 +970,7 @@ process_client_headers (struct conn_s *connptr, pseudomap *hashofheaders)
 PULL_CLIENT_DATA:
         if (connptr->content_length.client > 0) {
                 ret = pull_client_data (connptr,
-                                        connptr->content_length.client, 1);
+                                        connptr->content_length.client);
         } else if (connptr->content_length.client == -2)
                 ret = pull_client_data_chunked (connptr);
 
@@ -1195,8 +1157,8 @@ ERROR_EXIT:
 }
 
 /*
- * Switch the sockets into nonblocking mode and begin relaying the bytes
- * between the two connections. We continue to use the buffering code
+ * Begin relaying the bytes between the two connections.
+ * We continue to use the buffering code
  * since we want to be able to buffer a certain amount for slower
  * connections (as this was the reason why I originally modified
  * tinyproxy oh so long ago...)
@@ -1269,14 +1231,6 @@ static void relay_connection (struct conn_s *connptr)
         /*
          * Try to send any remaining data to the server if we can.
          */
-        ret = socket_blocking (connptr->server_fd);
-        if (ret != 0) {
-                log_message(LOG_ERR,
-                            "Failed to set server socket to blocking: %s",
-                            strerror(errno));
-                return;
-        }
-
         while (buffer_size (connptr->cbuffer) > 0) {
                 if (write_buffer (connptr->server_fd, connptr->cbuffer) < 0)
                         break;
@@ -1573,16 +1527,9 @@ static void auth_error(struct conn_s *connptr, int code) {
 }
 
 /*
- * This is the main drive for each connection. As you can tell, for the
- * first few steps we are using a blocking socket. If you remember the
- * older tinyproxy code, this use to be a very confusing state machine.
- * Well, no more! :) The sockets are only switched into nonblocking mode
- * when we start the relay portion. This makes most of the original
- * tinyproxy code, which was confusing, redundant. Hail progress.
- * 	- rjkaes
-
+ * This is the main drive for each connection.
  * this function is called directly from child_thread() with the newly
- * received fd from accept(). 
+ * received fd from accept().
  */
 void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
 {
