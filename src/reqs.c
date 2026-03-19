@@ -1281,6 +1281,7 @@ static void relay_connection (struct conn_s *connptr)
                 if (write_buffer (connptr->server_fd, connptr->cbuffer) < 0)
                         break;
         }
+        shutdown (connptr->server_fd, SHUT_WR);
 
         return;
 }
