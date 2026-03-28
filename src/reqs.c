@@ -575,7 +575,8 @@ static int pull_client_data_chunked (struct conn_s *connptr) {
                 }
 
                 chunklen = strtol (buffer, (char**)0, 16);
-                if (chunklen < 0) goto ERROR_EXIT;
+                /* prevent negative or huge values causing overflow */
+                if (chunklen < 0 || chunklen > 0x0fffffff) goto ERROR_EXIT;
 
                 if (pull_client_data (connptr, chunklen+2) < 0)
                         goto ERROR_EXIT;
