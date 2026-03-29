@@ -213,6 +213,43 @@ int opensock (const char *host, int port, const char *bind_to)
 }
 
 /*
+ * Gracefully close a socket by completing the TCP close handshake.
+ * Send FIN via shutdown(SHUT_WR), then drain remaining data until
+ * the remote FIN arrives (read returns 0).  This keeps the fd open
+ * until both sides have exchanged FINs, preventing the socket from
+ * being orphaned in FIN_WAIT_2.
+ *
+ * Without this, close() orphans the socket while still in FIN_WAIT_2.
+ * Linux reaps orphaned FIN_WAIT_2 via net.ipv4.tcp_fin_timeout, but
+ * OpenBSD has no equivalent, so they persist indefinitely.
+ */
+void close_socket (int fd)
+{
+        char drain[4096];
+        ssize_t n;
+        struct timeval tv;
+
+        shutdown (fd, SHUT_WR);
+
+        tv.tv_sec = 10;
+        tv.tv_usec = 0;
+        setsockopt (fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof (tv));
+
+        for (;;) {
+                n = read (fd, drain, sizeof (drain));
+                if (n > 0)
+                        continue;
+                if (n == 0)
+                        break;
+                if (errno == EINTR)
+                        continue;
+                break;
+        }
+
+        close (fd);
+}
+
+/*
  * Set the socket to non blocking -rjkaes
  */
 int socket_nonblocking (int sock)

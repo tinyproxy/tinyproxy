@@ -28,6 +28,7 @@
 #include "conns.h"
 #include "heap.h"
 #include "log.h"
+#include "sock.h"
 #include "stats.h"
 
 void conn_struct_init(struct conn_s *connptr) {
@@ -75,39 +76,6 @@ error_exit:
                 delete_buffer (sbuffer);
 
         return 0;
-}
-
-/*
- * Gracefully close a socket by completing the TCP close handshake.
- * Send FIN via shutdown(SHUT_WR), then drain remaining data with a
- * short timeout to receive the remote FIN.  This prevents connections
- * from getting stuck in FIN_WAIT_2 on systems that do not aggressively
- * reap orphaned sockets (e.g. OpenBSD without SO_KEEPALIVE).
- */
-static void close_socket (int fd)
-{
-        char drain[4096];
-        ssize_t n;
-        struct timeval tv;
-
-        shutdown (fd, SHUT_WR);
-
-        tv.tv_sec = 2;
-        tv.tv_usec = 0;
-        setsockopt (fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof (tv));
-
-        for (;;) {
-                n = read (fd, drain, sizeof (drain));
-                if (n > 0)
-                        continue;
-                if (n == 0)
-                        break;
-                if (errno == EINTR)
-                        continue;
-                break;
-        }
-
-        close (fd);
 }
 
 void conn_destroy_contents (struct conn_s *connptr)

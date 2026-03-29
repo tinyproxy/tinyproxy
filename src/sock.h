@@ -53,6 +53,7 @@ union sockaddr_union {
 extern int opensock (const char *host, int port, const char *bind_to);
 extern int listen_sock (const char *addr, uint16_t port, sblist* listen_fds);
 
+extern void close_socket (int fd);
 extern int socket_nonblocking (int sock);
 extern int socket_blocking (int sock);
 
