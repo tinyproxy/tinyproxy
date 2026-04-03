@@ -812,7 +812,7 @@ static int is_chunked_transfer (pseudomap *hashofheaders)
 {
         char *data;
         data = pseudomap_find (hashofheaders, "transfer-encoding");
-        return data ? !strcmp (data, "chunked") : 0;
+        return data ? !strcasecmp (data, "chunked") : 0;
 }
 
 /*
