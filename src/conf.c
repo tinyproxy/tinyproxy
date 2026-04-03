@@ -64,6 +64,7 @@
 #define ALNUM "([-a-z0-9._]+)"
 #define USERNAME "([^:]*)"
 #define PASSWORD "([^@]*)"
+#define INTERFACE "[^ \t\\/]{1,16}"
 #define IP "((([0-9]{1,3})\\.){3}[0-9]{1,3})"
 #define IPMASK "(" IP "(/" DIGIT "+)?)"
 #define IPV6SCOPE "((%[^ \t\\/]{1,16})?)"
@@ -220,7 +221,11 @@ struct {
         STDCONF (user, ALNUM, handle_user),
         STDCONF (group, ALNUM, handle_group),
         /* ip arguments */
-        STDCONF (listen, "(" IP "|" IPV6 ")", handle_listen),
+        STDCONF (listen, "(" IP "|" IPV6
+#ifdef SO_BINDTODEVICE
+                        "|" INTERFACE
+#endif
+                ")", handle_listen),
         STDCONF (allow, "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
                  handle_allow),
         STDCONF (deny, "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
