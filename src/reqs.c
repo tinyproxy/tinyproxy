@@ -316,25 +316,15 @@ static int send_connect_method_response (struct conn_s *connptr)
                                       connptr->protocol.minor);
 }
 
-/* determines whether an URL stripped of the initial http:// OR a host header
-   requests the configured stathost. */
-static int is_stathost(char* host) {
-        char *p, *q;
+/* determine whether a hostname with optional trailing colon/port is the
+   stathost */
+static int is_stathost(const char* host) {
+        const char *p = host, *q;
         if (!host || !config->stathost) return 0;
-        p = strchr (host, '@'); /* skip over username/password if existing */
-        if (p) ++p;
-        else p = host;
-        q = strrchr (p, ':'); /* find either the first ':' pointing to port */
-        if (!q) q = strchr (p, '/'); /* or the first / in an url */
-        if (!q) q = p + strlen (p);   /* else the hostname ends at \0 */
-        if (q - p != (long)strlen (config->stathost)) return 0;
+        q = strchr (p, ':');		/* find ':' pointing to port */
+        if (!q) q = p + strlen (p);	/* else the hostname ends at \0 */
+        if (q - p != (long) strlen (config->stathost)) return 0;
         return !strncasecmp (config->stathost, p, q - p);
-}
-
-static int check_stathost(char* hosts_header, char *url) {
-        /* if the Host: header was passed it's the only source of truth */
-        if (hosts_header) return is_stathost(hosts_header);
-        return !strncasecmp (url, "http://", 7) && is_stathost(url + 7);
 }
 
 /*
@@ -408,7 +398,8 @@ BAD_REQUEST_ERROR:
         /*
          * Check to see if they're requesting the stat host
          */
-        if (check_stathost (pseudomap_find (hashofheaders, "host"), url)) {
+        if (is_stathost (pseudomap_find (hashofheaders, "host"))) {
+got_stathost:
                 log_message (LOG_NOTICE, "Request for the stathost.");
                 connptr->show_stats = TRUE;
                 goto fail;
@@ -527,6 +518,9 @@ BAD_REQUEST_ERROR:
                 }
         }
 #endif
+        /* check whether hostname from url is the stathost */
+        if (is_stathost (request->host))
+                goto got_stathost;
 
         safefree (url);
         return request;
