@@ -318,8 +318,10 @@ static int send_connect_method_response (struct conn_s *connptr)
 
 /* determine whether a hostname with optional trailing colon/port is the
    stathost */
-static int is_stathost(const char* host) {
-        const char *p = config->stathost, *q = host;
+static int is_stathost (const char* host)
+{
+        const char *p = config->stathost;
+        const char *q = host;
         if (!p || !q) return 0;
         while (*p && *(p++) == *(q++));
         return *p == 0 && (*q == 0 || *q == ':');
