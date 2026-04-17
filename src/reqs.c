@@ -319,12 +319,10 @@ static int send_connect_method_response (struct conn_s *connptr)
 /* determine whether a hostname with optional trailing colon/port is the
    stathost */
 static int is_stathost(const char* host) {
-        const char *p = host, *q;
-        if (!host || !config->stathost) return 0;
-        q = strchr (p, ':');		/* find ':' pointing to port */
-        if (!q) q = p + strlen (p);	/* else the hostname ends at \0 */
-        if (q - p != (long) strlen (config->stathost)) return 0;
-        return !strncasecmp (config->stathost, p, q - p);
+        const char *p = config->stathost, *q = host;
+        if (!p || !q) return 0;
+        while (*p && *(p++) == *(q++));
+        return *p == 0 && (*q == 0 || *q == ':');
 }
 
 /*
@@ -1643,7 +1641,7 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
 
                 if (!authstring && config->stathost) {
                         authstring = pseudomap_find (hashofheaders, "host");
-                        if (authstring && !strncmp(authstring, config->stathost, strlen(config->stathost))) {
+                        if (authstring && is_stathost(authstring)) {
                                 authstring = pseudomap_find (hashofheaders, "authorization");
                                 stathost_connect = 1;
                         } else authstring = 0;
