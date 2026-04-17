@@ -316,6 +316,17 @@ static int send_connect_method_response (struct conn_s *connptr)
                                       connptr->protocol.minor);
 }
 
+/* determine whether a hostname with optional trailing colon/port is the
+   stathost */
+static int is_stathost (const char* host)
+{
+        const char *p = config->stathost;
+        const char *q = host;
+        if (!p || !q) return 0;
+        while (*p && *(p++) == *(q++));
+        return *p == 0 && (*q == 0 || *q == ':');
+}
+
 /*
  * Break the request line apart and figure out where to connect and
  * build a new request line. Finally connect to the remote server.
@@ -381,6 +392,16 @@ BAD_REQUEST_ERROR:
                 indicate_http_error (connptr, 400, "Bad Request",
                                      "detail", "Request has an invalid format",
                                      "url", url, NULL);
+                goto fail;
+        }
+
+        /*
+         * Check to see if they're requesting the stat host
+         */
+        if (is_stathost (pseudomap_find (hashofheaders, "host"))) {
+got_stathost:
+                log_message (LOG_NOTICE, "Request for the stathost.");
+                connptr->show_stats = TRUE;
                 goto fail;
         }
 
@@ -497,19 +518,11 @@ BAD_REQUEST_ERROR:
                 }
         }
 #endif
-
-
-        /*
-         * Check to see if they're requesting the stat host
-         */
-        if (config->stathost && strcmp (config->stathost, request->host) == 0) {
-                log_message (LOG_NOTICE, "Request for the stathost.");
-                connptr->show_stats = TRUE;
-                goto fail;
-        }
+        /* check whether hostname from url is the stathost */
+        if (is_stathost (request->host))
+                goto got_stathost;
 
         safefree (url);
-
         return request;
 
 fail:
@@ -1630,7 +1643,7 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
 
                 if (!authstring && config->stathost) {
                         authstring = pseudomap_find (hashofheaders, "host");
-                        if (authstring && !strncmp(authstring, config->stathost, strlen(config->stathost))) {
+                        if (authstring && is_stathost(authstring)) {
                                 authstring = pseudomap_find (hashofheaders, "authorization");
                                 stathost_connect = 1;
                         } else authstring = 0;
