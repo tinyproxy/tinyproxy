@@ -293,7 +293,7 @@ Example filter file contents:
  ^cnn\.com$
  
  # filter all subdomains of cnn.com, but not cnn.com itself
- .*\.cnn.com$
+ .*\.cnn\.com$
  
  # filter any domain that has cnn.com in it, like xcnn.comfy.org
  cnn\.com
