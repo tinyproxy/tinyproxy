@@ -26,6 +26,7 @@
 
 #include "heap.h"
 #include "log.h"
+#include "cap.h"
 #include "utils.h"
 #include "sblist.h"
 #include "conf.h"
@@ -166,7 +167,16 @@ void log_message (int level, const char *fmt, ...)
         if (config->syslog) {
                 pthread_mutex_lock(&log_mutex);
                 vsnprintf (str, STRING_LENGTH, fmt, args);
-                syslog (level, "%s", str);
+                #ifdef WITH_CASPER
+                /* only use after entered cap mode*/
+                if (cap_log == NULL)
+                  syslog (level, "%s", str);
+                else
+                  cap_syslog (cap_log,
+                #else
+                syslog (
+                #endif /* ifdef WITH_CASPER */
+                        level, "%s", str);
                 pthread_mutex_unlock(&log_mutex);
         } else {
                 char *p;
@@ -290,6 +300,14 @@ int setup_logging (void)
         }
 
         logging_initialized = TRUE;
+
+        #ifdef WITH_CASPER
+        if (!config->syslog) {
+            if (caph_limit_stream(log_file_fd, CAPH_WRITE | CAPH_IGNORE_EBADF) == -1)
+                err(1, "Failed to limit logfile write");
+        }
+        #endif
+
         send_stored_logs ();
 
         return 0;
