@@ -917,8 +917,13 @@ process_client_headers (struct conn_s *connptr, pseudomap *hashofheaders)
         connptr->content_length.client = get_content_length (hashofheaders);
 
         /* Check whether client sends chunked data. */
-        if (connptr->content_length.client == -1 && is_chunked_transfer (hashofheaders))
+        if (is_chunked_transfer (hashofheaders)) {
+                if (connptr->content_length.client != -1)
+                        /* request smuggling, see GH issue #609 */
+                        pseudomap_remove (hashofheaders, "content-length");
+
                 connptr->content_length.client = -2;
+        }
 
         /*
          * See if there is a "Connection" header.  If so, we need to do a bit
