@@ -643,6 +643,11 @@ add_header_to_connection (pseudomap *hashofheaders, char *header, size_t len)
         /* Calculate the new length of just the data */
         len -= sep - header - 1;
 
+        /* prevent multiple content-length headers from being inserted */
+        if (!strcasecmp(header, "content-length") &&
+            pseudomap_find (hashofheaders, "content-length"))
+                return 0;
+
         return pseudomap_append (hashofheaders, header, sep);
 }
 
