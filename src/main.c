@@ -110,6 +110,7 @@ display_usage (void)
                 "Options are:\n"
                 "  -d        Do not daemonize (run in foreground).\n"
                 "  -c FILE   Use an alternate configuration file.\n"
+                "  -n FD     Send a ready notification on an open FD.\n"
                 "  -h        Display this usage information.\n"
                 "  -v        Display version information.\n");
 
@@ -291,6 +292,7 @@ int
 main (int argc, char **argv)
 {
         int opt, daemonized = TRUE;
+        int notify_fd = -1;
 
         srand(time(NULL)); /* for hashmap seeds */
 
@@ -308,7 +310,7 @@ main (int argc, char **argv)
 
         config_file = SYSCONFDIR "/tinyproxy.conf";
 
-        while ((opt = getopt (argc, argv, "c:vdh")) != EOF) {
+        while ((opt = getopt (argc, argv, "c:n:vdh")) != EOF) {
                 switch (opt) {
                 case 'v':
                         display_version ();
@@ -320,6 +322,14 @@ main (int argc, char **argv)
 
                 case 'c':
                         config_file = optarg;
+                        break;
+
+                case 'n':
+                        notify_fd = atoi(optarg);
+                        if (notify_fd < 3) {
+                                fprintf (stderr, "Notification FD must be 3 or greater.\n");
+                                exit (EX_OSERR);
+                        }
                         break;
 
                 case 'h':
@@ -403,6 +413,15 @@ main (int argc, char **argv)
 
         /* Start the main loop */
         log_message (LOG_INFO, "Starting main loop. Accepting connections.");
+
+        /* Notify a service supervisor */
+        if (notify_fd >= 3) {
+                if (write(notify_fd, "\n", 1) != 1)
+                        log_message (LOG_WARNING,
+                             "Failed to send readiness notification on FD%d: %s.",
+                             notify_fd, strerror (errno));
+                close(notify_fd);
+        }
 
         child_main_loop ();
 

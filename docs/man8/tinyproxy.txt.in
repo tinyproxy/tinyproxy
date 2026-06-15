@@ -36,6 +36,11 @@ Use an alternate configuration file.
 
 Don't daemonize and stay in the foreground. Useful for debugging purposes.
 
+=item B<-n <file-descriptor>>
+
+After initialization write a newline to an open file-descriptor then close it.
+This is to notify a service supervisor that Tinyproxy is up and ready.
+
 =item B<-h>
 
 Display a short help screen of command line arguments and exit.
