@@ -826,11 +826,50 @@ static long get_content_length (pseudomap *hashofheaders)
         return content_length;
 }
 
-static int is_chunked_transfer (pseudomap *hashofheaders)
-{
+/* "stomps" transfer-encoding string, removing superfluous whitespace.
+   return 1 if "chunked was found at the correct position, either at the
+   beginning of the value, or at the end following a comma and optional
+   whitespace.
+   if chunked was found at an incorrect position, -1, else 0. */
+static int
+check_chunked_and_sanitize_transfer_encoding(pseudomap *hashofheaders) {
         char *data;
+        int was_comma = 0, ret = 0, c;
+        char *ins, *p, *chunked = 0;
         data = pseudomap_find (hashofheaders, "transfer-encoding");
-        return data ? !strcasecmp (data, "chunked") : 0;
+        if (!data) return 0;
+        ins = p = data;
+        while (*p) {
+                c = *(p++);
+                switch (c) {
+                case ',':
+                        if (chunked) ret = -1;
+                        if (!was_comma) *(ins++) = c;
+                        was_comma = 1;
+                        break;
+                case '\t': case ' ':
+                        if (was_comma) {
+                                if (was_comma == 1) *(ins++) = ' ';
+                                ++was_comma;
+                        } else was_comma = 0;
+                        break;
+                case 'C': case 'c':
+                        if (!strncasecmp(p, "hunked", 6)) {
+                                if (chunked || !(was_comma || ins == data))
+                                        ret = -1;
+                                chunked = p - 1;
+                        }
+                        /* fall-through */
+                default:
+                        was_comma = 0;
+                        *(ins++) = c;
+                }
+        }
+        *ins = 0;
+        if (ret == -1) return ret;
+        /* after sanitization, if chunked was found, it needs to be at the end */
+        if (chunked && chunked[7] == 0) return 1;
+        return 0;
 }
 
 /*
@@ -921,8 +960,15 @@ process_client_headers (struct conn_s *connptr, pseudomap *hashofheaders)
          */
         connptr->content_length.client = get_content_length (hashofheaders);
 
-        /* Check whether client sends chunked data. */
-        if (is_chunked_transfer (hashofheaders)) {
+        ret = check_chunked_and_sanitize_transfer_encoding(hashofheaders);
+        if (ret == -1) {
+                /* bad transfer-encoding: RFC 9112 6.1 */
+                indicate_http_error (connptr, 400,
+                                     "Bad Request",
+                                     NULL);
+                goto PULL_CLIENT_DATA;
+        } else if (ret == 1) {
+                /* well-formated "chunked" transfer-encoding */
                 if (connptr->content_length.client != -1)
                         /* request smuggling, see GH issue #609 */
                         pseudomap_remove (hashofheaders, "content-length");
