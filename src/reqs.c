@@ -619,6 +619,14 @@ static int add_xtinyproxy_header (struct conn_s *connptr)
 }
 #endif /* XTINYPROXY */
 
+static int
+check_duplicate_header (pseudomap *hashofheaders, char *header, const char* kw)
+{
+        return (!strcasecmp(header, kw) &&
+            pseudomap_find (hashofheaders, kw));
+}
+
+
 /*
  * Take a complete header line and break it apart (into a key and the data.)
  * Now insert this information into the hashmap for the connection so it
@@ -643,9 +651,9 @@ add_header_to_connection (pseudomap *hashofheaders, char *header, size_t len)
         /* Calculate the new length of just the data */
         len -= sep - header - 1;
 
-        /* prevent multiple content-length headers from being inserted */
-        if (!strcasecmp(header, "content-length") &&
-            pseudomap_find (hashofheaders, "content-length"))
+        /* prevent multiple CL/TE headers from being inserted */
+        if (check_duplicate_header(hashofheaders, header, "content-length") ||
+            check_duplicate_header(hashofheaders, header, "transfer-encoding"))
                 return 0;
 
         return pseudomap_append (hashofheaders, header, sep);
