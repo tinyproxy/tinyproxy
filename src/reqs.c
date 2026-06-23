@@ -843,7 +843,7 @@ check_chunked_and_sanitize_transfer_encoding(pseudomap *hashofheaders) {
                 c = *(p++);
                 switch (c) {
                 case ',':
-                        if (was_comma || chunked) ret = -1;
+                        if (was_comma || chunked || ins == data) ret = -1;
                         if (!was_comma) *(ins++) = c;
                         was_comma = 1;
                         break;
