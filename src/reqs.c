@@ -826,11 +826,10 @@ static long get_content_length (pseudomap *hashofheaders)
         return content_length;
 }
 
-/* "stomps" transfer-encoding string, removing superfluous whitespace.
-   return 1 if "chunked was found at the correct position, either at the
-   beginning of the value, or at the end following a comma and optional
+/* In-place sanitize the Transfer-Encoding value by removing superfluous
    whitespace.
-   if chunked was found at an incorrect position, -1, else 0. */
+   Returns 1 if a valid trailing "chunked" transfer-coding is present.
+   Returns -1 if "chunked" is present but malformed / not final; otherwise 0. */
 static int
 check_chunked_and_sanitize_transfer_encoding(pseudomap *hashofheaders) {
         char *data;
@@ -867,8 +866,8 @@ check_chunked_and_sanitize_transfer_encoding(pseudomap *hashofheaders) {
         }
         *ins = 0;
         if (ret == -1) return ret;
-        /* after sanitization, if chunked was found, it needs to be at the end */
-        if (chunked && chunked[7] == 0) return 1;
+        /* after sanitization, if chunked was found, it needs to be the final coding */
+        if (chunked && (chunked[7] == 0 || chunked[7] == ';')) return 1;
         return 0;
 }
 
@@ -968,7 +967,7 @@ process_client_headers (struct conn_s *connptr, pseudomap *hashofheaders)
                                      NULL);
                 goto PULL_CLIENT_DATA;
         } else if (ret == 1) {
-                /* well-formated "chunked" transfer-encoding */
+                /* well-formatted "chunked" transfer-encoding */
                 if (connptr->content_length.client != -1)
                         /* request smuggling, see GH issue #609 */
                         pseudomap_remove (hashofheaders, "content-length");
