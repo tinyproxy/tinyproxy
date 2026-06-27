@@ -423,6 +423,7 @@ got_stathost:
                                 char buf[PATH_MAX];
                                 snprintf (buf, sizeof buf, "Location: %s\r\n", reverse_url);
                                 send_http_headers (connptr, 301, "Moved Permanently", buf);
+                                safefree (reverse_url);
                                 goto fail;
                         }
                         safefree (url);
