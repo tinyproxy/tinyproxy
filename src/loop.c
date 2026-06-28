@@ -23,16 +23,6 @@ void loop_records_destroy(void) {
 	loop_records = 0;
 }
 
-#if 0
-static void su_to_str(union sockaddr_union *addr, char *buf) {
-	int af = addr->v4.sin_family;
-	unsigned port = ntohs(af == AF_INET ? addr->v4.sin_port : addr->v6.sin6_port);
-	char portb[32];
-	sprintf(portb, ":%u", port);
-        getpeer_information (addr, buf, 256);
-	strcat(buf, portb);
-}
-#endif
 
 void loop_records_add(union sockaddr_union *addr) {
 	time_t now =time(0);
