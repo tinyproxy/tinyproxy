@@ -64,7 +64,8 @@ do_transparent_proxy (struct conn_s *connptr, pseudomap *hashofheaders,
 
         if (strncmp(*url, "https://", 7) == 0) {
                 log_message (LOG_ERR,
-                             "process_request: cannot HTTPS for %d",
+                             "process_request: unexpected https as destination "
+                             "protocol for %d",
                              connptr->client_fd);
                 indicate_http_error (connptr, 400, "Bad Request",
                                      "detail", "You tried to connect to a "
