@@ -269,6 +269,21 @@ string value will be used as the host name in the Via header.
 Otherwise, the server's host name will be used. Enclose in double
 quotes.
 
+=item B<ServerName>
+
+The value sent in the C<Server> HTTP response header when Tinyproxy
+returns an error page to a client. This can be used to hide the
+software identity of the proxy. Defaults to the package name
+(C<tinyproxy>) if not set. Enclose in double quotes.
+
+    ServerName "myproxy"
+
+=item B<DisableServerHeader>
+
+When set to yes, Tinyproxy does NOT add the C<Server> header to error
+responses. This completely hides the proxy software identity. Takes
+precedence over C<ServerName> if both are set.
+
 =item B<DisableViaHeader>
 
 When this is set to yes, Tinyproxy does NOT add the `Via` header
