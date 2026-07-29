@@ -65,6 +65,12 @@ showstats (struct conn_s *connptr)
         char opens[16], reqs[16], badconns[16], denied[16], refused[16];
         FILE *statfile;
 
+        /* For HEAD requests, send headers only and return immediately */
+        if (connptr->is_head_method) {
+                send_http_headers (connptr, 200, "Statistic requested", "");
+                return 0;
+        }
+
         snprintf (opens, sizeof (opens), "%lu", stats->num_open);
         snprintf (reqs, sizeof (reqs), "%lu", stats->num_reqs);
         snprintf (badconns, sizeof (badconns), "%lu", stats->num_badcons);
