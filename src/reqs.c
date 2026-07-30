@@ -54,11 +54,6 @@
 #include "mypoll.h"
 
 /*
- * Maximum length of a HTTP line
- */
-#define HTTP_LINE_LENGTH (MAXBUFFSIZE / 6)
-
-/*
  * Macro to help test if the Upstream proxy supported is compiled in and
  * enabled.
  */
@@ -1256,9 +1251,9 @@ static void relay_connection (struct conn_s *connptr)
                         fds[0].events |= MYPOLL_WRITE;
                 if (buffer_size (connptr->cbuffer) > 0)
                         fds[1].events |= MYPOLL_WRITE;
-                if (buffer_size (connptr->sbuffer) < MAXBUFFSIZE)
+                if (buffer_space (connptr->sbuffer) > 0)
                         fds[1].events |= MYPOLL_READ;
-                if (buffer_size (connptr->cbuffer) < MAXBUFFSIZE)
+                if (buffer_space (connptr->cbuffer) > 0)
                         fds[0].events |= MYPOLL_READ;
 
                 ret = mypoll(fds, 2, config->idletimeout);
