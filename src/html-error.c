@@ -23,7 +23,6 @@
 #include "common.h"
 #include "main.h"
 
-#include "buffer.h"
 #include "conns.h"
 #include "heap.h"
 #include "html-error.h"
