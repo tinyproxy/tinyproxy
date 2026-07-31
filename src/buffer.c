@@ -23,7 +23,8 @@
 #include "log.h"
 #include <string.h>
 
-#define BUFFER_CAPACITY (16 * 1024)
+#define BUFFER_CAPACITY (64 * 1024)
+#define BUFFER_WATER_MARK (16 * 1024)
 
 /*
 * The buffer struct is allocated as a single block. The data area
@@ -57,7 +58,8 @@ size_t buffer_size (struct buffer_s *b)
 
 size_t buffer_space (struct buffer_s *b)
 {
-        return BUFFER_CAPACITY - b->size;
+        size_t space = BUFFER_CAPACITY - b->size;
+        return (space >= BUFFER_WATER_MARK) ? space : 0;
 }
 
 ssize_t read_buffer (int fd, struct buffer_s *b)
