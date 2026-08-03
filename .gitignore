@@ -21,3 +21,6 @@ cscope.out
 compile
 *~
 tags
+
+zig-cache/
+zig-out/
