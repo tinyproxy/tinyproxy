@@ -62,6 +62,18 @@ do_transparent_proxy (struct conn_s *connptr, pseudomap *hashofheaders,
         size_t ulen = strlen (*url);
         size_t i;
 
+        if (strncmp(*url, "https://", 7) == 0) {
+                log_message (LOG_ERR,
+                             "process_request: unexpected https as destination "
+                             "protocol for %d",
+                             connptr->client_fd);
+                indicate_http_error (connptr, 400, "Bad Request",
+                                     "detail", "You tried to connect to a "
+                                     "HTTPS destination. Use CONNECT instead.",
+                                     "url", *url, NULL);
+                return 0;
+        }
+
         data = pseudomap_find (hashofheaders, "host");
         if (!data) {
                 union sockaddr_union dest_addr;
