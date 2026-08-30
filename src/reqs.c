@@ -636,21 +636,25 @@ check_duplicate_header (pseudomap *hashofheaders, char *header, const char* kw)
 static int
 add_header_to_connection (pseudomap *hashofheaders, char *header, size_t len)
 {
-        char *sep;
+        char *sep, *p;
 
         /* Get rid of the new line and return at the end */
-        len -= chomp (header, len);
+        (void) chomp (header, len);
 
         sep = strchr (header, ':');
         if (!sep)
                 return 0; /* just skip invalid header, do not give error */
 
+        /* Remove any trailing whitespace before colon */
+        p = sep - 1;
+        while (p >= header && (*p == ' ' || *p == '\t'))
+                *(p--) = '\0';
+        if (p <= header)
+                return 0;
+
         /* Blank out colons, spaces, and tabs. */
         while (*sep == ':' || *sep == ' ' || *sep == '\t')
                 *sep++ = '\0';
-
-        /* Calculate the new length of just the data */
-        len -= sep - header - 1;
 
         /* prevent multiple CL/TE headers from being inserted */
         if (check_duplicate_header(hashofheaders, header, "content-length") ||
