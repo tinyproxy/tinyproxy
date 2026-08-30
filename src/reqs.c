@@ -646,10 +646,12 @@ add_header_to_connection (pseudomap *hashofheaders, char *header, size_t len)
                 return 0; /* just skip invalid header, do not give error */
 
         /* Remove any trailing whitespace before colon */
-        p = sep - 1;
-        while (p >= header && (*p == ' ' || *p == '\t'))
-                *(p--) = '\0';
-        if (p <= header)
+        if (sep == header)
+                return 0;
+        p = sep;
+        while (p > header && (p[-1] == ' ' || p[-1] == '\t'))
+                *--p = '\0';
+        if (*header == '\0')
                 return 0;
 
         /* Blank out colons, spaces, and tabs. */
