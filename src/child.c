@@ -34,6 +34,7 @@
 #include "sblist.h"
 #include "loop.h"
 #include "conns.h"
+#include "stats.h"
 #include "mypoll.h"
 #include <pthread.h>
 
@@ -106,10 +107,12 @@ void child_main_loop (void)
                 collect_threads();
 
                 if (sblist_getsize(childs) >= config->maxclients) {
-                        if (!was_full)
+                        if (!was_full){
+                                update_stats (STAT_REFUSE);
                                 log_message (LOG_WARNING,
                                              "Maximum number of connections reached. "
                                              "Refusing new connections.");
+                        }
                         was_full = 1;
                         usleep(16);
                         continue;
