@@ -162,6 +162,7 @@ static HANDLE_FUNC (handle_user);
 static HANDLE_FUNC (handle_viaproxyname);
 static HANDLE_FUNC (handle_disableviaheader);
 static HANDLE_FUNC (handle_xtinyproxy);
+static HANDLE_FUNC (handle_clientusesproxyprotocol);
 
 #ifdef UPSTREAM_SUPPORT
 static HANDLE_FUNC (handle_upstream);
@@ -207,6 +208,7 @@ struct {
         STDCONF (syslog, BOOL, handle_syslog),
         STDCONF (bindsame, BOOL, handle_bindsame),
         STDCONF (disableviaheader, BOOL, handle_disableviaheader),
+        STDCONF (clientusesproxyprotocol, BOOL, handle_clientusesproxyprotocol),
         /* integer arguments */
         STDCONF (port, INT, handle_port),
         STDCONF (maxclients, INT, handle_maxclients),
@@ -691,6 +693,19 @@ static HANDLE_FUNC (handle_disableviaheader)
 
         log_message (LOG_INFO,
                      "Disabling transmission of the \"Via\" header.");
+        return 0;
+}
+
+static HANDLE_FUNC (handle_clientusesproxyprotocol)
+{
+        int r = set_bool_arg (&conf->client_uses_proxyproto, line, &match[2]);
+
+        if (r) {
+                return r;
+        }
+
+        if (conf->client_uses_proxyproto)
+                log_message (LOG_INFO, "Expecting PROXY protocol header.");
         return 0;
 }
 

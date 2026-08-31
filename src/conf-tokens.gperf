@@ -59,5 +59,6 @@ reversemagic, CD_reversemagic
 reversepath, CD_reversepath
 upstream, CD_upstream
 loglevel, CD_loglevel
+clientusesproxyprotocol, CD_clientusesproxyprotocol
 %%
 

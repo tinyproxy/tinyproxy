@@ -327,3 +327,18 @@ ViaProxyName "tinyproxy"
 # If not set then no rewriting occurs.
 #
 #ReverseBaseURL "http://localhost:8888/"
+
+#
+# The tinyproxy's client is a proxy that uses the PROXY protocol, which
+# inserts a line before the HTTP request line to indicate the IP
+# address of the real client. Only version 1 (human-readable header
+# format) is supported.
+#
+# For instance, when using stunnel in front of tinyproxy and the
+# BasicAuth option is used, if the PROXY protocol is used, tinyproxy
+# will report the actual client IP address in the log instead of the IP
+# address of the stunnel server, so that the log can be parsed by
+# tools like fail2ban to ban clients that try to brute force the
+# authentication.
+#
+#ClientUsesProxyProtocol Yes
