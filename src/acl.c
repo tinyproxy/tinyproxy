@@ -30,6 +30,7 @@
 #include "sock.h"
 #include "sblist.h"
 #include "hostspec.h"
+#include "cap.h"
 
 /*
  * Hold the information about a particular access control.  We store
@@ -148,7 +149,12 @@ STRING_TEST:
         if(string_addr[0] == 0) {
                 /* only do costly hostname resolution when it is absolutely needed,
                    and only once */
-                if(getnameinfo ((void *) addr, sizeof (*addr),
+            #ifdef WITH_CASPER
+                if(cap_getnameinfo (cap_net,
+            #else
+                if(getnameinfo (
+            #endif /* ifdef WITH_CASPER */
+                                (void *) addr, sizeof (*addr),
                                 string_addr, HOSTNAME_LENGTH, NULL, 0, 0) != 0)
                         return -1;
         }

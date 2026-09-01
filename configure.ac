@@ -101,6 +101,21 @@ if test x"$transparent_enabled" = x"yes"; then
    AC_DEFINE(TRANSPARENT_PROXY)
 fi
 
+dnl Support capsicum using libcasper for priv sep of networking code
+AH_TEMPLATE([WITH_CASPER],
+	    [Include support for using tinyproxy in capabilitiy mode.])
+TP_ARG_ENABLE(capsicum,
+              [Enable capsicum code (default is YES)],
+              yes)
+if test x"$capsicum_enabled" = x"yes"; then
+   ADDITIONAL_OBJECTS="$ADDITIONAL_OBJECTS cap.o"
+   AC_DEFINE(WITH_CASPER)
+   AC_CHECK_LIB(casper, cap_init, , [AC_CHECK_LIB(casper, cap_init)])
+   AC_CHECK_LIB(cap_net, cap_bind, , [AC_CHECK_LIB(cap_net, cap_bind)])
+   AC_CHECK_LIB(cap_syslog, cap_syslog, , [AC_CHECK_LIB(cap_syslog, cap_syslog)])
+   AC_CHECK_LIB(nv, nvlist_create, , [AC_CHECK_LIB(nv, nvlist_create)])
+fi
+
 dnl Let user decide whether he wants support for manpages
 dnl Which require either pod2man or a tarball release
 AH_TEMPLATE([MANPAGE_SUPPORT],

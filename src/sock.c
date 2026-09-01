@@ -35,6 +35,7 @@
 #include "conf.h"
 #include "loop.h"
 #include "sblist.h"
+#include "cap.h"
 
 /*
  * Return a human readable error for getaddrinfo() and getnameinfo().
@@ -151,7 +152,12 @@ int opensock (const char *host, int port, const char *bind_to)
 
         snprintf (portstr, sizeof (portstr), "%d", port);
 
-        n = getaddrinfo (host, portstr, &hints, &res);
+        #ifdef WITH_CASPER
+        n = cap_getaddrinfo (cap_net,
+        #else
+        n = getaddrinfo (
+        #endif /* ifdef WITH_CASPER */
+                         host, portstr, &hints, &res);
         if (n != 0) {
                 log_message (LOG_ERR,
                              "opensock: Could not retrieve address info for %s:%d: %s", host, port, get_gai_error (n));
@@ -185,7 +191,12 @@ int opensock (const char *host, int port, const char *bind_to)
 
                 set_socket_timeout(sockfd);
 
-                if (connect (sockfd, res->ai_addr, res->ai_addrlen) == 0) {
+        #ifdef WITH_CASPER
+                if (cap_connect (cap_net,
+        #else
+                if (connect (
+        #endif /* ifdef WITH_CASPER */
+                             sockfd, res->ai_addr, res->ai_addrlen) == 0) {
                         union sockaddr_union *p = (void*) res->ai_addr, u;
 			int af = res->ai_addr->sa_family;
                         unsigned dport = ntohs(af == AF_INET ? p->v4.sin_port : p->v6.sin6_port);
