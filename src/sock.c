@@ -212,6 +212,40 @@ int opensock (const char *host, int port, const char *bind_to)
         return sockfd;
 }
 
+/*
+ * Gracefully close a socket by completing the TCP close handshake.
+ *
+ * shutdown(SHUT_WR) sends our FIN while the fd stays open, then we
+ * drain whatever the peer still sends until read() returns 0, which
+ * signals that the peer's FIN has arrived.  Only then do we close().
+ * By that point the four-way handshake is complete and the socket
+ * moves to TIME_WAIT, which the kernel reaps on its own.
+ *
+ * Calling close() on a socket still in FIN_WAIT_2 orphans it.  Linux
+ * reaps orphaned FIN_WAIT_2 sockets via net.ipv4.tcp_fin_timeout, but
+ * OpenBSD has no equivalent, so they accumulate until the proxy
+ * stalls.  See RFC 793 sec. 3.5 and Stevens, UNIX Network
+ * Programming Vol. 1 sec. 6.6.
+ */
+void close_socket (int fd)
+{
+        char drain[4096];
+        ssize_t n;
+        struct timeval tv;
+
+        shutdown (fd, SHUT_WR);
+
+        tv.tv_sec = 10;
+        tv.tv_usec = 0;
+        setsockopt (fd, SOL_SOCKET, SO_RCVTIMEO, (void *) &tv, sizeof (tv));
+
+        do {
+                n = read (fd, drain, sizeof (drain));
+        } while (n > 0 || (n < 0 && errno == EINTR));
+
+        close (fd);
+}
+
 /**
  * Try to listen on one socket based on the addrinfo
  * as returned from getaddrinfo.
