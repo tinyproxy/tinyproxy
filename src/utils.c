@@ -25,6 +25,7 @@
 
 #include "main.h"
 
+#include "conf.h"
 #include "conns.h"
 #include "heap.h"
 #include "http-message.h"
@@ -38,22 +39,41 @@ int
 send_http_message (struct conn_s *connptr, int http_code,
                    const char *error_title, const char *message)
 {
-        static const char *headers[] = {
-                "Server: " PACKAGE,
+        const char *headers[] = {
+                NULL,
                 "Content-type: text/html",
                 "Connection: close"
         };
-
+        const char **hdrs;
+        int hdr_count;
+        char *server_header = NULL;
         http_message_t msg;
 
-        msg = http_message_create (http_code, error_title);
-        if (msg == NULL)
-                return -1;
+        if (config->disable_serverheader) {
+                hdrs = headers + 1;
+                hdr_count = 2;
+        } else {
+                const char *server_name = config->server_name ? config->server_name : PACKAGE;
+                server_header = safemalloc (strlen ("Server: ") + strlen (server_name) + 1);
+                if (!server_header)
+                        return -1;
+                sprintf (server_header, "Server: %s", server_name);
+                headers[0] = server_header;
+                hdrs = headers;
+                hdr_count = 3;
+        }
 
-        http_message_add_headers (msg, headers, 3);
+        msg = http_message_create (http_code, error_title);
+        if (msg == NULL) {
+                safefree (server_header);
+                return -1;
+        }
+
+        http_message_add_headers (msg, hdrs, hdr_count);
         http_message_set_body (msg, message, strlen (message));
         http_message_send (msg, connptr->client_fd);
         http_message_destroy (msg);
+        safefree (server_header);
 
         return 0;
 }

@@ -161,6 +161,8 @@ static HANDLE_FUNC (handle_timeout);
 static HANDLE_FUNC (handle_user);
 static HANDLE_FUNC (handle_viaproxyname);
 static HANDLE_FUNC (handle_disableviaheader);
+static HANDLE_FUNC (handle_servername);
+static HANDLE_FUNC (handle_disableserverheader);
 static HANDLE_FUNC (handle_xtinyproxy);
 
 #ifdef UPSTREAM_SUPPORT
@@ -199,6 +201,8 @@ struct {
         STDCONF (pidfile, STR, handle_pidfile),
         STDCONF (anonymous, STR, handle_anonymous),
         STDCONF (viaproxyname, STR, handle_viaproxyname),
+        STDCONF (servername, STR, handle_servername),
+        STDCONF (disableserverheader, BOOL, handle_disableserverheader),
         STDCONF (defaulterrorfile, STR, handle_defaulterrorfile),
         STDCONF (statfile, STR, handle_statfile),
         STDCONF (stathost, STR, handle_stathost),
@@ -316,6 +320,7 @@ void free_config (struct config_s *conf)
 #endif                          /* UPSTREAM_SUPPORT */
         safefree (conf->pidpath);
         safefree (conf->via_proxy_name);
+        safefree (conf->server_name);
         if (conf->errorpages) {
                 it = 0;
                 while((it = htab_next(conf->errorpages, it, &k, &v))) {
@@ -678,6 +683,29 @@ static HANDLE_FUNC (handle_viaproxyname)
         log_message (LOG_INFO,
                      "Setting \"Via\" header to '%s'",
                      conf->via_proxy_name);
+        return 0;
+}
+
+static HANDLE_FUNC (handle_servername)
+{
+        int r = set_string_arg (&conf->server_name, line, &match[2]);
+
+        if (r)
+                return r;
+        log_message (LOG_INFO,
+                     "Setting \"Server\" header to '%s'",
+                     conf->server_name);
+        return 0;
+}
+
+static HANDLE_FUNC (handle_disableserverheader)
+{
+        int r = set_bool_arg (&conf->disable_serverheader, line, &match[2]);
+
+        if (r)
+                return r;
+        log_message (LOG_INFO,
+                     "Disabling transmission of the \"Server\" header.");
         return 0;
 }
 

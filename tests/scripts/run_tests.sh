@@ -126,6 +126,7 @@ stop_tinyproxy() {
 	pid=$(cat "$TINYPROXY_PID_FILE")
 	kill "$pid"
 	if test "$?" = "0" ; then
+		while kill -0 "$pid" 2>/dev/null; do sleep 0.2; done
 		echo " ok"
 	else
 		echo " error killing pid $pid"
@@ -252,10 +253,78 @@ run_failure_webclient_request 502 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://bogus.
 test "$?" = "0" || FAILED=$((FAILED + 1))
 }
 
+check_header_present() {
+	if grep -qi "$1" "$WEBCLIENT_LOG" ; then
+		echo " ok"
+		return 0
+	else
+		echo " FAIL (expected: $1)"
+		cat "$WEBCLIENT_LOG"
+		return 1
+	fi
+}
+
+check_header_absent() {
+	if grep -qi "$1" "$WEBCLIENT_LOG" ; then
+		echo " FAIL (unexpected: $1)"
+		cat "$WEBCLIENT_LOG"
+		return 1
+	else
+		echo " ok"
+		return 0
+	fi
+}
+
+server_header_test() {
+	stop_tinyproxy
+	cp "$TINYPROXY_CONF_FILE" "$TINYPROXY_CONF_FILE.bak"
+
+	echo 'ServerName "my-custom-proxy"' >> "$TINYPROXY_CONF_FILE"
+	start_tinyproxy
+	wait_for_some_seconds 1
+
+	printf "checking ServerName is sent in error response Server header (send_http_headers)..."
+	"$WEBCLIENT_BIN" --method="BAD METHOD" "$TINYPROXY_IP:$TINYPROXY_PORT" \
+		"http://$WEBSERVER_IP:$WEBSERVER_PORT" > "$WEBCLIENT_LOG" 2>&1
+	check_header_present "^Server: my-custom-proxy"
+	test "$?" = "0" || FAILED=$((FAILED + 1))
+
+	printf "checking ServerName is sent in stats page Server header (send_http_message)..."
+	"$WEBCLIENT_BIN" "$TINYPROXY_IP:$TINYPROXY_PORT" \
+		"http://$TINYPROXY_STATHOST_IP" > "$WEBCLIENT_LOG" 2>&1
+	check_header_present "^Server: my-custom-proxy"
+	test "$?" = "0" || FAILED=$((FAILED + 1))
+
+	stop_tinyproxy
+	cp "$TINYPROXY_CONF_FILE.bak" "$TINYPROXY_CONF_FILE"
+
+	echo 'DisableServerHeader Yes' >> "$TINYPROXY_CONF_FILE"
+	start_tinyproxy
+	wait_for_some_seconds 1
+
+	printf "checking Server header is absent in error response when DisableServerHeader is set (send_http_headers)..."
+	"$WEBCLIENT_BIN" --method="BAD METHOD" "$TINYPROXY_IP:$TINYPROXY_PORT" \
+		"http://$WEBSERVER_IP:$WEBSERVER_PORT" > "$WEBCLIENT_LOG" 2>&1
+	check_header_absent "^Server:"
+	test "$?" = "0" || FAILED=$((FAILED + 1))
+
+	printf "checking Server header is absent in stats page when DisableServerHeader is set (send_http_message)..."
+	"$WEBCLIENT_BIN" "$TINYPROXY_IP:$TINYPROXY_PORT" \
+		"http://$TINYPROXY_STATHOST_IP" > "$WEBCLIENT_LOG" 2>&1
+	check_header_absent "^Server:"
+	test "$?" = "0" || FAILED=$((FAILED + 1))
+
+	stop_tinyproxy
+	cp "$TINYPROXY_CONF_FILE.bak" "$TINYPROXY_CONF_FILE"
+	start_tinyproxy
+	wait_for_some_seconds 1
+}
+
 basic_test
 reload_config
 basic_test
 ext_test
+server_header_test
 
 echo "$FAILED errors"
 

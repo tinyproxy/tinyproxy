@@ -138,17 +138,27 @@ int send_http_headers (
         struct conn_s *connptr, int code,
         const char *message, const char *extra)
 {
-        const char headers[] =
-            "HTTP/1.%u %d %s\r\n"
-            "Server: %s\r\n"
-            "Content-Type: text/html\r\n"
-            "%s"
-            "Connection: close\r\n" "\r\n";
-
-        return (write_message (connptr->client_fd, headers,
-                               connptr->protocol.major != 1 ? 0 : connptr->protocol.minor,
-                               code, message, PACKAGE,
-                               extra));
+        if (config->disable_serverheader) {
+                const char headers[] =
+                    "HTTP/1.%u %d %s\r\n"
+                    "Content-Type: text/html\r\n"
+                    "%s"
+                    "Connection: close\r\n" "\r\n";
+                return (write_message (connptr->client_fd, headers,
+                                       connptr->protocol.major != 1 ? 0 : connptr->protocol.minor,
+                                       code, message, extra));
+        } else {
+                const char *server_name = config->server_name ? config->server_name : PACKAGE;
+                const char headers[] =
+                    "HTTP/1.%u %d %s\r\n"
+                    "Server: %s\r\n"
+                    "Content-Type: text/html\r\n"
+                    "%s"
+                    "Connection: close\r\n" "\r\n";
+                return (write_message (connptr->client_fd, headers,
+                                       connptr->protocol.major != 1 ? 0 : connptr->protocol.minor,
+                                       code, message, server_name, extra));
+        }
 }
 
 /*

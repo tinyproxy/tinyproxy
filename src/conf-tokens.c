@@ -28,6 +28,8 @@ config_directive_find (register const char *str, register size_t len)
       {"bindsame", CD_bindsame},
       {"reversebaseurl", CD_reversebaseurl},
       {"viaproxyname", CD_viaproxyname},
+      {"servername", CD_servername},
+      {"disableserverheader", CD_disableserverheader},
       {"upstream", CD_upstream},
       {"anonymous", CD_anonymous},
       {"group", CD_group},
