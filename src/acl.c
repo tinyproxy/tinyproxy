@@ -105,7 +105,6 @@ acl_string_processing (struct acl_s *acl, const char *ip_address,
 {
         int match;
         struct addrinfo hints, *res, *ressave;
-        size_t test_length, match_length;
         char ipbuf[512];
 
         assert (acl && acl->h.type == HST_STRING);
@@ -153,23 +152,17 @@ STRING_TEST:
                         return -1;
         }
 
-        test_length = strlen (string_addr);
-        match_length = strlen (acl->h.address.string);
-
         /*
-         * If the string length is shorter than AC string, return a -1 so
-         * that the "driver" will skip onto the next control in the list.
+         * compare the reverse-resolved client hostname against the ACL
+         * entry, using the shared hostspec matcher so that hostname
+         * entries are matched at label boundaries: plain entries match
+         * the whole hostname exactly, and leading-dot entries match the
+         * apex host plus every subdomain below it. This prevents
+         * suffix-collision bypasses, e.g. "Allow trusted.net" must not
+         * admit "untrusted.net" (GH issue #627).
          */
-        if (test_length < match_length)
-                return -1;
-
-        if (strcasecmp
-            (string_addr + (test_length - match_length),
-             acl->h.address.string) == 0) {
-                if (acl->access == ACL_DENY)
-                        return 0;
-                else
-                        return 1;
+        if (hostspec_match (string_addr, &acl->h) != 0) {
+                return acl->access != ACL_DENY;
         }
 
         /* Indicate that no tests succeeded, so skip to next control. */
