@@ -173,9 +173,7 @@ turns on the upstream proxy for the sites matching `site_spec`.
 
 `type` can be one of `http`, `socks4`, `socks5`, `none`.
 
-a `site_spec` is either a full domain name, a domain name starting with a
-`.`, in which case it is treated as a suffix, or an ip/mask tuple.
-the `site_spec` needs to be double-quoted.
+see below for what constitues a `site_spec`.
 
 =item * I<upstream none "site_spec">
 turns off upstream support for sites matching `site_spec`, that means the
@@ -187,20 +185,26 @@ It's recommended to use raw IP addresses to specify the upstream host, so
 no costly DNS lookup has to be done everytime it is used.
 IPv6 addresses need to be enclosed in square brackets.
 
-The site can be specified in various forms as a hostname, domain
-name or as an IP range:
+=over 4
+
+=item B<site_spec>
+
+A `site_spec` matches sites by name, domain or IP range. The site
+can be specified in various forms as follows:
 
 =over 4
 
-=item * I<name>     matches host exactly
+=item * I<name>        matches host exactly
 
-=item * I<.name>    matches any host in domain "name"
+=item * I<.name>       matches any host in domain "name"
 
-=item * I<.>        matches any host with no domain (in 'empty' domain)
+=item * I<.>           matches any host with no domain (in 'empty' domain)
 
-=item * I<IP/bits>  matches network/mask
+=item * I<IP/bits>     matches network/mask
 
-=item * I<IP/mask>  matches network/mask
+=item * I<IP/mask>     matches network/mask
+
+=back
 
 =back
 
@@ -227,10 +231,10 @@ If there are no `Allow` or `Deny` lines, then all clients are
 allowed. Otherwise, the default action is to deny access.
 The argument to `Allow` or `Deny` can be a single IP address
 of a client host, like `127.0.0.1` or `::1`, an IP address range, like
-`192.168.0.1/24` or a string that will be matched against the
-end of the client host name, i.e, this can be a full host name
-like `host.example.com` or a domain name like `.example.com` or
-even a top level domain name like `.com`.
+`192.168.0.1/24` or a hostname (`site_spec`). A site_spec is matched
+against the client host name at label boundaries,
+see the B<site_spec> above.
+
 Note that by adding a rule using a host or domain name, a costly name
 lookup has to be done for every new connection, which could slow down
 the service considerably.
