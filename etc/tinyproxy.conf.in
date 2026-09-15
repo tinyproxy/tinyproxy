@@ -228,6 +228,19 @@ Allow ::1
 ViaProxyName "tinyproxy"
 
 #
+# ServerName: The value sent in the "Server" HTTP response header.
+# Hiding the real server name can reduce information disclosure.
+# Defaults to the package name if not set.
+#
+#ServerName "tinyproxy"
+
+#
+# DisableServerHeader: When set to yes, Tinyproxy does NOT add the Server
+# header to error responses. This hides the proxy software identity entirely.
+#
+#DisableServerHeader Yes
+
+#
 # DisableViaHeader: When this is set to yes, Tinyproxy does NOT add
 # the Via header to the requests. This virtually puts Tinyproxy into
 # stealth mode. Note that RFC 2616 requires proxies to set the Via
