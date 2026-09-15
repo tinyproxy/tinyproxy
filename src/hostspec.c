@@ -132,8 +132,9 @@ err:;
 static int string_match(const char *ip, const char *addrspec)
 {
 	size_t test_length, match_length;
-	if(!strcasecmp(ip, addrspec)) return 1;
-	if(addrspec[0] != '.') return 0;
+	int dot = addrspec[0] == '.';
+	if(!strcasecmp(ip, addrspec+dot)) return 1;
+	if(!dot) return 0;
 	test_length = strlen (ip);
 	match_length = strlen (addrspec);
 	if (test_length < match_length) return 0;
