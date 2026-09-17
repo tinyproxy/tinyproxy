@@ -32,7 +32,6 @@
 #include "main.h"
 
 #include "anonymous.h"
-#include "buffer.h"
 #include "conf.h"
 #include "daemon.h"
 #include "heap.h"

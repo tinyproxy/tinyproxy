@@ -27,12 +27,7 @@ struct buffer_s;
 extern struct buffer_s *new_buffer (void);
 extern void delete_buffer (struct buffer_s *buffptr);
 extern size_t buffer_size (struct buffer_s *buffptr);
-
-/*
- * Add a new line to the given buffer. The data IS copied into the structure.
- */
-extern int add_to_buffer (struct buffer_s *buffptr, unsigned char *data,
-                          size_t length);
+extern size_t buffer_space (struct buffer_s *buffptr);
 
 extern ssize_t read_buffer (int fd, struct buffer_s *buffptr);
 extern ssize_t write_buffer (int fd, struct buffer_s *buffptr);
