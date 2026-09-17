@@ -130,9 +130,9 @@ struct htab *htab_create(size_t nel)
 	struct htab *r = calloc(1, sizeof *r);
 	if(r && !resize(r, nel)) {
 		free(r);
-		r = 0;
+		return 0;
 	}
-	r->seed = rand();
+	if(r) r->seed = rand();
 	return r;
 }
 
