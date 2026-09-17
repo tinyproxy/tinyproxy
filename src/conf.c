@@ -426,10 +426,10 @@ static int config_parse (struct config_s *conf, FILE * f)
         unsigned long lineno = 1;
 
         for (;fgets (buffer, sizeof (buffer), f);++lineno) {
-                if(buffer[0] == '#') continue;
                 p = buffer;
                 while(isspace(*p))p++;
-                if(!*p) continue;
+                /* skip empty lines and comments, which may be indented */
+                if(!*p || *p == '#') continue;
                 q = p;
                 while(*q && !isspace(*q))q++;
                 c = *q;
