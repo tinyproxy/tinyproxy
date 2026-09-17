@@ -1723,9 +1723,9 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
                         auth_error(connptr, stathost_connect ? 401 : 407);
                         HC_FAIL();
                 }
-                if ( /* currently only "basic" auth supported */
-                        (strncmp(authstring, "Basic ", 6) == 0 ||
-                         strncmp(authstring, "basic ", 6) == 0) &&
+                if ( /* currently only "basic" auth supported,
+                        scheme is case-insensitive (RFC 7235 2.1) */
+                        strncasecmp(authstring, "Basic ", 6) == 0 &&
                         basicauth_check (config->basicauth_list, authstring + 6) == 1)
                                 failure = 0;
                 if(failure) {
