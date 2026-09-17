@@ -114,7 +114,7 @@ void child_main_loop (void)
                                              "Refusing new connections.");
                         }
                         was_full = 1;
-                        usleep(16);
+                        usleep(16000); /* 16 ms, don't spin while full */
                         continue;
                 }
 
@@ -190,14 +190,14 @@ oom:
                         close(connfd);
                         log_message (LOG_CRIT,
                                      "Could not allocate memory for child.");
-                        usleep(16); /* prevent 100% CPU usage in OOM situation */
+                        usleep(16000); /* prevent 100% CPU usage in OOM situation */
                         continue;
                 }
 
                 child->done = 0;
 
                 if (!sblist_add(childs, &child)) {
-                        free(child);
+                        safefree(child);
                         goto oom;
                 }
 
@@ -214,7 +214,7 @@ oom:
 
                 if (pthread_create(&child->thread, attrp, child_thread, child) != 0) {
                         sblist_delete(childs, sblist_getsize(childs) -1);
-                        free(child);
+                        safefree(child);
                         goto oom;
 		}
         }
