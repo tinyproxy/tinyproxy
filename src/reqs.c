@@ -798,11 +798,12 @@ static int remove_connection_headers (pseudomap *hashofheaders)
         int i,j,df;
 
         for (i = 0; i != (sizeof (headers) / sizeof (char *)); ++i) {
-                /* Look for the connection header.  If it's not found, return. */
+                /* Look for the connection header.  If it's not found,
+                   check the next one. */
                 data = pseudomap_find(hashofheaders, headers[i]);
 
                 if (!data)
-                        return 0;
+                        continue;
 
                 len = strlen(data);
 
