@@ -89,6 +89,30 @@ static char *lookup_variable (struct htab *map, const char *varname) {
 	return v ? v->p : 0;
 }
 
+/*
+ * Write a string to fd, escaping the characters which have a special
+ * meaning in HTML, since the values of the template variables can
+ * contain data controlled by the client (e.g. the request line).
+ */
+static void write_html_escaped(int fd, const char *s) {
+	const char *p;
+	for (p = s; *p; p++) {
+		const char *ent;
+		switch (*p) {
+		case '&': ent = "&amp;"; break;
+		case '<': ent = "&lt;"; break;
+		case '>': ent = "&gt;"; break;
+		case '"': ent = "&quot;"; break;
+		case '\'': ent = "&#39;"; break;
+		default: continue;
+		}
+		if (p > s) safe_write(fd, s, p - s);
+		safe_write(fd, ent, strlen(ent));
+		s = p + 1;
+	}
+	if (p > s) safe_write(fd, s, p - s);
+}
+
 static void varsubst_sendline(struct conn_s *connptr, regex_t *re, char *p) {
 	int fd = connptr->client_fd;
 	while(*p) {
@@ -104,7 +128,7 @@ static void varsubst_sendline(struct conn_s *connptr, regex_t *re, char *p) {
 			memcpy(varname, p+1, l-2);
 			varname[l-2] = 0;
 			varval = lookup_variable(connptr->error_variables, varname);
-			if(varval) write_message(fd, "%s", varval);
+			if(varval) write_html_escaped(fd, varval);
 			else if(varval && !*varval) write_message(fd, "(unknown)");
 			else safe_write(fd, p, l);
 			p += l;
