@@ -775,6 +775,14 @@ static int remove_connection_headers (pseudomap *hashofheaders)
                 "connection",
                 "proxy-connection"
         };
+        /* message framing headers which must never be removed by a
+           Connection option, otherwise the body we forward according
+           to the precomputed length is no longer delimited for the
+           receiver (request/response smuggling). */
+        static const char *protected_headers[] = {
+                "content-length",
+                "transfer-encoding"
+        };
 
         char *data;
         char *ptr;
@@ -809,6 +817,8 @@ static int remove_connection_headers (pseudomap *hashofheaders)
                            double-free (CVE-2023-49606) */
                         for (j = 0; j != (sizeof (headers) / sizeof (char *)); ++j)
                                 if(!strcasecmp(ptr, headers[j])) df = 1;
+                        for (j = 0; j != (sizeof (protected_headers) / sizeof (char *)); ++j)
+                                if(!strcasecmp(ptr, protected_headers[j])) df = 1;
                         if (!df) pseudomap_remove (hashofheaders, ptr);
 
                         /* Advance ptr to the next token */
