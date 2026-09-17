@@ -1097,6 +1097,8 @@ static HANDLE_FUNC (handle_upstream)
 
         if (match[3].rm_so != -1) {
                 tmp = get_string_arg (line, &match[3]);
+                if (!tmp)
+                        return -1;
                 if(!strcmp(tmp, "none")) {
                         safefree(tmp);
                         if (match[4].rm_so == -1) return -1;
@@ -1107,6 +1109,7 @@ static HANDLE_FUNC (handle_upstream)
                         safefree (domain);
                         goto check_err;
                 }
+                safefree(tmp);
         }
 
         mi = 6;
@@ -1128,8 +1131,11 @@ static HANDLE_FUNC (handle_upstream)
                 ip = get_string_arg (line, &match[mi+4]);
         else
                 ip = get_string_arg (line, &match[mi]);
-        if (!ip)
+        if (!ip) {
+                safefree (user);
+                safefree (pass);
                 return -1;
+        }
         mi += 16;
 
         port = (int) get_long_arg (line, &match[mi]);
