@@ -242,15 +242,18 @@ static void send_stored_logs (void)
 
 #ifdef NDEBUG
                 if (log_level == LOG_CONN && level == LOG_INFO)
-                        continue;
+                        goto next;
                 else if (log_level == LOG_INFO) {
                         if (level > LOG_INFO && level != LOG_CONN)
-                                continue;
+                                goto next;
                 } else if (level > log_level)
-                        continue;
+                        goto next;
 #endif
 
                 log_message (level, "%s", ptr);
+#ifdef NDEBUG
+next:
+#endif
                 safefree(*string);
         }
 
