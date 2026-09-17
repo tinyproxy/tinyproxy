@@ -224,6 +224,10 @@ static int extract_url (const char *url, int default_port,
         if (!request->host || !request->path)
                 goto ERROR_EXIT;
 
+        /* e.g. "http:///" or "CONNECT /foo" */
+        if (!*request->host)
+                goto ERROR_EXIT;
+
         /* Remove the username/password if they're present */
         strip_username_password (request->host);
 
@@ -240,6 +244,10 @@ static int extract_url (const char *url, int default_port,
                 p--;
                 *p = '\0';
         }
+
+        /* e.g. "http://user@/", "http://:8080/" or "http://[]/" */
+        if (!*request->host)
+                goto ERROR_EXIT;
 
         return 0;
 
