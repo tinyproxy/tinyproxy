@@ -40,6 +40,7 @@ struct conn_s {
         /* Booleans */
         unsigned int connect_method;
         unsigned int show_stats;
+        unsigned int is_head_method;
 
         /*
          * This structure stores key -> value mappings for substitution
