@@ -329,10 +329,12 @@ static int send_connect_method_response (struct conn_s *connptr)
 static int is_stathost (const char* host)
 {
         const char *p = config->stathost;
-        const char *q = host;
-        if (!p || !q) return 0;
-        while (*p && *(p++) == *(q++));
-        return *p == 0 && (*q == 0 || *q == ':');
+        size_t l;
+        if (!p || !host) return 0;
+        l = strlen (p);
+        /* host names are case-insensitive */
+        return strncasecmp (p, host, l) == 0
+               && (host[l] == 0 || host[l] == ':');
 }
 
 /*
