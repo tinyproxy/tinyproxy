@@ -720,6 +720,17 @@ static int get_all_headers (int fd, pseudomap *hashofheaders)
                         }
 
                         len = 0;
+                } else if (len > 0) {
+                        /*
+                         * This is a continuation line (obs-fold).  Replace
+                         * the line break ending the accumulated header with
+                         * spaces, so no raw CR/LF ends up inside the header
+                         * value we forward (RFC 9112 5.2).
+                         */
+                        if (header[len - 1] == '\n')
+                                header[len - 1] = ' ';
+                        if (len > 1 && header[len - 2] == '\r')
+                                header[len - 2] = ' ';
                 }
 
                 /*
