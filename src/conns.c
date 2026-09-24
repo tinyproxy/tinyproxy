@@ -28,6 +28,7 @@
 #include "conns.h"
 #include "heap.h"
 #include "log.h"
+#include "sock.h"
 #include "stats.h"
 
 void conn_struct_init(struct conn_s *connptr) {
@@ -82,14 +83,10 @@ void conn_destroy_contents (struct conn_s *connptr)
         assert (connptr != NULL);
 
         if (connptr->client_fd != -1)
-                if (close (connptr->client_fd) < 0)
-                        log_message (LOG_INFO, "Client (%d) close message: %s",
-                                     connptr->client_fd, strerror (errno));
+                close_socket (connptr->client_fd);
         connptr->client_fd = -1;
         if (connptr->server_fd != -1)
-                if (close (connptr->server_fd) < 0)
-                        log_message (LOG_INFO, "Server (%d) close message: %s",
-                                     connptr->server_fd, strerror (errno));
+                close_socket (connptr->server_fd);
         connptr->server_fd = -1;
 
         if (connptr->cbuffer)
