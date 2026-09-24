@@ -77,6 +77,8 @@ struct config_s {
 
         unsigned int disable_viaheader; /* boolean */
 
+        unsigned int client_uses_proxyproto; /* boolean */
+
         /*
          * Error page support.  Map error numbers to file paths.
          */
