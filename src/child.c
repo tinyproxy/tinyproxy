@@ -36,6 +36,7 @@
 #include "conns.h"
 #include "stats.h"
 #include "mypoll.h"
+#include "cap.h"
 #include <pthread.h>
 
 static sblist* listen_fds;
@@ -96,7 +97,15 @@ void child_main_loop (void)
                 int *fd = sblist_get(listen_fds, i);
                 fds[i].fd = *fd;
                 fds[i].events |= MYPOLL_READ;
+
+        #ifdef WITH_CASPER
+                cap_server_socket(fds[i].fd);
+        #endif /* ifdef WITH_CASPER */
         }
+
+        #ifdef WITH_CASPER
+        cap_start(config->syslog);
+        #endif /* ifdef WITH_CASPER */
 
         /*
          * We have to wait for connections on multiple fds,
