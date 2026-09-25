@@ -60,6 +60,8 @@ This allows you to specify which address Tinyproxy will bind
 to for outgoing connections.
 This parameter may be specified multiple times, then Tinyproxy
 will try all the specified addresses in order.
+When SO_BINDTODEVICE present, this parameter allows interface
+names.
 
 =item B<BindSame>
 
