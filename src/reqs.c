@@ -199,18 +199,30 @@ static int strip_return_port (char *host)
 static int extract_url (const char *url, int default_port,
                         struct request_s *request)
 {
+        const char *sep;
         char *p;
         int port;
 
-        /* Split the URL on the slash to separate host from path */
-        p = strchr (url, '/');
-        if (p != NULL) {
+        /* The host ends at the first slash, question mark or hash (RFC 3986) */
+        sep = url;
+        while (*sep && *sep != '/' && *sep != '?' && *sep != '#')
+                ++sep;
+        if (*sep != '\0') {
                 int len;
-                len = p - url;
+                len = sep - url;
                 request->host = (char *) safemalloc (len + 1);
                 memcpy (request->host, url, len);
                 request->host[len] = '\0';
-                request->path = safestrdup (p);
+                if (*sep == '/') {
+                        request->path = safestrdup (sep);
+                } else {
+                        /* "http://host?query" still needs a path: "/?query" */
+                        request->path = (char *) safemalloc (strlen (sep) + 2);
+                        if (request->path) {
+                                request->path[0] = '/';
+                                strcpy (request->path + 1, sep);
+                        }
+                }
         } else {
                 request->host = safestrdup (url);
                 request->path = safestrdup ("/");
