@@ -6,7 +6,7 @@ GIT_DIR="${SCRIPT_DIR}/../.git"
 if test -d "${GIT_DIR}" ; then
 	if type git >/dev/null 2>&1 ; then
 		gitstr=$(git describe --tags --match '[0-9]*.[0-9]*.*' 2>/dev/null)
-		if test "x$?" != x0 ; then
+		if test "$?" -ne 0 ; then
 			sed 's/$/-git/' < VERSION
 		else
 			printf "%s\n" "$gitstr" | sed -e 's/-g/-git-/'
