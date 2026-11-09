@@ -172,6 +172,7 @@ int hostspec_match(const char *ip, const struct hostspec *h) {
 		if(is_numeric_addr) return 0;
 		return string_match (ip, h->address.string);
 	case HST_NUMERIC:
+		if(!is_numeric_addr) return 0;
 		return numeric_match (numeric_addr, h);
 	case HST_NONE:
 		return 0;
