@@ -101,7 +101,7 @@ ssize_t write_buffer (int fd, struct buffer_s *b)
                 if (b->size > 0)
                         memmove (get_data (b), get_data (b) + n, b->size);
                 return n;
-        } else if (n == 0 || errno == EINTR || errno == EAGAIN) {
+        } else if (n == 0 || errno == EINTR || errno == EAGAIN || errno == ENOBUFS) {
                 return 0;
         } else {
                 log_message (LOG_ERR, "write_buffer: send() error \"%s\" on fd %d", strerror (errno), fd);
