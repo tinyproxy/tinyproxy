@@ -35,7 +35,7 @@
 ssize_t basicauth_string(const char *user, const char *pass,
 	char *buf, size_t bufsize)
 {
-	char tmp[256+2];
+	char tmp[bufsize+2];
 	int l;
 	if (!user || !pass) return -1;
 	l = snprintf(tmp, sizeof tmp, "%s:%s", user, pass);
