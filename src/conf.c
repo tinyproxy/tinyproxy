@@ -1115,6 +1115,8 @@ static HANDLE_FUNC (handle_upstream)
         mi = 6;
 
         tmp = get_string_arg (line, &match[mi]);
+        if (!tmp)
+                return -1;
         pt = pt_from_string(tmp);
         safefree(tmp);
         mi += 2;
