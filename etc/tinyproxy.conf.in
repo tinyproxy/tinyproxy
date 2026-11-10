@@ -33,7 +33,7 @@ Port 8888
 # Bind: This allows you to specify which interface will be used for
 # outgoing connections.  This is useful for multi-home'd machines where
 # you want all traffic to appear outgoing from one particular interface.
-#
+# This allows using the name of an interface, useful for tun devices.
 #Bind 192.168.0.1
 
 #
