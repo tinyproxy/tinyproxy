@@ -38,6 +38,8 @@
 #include "mypoll.h"
 #include <pthread.h>
 
+#define RETRY_WAITTIME_US 16384
+
 static sblist* listen_fds;
 
 struct client {
@@ -114,7 +116,7 @@ void child_main_loop (void)
                                              "Refusing new connections.");
                         }
                         was_full = 1;
-                        usleep(16);
+                        usleep(RETRY_WAITTIME_US);
                         continue;
                 }
 
@@ -190,7 +192,7 @@ oom:
                         close(connfd);
                         log_message (LOG_CRIT,
                                      "Could not allocate memory for child.");
-                        usleep(16); /* prevent 100% CPU usage in OOM situation */
+                        usleep(RETRY_WAITTIME_US); /* prevent 100% CPU usage in OOM situation */
                         continue;
                 }
 
