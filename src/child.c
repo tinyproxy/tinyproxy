@@ -199,7 +199,7 @@ oom:
                 child->done = 0;
 
                 if (!sblist_add(childs, &child)) {
-                        free(child);
+                        safefree(child);
                         goto oom;
                 }
 
@@ -216,7 +216,7 @@ oom:
 
                 if (pthread_create(&child->thread, attrp, child_thread, child) != 0) {
                         sblist_delete(childs, sblist_getsize(childs) -1);
-                        free(child);
+                        safefree(child);
                         goto oom;
 		}
         }
