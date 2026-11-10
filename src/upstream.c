@@ -83,7 +83,7 @@ static struct upstream *upstream_build (const char *host, int port, char *domain
                         ret = basicauth_string(user, pass, b, sizeof b);
                         if (ret == 0) {
                                 *ube = UBE_USERLEN;
-                                return NULL;
+                                goto fail;
                         }
                         up->ua.authstr = safestrdup (b);
                 } else {
@@ -188,10 +188,8 @@ enum upstream_build_error upstream_add (
         return ube;
 
 upstream_cleanup:
-        safefree (up->host);
-        if(up->target.type == HST_STRING)
-                safefree (up->target.address.string);
-        safefree (up);
+        up->next = NULL;
+        free_upstream_list (up);
 
         return ube;
 }
@@ -231,6 +229,9 @@ void free_upstream_list (struct upstream *up)
                 if(tmp->target.type == HST_STRING)
                         safefree (tmp->target.address.string);
                 safefree (tmp->host);
+                /* ua.user and ua.authstr share the same storage */
+                safefree (tmp->ua.user);
+                safefree (tmp->pass);
                 safefree (tmp);
         }
 }
