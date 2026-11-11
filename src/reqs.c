@@ -1726,6 +1726,8 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
         char sock_ipaddr[IP_LENGTH];
         char peer_ipaddr[IP_LENGTH];
 
+        set_socket_timeout(fd);
+
         if (config->client_uses_proxyproto && read_proxy_line (connptr, addr)) {
                 close (fd);
                 return;
@@ -1746,8 +1748,6 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
                 close (fd);
                 return;
         }
-
-        set_socket_timeout(fd);
 
         if (connection_loops (addr))  {
                 log_message (LOG_CONN,
