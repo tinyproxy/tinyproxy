@@ -112,6 +112,12 @@ static int read_proxy_line (struct conn_s *connptr, union sockaddr_union* addr)
         if (!(!strncmp (line, "PROXY TCP", 9)
             && (line[9] == '4' || line[9] == '6')
             && line[10] == ' ')) {
+                /* Special case for when the protocol is unsupported/unknown */
+                if (!strncmp (line, "PROXY UNKNOWN", 13)) {
+                        /* There is no way to get the real client IP address */
+                        result = 0;
+                        goto cleanup;
+                }
 bad_syntax:
                 log_message (LOG_ERR, "Bad PROXY line: %s", line);
 
