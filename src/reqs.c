@@ -341,6 +341,19 @@ ERROR_EXIT:
         return -1;
 }
 
+/* Surround IPv6 address literals with brackets for HTTP authorities. */
+static const char *format_host (const char *host, char *buf, size_t size)
+{
+        struct in6_addr dst;
+
+        if (inet_pton (AF_INET6, host, &dst) > 0) {
+                snprintf (buf, size, "[%s]", host);
+                return buf;
+        }
+
+        return host;
+}
+
 /*
  * Create a connection for HTTP connections.
  */
@@ -348,7 +361,8 @@ static int
 establish_http_connection (struct conn_s *connptr, struct request_s *request)
 {
         char portbuff[7];
-        char dst[sizeof(struct in6_addr)];
+        char hostbuff[INET6_ADDRSTRLEN + 2];
+        const char *host = format_host (request->host, hostbuff, sizeof hostbuff);
 
         /* Build a port string if it's not a standard port */
         if (request->port != HTTP_PORT && request->port != HTTP_PORT_SSL)
@@ -356,20 +370,9 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
         else
                 portbuff[0] = '\0';
 
-        if (inet_pton(AF_INET6, request->host, dst) > 0) {
-                /* host is an IPv6 address literal, so surround it with
-                 * [] */
-                return write_message (connptr->server_fd,
-                                      "%s %s HTTP/1.%u\r\n"
-                                      "Host: [%s]%s\r\n"
-                                      "Connection: close\r\n",
-                                      request->method, request->path,
-                                      connptr->protocol.major != 1 ? 0 :
-                                               connptr->protocol.minor,
-                                      request->host, portbuff);
-        } else if (connptr->upstream_proxy &&
-                   connptr->upstream_proxy->type == PT_HTTP &&
-                   connptr->upstream_proxy->ua.authstr) {
+        if (connptr->upstream_proxy &&
+            connptr->upstream_proxy->type == PT_HTTP &&
+            connptr->upstream_proxy->ua.authstr) {
                 return write_message (connptr->server_fd,
                                       "%s %s HTTP/1.%u\r\n"
                                       "Host: %s%s\r\n"
@@ -378,7 +381,7 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
                                       request->method, request->path,
                                       connptr->protocol.major != 1 ? 0 :
                                                connptr->protocol.minor,
-                                      request->host, portbuff,
+                                      host, portbuff,
                                       connptr->upstream_proxy->ua.authstr);
         } else {
                 return write_message (connptr->server_fd,
@@ -388,7 +391,7 @@ establish_http_connection (struct conn_s *connptr, struct request_s *request)
                                       request->method, request->path,
                                       connptr->protocol.major != 1 ? 0 :
                                                connptr->protocol.minor,
-                                      request->host, portbuff);
+                                      host, portbuff);
         }
 }
 
@@ -1557,6 +1560,8 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
          */
         return -1;
 #else
+        char hostbuff[INET6_ADDRSTRLEN + 2];
+        const char *host = format_host (request->host, hostbuff, sizeof hostbuff);
         char *combined_string;
         int len;
 
@@ -1601,23 +1606,23 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
          * method and path.
          */
         if (connptr->connect_method) {
-                len = strlen (request->host) + 7;
+                len = strlen (host) + 7;
 
                 combined_string = (char *) safemalloc (len);
                 if (!combined_string) {
                         return -1;
                 }
 
-                snprintf (combined_string, len, "%s:%d", request->host,
+                snprintf (combined_string, len, "%s:%d", host,
                           request->port);
         } else {
-                len = strlen (request->host) + strlen (request->path) + 14;
+                len = strlen (host) + strlen (request->path) + 14;
                 combined_string = (char *) safemalloc (len);
                 if (!combined_string) {
                         return -1;
                 }
 
-                snprintf (combined_string, len, "http://%s:%d%s", request->host,
+                snprintf (combined_string, len, "http://%s:%d%s", host,
                           request->port, request->path);
         }
 

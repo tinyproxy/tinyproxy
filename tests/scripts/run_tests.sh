@@ -101,6 +101,10 @@ AddHeader "X-My-Header1" "Powered by Tinyproxy"
 AddHeader "X-My-Header2" "Powered by Tinyproxy"
 AddHeader "X-My-Header3" "Powered by Tinyproxy"
 Upstream http 255.255.255.255:65535 ".invalid"
+Upstream http user:pass@$WEBSERVER_IP:$WEBSERVER_PORT "::1"
+Upstream http $WEBSERVER_IP:$WEBSERVER_PORT "2001:db8::/32"
+Upstream http user:pass@$WEBSERVER_IP:$WEBSERVER_PORT "192.0.2.1"
+Upstream http user:pass@$WEBSERVER_IP:$WEBSERVER_PORT "upstream.example.invalid"
 EOF
 
 cat << 'EOF' > "$TINYPROXY_FILTER_FILE"
@@ -174,7 +178,7 @@ wait_for_some_seconds() {
 }
 
 run_basic_webclient_request() {
-	"$WEBCLIENT_BIN" "$1" "$2" > "$WEBCLIENT_LOG" 2>&1
+	"$WEBCLIENT_BIN" "$@" > "$WEBCLIENT_LOG" 2>&1
 	WEBCLIENT_EXIT_CODE=$?
 	if test "$WEBCLIENT_EXIT_CODE" = "0" ; then
 		echo " ok"
@@ -252,10 +256,48 @@ run_failure_webclient_request 502 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://bogus.
 test "$?" = "0" || FAILED=$((FAILED + 1))
 }
 
+upstream_test() {
+	method=$1
+	target=$2
+	host=$3
+	auth=$4
+	printf 'testing upstream %s %s...' "$method" "$target"
+	if ! run_basic_webclient_request --method="$method" "$TINYPROXY_IP:$TINYPROXY_PORT" "$target"; then
+		FAILED=$((FAILED + 1))
+		return
+	fi
+	# The test web server echoes the request received from the upstream connection.
+	if ! tr -d '\r' < "$WEBCLIENT_LOG" | grep -Fxq "Method:  $method" ||
+	   ! tr -d '\r' < "$WEBCLIENT_LOG" | grep -Fxq "Object:  $target" ||
+	   ! tr -d '\r' < "$WEBCLIENT_LOG" | grep -Fxq "host: $host"; then
+		echo "ERROR: incorrect upstream request target or Host header"
+		FAILED=$((FAILED + 1))
+	fi
+	if test "$auth" = yes; then
+		if ! tr -d '\r' < "$WEBCLIENT_LOG" | grep -Fxq 'proxy-authorization: Basic dXNlcjpwYXNz'; then
+			echo "ERROR: missing upstream authentication"
+			FAILED=$((FAILED + 1))
+		fi
+	elif grep -Fiq 'proxy-authorization:' "$WEBCLIENT_LOG"; then
+		echo "ERROR: unexpected upstream authentication"
+		FAILED=$((FAILED + 1))
+	fi
+}
+
 basic_test
 reload_config
 basic_test
 ext_test
+upstream_test GET 'http://[::1]:80/' '[::1]' yes
+upstream_test GET 'http://[::1]:8080/test' '[::1]:8080' yes
+upstream_test GET 'http://[2001:db8::1]:80/' '[2001:db8::1]' no
+upstream_test GET 'http://192.0.2.1:80/' '192.0.2.1' yes
+upstream_test GET 'http://upstream.example.invalid:80/' 'upstream.example.invalid' yes
+upstream_test CONNECT '[::1]:443' '[::1]' yes
+upstream_test CONNECT '[::1]:563' '[::1]:563' yes
+upstream_test CONNECT '[2001:db8::1]:443' '[2001:db8::1]' no
+upstream_test GET 'http://[2001:0db8:ffff:ffff:ffff:ffff:255.255.255.255]:65535/test' '[2001:0db8:ffff:ffff:ffff:ffff:255.255.255.255]:65535' no
+upstream_test CONNECT '[2001:0db8:ffff:ffff:ffff:ffff:255.255.255.255]:563' '[2001:0db8:ffff:ffff:ffff:ffff:255.255.255.255]:563' no
 
 echo "$FAILED errors"
 
