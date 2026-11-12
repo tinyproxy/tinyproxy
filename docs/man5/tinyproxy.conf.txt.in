@@ -239,6 +239,19 @@ Note that by adding a rule using a host or domain name, a costly name
 lookup has to be done for every new connection, which could slow down
 the service considerably.
 
+=item B<DenyDestination>
+
+Reject direct connections to destinations in an IPv4 or IPv6 CIDR range.
+The directive can be repeated. Each address returned by the existing DNS
+lookup is checked before connecting, so an allowed name cannot bypass a
+denied range by resolving to it. If all resolved addresses are denied,
+Tinyproxy returns HTTP 403. This rule does not apply to upstream proxy
+connections, whose destination addresses are selected by that proxy.
+With no B<DenyDestination> lines, all destination addresses are eligible.
+
+    DenyDestination 10.0.0.0/8
+    DenyDestination fc00::/7
+
 =item B<BasicAuth>
 
 Configure HTTP "Basic Authentication" username and password

@@ -1573,7 +1573,7 @@ connect_to_upstream (struct conn_s *connptr, struct request_s *request)
 
         connptr->server_fd =
             opensock (cur_upstream->host, cur_upstream->port,
-                      connptr->server_ip_addr);
+                      connptr->server_ip_addr, NULL);
 
         if (connptr->server_fd < 0) {
                 log_message (LOG_WARNING,
@@ -1868,13 +1868,16 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
                 }
         } else {
                 connptr->server_fd = opensock (request->host, request->port,
-                                               connptr->server_ip_addr);
+                                               connptr->server_ip_addr,
+                                               config->denied_destinations);
                 if (connptr->server_fd < 0) {
-                        indicate_http_error (connptr, 500, "Unable to connect",
+                        int denied = connptr->server_fd == OPENSOCK_DENIED;
+                        indicate_http_error (connptr, denied ? 403 : 500,
+                                             denied ? "Destination denied" : "Unable to connect",
                                              "detail",
-                                             PACKAGE_NAME " "
-                                             "was unable to connect to the remote web server.",
-                                             "error", strerror (errno), NULL);
+                                             denied ? "The destination address is denied by policy."
+                                                    : PACKAGE_NAME " was unable to connect to the remote web server.",
+                                             "error", denied ? "Destination denied" : strerror (errno), NULL);
                         HC_FAIL();
                 }
 

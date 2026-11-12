@@ -252,10 +252,58 @@ run_failure_webclient_request 502 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://bogus.
 test "$?" = "0" || FAILED=$((FAILED + 1))
 }
 
+destination_test() {
+	cat >> "$TINYPROXY_CONF_FILE" <<EOF
+DenyDestination 127.0.0.4/32
+DenyDestination ::1/128
+ConnectPort $WEBSERVER_PORT
+EOF
+	reload_config
+
+	printf "checking non-matching destination CIDR..."
+	run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
+	test "$?" = "0" || FAILED=$((FAILED + 1))
+
+	printf "checking IPv6 destination CIDR..."
+	run_failure_webclient_request 403 --method=CONNECT "$TINYPROXY_IP:$TINYPROXY_PORT" "[::1]:$WEBSERVER_PORT"
+	test "$?" = "0" || FAILED=$((FAILED + 1))
+
+	cp "$TINYPROXY_CONF_FILE" "$TINYPROXY_CONF_FILE.before_ipv6_wildcard"
+	printf 'DenyDestination ::/0\n' >> "$TINYPROXY_CONF_FILE"
+	reload_config
+	printf "checking IPv6 wildcard does not deny IPv4..."
+	run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
+	test "$?" = "0" || FAILED=$((FAILED + 1))
+	mv "$TINYPROXY_CONF_FILE.before_ipv6_wildcard" "$TINYPROXY_CONF_FILE"
+
+	cat >> "$TINYPROXY_CONF_FILE" <<EOF
+DenyDestination 127.0.0.0/8
+Upstream http $WEBSERVER_IP:$WEBSERVER_PORT ".test"
+EOF
+	reload_config
+
+	printf "checking denied direct HTTP destination..."
+	run_failure_webclient_request 403 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
+	test "$?" = "0" || FAILED=$((FAILED + 1))
+
+	printf "checking denied direct CONNECT destination..."
+	run_failure_webclient_request 403 --method=CONNECT "$TINYPROXY_IP:$TINYPROXY_PORT" "$WEBSERVER_IP:$WEBSERVER_PORT"
+	test "$?" = "0" || FAILED=$((FAILED + 1))
+
+	printf "checking IPv4-mapped IPv6 cannot bypass IPv4 CIDR..."
+	run_failure_webclient_request 403 --method=CONNECT "$TINYPROXY_IP:$TINYPROXY_PORT" "[::ffff:$WEBSERVER_IP]:$WEBSERVER_PORT"
+	test "$?" = "0" || FAILED=$((FAILED + 1))
+
+	printf "checking upstream connection is unaffected..."
+	run_basic_webclient_request "$TINYPROXY_IP:$TINYPROXY_PORT" "http://proxy.test/"
+	test "$?" = "0" || FAILED=$((FAILED + 1))
+}
+
 basic_test
 reload_config
 basic_test
 ext_test
+destination_test
 
 echo "$FAILED errors"
 

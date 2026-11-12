@@ -28,6 +28,8 @@
 
 #define MAXLINE (1024 * 4)
 
+#define OPENSOCK_DENIED -2
+
 #include "common.h"
 #include "sblist.h"
 
@@ -50,7 +52,8 @@ union sockaddr_union {
         struct sockaddr_in6 v6;
 };
 
-extern int opensock (const char *host, int port, const char *bind_to);
+extern int opensock (const char *host, int port, const char *bind_to,
+                     sblist *denied_destinations);
 extern int listen_sock (const char *addr, uint16_t port, sblist* listen_fds);
 
 extern void set_socket_timeout(int fd);

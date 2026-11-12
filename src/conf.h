@@ -25,6 +25,7 @@
 #include "hsearch.h"
 #include "sblist.h"
 #include "acl.h"
+#include "hostspec.h"
 
 /*
  * Stores a HTTP header created using the AddHeader directive.
@@ -33,6 +34,11 @@ typedef struct {
         char *name;
         char *value;
 } http_header_t;
+
+struct destination_rule {
+        struct hostspec cidr;
+        int family;
+};
 
 /*
  * Hold all the configuration time information.
@@ -96,6 +102,7 @@ struct config_s {
         char *statpage;
 
         acl_list_t access_list;
+        sblist *denied_destinations;
 
         /*
          * Store the list of port allowed by CONNECT.

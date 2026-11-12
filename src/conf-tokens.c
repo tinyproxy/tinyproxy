@@ -43,6 +43,7 @@ config_directive_find (register const char *str, register size_t len)
       {"user", CD_user},
       {"disableviaheader", CD_disableviaheader},
       {"deny", CD_deny},
+      {"denydestination", CD_denydestination},
       {"xtinyproxy", CD_xtinyproxy},
       {"reversepath", CD_reversepath},
       {"bind", CD_bind},
