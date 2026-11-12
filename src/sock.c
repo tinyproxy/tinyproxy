@@ -146,7 +146,7 @@ int opensock (const char *host, int port, const char *bind_to)
                     "opensock: opening connection to %s:%d", host, port);
 
         memset (&hints, 0, sizeof (struct addrinfo));
-        hints.ai_family = AF_UNSPEC;
+        hints.ai_family = TINYPROXY_ADDRESS_FAMILY;
         hints.ai_socktype = SOCK_STREAM;
 
         snprintf (portstr, sizeof (portstr), "%d", port);
@@ -307,7 +307,7 @@ int listen_sock (const char *addr, uint16_t port, sblist* listen_fds)
                     addr == NULL ? "(NULL)" : addr);
 
         memset (&hints, 0, sizeof (struct addrinfo));
-        hints.ai_family = AF_UNSPEC;
+        hints.ai_family = TINYPROXY_ADDRESS_FAMILY;
         hints.ai_socktype = SOCK_STREAM;
         hints.ai_flags = AI_PASSIVE;
 
