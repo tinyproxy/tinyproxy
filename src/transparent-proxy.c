@@ -62,7 +62,7 @@ do_transparent_proxy (struct conn_s *connptr, pseudomap *hashofheaders,
         size_t ulen = strlen (*url);
         size_t i;
 
-        if (strncmp(*url, "https://", 7) == 0) {
+        if (strncasecmp(*url, "https://", 8) == 0) {
                 log_message (LOG_ERR,
                              "process_request: unexpected https as destination "
                              "protocol for %d",
