@@ -36,6 +36,37 @@
 #include "loop.h"
 #include "sblist.h"
 
+static int destination_denied (struct sockaddr *addr, sblist *rules)
+{
+        char ip[IP_LENGTH];
+        char mapped_ip[INET_ADDRSTRLEN];
+        int mapped = 0;
+        size_t i;
+
+        if (!rules)
+                return 0;
+        if (!get_ip_string (addr, ip, sizeof(ip)))
+                return 1;
+        if (addr->sa_family == AF_INET6 &&
+            IN6_IS_ADDR_V4MAPPED (&((const struct sockaddr_in6 *) addr)->sin6_addr)) {
+                const struct sockaddr_in6 *v6 = (const struct sockaddr_in6 *) addr;
+                if (!inet_ntop (AF_INET, &v6->sin6_addr.s6_addr[12],
+                                mapped_ip, sizeof(mapped_ip)))
+                        return 1;
+                mapped = 1;
+        }
+        for (i = 0; i < sblist_getsize (rules); i++) {
+                const struct destination_rule *rule = sblist_get (rules, i);
+                if (rule->family == addr->sa_family &&
+                    hostspec_match (ip, &rule->cidr))
+                        return 1;
+                if (mapped && rule->family == AF_INET &&
+                    hostspec_match (mapped_ip, &rule->cidr))
+                        return 1;
+        }
+        return 0;
+}
+
 /*
  * Return a human readable error for getaddrinfo() and getnameinfo().
  */
@@ -133,9 +164,10 @@ void set_socket_timeout(int fd) {
  * the getaddrinfo() library function, which allows for a protocol
  * independent implementation (mostly for IPv4 and IPv6 addresses.)
  */
-int opensock (const char *host, int port, const char *bind_to)
+int opensock (const char *host, int port, const char *bind_to,
+              sblist *denied_destinations)
 {
-        int sockfd, n;
+        int sockfd = -1, n, eligible = 0;
         struct addrinfo hints, *res, *ressave;
         char portstr[6];
 
@@ -163,6 +195,9 @@ int opensock (const char *host, int port, const char *bind_to)
 
         ressave = res;
         do {
+                if (destination_denied (res->ai_addr, denied_destinations))
+                        continue;
+                eligible = 1;
                 sockfd =
                     socket (res->ai_family, res->ai_socktype, res->ai_protocol);
                 if (sockfd < 0)
@@ -202,6 +237,12 @@ int opensock (const char *host, int port, const char *bind_to)
 
         freeaddrinfo (ressave);
         if (res == NULL) {
+                if (!eligible) {
+                        log_message (LOG_NOTICE,
+                                     "opensock: All resolved addresses for %s:%d are denied",
+                                     host, port);
+                        return OPENSOCK_DENIED; /* all resolved addresses were denied */
+                }
                 log_message (LOG_ERR,
                              "opensock: Could not establish a connection to %s:%d",
                              host,

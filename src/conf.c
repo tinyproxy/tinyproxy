@@ -129,6 +129,7 @@ static HANDLE_FUNC (handle_bindsame);
 static HANDLE_FUNC (handle_connectport);
 static HANDLE_FUNC (handle_defaulterrorfile);
 static HANDLE_FUNC (handle_deny);
+static HANDLE_FUNC (handle_denydestination);
 static HANDLE_FUNC (handle_errorfile);
 static HANDLE_FUNC (handle_addheader);
 #ifdef FILTER_ENABLE
@@ -227,6 +228,8 @@ struct {
                  handle_allow),
         STDCONF (deny, "(" "(" IPMASK "|" IPV6MASK ")" "|" ALNUM ")",
                  handle_deny),
+        STDCONF (denydestination, "(" IPMASK "|" IPV6MASK ")",
+                 handle_denydestination),
         STDCONF (bind, "(" IP "|" IPV6 ")", handle_bind),
         /* other */
         STDCONF (basicauth, USERNAME WS PASSWORD, handle_basicauth),
@@ -330,6 +333,7 @@ void free_config (struct config_s *conf)
         safefree (conf->errorpage_undef);
         safefree (conf->statpage);
         flush_access_list (conf->access_list);
+        sblist_free (conf->denied_destinations);
         free_connect_ports_list (conf->connect_ports);
         if (conf->anonymous_map) {
                 it = 0;
@@ -827,6 +831,29 @@ static HANDLE_FUNC (handle_deny)
                 warn_invalid_address (arg, lineno);
         safefree (arg);
         return 0;
+}
+
+static HANDLE_FUNC (handle_denydestination)
+{
+        char *arg = get_string_arg (line, &match[2]);
+        struct destination_rule rule;
+        int ret = -1;
+
+        if (!arg)
+                return -1;
+        if (hostspec_parse (arg, &rule.cidr) != 0 || rule.cidr.type != HST_NUMERIC) {
+                CP_WARN ("Invalid destination CIDR %s", arg);
+                goto done;
+        }
+        rule.family = strchr (arg, ':') ? AF_INET6 : AF_INET;
+        if (!conf->denied_destinations)
+                conf->denied_destinations = sblist_new (sizeof(rule), 4);
+        if (conf->denied_destinations &&
+            sblist_add (conf->denied_destinations, &rule))
+                ret = 0;
+done:
+        safefree (arg);
+        return ret;
 }
 
 static HANDLE_FUNC (handle_bind)

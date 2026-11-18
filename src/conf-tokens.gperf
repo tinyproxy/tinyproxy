@@ -42,6 +42,7 @@ group, CD_group
 listen, CD_listen
 allow, CD_allow
 deny, CD_deny
+denydestination, CD_denydestination
 bind, CD_bind
 basicauth, CD_basicauth
 basicauthrealm, CD_basicauthrealm
