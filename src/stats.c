@@ -148,7 +148,8 @@ int update_stats (status_t update_level)
                 ++stats->num_reqs;
                 break;
         case STAT_CLOSE:
-                --stats->num_open;
+                if (stats->num_open > 0)
+                        --stats->num_open;
                 break;
         case STAT_REFUSE:
                 ++stats->num_refused;
