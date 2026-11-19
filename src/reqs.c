@@ -985,6 +985,8 @@ check_chunked_and_sanitize_transfer_encoding(pseudomap *hashofheaders) {
         if (ret == -1) return ret;
         /* after sanitization, if chunked was found, it needs to be the final coding */
         if (chunked && (chunked[7] == 0 || chunked[7] == ';')) return 1;
+        /* chunked present but not final: reject per RFC 7230 §3.3.3 */
+        if (chunked) return -1;
         return 0;
 }
 
