@@ -174,7 +174,7 @@ wait_for_some_seconds() {
 }
 
 run_basic_webclient_request() {
-	"$WEBCLIENT_BIN" "$1" "$2" > "$WEBCLIENT_LOG" 2>&1
+	"$WEBCLIENT_BIN" "$@" > "$WEBCLIENT_LOG" 2>&1
 	WEBCLIENT_EXIT_CODE=$?
 	if test "$WEBCLIENT_EXIT_CODE" = "0" ; then
 		echo " ok"
@@ -192,7 +192,7 @@ run_failure_webclient_request() {
 	ec=$1
 	expected_error=$(($1 - 399))
 	shift
-	"$WEBCLIENT_BIN" "$1" "$2" "$3" "$4" > "$WEBCLIENT_LOG" 2>&1
+	"$WEBCLIENT_BIN" "$@" > "$WEBCLIENT_LOG" 2>&1
 	WEBCLIENT_EXIT_CODE=$?
 	if test "$WEBCLIENT_EXIT_CODE" = "$expected_error" ; then
 		echo " ok, got expected error code $ec"
@@ -256,6 +256,53 @@ basic_test
 reload_config
 basic_test
 ext_test
+
+auth_test() {
+printf '\nBasicAuth test-user test-password\n' >> "$TINYPROXY_CONF_FILE"
+reload_config
+wait_for_some_seconds 1
+
+auth_failures_before=$(grep -c 'Failed auth attempt' "$TINYPROXY_LOG_FILE")
+auth_required_before=$(grep -c 'Authentication required' "$TINYPROXY_LOG_FILE")
+
+printf "checking proxy authentication challenge..."
+run_failure_webclient_request 407 "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
+test "$?" = "0" || FAILED=$((FAILED + 1))
+
+printf "checking stats authentication challenge..."
+run_failure_webclient_request 401 --header="Host: $TINYPROXY_STATHOST_IP" "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$TINYPROXY_STATHOST_IP/"
+test "$?" = "0" || FAILED=$((FAILED + 1))
+
+printf "checking challenges are logged separately from failures..."
+auth_failures_after=$(grep -c 'Failed auth attempt' "$TINYPROXY_LOG_FILE")
+auth_required_after=$(grep -c 'Authentication required' "$TINYPROXY_LOG_FILE")
+if test "$auth_failures_after" -eq "$auth_failures_before" &&
+   test "$auth_required_after" -eq "$((auth_required_before + 2))"; then
+	echo " ok"
+else
+	echo " ERROR"
+	FAILED=$((FAILED + 1))
+fi
+
+printf "checking invalid proxy credentials..."
+run_failure_webclient_request 407 --header="Proxy-Authorization: Basic dGVzdC11c2VyOndyb25n" "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
+test "$?" = "0" || FAILED=$((FAILED + 1))
+
+printf "checking valid proxy credentials..."
+run_basic_webclient_request --header="Proxy-Authorization: Basic dGVzdC11c2VyOnRlc3QtcGFzc3dvcmQ=" "$TINYPROXY_IP:$TINYPROXY_PORT" "http://$WEBSERVER_IP:$WEBSERVER_PORT/"
+test "$?" = "0" || FAILED=$((FAILED + 1))
+
+printf "checking only invalid credentials are logged as a failure..."
+auth_failures_after=$(grep -c 'Failed auth attempt' "$TINYPROXY_LOG_FILE")
+if test "$auth_failures_after" -eq "$((auth_failures_before + 1))"; then
+	echo " ok"
+else
+	echo " ERROR"
+	FAILED=$((FAILED + 1))
+fi
+}
+
+auth_test
 
 echo "$FAILED errors"
 

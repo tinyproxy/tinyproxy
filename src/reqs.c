@@ -1698,7 +1698,7 @@ static void handle_connection_failure(struct conn_s *connptr, int got_headers)
         }
 }
 
-static void auth_error(struct conn_s *connptr, int code) {
+static void auth_error(struct conn_s *connptr, int code, int auth_provided) {
         const char *tit = code == 401 ? "Unauthorized" : "Proxy Authentication Required";
         const char *msg = code == 401 ?
         "The administrator of this proxy has not configured it to service requests from you." :
@@ -1706,7 +1706,9 @@ static void auth_error(struct conn_s *connptr, int code) {
 
         update_stats (STAT_DENIED);
         log_message (LOG_INFO,
-                     "Failed auth attempt (file descriptor: %d), ip %s",
+                     auth_provided ?
+                     "Failed auth attempt (file descriptor: %d), ip %s" :
+                     "Authentication required (file descriptor: %d), ip %s",
                      connptr->client_fd,
                      connptr->client_ip_addr);
         indicate_http_error (connptr, code, tit, "detail", msg, NULL);
@@ -1827,7 +1829,7 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
                 }
 
                 if (!authstring) {
-                        auth_error(connptr, stathost_connect ? 401 : 407);
+                        auth_error(connptr, stathost_connect ? 401 : 407, 0);
                         HC_FAIL();
                 }
                 if ( /* currently only "basic" auth supported,
@@ -1836,7 +1838,7 @@ void handle_connection (struct conn_s *connptr, union sockaddr_union* addr)
                         basicauth_check (config->basicauth_list, authstring + 6) == 1)
                                 failure = 0;
                 if(failure) {
-                        auth_error(connptr, stathost_connect ? 401 : 407);
+                        auth_error(connptr, stathost_connect ? 401 : 407, 1);
                         HC_FAIL();
                 }
                 pseudomap_remove (hashofheaders, "proxy-authorization");
