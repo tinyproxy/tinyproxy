@@ -34,6 +34,7 @@ my $method = "GET";
 my $dry_run = 0;
 my $help = 0;
 my $entity = undef;
+my @headers;
 
 my $default_port = "80";
 my $port = $default_port;
@@ -43,7 +44,8 @@ sub process_options() {
 				"http-version=s" => \$http_version,
 				"method=s" => \$method,
 				"dry-run" => \$dry_run,
-				"entity=s" => \$entity);
+				"entity=s" => \$entity,
+				"header=s@" => \@headers);
 	die "Error reading cmdline options! $!" unless $result;
 
 	pod2usage(1) if $help;
@@ -76,6 +78,7 @@ sub build_request($$$$$$)
 		die "invalid version '$version'";
 	}
 
+	$request .= join("", map { "$_$EOL" } @headers);
 	$request .= $EOL;
 
 	if ($entity) {
@@ -168,6 +171,10 @@ Add the provided string as entity (i.e. body) to the request.
 =item B<--dry-run>
 
 Don't actually connect to the server but print the request that would be sent.
+
+=item B<--header>
+
+Add a request header. This option can be repeated.
 
 =back
 
