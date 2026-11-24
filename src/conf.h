@@ -80,6 +80,13 @@ struct config_s {
         unsigned int client_uses_proxyproto; /* boolean */
 
         /*
+         * The name sent in the HTTP "Server" header field.
+         */
+        char *server_name;
+
+        unsigned int disable_serverheader; /* boolean */
+
+        /*
          * Error page support.  Map error numbers to file paths.
          */
         struct htab *errorpages;
