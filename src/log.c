@@ -266,9 +266,6 @@ next:
 /**
  * Initialize the logging subsystem, based on the configuration.
  * Returns 0 upon success, -1 upon failure.
- *
- * This function uses fprintf() instead of log_message(), since
- * the logging is not yet set up...
  */
 int setup_logging (void)
 {
