@@ -117,7 +117,7 @@ acl_string_processing (struct acl_s *acl, const char *ip_address,
          */
         if (acl->h.address.string[0] != '.') {
                 memset (&hints, 0, sizeof (struct addrinfo));
-                hints.ai_family = AF_UNSPEC;
+                hints.ai_family = TINYPROXY_ADDRESS_FAMILY;
                 hints.ai_socktype = SOCK_STREAM;
                 if (getaddrinfo (acl->h.address.string, NULL, &hints, &res) != 0)
                         goto STRING_TEST;

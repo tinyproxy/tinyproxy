@@ -41,6 +41,21 @@ AC_ARG_WITH(stathost,
 
 AC_SUBST(TINYPROXY_STATHOST)
 
+dnl Select the address family used for name resolution and listening
+AH_TEMPLATE([TINYPROXY_ADDRESS_FAMILY],
+	[Address family used for resolving hosts and listening (AF_UNSPEC, AF_INET or AF_INET6).])
+AC_ARG_WITH(address-family,
+            [AC_HELP_STRING([--with-address-family=FAMILY],
+                            [Address family for name resolution and listening: unspec, inet or inet6 (default is unspec)])],
+            [],
+            [with_address_family=unspec])
+case "$with_address_family" in
+    unspec) AC_DEFINE(TINYPROXY_ADDRESS_FAMILY, AF_UNSPEC) ;;
+    inet)   AC_DEFINE(TINYPROXY_ADDRESS_FAMILY, AF_INET) ;;
+    inet6)  AC_DEFINE(TINYPROXY_ADDRESS_FAMILY, AF_INET6) ;;
+    *)      AC_MSG_ERROR([invalid value '$with_address_family' for --with-address-family (use unspec, inet or inet6)]) ;;
+esac
+
 dnl Add compiler-specific optimization flags
 TP_ARG_ENABLE(debug,
               [Enable debugging support code and methods (default is NO)],
