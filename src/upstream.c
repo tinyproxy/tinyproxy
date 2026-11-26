@@ -78,7 +78,7 @@ static struct upstream *upstream_build (const char *host, int port, char *domain
         up->host = up->ua.user = up->pass = NULL;
         if (user) {
                 if (type == PT_HTTP) {
-                        char b[BASE64ENC_BYTES((256+2)-1) + 1];
+                        char b[BASE64ENC_BYTES((strlen(user)+strlen(pass)+2)-1) + 1];
                         ssize_t ret;
                         ret = basicauth_string(user, pass, b, sizeof b);
                         if (ret == 0) {
