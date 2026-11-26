@@ -200,6 +200,12 @@ MaxClients 100
 Allow 127.0.0.1
 Allow ::1
 
+# DenyDestination: Optional CIDR ranges that Tinyproxy must not contact
+# directly. Each resolved address is checked before connecting. Requests
+# routed through an upstream proxy are unaffected. Repeat for more ranges.
+#DenyDestination 127.0.0.0/8
+#DenyDestination ::1/128
+
 # BasicAuth: HTTP "Basic Authentication" for accessing the proxy.
 # If there are any entries specified, access is only granted for authenticated
 # users.
