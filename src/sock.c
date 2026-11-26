@@ -71,6 +71,23 @@ bind_socket (int sockfd, const char *addr, int family)
         assert (sockfd >= 0);
         assert (addr != NULL && strlen (addr) != 0);
 
+#ifdef SO_BINDTODEVICE
+        if (addr && if_nametoindex(addr)) {
+		struct ifreq interface = {};
+
+		strcpy(interface.ifr_name, addr);
+		n = setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE,
+			&interface, sizeof(interface));
+		if (n < 0) {
+		        log_message (LOG_INFO,
+                                     "bind_socket: SO_BINDTODEVICE to %s %s",
+                                     addr, get_gai_error (n));
+	                return n;
+		}
+                return sockfd;
+	}
+#endif
+
         memset (&hints, 0, sizeof (struct addrinfo));
         hints.ai_family = family;
         hints.ai_socktype = SOCK_STREAM;

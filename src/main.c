@@ -145,6 +145,10 @@ display_usage (void)
         printf ("    Upstream proxy support\n");
         features++;
 #endif /* UPSTREAM_SUPPORT */
+#ifdef SO_BINDTODEVICE
+        printf ("    BindToDevice\n");
+        features++;
+#endif
 
         if (0 == features)
                 printf ("    None\n");
